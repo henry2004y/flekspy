@@ -57,11 +57,11 @@ class dataframe:
 
 class IDLData(object):
     r"""
-    A class used to handle the *.out format SWMF data.
+    A class used to handle the `*.out` format SWMF data.
 
     Example:
-    >>> ds = IDLData('3d.out')
-    >>> dc2d = ds.get_slice('y',1)
+    >>> ds = IDLData("3d.out")
+    >>> dc2d = ds.get_slice("y", 1)
     >>> dc3d = ds.get_domain()
     """
 
@@ -310,7 +310,7 @@ class IDLData(object):
         names = infile.readline().split()
         nline += 1
 
-        # Save grid names (e.g. 'x' or 'r') and save associated params
+        # Save grid names (e.g. "x" or "r") and save associated params
         self.dims = names[0:ndim]
         self.variables = np.array(names)
 
@@ -418,7 +418,7 @@ class IDLData(object):
         names.strip()
         names = names.split()
 
-        # Save grid names (e.g. 'x' or 'r') and save associated params
+        # Save grid names (e.g. "x" or "r") and save associated params
         self.dims = names[0:ndim]
         self.variables = np.array(names)
 
@@ -432,7 +432,6 @@ class IDLData(object):
 
         # Get the grid points...
         (OldLen, RecLen) = struct.unpack(EndChar + "2l", infile.read(8))
-        # prod = [1] + pbdat['grid.cumprod().tolist()
         for i in range(0, ndim):
             # Read the data into a temporary grid
             tempgrid = np.array(
