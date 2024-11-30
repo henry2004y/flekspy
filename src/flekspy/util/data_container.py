@@ -303,7 +303,7 @@ class dataContainer2D(dataContainer):
         return dif
 
     def contour(self, vars, xlim=None, ylim=None, unit="planet", nlevels=200,
-                cmap="rainbow", figsize=(12, 8), pcolor=False, log=False,
+                cmap="turbo", figsize=(12, 8), pcolor=False, log=False,
                 addgrid=False, bottomline=10, plot=None, cbticks=None, 
                 showcolorbar=True, createcanvas=False, *args, **kwargs):
         r""" 

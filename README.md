@@ -30,7 +30,7 @@ python -m pip install flekspy
 ```python
 import flekspy
 
-ds = fleks.load("sample_data/3*amrex")
+ds = flekspy.load("sample_data/3*amrex")
 ```
 
 Plotting is supported via Matplotlib and YT. For more detailed usage, please refer to the [documentation](https://henry2004y.github.io/flekspy/).

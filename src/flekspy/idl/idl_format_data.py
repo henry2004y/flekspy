@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import struct
 import math
-import flekspy.util.utilities
+import flekspy.util.utilities as utilities
 import yt
 import flekspy.util.data_container as data_container
 
@@ -66,7 +66,7 @@ class IDLData(object):
     def __init__(self, filename="none"):
         fileList = glob.glob(filename)
         nfiles = len(fileList)
-        assert nfiles > 0, 'Error: can not file file!'
+        assert nfiles > 0, 'Error: can not find file!'
         if nfiles > 1:
             fileList.sort()
             print("nfiles = ", nfiles)
@@ -86,7 +86,7 @@ class IDLData(object):
         self.variables = None
         self.unit = None        
         self.iter = None
-        self.runtime = None
+        self.time = None
         self.ndim = None
         self.gencoord = None
         self.grid = None
@@ -106,23 +106,20 @@ class IDLData(object):
         self.registry.add("Planet_Radius", planet_radius,
                           yt.units.dimensions.length)
 
-    def info(self):
-        print("\n-----------------------------")
-        print("filename    : ", self.filename)
-        print("variables   : ", self.variables)
-        print("unit        : ", self.unit)
-        print("nInstance   : ", self.nInstance)
-        print("npict       : ", self.npict)
-        print("time        : ", self.runtime)
-        print("nIter       : ", self.iter)
-        print("ndim        : ", self.ndim)
-        print("gencoord    : ", self.gencoord)
-        print("grid        : ", self.grid)
-        print("-----------------------------")
-
     def __repr__(self):
-        self.info()
-        return "\n"
+        str = (
+            f"filename    : {self.filename}\n"
+            f"variables   : {self.variables}\n"
+            f"unit        : {self.unit}\n"
+            f"nInstance   : {self.nInstance}\n"
+            f"npict       : {self.npict}\n"
+            f"time        : {self.time}\n"
+            f"nIter       : {self.iter}\n"
+            f"ndim        : {self.ndim}\n"
+            f"gencoord    : {self.gencoord}\n"
+            f"grid        : {self.grid}\n"
+        )
+        return str
 
     def get_domain(self):
         r""" 
@@ -150,20 +147,20 @@ class IDLData(object):
         if self.gencoord :
             dc = data_container.dataContainer2D(
                 dataSets, np.squeeze(axes[0]), np.squeeze(axes[1]),
-                labels[0], labels[1], step=self.iter, time=self.runtime, 
+                labels[0], labels[1], step=self.iter, time=self.time, 
                 filename=self.filename, gencoord=True)
         elif self.ndim == 1:
             dc = data_container.dataContainer1D(
                 dataSets, np.squeeze(axes[0]), labels[0],
-                step=self.iter, time=self.runtime, filename=self.filename)
+                step=self.iter, time=self.time, filename=self.filename)
         elif self.ndim == 2:
             dc = data_container.dataContainer2D(
                 dataSets, np.squeeze(axes[0])[:, 0], np.squeeze(axes[1])[0, :],
-                labels[0], labels[1], step=self.iter, time=self.runtime, filename=self.filename)
+                labels[0], labels[1], step=self.iter, time=self.time, filename=self.filename)
         else:
             dc = data_container.dataContainer3D(
                 dataSets, axes[0][:, 0, 0], axes[1][0, :, 0], axes[2][0, 0, :],
-                step=self.iter, time=self.runtime, filename=self.filename)
+                step=self.iter, time=self.time, filename=self.filename)
 
         return dc
 
@@ -175,7 +172,7 @@ class IDLData(object):
         with open(saveName, 'w') as f:
             f.write(self.unit+"\n")
             f.write("{:d}\t{:e}\t{:d}\t{:d}\t{:d}\n".format(
-                self.iter, self.runtime, self.ndim, self.nparam, self.nvar))
+                self.iter, self.time, self.ndim, self.nparam, self.nvar))
             [f.write("{:d}\t".format(i)) for i in self.grid]
             f.write('\n')
             if self.nparam > 0:
@@ -247,11 +244,11 @@ class IDLData(object):
         nline += 1
         self.unit = headline.split()[0]
 
-        # Read & convert iters, runtime, etc. from next line:
+        # Read & convert iters, time, etc. from next line:
         parts = infile.readline().split()
         nline += 1
         self.iter = int(parts[0])
-        self.runtime = float(parts[1])
+        self.time = float(parts[1])
         self.ndim = int(parts[2])
         self.gencoord = self.ndim < 0
         self.ndim = abs(self.ndim)
@@ -265,7 +262,7 @@ class IDLData(object):
         self.npoints = abs(self.grid.prod())
 
         # Quick ref vars:
-        time = self.runtime
+        time = self.time
         npts = self.npoints
         ndim = self.grid.size
         nvar = self.nvar
@@ -347,7 +344,7 @@ class IDLData(object):
         # parse rest of header; detect double-precision file.
         if RecLen > 20:
             pformat = 'd'
-        (self.iter, self.runtime,
+        (self.iter, self.time,
          self.ndim, self.nparam, self.nvar) = \
             struct.unpack('{0}l{1}3l'.format(
                 EndChar, pformat), infile.read(RecLen))
@@ -361,7 +358,7 @@ class IDLData(object):
         self.npoints = abs(self.grid.prod())
 
         # Quick ref vars:
-        time = self.runtime
+        time = self.time
         npts = self.npoints
         ndim = self.grid.size
         nvar = self.nvar
@@ -436,12 +433,9 @@ class IDLData(object):
 
         for isub, ax in zip(range(nvar), axes):
             w = self.data[dvname[isub]]
-            cs = ax.contourf(x, y, w, levels=100, cmap="rainbow")
+            cs = ax.contourf(x, y, w, levels=100, cmap="turbo")
             cb = f.colorbar(cs, ax=ax, shrink=aspect*0.6)
             cb.ax.set_yticks([w.min(), w.max()])
-            #print('type f = ', type(f))
-            #print('type cs = ', type(cs))
-            #f.set_ticks([w.min(), w.max()])
             ax.set_aspect(aspect)
             ax.set_xlabel(iv1name)
             ax.set_ylabel(iv2name)

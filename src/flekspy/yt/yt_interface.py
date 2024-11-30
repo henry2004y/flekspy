@@ -3,13 +3,13 @@ import yt
 import os
 import glob
 import numpy as np
-import flekspy.util.data_container as data_container
 
 from yt.funcs import setdefaultattr
 from yt.frontends.boxlib.api import BoxlibHierarchy, BoxlibDataset
 from yt.fields.field_info_container import FieldInfoContainer
 
-from flekspy.util.utilities import plot_unit_planet, plot_unit_si, get_unit
+import flekspy.util.data_container as data_container
+from flekspy.util.utilities import get_unit
 
 
 class FLEKSFieldInfo(FieldInfoContainer):
@@ -81,7 +81,7 @@ class FLEKSFieldInfo(FieldInfoContainer):
             fname = field[0]
             self.alias(("mesh", fname), ("boxlib", fname))
 
-        # TODO: I do not know the purpose of the following function call. --Yuxi
+        # TODO: Yuxi: I do not know the purpose of the following function call.
         setup_magnetic_field_aliases(self, "FLEKS", ["B%s" % ax for ax in "xyz"])
 
     def setup_fluid_aliases(self):
@@ -124,8 +124,8 @@ class FLEKSData(BoxlibDataset):
     Examples
     --------
 
-    >>> import fleks
-    >>> ds = fleks.FLEKSData("res/run1/PC/3d_particle*n00004750_amrex")
+    >>> import flekspy
+    >>> ds = flekspy.FLEKSData("3d_particle*n00004750_amrex")
     """
 
     _index_class = FLEKSHierarchy
@@ -301,7 +301,6 @@ class FLEKSData(BoxlibDataset):
         Examples
         --------
 
-        >>> import fleks
         >>> vars = ["rhos0", "uzs0", "Bz", "pxxs1", "Ex"]
         >>> splt = ds.plot_slice("y", 0.0, vars)
         >>> splt.display()
