@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=pyvlasiator
+set SPHINXPROJ=flekspy
 
 if "%1" == "" goto help
 
