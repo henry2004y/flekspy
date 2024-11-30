@@ -11,12 +11,14 @@ x_ = 0
 y_ = 1
 z_ = 2
 
+
 class selector:
-    def __getitem__(self, keys):
+    def __getitem__(self, keys) -> list:       
         self.indices = list(keys)
         if len(self.indices) < 3:
-            self.indices += [0]*(3-len(self.indices))
+            self.indices += [0] * (3 - len(self.indices))
         return self.indices
+
 
 class dataframe:
     def __init__(self):
@@ -27,35 +29,35 @@ class dataframe:
         self.cut[:, :, :]
 
     def setData(self, dataIn, nameIn):
-        assert (nameIn.size == dataIn.shape[0])
-        assert (dataIn.ndim <= 4)
-        shape = list(dataIn.shape) + [1]*(4-dataIn.ndim)
+        assert nameIn.size == dataIn.shape[0]
+        assert dataIn.ndim <= 4
+        shape = list(dataIn.shape) + [1] * (4 - dataIn.ndim)
         self.array = np.reshape(dataIn, shape)
         self.name = tuple(nameIn)
 
     def fixDataSize(self):
         self.name = tuple(self.name)
-        assert (len(self.name) == self.array.shape[0])
-        assert (self.array.ndim <= 4)
-        shape = list(self.array.shape) + [1]*(4-self.array.ndim)
+        assert len(self.name) == self.array.shape[0]
+        assert self.array.ndim <= 4
+        shape = list(self.array.shape) + [1] * (4 - self.array.ndim)
         self.array = np.reshape(self.array, shape)
 
     def __getitem__(self, keys):
-        '''Example: 
-            d["varname",3:,1:4:2,3]
-        '''
+        """Example:
+        d["varname", 3:, 1:4:2, 3]
+        """
         if type(keys) is str:
             # If the spatial indices are not specified, use self.cut
             keys = [keys] + self.cut.indices
         else:
-            keys = list(keys) + [slice(None, None, None)]*(4-len(keys))
+            keys = list(keys) + [slice(None, None, None)] * (4 - len(keys))
         ivar = self.name.index(keys[0])
         return np.squeeze(self.array[ivar, keys[1], keys[2], keys[3]])
 
 
 class IDLData(object):
     r"""
-    A class used to handle the *.out format data. 
+    A class used to handle the *.out format SWMF data.
 
     Example:
     >>> ds = IDLData('3d.out')
@@ -66,7 +68,7 @@ class IDLData(object):
     def __init__(self, filename="none"):
         fileList = glob.glob(filename)
         nfiles = len(fileList)
-        assert nfiles > 0, 'Error: can not find file!'
+        assert nfiles > 0, "Error: can not find file!"
         if nfiles > 1:
             fileList.sort()
             print("nfiles = ", nfiles)
@@ -79,12 +81,12 @@ class IDLData(object):
 
         self.filename = fileList[ifile - 1]
         self.isOuts = self.filename[-4:] == "outs"
-        self.data = dataframe()        
+        self.data = dataframe()
         self.nInstance = None if self.isOuts else 1
-        self.npict = 1            
-        self.fileformat = None        
+        self.npict = 1
+        self.fileformat = None
         self.variables = None
-        self.unit = None        
+        self.unit = None
         self.iter = None
         self.time = None
         self.ndim = None
@@ -95,16 +97,15 @@ class IDLData(object):
 
     def __post_process_param__(self):
 
-        planet_radius = 1.0 
-        
-        # Not always correct. 
+        planet_radius = 1.0
+
+        # Not always correct.
         for var, val in zip(self.param_name, self.para):
             if var == "xSI":
-                planet_radius = float(100*val)
+                planet_radius = float(100 * val)
 
         self.registry = yt.units.unit_registry.UnitRegistry()
-        self.registry.add("Planet_Radius", planet_radius,
-                          yt.units.dimensions.length)
+        self.registry.add("Planet_Radius", planet_radius, yt.units.dimensions.length)
 
     def __repr__(self):
         str = (
@@ -122,64 +123,94 @@ class IDLData(object):
         return str
 
     def get_domain(self):
-        r""" 
-        This methods returns a dataContainer3D object that contains all the 3D data. 
+        r"""
+        This methods returns a dataContainer3D object that contains all the 3D data.
         """
         dataSets = {}
         for varname in self.data.name:
             idx = self.data.name.index(varname)
             unit = utilities.get_unit(varname, self.unit)
             dataSets[varname] = yt.YTArray(
-                np.squeeze(self.data.array[idx, :, :, :]), unit, registry=self.registry)
+                np.squeeze(self.data.array[idx, :, :, :]), unit, registry=self.registry
+            )
 
-        labels = ['', '', '']
+        labels = ["", "", ""]
         axes = [None, None, None]
         for idim in range(self.ndim):
             name = self.variables[idim]
             idx = self.data.name.index(name)
             labels[idim] = name.upper()
-            unit = utilities.get_unit('X', self.unit)
+            unit = utilities.get_unit("X", self.unit)
             name = name.upper()
             if name in ["X", "Y", "Z"]:
                 axes[idim] = yt.YTArray(
-                    self.data.array[idx, :, :, :], unit, registry=self.registry)
-                    
-        if self.gencoord :
+                    self.data.array[idx, :, :, :], unit, registry=self.registry
+                )
+
+        if self.gencoord:
             dc = data_container.dataContainer2D(
-                dataSets, np.squeeze(axes[0]), np.squeeze(axes[1]),
-                labels[0], labels[1], step=self.iter, time=self.time, 
-                filename=self.filename, gencoord=True)
+                dataSets,
+                np.squeeze(axes[0]),
+                np.squeeze(axes[1]),
+                labels[0],
+                labels[1],
+                step=self.iter,
+                time=self.time,
+                filename=self.filename,
+                gencoord=True,
+            )
         elif self.ndim == 1:
             dc = data_container.dataContainer1D(
-                dataSets, np.squeeze(axes[0]), labels[0],
-                step=self.iter, time=self.time, filename=self.filename)
+                dataSets,
+                np.squeeze(axes[0]),
+                labels[0],
+                step=self.iter,
+                time=self.time,
+                filename=self.filename,
+            )
         elif self.ndim == 2:
             dc = data_container.dataContainer2D(
-                dataSets, np.squeeze(axes[0])[:, 0], np.squeeze(axes[1])[0, :],
-                labels[0], labels[1], step=self.iter, time=self.time, filename=self.filename)
+                dataSets,
+                np.squeeze(axes[0])[:, 0],
+                np.squeeze(axes[1])[0, :],
+                labels[0],
+                labels[1],
+                step=self.iter,
+                time=self.time,
+                filename=self.filename,
+            )
         else:
             dc = data_container.dataContainer3D(
-                dataSets, axes[0][:, 0, 0], axes[1][0, :, 0], axes[2][0, 0, :],
-                step=self.iter, time=self.time, filename=self.filename)
+                dataSets,
+                axes[0][:, 0, 0],
+                axes[1][0, :, 0],
+                axes[2][0, 0, :],
+                step=self.iter,
+                time=self.time,
+                filename=self.filename,
+            )
 
         return dc
 
     def save_data(self, saveName, saveFormat="ascii"):
-        # Only support ascii so far.
+        # Currently only support ascii output.
         self.save_ascii_instance(saveName)
 
     def save_ascii_instance(self, saveName):
-        with open(saveName, 'w') as f:
-            f.write(self.unit+"\n")
-            f.write("{:d}\t{:e}\t{:d}\t{:d}\t{:d}\n".format(
-                self.iter, self.time, self.ndim, self.nparam, self.nvar))
+        with open(saveName, "w") as f:
+            f.write(self.unit + "\n")
+            f.write(
+                "{:d}\t{:e}\t{:d}\t{:d}\t{:d}\n".format(
+                    self.iter, self.time, self.ndim, self.nparam, self.nvar
+                )
+            )
             [f.write("{:d}\t".format(i)) for i in self.grid]
-            f.write('\n')
+            f.write("\n")
             if self.nparam > 0:
                 [f.write("{:e}\t".format(i)) for i in self.para]
-                f.write('\n')
-            [f.write(i+" ") for i in self.variables]
-            f.write('\n')
+                f.write("\n")
+            [f.write(i + " ") for i in self.variables]
+            f.write("\n")
 
             nk = self.grid[2] if self.ndim > 2 else 1
             nj = self.grid[1] if self.ndim > 1 else 1
@@ -187,16 +218,18 @@ class IDLData(object):
             for kk in range(nk):
                 for jj in range(nj):
                     for ii in range(ni):
-                        [f.write("{:e}\t".format(i))
-                         for i in self.data.array[:, ii, jj, kk]]
-                        f.write('\n')
+                        [
+                            f.write("{:e}\t".format(i))
+                            for i in self.data.array[:, ii, jj, kk]
+                        ]
+                        f.write("\n")
 
     def read_data(self):
         if self.fileformat is None:
-            with open(self.filename, 'rb') as f:
-                EndChar = '<'  # Endian marker (default: little.)
+            with open(self.filename, "rb") as f:
+                EndChar = "<"  # Endian marker (default: little.)
                 RecLenRaw = f.read(4)
-                RecLen = (struct.unpack(EndChar+'l', RecLenRaw))[0]
+                RecLen = (struct.unpack(EndChar + "l", RecLenRaw))[0]
                 if RecLen != 79 and RecLen != 500:
                     self.fileformat = "ascii"
                 else:
@@ -211,40 +244,40 @@ class IDLData(object):
 
         ndim = self.ndim
         nvar = self.nvar
-        self.data.name = tuple(self.variables)[0:ndim+nvar]
+        self.data.name = tuple(self.variables)[0 : ndim + nvar]
         self.data.fixDataSize()
-        self.param_name = self.variables[ndim+nvar:]
+        self.param_name = self.variables[ndim + nvar :]
         self.__post_process_param__()
 
     def read_ascii(self):
         if self.nInstance is None:
-            # Count how many instances are there.
-            with open(self.filename, 'r') as f:
+            # Count the number of instances.
+            with open(self.filename, "r") as f:
                 for i, l in enumerate(f):
                     pass
-                nLineFile = i+1
+                nLineFile = i + 1
 
-            with open(self.filename, 'r') as f:
+            with open(self.filename, "r") as f:
                 self.nInstanceLength = self.read_ascii_instance(f)
 
-            self.nInstance = round(nLineFile/self.nInstanceLength)
+            self.nInstance = round(nLineFile / self.nInstanceLength)
 
-        nLineSkip = (self.npict)*self.nInstanceLength if self.isOuts else 0
-        with open(self.filename, 'r') as f:
+        nLineSkip = (self.npict) * self.nInstanceLength if self.isOuts else 0
+        with open(self.filename, "r") as f:
             if nLineSkip > 0:
                 for i, line in enumerate(f):
-                    if i == nLineSkip-1:
+                    if i == nLineSkip - 1:
                         break
             self.read_ascii_instance(f)
 
     def read_ascii_instance(self, infile):
         nline = 0
-        # Read the top header line:
+        # Read the top header line
         headline = infile.readline().strip()
         nline += 1
         self.unit = headline.split()[0]
 
-        # Read & convert iters, time, etc. from next line:
+        # Read & convert iters, time, etc. from next line
         parts = infile.readline().split()
         nline += 1
         self.iter = int(parts[0])
@@ -255,37 +288,38 @@ class IDLData(object):
         self.nparam = int(parts[3])
         self.nvar = int(parts[4])
 
-        # Read & convert grid dimensions.
+        # Read & convert grid dimensions
         grid = [int(x) for x in infile.readline().split()]
         nline += 1
         self.grid = np.array(grid)
         self.npoints = abs(self.grid.prod())
 
-        # Quick ref vars:
         time = self.time
         npts = self.npoints
         ndim = self.grid.size
         nvar = self.nvar
         npar = self.nparam
 
-        # Read parameters stored in file.
+        # Read parameters stored in file
         self.para = np.zeros(npar)
         if npar > 0:
             self.para[:] = infile.readline().split()
             nline += 1
 
-        # Read variable names.
+        # Read variable names
         names = infile.readline().split()
         nline += 1
 
-        # Save grid names (e.g. 'x' or 'r') and save associated params.
+        # Save grid names (e.g. 'x' or 'r') and save associated params
         self.dims = names[0:ndim]
         self.variables = np.array(names)
 
-        # Create string representation of time.
-        self.strtime = '%4.4ih%2.2im%06.3fs' %\
-            (np.floor(time/3600.), np.floor(time % 3600. / 60.0),
-             time % 60.0)
+        # Create string representation of time
+        self.strtime = "%4.4ih%2.2im%06.3fs" % (
+            np.floor(time / 3600.0),
+            np.floor(time % 3600.0 / 60.0),
+            time % 60.0,
+        )
 
         nRow = ndim + nvar
         nCol = self.npoints
@@ -302,139 +336,151 @@ class IDLData(object):
 
         nline += self.npoints
         shapeNew = np.append([nRow], self.grid)
-        self.data.array = np.reshape(self.data.array, shapeNew, order='F')
+        self.data.array = np.reshape(self.data.array, shapeNew, order="F")
 
         return nline
 
     def read_binary(self):
         if self.nInstance is None:
-            with open(self.filename, 'rb') as f:
+            with open(self.filename, "rb") as f:
                 self.read_binary_instance(f)
                 self.nInstanceLength = f.tell()
                 f.seek(0, 2)
                 endPos = f.tell()
-            self.nInstance = round(endPos/self.nInstanceLength)
+            self.nInstance = round(endPos / self.nInstanceLength)
 
-        with open(self.filename, 'rb') as f:
+        with open(self.filename, "rb") as f:
             if self.isOuts:
-                f.seek((self.npict)*self.nInstanceLength, 0)
+                f.seek((self.npict) * self.nInstanceLength, 0)
             self.read_binary_instance(f)
 
     def read_binary_instance(self, infile):
         # On the first try, we may fail because of wrong-endianess.
         # If that is the case, swap that endian and try again.
-        EndChar = '<'  # Endian marker (default: little.)
-        self.endian = 'little'
+        EndChar = "<"  # Endian marker (default: little)
+        self.endian = "little"
         RecLenRaw = infile.read(4)
 
-        RecLen = (struct.unpack(EndChar+'l', RecLenRaw))[0]
+        RecLen = (struct.unpack(EndChar + "l", RecLenRaw))[0]
         if (RecLen > 10000) or (RecLen < 0):
-            EndChar = '>'
-            self.endian = 'big'
-            RecLen = (struct.unpack(EndChar+'l', RecLenRaw))[0]
+            EndChar = ">"
+            self.endian = "big"
+            RecLen = (struct.unpack(EndChar + "l", RecLenRaw))[0]
 
-        headline = (struct.unpack('{0}{1}s'.format(EndChar, RecLen),
-                                  infile.read(RecLen)))[0].strip()
+        headline = (
+            struct.unpack("{0}{1}s".format(EndChar, RecLen), infile.read(RecLen))
+        )[0].strip()
         if str is not bytes:
             headline = headline.decode()
         self.unit = headline.split()[0]
 
-        (OldLen, RecLen) = struct.unpack(EndChar+'2l', infile.read(8))
-        pformat = 'f'
-        # parse rest of header; detect double-precision file.
+        (OldLen, RecLen) = struct.unpack(EndChar + "2l", infile.read(8))
+        pformat = "f"
+        # Parse rest of header; detect double-precision file
         if RecLen > 20:
-            pformat = 'd'
-        (self.iter, self.time,
-         self.ndim, self.nparam, self.nvar) = \
-            struct.unpack('{0}l{1}3l'.format(
-                EndChar, pformat), infile.read(RecLen))
-        self.gencoord = self.ndim < 0                 
+            pformat = "d"
+        (self.iter, self.time, self.ndim, self.nparam, self.nvar) = struct.unpack(
+            "{0}l{1}3l".format(EndChar, pformat), infile.read(RecLen)
+        )
+        self.gencoord = self.ndim < 0
         self.ndim = abs(self.ndim)
         # Get gridsize
-        (OldLen, RecLen) = struct.unpack(EndChar+'2l', infile.read(8))
+        (OldLen, RecLen) = struct.unpack(EndChar + "2l", infile.read(8))
 
-        self.grid = np.array(struct.unpack('{0}{1}l'.format(EndChar,
-                                                            abs(self.ndim)), infile.read(RecLen)))
+        self.grid = np.array(
+            struct.unpack(
+                "{0}{1}l".format(EndChar, abs(self.ndim)), infile.read(RecLen)
+            )
+        )
         self.npoints = abs(self.grid.prod())
 
-        # Quick ref vars:
         time = self.time
         npts = self.npoints
         ndim = self.grid.size
         nvar = self.nvar
         npar = self.nparam
 
-        # Read parameters stored in file.
+        # Read parameters stored in file
         self.para = np.zeros(npar)
         if npar > 0:
-            (OldLen, RecLen) = struct.unpack(EndChar+'2l', infile.read(8))
-            self.para[:] = struct.unpack('{0}{1}{2}'.format(EndChar, npar, pformat),
-                                         infile.read(RecLen))
+            (OldLen, RecLen) = struct.unpack(EndChar + "2l", infile.read(8))
+            self.para[:] = struct.unpack(
+                "{0}{1}{2}".format(EndChar, npar, pformat), infile.read(RecLen)
+            )
 
-        (OldLen, RecLen) = struct.unpack(EndChar+'2l', infile.read(8))
-        names = (struct.unpack('{0}{1}s'.format(EndChar, RecLen),
-                               infile.read(RecLen)))[0]
+        (OldLen, RecLen) = struct.unpack(EndChar + "2l", infile.read(8))
+        names = (struct.unpack("{0}{1}s".format(EndChar, RecLen), infile.read(RecLen)))[
+            0
+        ]
         if str is not bytes:
             names = names.decode()
 
         names.strip()
         names = names.split()
 
-        # Save grid names (e.g. 'x' or 'r') and save associated params.
+        # Save grid names (e.g. 'x' or 'r') and save associated params
         self.dims = names[0:ndim]
         self.variables = np.array(names)
 
-        self.strtime = '{0:04d}h{1:02d}m{2:06.3f}s'.format(
-            int(time//3600), int(time % 3600//60), time % 60)
+        self.strtime = "{0:04d}h{1:02d}m{2:06.3f}s".format(
+            int(time // 3600), int(time % 3600 // 60), time % 60
+        )
 
         nRow = ndim + nvar
         nCol = self.npoints
         self.data.array = np.zeros((nRow, nCol), dtype=np.float32)
 
         # Get the grid points...
-        (OldLen, RecLen) = struct.unpack(EndChar+'2l', infile.read(8))
+        (OldLen, RecLen) = struct.unpack(EndChar + "2l", infile.read(8))
         # prod = [1] + pbdat['grid.cumprod().tolist()
         for i in range(0, ndim):
-            # Read the data into a temporary grid.
-            tempgrid = np.array(struct.unpack('{0}{1}{2}'.format(EndChar, npts, pformat),
-                                              infile.read(int(RecLen//ndim))))
+            # Read the data into a temporary grid
+            tempgrid = np.array(
+                struct.unpack(
+                    "{0}{1}{2}".format(EndChar, npts, pformat),
+                    infile.read(int(RecLen // ndim)),
+                )
+            )
             self.data.array[i, :] = tempgrid
 
-            # Get the actual data and sort.
-        for i in range(ndim, nvar+ndim):
-            (OldLen, RecLen) = struct.unpack(EndChar+'2l', infile.read(8))
-            tmp = np.array(struct.unpack('{0}{1}{2}'.format(EndChar,
-                                                            npts, pformat), infile.read(RecLen)))
+        # Get the actual data and sort
+        for i in range(ndim, nvar + ndim):
+            (OldLen, RecLen) = struct.unpack(EndChar + "2l", infile.read(8))
+            tmp = np.array(
+                struct.unpack(
+                    "{0}{1}{2}".format(EndChar, npts, pformat), infile.read(RecLen)
+                )
+            )
             self.data.array[i, :] = tmp
         # Consume the last record length
         infile.read(4)
 
         shapeNew = np.append([nRow], self.grid)
-        self.data.array = np.reshape(self.data.array, shapeNew, order='F')
+        self.data.array = np.reshape(self.data.array, shapeNew, order="F")
 
-    def plot(self, iv1name, iv2name, *dvname):
-        ''' 
-        dvname: dependent variables name 
+    def plot(self, iv1name: str, iv2name: str, *dvname):
+        """
+        dvname: dependent variables name
         iv1name: the first independent variable name
         iv2name: the second independent variable name
-        '''
+        """
         x = self.data[iv1name]
         y = self.data[iv2name]
 
         nvar = len(dvname)
         nRow = int(round(np.sqrt(nvar)))
-        nCol = math.ceil(nvar/nRow)
-        print('nvar = ', nvar, ' nRow = ', nRow, ' nCol = ', nCol)
+        nCol = math.ceil(nvar / nRow)
+        print("nvar = ", nvar, " nRow = ", nRow, " nCol = ", nCol)
 
         f, axes = plt.subplots(nRow, nCol)
         axes = np.array(axes)  # in case nRow = nCol = 1
-        aspect = (y.max() - y.min())/(x.max() - x.min())
+        aspect = (y.max() - y.min()) / (x.max() - x.min())
         axes = axes.reshape(-1)
 
         for isub, ax in zip(range(nvar), axes):
             w = self.data[dvname[isub]]
             cs = ax.contourf(x, y, w, levels=100, cmap="turbo")
-            cb = f.colorbar(cs, ax=ax, shrink=aspect*0.6)
+            cb = f.colorbar(cs, ax=ax, shrink=aspect * 0.6)
             cb.ax.set_yticks([w.min(), w.max()])
             ax.set_aspect(aspect)
             ax.set_xlabel(iv1name)
@@ -442,12 +488,20 @@ class IDLData(object):
             ax.set_title(dvname[isub])
 
         # Delete axes for empty subplots
-        for ax in axes[nvar:nRow*nCol]:
+        for ax in axes[nvar : nRow * nCol]:
             f.delaxes(ax)
 
-    def extract_data(self, sat):
+    def extract_data(self, sat: np.ndarray) -> np.ndarray:
+        """Extract data at given 2D points.
+
+        Args:
+            sat (np.ndarray): 2D point locations.
+
+        Returns:
+            np.ndarray: 2D array of variables at each point.
+        """
         satData = None
-        if type(sat) == np.ndarray and sat.ndim == 2 and sat.shape[1] >= self.ndim:
+        if sat.ndim == 2 and sat.shape[1] >= self.ndim:
             nVar = self.nvar + self.ndim
             nPoint = sat.shape[0]
             satData = np.zeros((nPoint, nVar))
@@ -455,45 +509,57 @@ class IDLData(object):
                 satData[i, :] = self.get_data(sat[i, :])
         return satData
 
-    def get_data(self, loc):
+    def get_data(self, loc: np.ndarray) -> np.ndarray:
+        """Extract data at a given 2D point using bilinear interpolation.
+
+        Args:
+            loc (np.ndarray): 2D point location.
+
+        Returns:
+            np.ndarray: 1D array of saved variables at the survey point.
+        """
         i1, j1, k1 = 0, 0, 0
-        while self.data['x'][i1, 0, 0] < loc[x_]:
+        while self.data["x"][i1, 0, 0] < loc[x_]:
             i1 = i1 + 1
-        while self.data['y'][0, j1, 0] < loc[y_]:
+        while self.data["y"][0, j1, 0] < loc[y_]:
             j1 = j1 + 1
-        while self.data['z'][0, 0, k1] < loc[z_]:
+        while self.data["z"][0, 0, k1] < loc[z_]:
             k1 = k1 + 1
 
         i0 = i1 - 1
         j0 = j1 - 1
         k0 = k1 - 1
 
-        wx0 = (self.data['x'][i1, 0, 0] - loc[x_]) / \
-            (self.data['x'][i1, 0, 0] - self.data['x'][i0, 0, 0])
-        wy0 = (self.data['y'][0, j1, 0] - loc[y_]) / \
-            (self.data['y'][0, j1, 0] - self.data['y'][0, j0, 0])
-        wz0 = (self.data['z'][0, 0, k1] - loc[z_]) / \
-            (self.data['z'][0, 0, k1] - self.data['z'][0, 0, k0])
+        wx0 = (self.data["x"][i1, 0, 0] - loc[x_]) / (
+            self.data["x"][i1, 0, 0] - self.data["x"][i0, 0, 0]
+        )
+        wy0 = (self.data["y"][0, j1, 0] - loc[y_]) / (
+            self.data["y"][0, j1, 0] - self.data["y"][0, j0, 0]
+        )
+        wz0 = (self.data["z"][0, 0, k1] - loc[z_]) / (
+            self.data["z"][0, 0, k1] - self.data["z"][0, 0, k0]
+        )
 
         wx1 = 1.0 - wx0
         wy1 = 1.0 - wy0
         wz1 = 1.0 - wz0
 
-        w = np.zeros((2, 2, 2))
-        w[0, 0, 0] = wx0*wy0*wz0
-        w[0, 0, 1] = wx0*wy0*wz1
-        w[0, 1, 0] = wx0*wy1*wz0
-        w[0, 1, 1] = wx0*wy1*wz1
-        w[1, 0, 0] = wx1*wy0*wz0
-        w[1, 0, 1] = wx1*wy0*wz1
-        w[1, 1, 0] = wx1*wy1*wz0
-        w[1, 1, 1] = wx1*wy1*wz1
+        w = np.array(
+            [
+                [
+                    [wx0 * wy0 * wz0, wx0 * wy0 * wz1],
+                    [wx0 * wy1 * wz0, wx0 * wy1 * wz1],
+                ],
+                [
+                    [wx1 * wy0 * wz0, wx1 * wy0 * wz1],
+                    [wx1 * wy1 * wz0, wx1 * wy1 * wz1],
+                ],
+            ]
+        )
 
-        res = np.zeros((self.nvar + self.ndim))
-
-        for i in range(2):
-            for j in range(2):
-                for k in range(2):
-                    res = res + w[i, j, k]*self.data.array[:, i0+i, j0+j, k0+k]
+        res = np.sum(
+            w * self.data.array[:, i0 : i0 + 2, j0 : j0 + 2, k0 : k0 + 2],
+            axis=(1, 2, 3),
+        )
 
         return res
