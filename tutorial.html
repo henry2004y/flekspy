@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLEKS Python Visualization Toolkit &mdash; flekspy  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="flekspy" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            flekspy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FLEKS Python Visualization Toolkit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fleks-data-format">FLEKS data format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#importing-the-package">Importing the package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#downloading-demo-data">Downloading demo data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-data">Loading data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualizing-fields">Visualizing fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualizing-phase-space-distributions">Visualizing phase space distributions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#plot-the-location-of-particles-that-are-inside-a-sphere">Plot the location of particles that are inside a sphere</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-the-phase-space-of-particles-that-are-inside-a-sphere">Plot the phase space of particles that are inside a sphere</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-the-location-of-particles-that-are-inside-a-disk">Plot the location of particles that are inside a disk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-the-phase-space-of-particles-that-are-inside-a-disk">Plot the phase space of particles that are inside a disk</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#plotting-test-particle-trajectories">Plotting Test Particle Trajectories</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#loading-particle-data">Loading particle data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#obtaining-particle-ids">Obtaining particle IDs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-particle-trajectory">Reading particle trajectory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-initial-location">Getting initial location</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotting-trajectory">Plotting trajectory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-and-visualizing-all-particle-s-location-at-a-given-snapshot">Reading and visualizing all particle’s location at a given snapshot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#selecting-particles-in-a-region">Selecting particles in a region</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saving-trajectories-to-csv">Saving trajectories to CSV</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">flekspy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">FLEKS Python Visualization Toolkit</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tutorial.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fleks-python-visualization-toolkit">
+<h1>FLEKS Python Visualization Toolkit<a class="headerlink" href="#fleks-python-visualization-toolkit" title="Link to this heading"></a></h1>
+<p>flekspy is a Python package for processing FLEKS data.</p>
+<section id="fleks-data-format">
+<h2>FLEKS data format<a class="headerlink" href="#fleks-data-format" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Field: *.out format or AMREX built-in format, whose directory name is assumed to end with “_amrex”</p></li>
+<li><p>PIC particle: AMREX built-in format</p></li>
+<li><p>Test particle: binary data format</p></li>
+</ul>
+</section>
+<section id="importing-the-package">
+<h2>Importing the package<a class="headerlink" href="#importing-the-package" title="Link to this heading"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">flekspy</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="downloading-demo-data">
+<h2>Downloading demo data<a class="headerlink" href="#downloading-demo-data" title="Link to this heading"></a></h2>
+<p>If you don’t have FLEKS data to start with, you can download demo data with the following:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz&quot;</span>
+<span class="n">testfiles</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">open</span><span class="p">(</span><span class="n">testfiles</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+<span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;./data&quot;</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">testfiles</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">testfiles</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="loading-data">
+<h2>Loading data<a class="headerlink" href="#loading-data" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">flekspy.load</span></code> is the interface to read files of all formats. It returns a different object for different formats.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;data/1d__raw_2_t25.60000_n00000258.out&quot;</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">flekspy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+<span class="n">ds</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>filename    : data/1d__raw_2_t25.60000_n00000258.out
+variables   : [&#39;x&#39; &#39;Rho&#39; &#39;Mx&#39; &#39;My&#39; &#39;Mz&#39; &#39;Bx&#39; &#39;By&#39; &#39;Bz&#39; &#39;Hyp&#39; &#39;E&#39; &#39;p&#39; &#39;b1x&#39; &#39;b1y&#39; &#39;b1z&#39;
+ &#39;absdivB&#39; &#39;r&#39; &#39;g&#39; &#39;cuty&#39; &#39;cutz&#39;]
+unit        : normalized
+nInstance   : 1
+npict       : 1
+time        : 25.6
+nIter       : 258
+ndim        : 1
+gencoord    : False
+grid        : [256]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="visualizing-fields">
+<h2>Visualizing fields<a class="headerlink" href="#visualizing-fields" title="Link to this heading"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#ds = flekspy.load(&quot;sample_data/3*amrex&quot;)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#dc = ds.get_slice(&quot;z&quot;, 0.001)</span>
+<span class="c1">#dc</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#f, axes = dc.contour(</span>
+<span class="c1">#    &quot;Bx&lt;(1.5e4)&gt;(-1.5e4) ({rhos0}+{rhos1})&lt;(1.3e21) pS0 uxs0&quot;, figsize=(16, 8)</span>
+<span class="c1">#)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#dc.add_stream(axes[0, 0], &quot;Bx&quot;, &quot;By&quot;)  # Add streamlines to one sub-polt</span>
+<span class="c1">#f</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#dc.add_contour(axes[1, 1], &quot;Bx&quot;)  # Add contour lines to one sub-polt</span>
+<span class="c1">#f</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Users can also obtain the data of a 2D plane, and visualize it with matplotlib. Below is an example:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># from flekspy.util.utilities import get_ticks</span>
+<span class="c1"># import matplotlib.pyplot as plt</span>
+<span class="c1"># import numpy as np</span>
+<span class="c1"># </span>
+<span class="c1"># ds = flekspy.load(&quot;sample_data/3*amrex&quot;)</span>
+<span class="c1"># dc = ds.get_slice(&quot;z&quot;, 0.001)</span>
+<span class="c1"># </span>
+<span class="c1"># f, axes = plt.subplots(1, 2, figsize=(12, 4), gridspec_kw={&quot;width_ratios&quot;: [0.9, 1]})</span>
+<span class="c1"># </span>
+<span class="c1"># fields = [&quot;rhos1&quot;, &quot;Ey&quot;]</span>
+<span class="c1"># for ivar in range(2):</span>
+    <span class="c1"># v = dc.evaluate_expression(fields[ivar])</span>
+    <span class="c1"># vmin = v.min().v</span>
+    <span class="c1"># vmax = v.max().v</span>
+    <span class="c1"># ax = axes[ivar]</span>
+    <span class="c1"># nlevels = 200</span>
+    <span class="c1"># levels = np.linspace(vmin, vmax, nlevels)</span>
+    <span class="c1"># ax.set_xlim((-0.006, 0.006))</span>
+    <span class="c1"># ax.set_ylim((-0.003, 0.003))</span>
+    <span class="c1"># ax.set_title(fields[ivar])</span>
+    <span class="c1"># ax.set_ylabel(&quot;Y&quot;)</span>
+    <span class="c1"># ax.set_xlabel(&quot;X&quot;)</span>
+    <span class="c1"># cs = ax.contourf(</span>
+        <span class="c1"># dc.x.value, dc.y.value, np.array(v.T), levels=levels, cmap=&quot;rainbow&quot;</span>
+    <span class="c1"># )</span>
+    <span class="c1"># ticks = get_ticks(vmin, vmax)</span>
+    <span class="c1"># cb = f.colorbar(cs, ax=ax, ticks=ticks)</span>
+    <span class="c1"># cb.ax.set_yticks(ticks)</span>
+<span class="c1"># </span>
+    <span class="c1"># dc.add_stream(ax, &quot;Bx&quot;, &quot;By&quot;, density=1)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="visualizing-phase-space-distributions">
+<h2>Visualizing phase space distributions<a class="headerlink" href="#visualizing-phase-space-distributions" title="Link to this heading"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import numpy as np</span>
+<span class="c1"># </span>
+<span class="c1"># </span>
+<span class="c1"># def _unit_one(field, data):</span>
+    <span class="c1"># res = np.zeros(data[(&quot;particles&quot;, &quot;p_w&quot;)].shape)</span>
+    <span class="c1"># res[:] = 1</span>
+    <span class="c1"># return res</span>
+<span class="c1"># </span>
+<span class="c1"># </span>
+<span class="c1"># data_file = &quot;sample_data/cut_*amrex&quot;</span>
+<span class="c1"># ds = flekspy.load(data_file)</span>
+<span class="c1"># </span>
+<span class="c1"># # Add a user defined field. See yt document for more information about derived field.</span>
+<span class="c1"># ds.add_field(ds.pvar(&quot;unit_one&quot;), function=_unit_one, sampling_type=&quot;particle&quot;)</span>
+<span class="c1"># </span>
+<span class="c1"># x_field = &quot;p_uy&quot;</span>
+<span class="c1"># y_field = &quot;p_uz&quot;</span>
+<span class="c1"># z_field = &quot;unit_one&quot;</span>
+<span class="c1"># xleft = [-0.001, -0.001, -0.001]</span>
+<span class="c1"># xright = [0.001, 0.001, 0.001]</span>
+<span class="c1"># </span>
+<span class="c1">## Select and plot the particles inside a box defined by xleft and xright</span>
+<span class="c1"># plot = ds.plot_phase(</span>
+    <span class="c1"># xleft,</span>
+    <span class="c1"># xright,</span>
+    <span class="c1"># x_field,</span>
+    <span class="c1"># y_field,</span>
+    <span class="c1"># z_field,</span>
+    <span class="c1"># unit_type=&quot;si&quot;,</span>
+    <span class="c1"># x_bins=64,</span>
+    <span class="c1"># y_bins=64,</span>
+    <span class="c1"># domain_size=(-0.0002, 0.0002, -0.0002, 0.0002),</span>
+<span class="c1"># )</span>
+<span class="c1"># </span>
+<span class="c1"># plot.set_cmap(plot.fields[0], &quot;turbo&quot;)</span>
+<span class="c1"># plot.set_xlim(xmin, xmax)</span>
+<span class="c1"># plot.set_ylim(ymin, ymax)</span>
+<span class="c1"># plot.set_zlim(plot.fields[0], zmin, zmax)</span>
+<span class="c1"># plot.set_xlabel(r&quot;$V_y$&quot;)</span>
+<span class="c1"># plot.set_ylabel(r&quot;$V_z$&quot;)</span>
+<span class="c1"># plot.set_colorbar_label(plot.fields[0], &quot;colorbar_label&quot;)</span>
+<span class="c1"># plot.set_title(plot.fields[0], &quot;Number density&quot;)</span>
+<span class="c1"># plot.set_font({&quot;size&quot;: 28})</span>
+<span class="c1"># plot.set_log(plot.fields[0], False)</span>
+<span class="c1"># plot.show()</span>
+<span class="c1"># plot.save(&quot;phase_plot_example&quot;)</span>
+<span class="c1"># plot.plots[(&#39;particle&#39;, z_field)].axes.xaxis.set_major_locator(</span>
+    <span class="c1"># ticker.MaxNLocator(4))</span>
+<span class="c1"># plot.plots[(&#39;particle&#39;, z_field)].axes.yaxis.set_major_locator(</span>
+    <span class="c1"># ticker.MaxNLocator(4))</span>
+<span class="c1"># plot.save(plot_dir+plotname)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="plot-the-location-of-particles-that-are-inside-a-sphere">
+<h3>Plot the location of particles that are inside a sphere<a class="headerlink" href="#plot-the-location-of-particles-that-are-inside-a-sphere" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># center = [0, 0, 0]</span>
+<span class="c1"># radius = 0.001</span>
+<span class="c1"># # Object sphere is defined in yt/data_objects/selection_objects/spheroids.py</span>
+<span class="c1"># sp = ds.sphere(center, radius)</span>
+<span class="c1"># plot = ds.plot_particles_region(</span>
+<span class="c1">#     sp, &quot;p_x&quot;, &quot;p_y&quot;, z_field, unit_type=&quot;planet&quot;, x_bins=64, y_bins=64</span>
+<span class="c1"># )</span>
+<span class="c1"># plot.show()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-the-phase-space-of-particles-that-are-inside-a-sphere">
+<h3>Plot the phase space of particles that are inside a sphere<a class="headerlink" href="#plot-the-phase-space-of-particles-that-are-inside-a-sphere" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot = ds.plot_phase_region(</span>
+<span class="c1">#     sp, &quot;p_uy&quot;, &quot;p_uz&quot;, z_field, unit_type=&quot;planet&quot;, x_bins=64, y_bins=64</span>
+<span class="c1"># )</span>
+<span class="c1"># plot.show()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-the-location-of-particles-that-are-inside-a-disk">
+<h3>Plot the location of particles that are inside a disk<a class="headerlink" href="#plot-the-location-of-particles-that-are-inside-a-disk" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># center = [0, 0, 0]</span>
+<span class="c1"># normal = [1, 1, 0]</span>
+<span class="c1"># radius = 0.0005</span>
+<span class="c1"># height = 0.0004</span>
+<span class="c1"># # Object sphere is defined in yt/data_objects/selection_objects/disk.py</span>
+<span class="c1"># disk = ds.disk(center, normal, radius, height)</span>
+<span class="c1"># plot = ds.plot_particles_region(</span>
+<span class="c1">#     disk, &quot;p_x&quot;, &quot;p_y&quot;, z_field, unit_type=&quot;planet&quot;, x_bins=64, y_bins=64</span>
+<span class="c1"># )</span>
+<span class="c1"># plot.show()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-the-phase-space-of-particles-that-are-inside-a-disk">
+<h3>Plot the phase space of particles that are inside a disk<a class="headerlink" href="#plot-the-phase-space-of-particles-that-are-inside-a-disk" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot = ds.plot_phase_region(</span>
+<span class="c1">#     disk, &quot;p_uy&quot;, &quot;p_uz&quot;, z_field, unit_type=&quot;planet&quot;, x_bins=64, y_bins=64</span>
+<span class="c1"># )</span>
+<span class="c1"># plot.show()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># # Get the 2D array of the plot.</span>
+<span class="c1"># for var_name in plot.profile.field_data:</span>
+<span class="c1">#     val = plot.profile.field_data[var_name]</span>
+
+<span class="c1"># x = plot.profile.x</span>
+<span class="c1"># y = plot.profile.y</span>
+
+<span class="c1"># plt.contourf(x, y, val)</span>
+<span class="c1"># plt.show()</span>
+<span class="c1"># # np.savetxt(&quot;data.txt&quot;, val)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># # An example to transform the velocity coordinates and visualize the phase space distribution.</span>
+<span class="c1"># import flekspy, yt</span>
+
+<span class="c1"># l = [1, 0, 0]</span>
+<span class="c1"># m = [0, 1, 0]</span>
+<span class="c1"># n = [0, 0, 1]</span>
+
+
+<span class="c1"># def _vel_l(field, data):</span>
+<span class="c1">#     res = (</span>
+<span class="c1">#         l[0] * data[(&quot;particles&quot;, &quot;p_ux&quot;)]</span>
+<span class="c1">#         + l[1] * data[(&quot;particles&quot;, &quot;p_uy&quot;)]</span>
+<span class="c1">#         + l[2] * data[(&quot;particles&quot;, &quot;p_uz&quot;)]</span>
+<span class="c1">#     )</span>
+<span class="c1">#     return res</span>
+
+
+<span class="c1"># def _vel_m(field, data):</span>
+<span class="c1">#     res = (</span>
+<span class="c1">#         m[0] * data[(&quot;particles&quot;, &quot;p_ux&quot;)]</span>
+<span class="c1">#         + m[1] * data[(&quot;particles&quot;, &quot;p_uy&quot;)]</span>
+<span class="c1">#         + m[2] * data[(&quot;particles&quot;, &quot;p_uz&quot;)]</span>
+<span class="c1">#     )</span>
+<span class="c1">#     return res</span>
+
+
+<span class="c1"># def _vel_n(field, data):</span>
+<span class="c1">#     res = (</span>
+<span class="c1">#         n[0] * data[(&quot;particles&quot;, &quot;p_ux&quot;)]</span>
+<span class="c1">#         + n[1] * data[(&quot;particles&quot;, &quot;p_uy&quot;)]</span>
+<span class="c1">#         + n[2] * data[(&quot;particles&quot;, &quot;p_uz&quot;)]</span>
+<span class="c1">#     )</span>
+<span class="c1">#     return res</span>
+
+
+<span class="c1"># data_file = &quot;sample_data/cut_*amrex&quot;</span>
+<span class="c1"># ds = flekspy.load(data_file)</span>
+
+<span class="c1"># # Add a user defined field. See yt document for more information about derived field.</span>
+<span class="c1"># vl_name = ds.pvar(&quot;vel_l&quot;)</span>
+<span class="c1"># vm_name = ds.pvar(&quot;vel_m&quot;)</span>
+<span class="c1"># vn_name = ds.pvar(&quot;vel_n&quot;)</span>
+<span class="c1"># ds.add_field(vl_name, units=&quot;code_velocity&quot;, function=_vel_l, sampling_type=&quot;particle&quot;)</span>
+<span class="c1"># ds.add_field(vm_name, units=&quot;code_velocity&quot;, function=_vel_m, sampling_type=&quot;particle&quot;)</span>
+<span class="c1"># ds.add_field(vn_name, units=&quot;code_velocity&quot;, function=_vel_n, sampling_type=&quot;particle&quot;)</span>
+
+<span class="c1"># ######## Plot the location of particles that are inside a sphere ###########</span>
+<span class="c1"># center = [0, 0, 0]</span>
+<span class="c1"># radius = 0.001</span>
+<span class="c1"># # Object sphere is defined in yt/data_objects/selection_objects/spheroids.py</span>
+<span class="c1"># sp = ds.sphere(center, radius)</span>
+
+<span class="c1"># x_field = vl_name</span>
+<span class="c1"># y_field = vm_name</span>
+<span class="c1"># z_field = ds.pvar(&quot;p_w&quot;)</span>
+
+<span class="c1"># logs = {x_field: False, y_field: False}</span>
+<span class="c1"># profile = yt.create_profile(</span>
+<span class="c1">#     data_source=sp,</span>
+<span class="c1">#     bin_fields=[x_field, y_field],</span>
+<span class="c1">#     fields=z_field,</span>
+<span class="c1">#     n_bins=[64, 64],</span>
+<span class="c1">#     weight_field=None,</span>
+<span class="c1">#     logs=logs,</span>
+<span class="c1"># )</span>
+
+<span class="c1"># plot = yt.PhasePlot.from_profile(profile)</span>
+
+<span class="c1"># plot.set_unit(x_field, &quot;km/s&quot;)</span>
+<span class="c1"># plot.set_unit(y_field, &quot;km/s&quot;)</span>
+<span class="c1"># plot.set_unit(z_field, &quot;amu&quot;)</span>
+
+<span class="c1"># plot.set_cmap(plot.fields[0], &quot;turbo&quot;)</span>
+<span class="c1"># # plot.set_xlim(xmin, xmax)</span>
+<span class="c1"># # plot.set_ylim(ymin, ymax)</span>
+<span class="c1"># # plot.set_zlim(plot.fields[0], zmin, zmax)</span>
+<span class="c1"># plot.set_xlabel(r&quot;$V_l$&quot;)</span>
+<span class="c1"># plot.set_ylabel(r&quot;$V_m$&quot;)</span>
+<span class="c1"># plot.set_colorbar_label(plot.fields[0], &quot;colorbar_label&quot;)</span>
+<span class="c1"># plot.set_title(plot.fields[0], &quot;Density&quot;)</span>
+<span class="c1"># plot.set_font({&quot;size&quot;: 28})</span>
+<span class="c1"># plot.set_log(plot.fields[0], False)</span>
+<span class="c1"># plot.show()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="plotting-test-particle-trajectories">
+<h2>Plotting Test Particle Trajectories<a class="headerlink" href="#plotting-test-particle-trajectories" title="Link to this heading"></a></h2>
+<section id="loading-particle-data">
+<h3>Loading particle data<a class="headerlink" href="#loading-particle-data" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># from flekspy import FLEKSTP</span>
+
+<span class="c1"># tp = FLEKSTP(&quot;test_particles&quot;, iSpecies=1)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="obtaining-particle-ids">
+<h3>Obtaining particle IDs<a class="headerlink" href="#obtaining-particle-ids" title="Link to this heading"></a></h3>
+<p>Test particle IDs consists of a CPU index and a particle index attached to the CPU.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># pIDs = tp.getIDs()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="reading-particle-trajectory">
+<h3>Reading particle trajectory<a class="headerlink" href="#reading-particle-trajectory" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># traj = tp.read_particle_trajectory(pIDs[10])</span>
+<span class="c1"># print(&quot;time:\n&quot;)</span>
+<span class="c1"># print(traj[:, 0])</span>
+<span class="c1"># print(&quot;x:\n&quot;)</span>
+<span class="c1"># print(traj[:, 1])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="getting-initial-location">
+<h3>Getting initial location<a class="headerlink" href="#getting-initial-location" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># x = tp.read_initial_location(pIDs[10])</span>
+<span class="c1"># print(&quot;time [s], X [R], Y [R], Z [R], U_x [km/s], U_y [km/s], U_z [km/s]&quot;)</span>
+<span class="c1"># print(f&quot;{x[0]}, {x[1]}, {x[2]}, {x[3]}, {x[4]}, {x[5]}, {x[6]}&quot;)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plotting-trajectory">
+<h3>Plotting trajectory<a class="headerlink" href="#plotting-trajectory" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># tp.plot_trajectory(pIDs[0])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="reading-and-visualizing-all-particle-s-location-at-a-given-snapshot">
+<h3>Reading and visualizing all particle’s location at a given snapshot<a class="headerlink" href="#reading-and-visualizing-all-particle-s-location-at-a-given-snapshot" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ids, pData = tp.read_particles_at_time(0.0, doSave=False)</span>
+<span class="c1"># tp.plot_loc(pData)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="selecting-particles-in-a-region">
+<h3>Selecting particles in a region<a class="headerlink" href="#selecting-particles-in-a-region" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># def fselect(tp, pid):</span>
+<span class="c1">#     pdata = tp.read_initial_location(pid)</span>
+<span class="c1">#     inregion = pdata[FLEKSTP.ix_] &gt; 10</span>
+<span class="c1">#     return inregion</span>
+
+
+<span class="c1"># pselected = tp.select_particles(fselect)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="saving-trajectories-to-csv">
+<h3>Saving trajectories to CSV<a class="headerlink" href="#saving-trajectories-to-csv" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># tp.save_trajectory_to_csv(pIDs[0])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="flekspy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yuxi Chen, Hongyang Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

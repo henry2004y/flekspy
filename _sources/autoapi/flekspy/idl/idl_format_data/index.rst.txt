@@ -1,0 +1,211 @@
+flekspy.idl.idl_format_data
+===========================
+
+.. py:module:: flekspy.idl.idl_format_data
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.idl.idl_format_data.x_
+   flekspy.idl.idl_format_data.y_
+   flekspy.idl.idl_format_data.z_
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.idl.idl_format_data.selector
+   flekspy.idl.idl_format_data.dataframe
+   flekspy.idl.idl_format_data.IDLData
+
+
+Module Contents
+---------------
+
+.. py:data:: x_
+   :value: 0
+
+
+.. py:data:: y_
+   :value: 1
+
+
+.. py:data:: z_
+   :value: 2
+
+
+.. py:class:: selector
+
+   .. py:method:: __getitem__(keys) -> list
+
+
+.. py:class:: dataframe
+
+   .. py:attribute:: array
+      :value: None
+
+
+
+   .. py:attribute:: name
+      :value: None
+
+
+
+   .. py:attribute:: cut
+
+
+   .. py:method:: setData(dataIn, nameIn)
+
+
+   .. py:method:: fixDataSize()
+
+
+   .. py:method:: __getitem__(keys)
+
+      Example:
+      d["varname", 3:, 1:4:2, 3]
+
+
+
+.. py:class:: IDLData(filename='none')
+
+   Bases: :py:obj:`object`
+
+
+   A class used to handle the `*.out` format SWMF data.
+
+   Example:
+   >>> ds = IDLData("3d.out")
+   >>> dc2d = ds.get_slice("y", 1)
+   >>> dc3d = ds.get_domain()
+
+
+   .. py:attribute:: filename
+
+
+   .. py:attribute:: isOuts
+
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: nInstance
+      :value: None
+
+
+
+   .. py:attribute:: npict
+      :value: 1
+
+
+
+   .. py:attribute:: fileformat
+      :value: None
+
+
+
+   .. py:attribute:: variables
+      :value: None
+
+
+
+   .. py:attribute:: unit
+      :value: None
+
+
+
+   .. py:attribute:: iter
+      :value: None
+
+
+
+   .. py:attribute:: time
+      :value: None
+
+
+
+   .. py:attribute:: ndim
+      :value: None
+
+
+
+   .. py:attribute:: gencoord
+      :value: None
+
+
+
+   .. py:attribute:: grid
+      :value: None
+
+
+
+   .. py:method:: __post_process_param__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: get_domain()
+
+      This methods returns a dataContainer3D object that contains all the 3D data.
+
+
+
+   .. py:method:: save_data(saveName, saveFormat='ascii')
+
+
+   .. py:method:: save_ascii_instance(saveName)
+
+
+   .. py:method:: read_data()
+
+
+   .. py:method:: read_ascii()
+
+
+   .. py:method:: read_ascii_instance(infile)
+
+
+   .. py:method:: read_binary()
+
+
+   .. py:method:: read_binary_instance(infile)
+
+
+   .. py:method:: plot(iv1name: str, iv2name: str, *dvname)
+
+      dvname: dependent variables name
+      iv1name: the first independent variable name
+      iv2name: the second independent variable name
+
+
+
+   .. py:method:: extract_data(sat: numpy.ndarray) -> numpy.ndarray
+
+      Extract data at given 2D points.
+
+      :param sat: 2D point locations.
+      :type sat: np.ndarray
+
+      :returns: 2D array of variables at each point.
+      :rtype: np.ndarray
+
+
+
+   .. py:method:: get_data(loc: numpy.ndarray) -> numpy.ndarray
+
+      Extract data at a given 2D point using bilinear interpolation.
+
+      :param loc: 2D point location.
+      :type loc: np.ndarray
+
+      :returns: 1D array of saved variables at the survey point.
+      :rtype: np.ndarray
+
+
+

@@ -1,0 +1,35 @@
+flekspy.util.utilities
+======================
+
+.. py:module:: flekspy.util.utilities
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.util.utilities.plot_unit_planet
+   flekspy.util.utilities.plot_unit_si
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.utilities.get_unit
+   flekspy.util.utilities.get_ticks
+
+
+Module Contents
+---------------
+
+.. py:data:: plot_unit_planet
+
+.. py:data:: plot_unit_si
+
+.. py:function:: get_unit(var, unit_type='planet')
+
+.. py:function:: get_ticks(vmin, vmax)
+
