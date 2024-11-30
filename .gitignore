@@ -7,6 +7,7 @@ dist/
 *.outs
 .vscode/
 *.tar.gz
+data/
 tests/data/
 *.pyc
 
