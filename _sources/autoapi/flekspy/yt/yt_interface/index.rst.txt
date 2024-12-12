@@ -1,0 +1,296 @@
+flekspy.yt.yt_interface
+=======================
+
+.. py:module:: flekspy.yt.yt_interface
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.yt.yt_interface.FLEKSFieldInfo
+   flekspy.yt.yt_interface.FLEKSHierarchy
+   flekspy.yt.yt_interface.FLEKSData
+
+
+Module Contents
+---------------
+
+.. py:class:: FLEKSFieldInfo(ds, field_list)
+
+   Bases: :py:obj:`yt.fields.field_info_container.FieldInfoContainer`
+
+
+   This is a generic field container.  It contains a list of potential derived
+   fields, all of which know how to act on a data object and return a value.
+   This object handles converting units as well as validating the availability
+   of a given field.
+
+
+
+   .. py:attribute:: l_units
+      :value: 'code_length'
+
+
+
+   .. py:attribute:: v_units
+      :value: 'code_velocity'
+
+
+
+   .. py:attribute:: p_units
+      :value: 'code_pressure'
+
+
+
+   .. py:attribute:: b_units
+      :value: 'code_magnetic'
+
+
+
+   .. py:attribute:: e_units
+      :value: 'code_magnetic * code_velocity'
+
+
+
+   .. py:attribute:: rho_units
+      :value: 'code_density'
+
+
+
+   .. py:attribute:: mass_units
+      :value: 'code_mass'
+
+
+
+   .. py:attribute:: known_other_fields
+
+
+   .. py:attribute:: known_particle_fields
+
+
+   .. py:attribute:: extra_union_fields
+
+
+   .. py:method:: setup_fluid_fields()
+
+
+   .. py:method:: setup_fluid_aliases()
+
+
+   .. py:method:: setup_particle_fields(ptype)
+
+
+.. py:class:: FLEKSHierarchy(ds, dataset_type='boxlib_native')
+
+   Bases: :py:obj:`yt.frontends.boxlib.api.BoxlibHierarchy`
+
+
+   The index class for patch and block AMR datasets.
+
+
+   .. py:method:: _detect_output_fields()
+
+
+.. py:class:: FLEKSData(output_dir, read_field_data=False, cparam_filename=None, fparam_filename=None, dataset_type='boxlib_native', storage_filename=None, units_override=None, unit_system='mks')
+
+   Bases: :py:obj:`yt.frontends.boxlib.api.BoxlibDataset`
+
+
+   Read and plot the AMReX format output from FLEKS.
+
+   :param output_dir: The path to the data.
+   :type output_dir: String
+
+   .. rubric:: Examples
+
+   >>> import flekspy
+   >>> ds = flekspy.FLEKSData("3d_particle*n00004750_amrex")
+
+
+   .. py:attribute:: _index_class
+
+
+   .. py:attribute:: _field_info_class
+
+
+   .. py:attribute:: default_fluid_type
+      :value: 'mesh'
+
+
+
+   .. py:attribute:: default_field
+      :value: ('mesh', 'density')
+
+
+
+   .. py:attribute:: fluid_types
+      :value: ('mesh', 'index', 'raw')
+
+
+
+   .. py:attribute:: read_field_data
+      :value: False
+
+
+
+   .. py:method:: _parse_parameter_file()
+
+      Parses the parameter file and establishes the various
+      dictionaries.
+
+
+
+   .. py:method:: _set_code_unit_attributes()
+
+
+   .. py:method:: get_slice(norm, cut_loc)
+
+      This method returns a dataContainer2D object that contains a slice along
+      the 'norm' direction at 'cut_loc'
+
+      :param norm:
+      :type norm: String
+      :param 'x':
+      :param 'y' or 'z':
+      :param cut_loc:
+      :type cut_loc: Float
+
+
+
+   .. py:method:: get_domain()
+
+      Reading in all the simulation data into a 3D box. It returns a dataContainer3D object.
+
+
+
+   .. py:method:: plot_slice(norm, cut_loc, vars, unit_type='planet', *args, **kwargs)
+
+      Plot 2D slice
+
+      :param norm:
+      :type norm: string, one of 'x', 'y' or 'z'. Norm direction of the slice.
+      :param cut_loc:
+      :type cut_loc: float. The location of the slice.
+      :param vars: Example: "Bx rhos0" or ["Bx", "rhos0"]
+      :type vars: a list or string of plotting variables.
+      :param unit_type:
+      :type unit_type: The unit system of the plots. "planet" or "si".
+
+      .. rubric:: Examples
+
+      >>> vars = ["rhos0", "uzs0", "Bz", "pxxs1", "Ex"]
+      >>> splt = ds.plot_slice("y", 0.0, vars)
+      >>> splt.display()
+
+
+
+   .. py:method:: plot_phase_region(region, x_field, y_field, z_field, unit_type='planet', x_bins=128, y_bins=128, domain_size=None)
+
+      Plot phase space distribution of particle
+
+      :param region:
+      :type region: YTSelectionContainer Object
+      :param The data object to be profiled:
+      :param such as all_data:
+      :param box:
+      :param region:
+      :param or:
+      :param sphere.:
+      :param x_field & y_field: The x- y- axes. Potential input: "p_ux", "p_uy", "p_uz".
+                                Eventhough this is assumed to be a 'phase' plot, the x- and y- axex
+                                can also be set as 'p_x', 'p_y' or 'p_z' and it will show the
+                                spatial distribution of the particles.
+      :type x_field & y_field: string
+      :param z_field: It is usually the particle wegith: "p_w".
+      :type z_field: string
+      :param unit_type: The unit system of the plots. "planet" or "si".
+      :type unit_type: string
+      :param domain_size: Consist of 4 elements: x_min, x_max, y_min, y_max
+      :type domain_size: tuple
+
+      .. rubric:: Examples
+
+      >>> phase = ds.plot_phase([8.75, -1, -1], [9.25, 0, 0],
+                              "p_ux", "p_uy", "p_w", (-1, 1, -1, 1))
+      >>> phase.show()
+
+
+
+   .. py:method:: plot_phase(left_edge, right_edge, x_field, y_field, z_field, unit_type='planet', x_bins=128, y_bins=128, domain_size=None)
+
+      Plot phase space distribution of particles that are inside a box
+
+      :param left_edge & right_edge: Define the box region to plot.
+                                     Example: left_edge=(9, -0.1, 0.2), right_edge=(10, 1, 2)
+      :type left_edge & right_edge: a list of float numbers.
+      :param x_field & y_field: The x- y- axes. Potential input: "p_ux", "p_uy", "p_uz".
+                                Eventhough this is assumed to be a 'phase' plot, the x- and y- axex
+                                can also be set as 'p_x', 'p_y' or 'p_z' and it will show the
+                                spatial distribution of the particles.
+      :type x_field & y_field: string
+      :param z_field: It is usually the particle wegith: "p_w".
+      :type z_field: string
+      :param unit_type: The unit system of the plots. "planet" or "si".
+      :type unit_type: string
+      :param domain_size: Consist of 4 elements: x_min, x_max, y_min, y_max
+      :type domain_size: tuple
+
+      .. rubric:: Examples
+
+      >>> phase = ds.plot_phase([8.75, -1, -1], [9.25, 0, 0],
+                              "p_ux", "p_uy", "p_w", (-1, 1, -1, 1))
+      >>> phase.show()
+
+
+
+   .. py:method:: plot_particles_region(region, x_field, y_field, z_field, unit_type='planet', x_bins=128, y_bins=128)
+
+      Plot the particle position of particles inside a box
+
+      :param region:
+      :type region: YTSelectionContainer Object
+      :param The data object to be profiled:
+      :param such as all_data:
+      :param box:
+      :param region:
+      :param or:
+      :param sphere.:
+      :param x_field & y_field: The x- y- axes. Potential input: "p_x", "p_y", "p_z".
+      :type x_field & y_field: string
+      :param z_field: It is usually the particle wegith: "p_w".
+      :type z_field: string
+      :param unit_type: The unit system of the plots. "planet" or "si".
+      :type unit_type: string
+
+      .. rubric:: Examples
+
+      >>> phase = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x",
+                   "p_y", "p_w", unit_type="planet")
+      >>> phase.show()
+
+
+
+   .. py:method:: plot_particles(left_edge, right_edge, x_field, y_field, z_field, unit_type='planet', x_bins=128, y_bins=128)
+
+      Plot the particle position of particles inside a box
+
+      :param left_edge & right_edge: Define the box region to plot.
+                                     Example: left_edge=(9, -0.1, 0.2), right_edge=(10, 1, 2)
+      :type left_edge & right_edge: a list of float numbers.
+      :param x_field & y_field: The x- y- axes. Potential input: "p_x", "p_y", "p_z".
+      :type x_field & y_field: string
+      :param z_field: It is usually the particle wegith: "p_w".
+      :type z_field: string
+      :param unit_type: The unit system of the plots. "planet" or "si".
+      :type unit_type: string
+
+      .. rubric:: Examples
+
+      >>> phase = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x",
+                   "p_y", "p_w", unit_type="planet")
+      >>> phase.show()
+
+
+
