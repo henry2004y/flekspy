@@ -1,11 +1,10 @@
 import pytest
-import requests
-import tarfile
 import os
+import numpy as np
 
 import flekspy
-import numpy as np
-import matplotlib
+from flekspy.util.utilities import download_testfile
+
 
 filedir = os.path.dirname(__file__)
 
@@ -13,24 +12,15 @@ if os.path.isfile(filedir + "/data/bulk.1d.vlsv"):
     pass
 else:
     url = (
-        "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz"
+        "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz",
+        "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles.tar.gz",
     )
-    testfiles = url.rsplit("/", 1)[1]
-    r = requests.get(url, allow_redirects=True)
-    open(testfiles, "wb").write(r.content)
-
-    path = filedir + "/data"
-
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-    with tarfile.open(testfiles) as file:
-        file.extractall(path)
+    download_testfile(url[0], "data")
+    download_testfile(url[1], "data")
 
 class TestIDL:
-    path = "tests/data/"
     files = ("1d__raw_2_t25.60000_n00000258.out",)
-    files = [os.path.join(path, file) for file in files]
+    files = [os.path.join("tests/data/", file) for file in files]
 
     def test_load(self):
         ds = flekspy.load(self.files[0])
@@ -44,15 +34,27 @@ class TestIDL:
             ds = flekspy.load("None")
 
 class TestAMReX:
-    path = "tests/data/"
     files = ("z=0_fluid_region0_0_t00001640_n00010142.out", )
-    files = [os.path.join(path, file) for file in files]
+    files = [os.path.join("tests/data/", file) for file in files]
 
     def test_load(self):
         ds = flekspy.load(self.files[0])
         assert ds.data["uxS0"][2,1] == np.float32(-131.71918)
         assert ds.data["uxS1"].shape == (601, 2)
-    
+
+class TestParticles:
+    dirs = ("tests/data/test_particles", )
+    from flekspy import FLEKSTP
+
+    tp = FLEKSTP(dirs, iSpecies=1)
+    pIDs = tp.getIDs()
+    assert pIDs[0] == (0, 5121)
+    traj = tp.read_particle_trajectory(pIDs[10])
+    assert traj[0,1] == -0.031386006623506546
+    x = tp.read_initial_location(pIDs[10])
+    assert x[1] == traj[0,1]
+    ids, pData = tp.read_particles_at_time(0.0, doSave=False)
+    assert ids[1][1] == 5129
 
 def load(files):
     """
