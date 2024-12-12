@@ -13,7 +13,7 @@ z_ = 2
 
 
 class selector:
-    def __getitem__(self, keys) -> list:       
+    def __getitem__(self, keys) -> list:
         self.indices = list(keys)
         if len(self.indices) < 3:
             self.indices += [0] * (3 - len(self.indices))
@@ -457,38 +457,63 @@ class IDLData(object):
         shapeNew = np.append([nRow], self.grid)
         self.data.array = np.reshape(self.data.array, shapeNew, order="F")
 
-    def plot(self, iv1name: str, iv2name: str, *dvname):
+
+    def plot(self, *dvname, **kwargs):
+        """Plot 1D IDL outputs.
+
+        Returns:
+            *dvname (str): variable names
+            **kwargs: keyword argument to be passed to `plot`.
         """
-        dvname: dependent variables name
-        iv1name: the first independent variable name
-        iv2name: the second independent variable name
+        x = self.data["x"]
+        nvar = len(dvname)
+
+        f, axes = plt.subplots(
+            nvar, 1, constrained_layout=True, sharex=True
+        )
+        axes = np.array(axes)  # in case nRow = nCol = 1
+        axes = axes.reshape(-1)
+        for isub, ax in zip(range(nvar), axes):
+            w = self.data[dvname[isub]]
+            p = ax.plot(x, w, **kwargs)
+
+            ax.set_xlabel("x", fontsize=16)
+            ax.set_ylabel(dvname[isub], fontsize=16)
+
+        return axes
+
+
+    def pcolormesh(self, *dvname, scale: bool = True, **kwargs):
+        """Plot 2D pcolormeshes of variables.
+
+        Args:
+            *dvname (str): variable names
+            scale (bool): whether to scale the plots according to the axis range.
+                Default True. 
         """
-        x = self.data[iv1name]
-        y = self.data[iv2name]
+        x = self.data["x"]
+        y = self.data["y"]
 
         nvar = len(dvname)
-        nRow = int(round(np.sqrt(nvar)))
-        nCol = math.ceil(nvar / nRow)
-        print("nvar = ", nvar, " nRow = ", nRow, " nCol = ", nCol)
 
-        f, axes = plt.subplots(nRow, nCol)
+        f, axes = plt.subplots(
+            nvar, 1, constrained_layout=True, sharex=True, sharey=True
+        )
         axes = np.array(axes)  # in case nRow = nCol = 1
         aspect = (y.max() - y.min()) / (x.max() - x.min())
         axes = axes.reshape(-1)
 
         for isub, ax in zip(range(nvar), axes):
             w = self.data[dvname[isub]]
-            cs = ax.contourf(x, y, w, levels=100, cmap="turbo")
-            cb = f.colorbar(cs, ax=ax, shrink=aspect * 0.6)
-            cb.ax.set_yticks([w.min(), w.max()])
-            ax.set_aspect(aspect)
-            ax.set_xlabel(iv1name)
-            ax.set_ylabel(iv2name)
-            ax.set_title(dvname[isub])
+            p = ax.pcolormesh(x, y, w, cmap="turbo", **kwargs)
+            cb = f.colorbar(p, ax=ax, pad=0.02)
+            if scale:
+                ax.set_aspect(aspect)
+            ax.set_xlabel("X", fontsize=16)
+            ax.set_ylabel("Y", fontsize=16)
+            ax.set_title(dvname[isub], fontsize=16)
 
-        # Delete axes for empty subplots
-        for ax in axes[nvar : nRow * nCol]:
-            f.delaxes(ax)
+        return axes
 
     def extract_data(self, sat: np.ndarray) -> np.ndarray:
         """Extract data at given 2D points.

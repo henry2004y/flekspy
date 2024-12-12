@@ -5,6 +5,9 @@ import numpy as np
 import flekspy
 from flekspy.util.utilities import download_testfile
 
+import matplotlib
+matplotlib.use("agg")
+
 
 filedir = os.path.dirname(__file__)
 
@@ -18,7 +21,10 @@ if not os.path.isdir(filedir + "/data/test_particles"):
 
 
 class TestIDL:
-    files = ("1d__raw_2_t25.60000_n00000258.out",)
+    files = (
+        "1d__raw_2_t25.60000_n00000258.out",
+        "z=0_fluid_region0_0_t00001640_n00010142.out",
+    )
     files = [os.path.join("tests/data/", file) for file in files]
 
     def test_load(self):
@@ -31,6 +37,14 @@ class TestIDL:
     def test_load_error(self):
         with pytest.raises(FileNotFoundError):
             ds = flekspy.load("None")
+
+    def test_plot(self):
+        ds = flekspy.load(self.files[0])
+        ds.plot("p")
+        ds = flekspy.load(self.files[1])
+        ds.pcolormesh("x")
+        ds.pcolormesh("Bx", "By", "Bz")
+        assert True
 
 
 class TestAMReX:
