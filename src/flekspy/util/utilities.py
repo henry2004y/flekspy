@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import requests
+import tarfile
 
 plot_unit_planet = {
     "time": "s",
@@ -34,7 +36,7 @@ plot_unit_planet = {
     "p_ux": "km/s",
     "p_uy": "km/s",
     "p_uz": "km/s",
-    "p_w": "amu"
+    "p_w": "amu",
 }
 
 plot_unit_si = {
@@ -70,7 +72,7 @@ plot_unit_si = {
     "p_ux": "m/s",
     "p_uy": "m/s",
     "p_uz": "m/s",
-    "p_w": "kg"
+    "p_w": "kg",
 }
 
 
@@ -92,19 +94,50 @@ def get_unit(var, unit_type="planet"):
         return "dimensionless"
 
 
-def get_ticks(vmin, vmax):    
+def get_ticks(vmin, vmax):
     dv = vmax - vmin
-    if dv == 0: 
+    if dv == 0:
         return [vmin]
-    norder = 10**(math.floor(math.log10(dv))-1)
+    norder = 10 ** (math.floor(math.log10(dv)) - 1)
 
-    v0 = int(vmin/norder)
-    v1 = int(vmax/norder) 
+    v0 = int(vmin / norder)
+    v1 = int(vmax / norder)
 
-    dtick = int((v1-v0)/4) 
-    dv = dtick*norder 
+    dtick = int((v1 - v0) / 4)
+    dv = dtick * norder
 
-    tickMin = math.ceil(vmin/dv)*dv
-    tickMax = math.floor(vmax/dv)*dv
-    nticks = int((tickMax - tickMin)/dv) + 1
+    tickMin = math.ceil(vmin / dv) * dv
+    tickMax = math.floor(vmax / dv) * dv
+    nticks = int((tickMax - tickMin) / dv) + 1
     return np.linspace(tickMin, tickMax, nticks)
+
+
+def download_testfile(url, target_path="."):
+    """
+    Downloads a tar.gz file from a URL and extracts its contents.
+
+    Args:
+      url: The URL of the tar.gz file.
+      target_path: The directory to extract the files to.
+                    Defaults to the current directory.
+    """
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()  # Raise an exception for bad status codes
+
+        with open("temp.tar.gz", "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        with tarfile.open("temp.tar.gz", "r:gz") as tar:
+            tar.extractall(target_path)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading file: {e}")
+    except tarfile.TarError as e:
+        print(f"Error extracting tar file: {e}")
+    finally:
+        import os
+
+        if os.path.exists("temp.tar.gz"):
+            os.remove("temp.tar.gz")  # Clean up temporary file
