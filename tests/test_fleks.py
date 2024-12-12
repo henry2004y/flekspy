@@ -8,15 +8,12 @@ from flekspy.util.utilities import download_testfile
 
 filedir = os.path.dirname(__file__)
 
-if os.path.isfile(filedir + "/data/bulk.1d.vlsv"):
-    pass
-else:
-    url = (
-        "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz",
-        "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles.tar.gz",
-    )
-    download_testfile(url[0], "data")
-    download_testfile(url[1], "data")
+if not os.path.isfile(filedir + "/data/bulk.1d.vlsv"):
+    url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz"
+    download_testfile(url, "data")
+elif not os.path.isdir(filedir + "/data/test_particles"):
+    url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles.tar.gz"
+    download_testfile(url, "data")
 
 class TestIDL:
     files = ("1d__raw_2_t25.60000_n00000258.out",)
