@@ -38,6 +38,12 @@ class TestIDL:
         with pytest.raises(FileNotFoundError):
             ds = flekspy.load("None")
 
+    def test_extract(self):
+        ds = flekspy.load(self.files[1])
+        sat = np.array([[-28000.0, 0.0], [9000.0, 0.0]])
+        d = ds.extract_data(sat)
+        assert d[0][1] == 0.0
+
     def test_plot(self):
         ds = flekspy.load(self.files[0])
         ds.plot("p")

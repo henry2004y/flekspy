@@ -457,7 +457,6 @@ class IDLData(object):
         shapeNew = np.append([nRow], self.grid)
         self.data.array = np.reshape(self.data.array, shapeNew, order="F")
 
-
     def plot(self, *dvname, **kwargs):
         """Plot 1D IDL outputs.
 
@@ -468,9 +467,7 @@ class IDLData(object):
         x = self.data["x"]
         nvar = len(dvname)
 
-        f, axes = plt.subplots(
-            nvar, 1, constrained_layout=True, sharex=True
-        )
+        f, axes = plt.subplots(nvar, 1, constrained_layout=True, sharex=True)
         axes = np.array(axes)  # in case nRow = nCol = 1
         axes = axes.reshape(-1)
         for isub, ax in zip(range(nvar), axes):
@@ -482,14 +479,13 @@ class IDLData(object):
 
         return axes
 
-
     def pcolormesh(self, *dvname, scale: bool = True, **kwargs):
         """Plot 2D pcolormeshes of variables.
 
         Args:
             *dvname (str): variable names
             scale (bool): whether to scale the plots according to the axis range.
-                Default True. 
+                Default True.
         """
         x = self.data["x"]
         y = self.data["y"]
@@ -516,10 +512,10 @@ class IDLData(object):
         return axes
 
     def extract_data(self, sat: np.ndarray) -> np.ndarray:
-        """Extract data at given 2D points.
+        """Extract data at a series of locations.
 
         Args:
-            sat (np.ndarray): 2D point locations.
+            sat (np.ndarray): 2D/3D point locations.
 
         Returns:
             np.ndarray: 2D array of variables at each point.
@@ -530,60 +526,88 @@ class IDLData(object):
             nPoint = sat.shape[0]
             satData = np.zeros((nPoint, nVar))
             for i in range(nPoint):
-                satData[i, :] = self.get_data(sat[i, :])
+                satData[i, :] = np.squeeze(self.get_data(sat[i, :]))
         return satData
 
     def get_data(self, loc: np.ndarray) -> np.ndarray:
-        """Extract data at a given 2D point using bilinear interpolation.
+        """Extract data at a given point using bilinear interpolation.
 
         Args:
-            loc (np.ndarray): 2D point location.
+            loc (np.ndarray): 2D/3D point location.
 
         Returns:
             np.ndarray: 1D array of saved variables at the survey point.
         """
-        i1, j1, k1 = 0, 0, 0
-        while self.data["x"][i1, 0, 0] < loc[x_]:
-            i1 = i1 + 1
-        while self.data["y"][0, j1, 0] < loc[y_]:
-            j1 = j1 + 1
-        while self.data["z"][0, 0, k1] < loc[z_]:
-            k1 = k1 + 1
+        if self.ndim == 2:
+            # Find the indices of the surrounding grid points
+            i1, j1 = 0, 0
+            while self.data["x"][i1, 0] < loc[x_]:
+                i1 += 1
+            while self.data["y"][0, j1] < loc[y_]:
+                j1 += 1
+            i0 = i1 - 1
+            j0 = j1 - 1
 
-        i0 = i1 - 1
-        j0 = j1 - 1
-        k0 = k1 - 1
+            # Calculate the weights
+            wx0 = (self.data["x"][i1, 0] - loc[x_]) / (
+                self.data["x"][i1, 0] - self.data["x"][i0, 0]
+            )
+            wy0 = (self.data["y"][0, j1] - loc[y_]) / (
+                self.data["y"][0, j1] - self.data["y"][0, j0]
+            )
+            wx1 = 1.0 - wx0
+            wy1 = 1.0 - wy0
 
-        wx0 = (self.data["x"][i1, 0, 0] - loc[x_]) / (
-            self.data["x"][i1, 0, 0] - self.data["x"][i0, 0, 0]
-        )
-        wy0 = (self.data["y"][0, j1, 0] - loc[y_]) / (
-            self.data["y"][0, j1, 0] - self.data["y"][0, j0, 0]
-        )
-        wz0 = (self.data["z"][0, 0, k1] - loc[z_]) / (
-            self.data["z"][0, 0, k1] - self.data["z"][0, 0, k0]
-        )
+            # Calculate the interpolated values
+            res = (
+                self.data.array[:, i0, j0] * wx0 * wy0
+                + self.data.array[:, i0, j1] * wx0 * wy1
+                + self.data.array[:, i1, j0] * wx1 * wy0
+                + self.data.array[:, i1, j1] * wx1 * wy1
+            )
+        elif self.ndim == 3:
+            i1, j1, k1 = 0, 0, 0
+            while self.data["x"][i1, 0, 0] < loc[x_]:
+                i1 += 1
+            while self.data["y"][0, j1, 0] < loc[y_]:
+                j1 += 1
+            while self.data["z"][0, 0, k1] < loc[z_]:
+                k1 += 1
 
-        wx1 = 1.0 - wx0
-        wy1 = 1.0 - wy0
-        wz1 = 1.0 - wz0
+            i0 = i1 - 1
+            j0 = j1 - 1
+            k0 = k1 - 1
 
-        w = np.array(
-            [
+            wx0 = (self.data["x"][i1, 0, 0] - loc[x_]) / (
+                self.data["x"][i1, 0, 0] - self.data["x"][i0, 0, 0]
+            )
+            wy0 = (self.data["y"][0, j1, 0] - loc[y_]) / (
+                self.data["y"][0, j1, 0] - self.data["y"][0, j0, 0]
+            )
+            wz0 = (self.data["z"][0, 0, k1] - loc[z_]) / (
+                self.data["z"][0, 0, k1] - self.data["z"][0, 0, k0]
+            )
+
+            wx1 = 1.0 - wx0
+            wy1 = 1.0 - wy0
+            wz1 = 1.0 - wz0
+
+            w = np.array(
                 [
-                    [wx0 * wy0 * wz0, wx0 * wy0 * wz1],
-                    [wx0 * wy1 * wz0, wx0 * wy1 * wz1],
-                ],
-                [
-                    [wx1 * wy0 * wz0, wx1 * wy0 * wz1],
-                    [wx1 * wy1 * wz0, wx1 * wy1 * wz1],
-                ],
-            ]
-        )
+                    [
+                        [wx0 * wy0 * wz0, wx0 * wy0 * wz1],
+                        [wx0 * wy1 * wz0, wx0 * wy1 * wz1],
+                    ],
+                    [
+                        [wx1 * wy0 * wz0, wx1 * wy0 * wz1],
+                        [wx1 * wy1 * wz0, wx1 * wy1 * wz1],
+                    ],
+                ]
+            )
 
-        res = np.sum(
-            w * self.data.array[:, i0 : i0 + 2, j0 : j0 + 2, k0 : k0 + 2],
-            axis=(1, 2, 3),
-        )
+            res = np.sum(
+                w * self.data.array[:, i0 : i0 + 2, j0 : j0 + 2, k0 : k0 + 2],
+                axis=(1, 2, 3),
+            )
 
         return res
