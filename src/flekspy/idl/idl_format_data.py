@@ -124,7 +124,7 @@ class IDLData(object):
 
     def get_domain(self):
         r"""
-        This methods returns a dataContainer3D object that contains all the 3D data.
+        Returns a dataContainer3D object that contains all the 3D data.
         """
         dataSets = {}
         for varname in self.data.name:

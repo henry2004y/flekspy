@@ -111,6 +111,11 @@ def get_ticks(vmin, vmax):
     nticks = int((tickMax - tickMin) / dv) + 1
     return np.linspace(tickMin, tickMax, nticks)
 
+def _unit_one(field, data):
+    """Utility function for setting equal weights for macroparticles.
+    TBD: add units.
+    """
+    return np.ones_like(data[("particles", "p_w")])
 
 def download_testfile(url, target_path="."):
     """

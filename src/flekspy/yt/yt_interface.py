@@ -200,6 +200,9 @@ class FLEKSData(BoxlibDataset):
         setdefaultattr(self, "density_unit", self.quan(1, get_unit("rho", unit)))
         setdefaultattr(self, "pressure_unit", self.quan(1, get_unit("p", unit)))
 
+    def pvar(self, var):
+        return (self.particle_types[0], var)
+
     def get_slice(self, norm, cut_loc):
         r"""
         This method returns a dataContainer2D object that contains a slice along
@@ -336,17 +339,13 @@ class FLEKSData(BoxlibDataset):
         Parameters
         ----------
         region : YTSelectionContainer Object
-        The data object to be profiled, such as all_data, box, region, or
-        sphere.
+        The data object to be profiled, such as all_data, box, region, or sphere.
 
         x_field & y_field: string
-            The x- y- axes. Potential input: "p_ux", "p_uy", "p_uz".
-            Eventhough this is assumed to be a 'phase' plot, the x- and y- axex
-            can also be set as 'p_x', 'p_y' or 'p_z' and it will show the
-            spatial distribution of the particles.
+            The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
 
         z_field: string
-            It is usually the particle wegith: "p_w".
+            It is usually the particle weight: "p_w".
 
         unit_type : string
             The unit system of the plots. "planet" or "si".
@@ -356,40 +355,38 @@ class FLEKSData(BoxlibDataset):
 
         Examples
         --------
-        >>> phase = ds.plot_phase([8.75, -1, -1], [9.25, 0, 0],
+        >>> pp = ds.plot_phase([8.75, -1, -1], [9.25, 0, 0],
                                 "p_ux", "p_uy", "p_w", (-1, 1, -1, 1))
-        >>> phase.show()
+        >>> pp.show()
         """
-        var_type = "particles"
 
         # The bins should be uniform instead of logarithmic
-        logs = {(var_type, x_field): False, (var_type, y_field): False}
+        logs = {self.pvar(x_field): False, self.pvar(y_field): False}
 
-        bin_fields = [(var_type, x_field), (var_type, y_field)]
+        bin_fields = [self.pvar(x_field), self.pvar(y_field)]
         if domain_size is not None:
             extrema = {
-                (var_type, x_field): (domain_size[0], domain_size[1]),
-                (var_type, y_field): (domain_size[2], domain_size[3]),
+                self.pvar(x_field): (domain_size[0], domain_size[1]),
+                self.pvar(y_field): (domain_size[2], domain_size[3]),
             }
         else:
             extrema = None
         profile = yt.create_profile(
             data_source=region,
             bin_fields=bin_fields,
-            fields=(var_type, z_field),
+            fields=self.pvar(z_field),
             n_bins=[x_bins, y_bins],
             weight_field=None,
             extrema=extrema,
             logs=logs,
         )
 
-        plot = yt.PhasePlot.from_profile(profile)
+        pp = yt.PhasePlot.from_profile(profile)
 
-        plot.set_unit((var_type, x_field), get_unit(x_field, unit_type))
-        plot.set_unit((var_type, y_field), get_unit(y_field, unit_type))
-        plot.set_unit((var_type, z_field), get_unit(z_field, unit_type))
+        pp.set_unit(self.pvar(x_field), get_unit(x_field, unit_type))
+        pp.set_unit(self.pvar(y_field), get_unit(y_field, unit_type))
 
-        return plot
+        return pp
 
     def plot_phase(
         self,
@@ -425,12 +422,12 @@ class FLEKSData(BoxlibDataset):
 
         Examples
         --------
-        >>> phase = ds.plot_phase([8.75, -1, -1], [9.25, 0, 0],
+        >>> pp = ds.plot_phase([8.75, -1, -1], [9.25, 0, 0],
                                 "p_ux", "p_uy", "p_w", (-1, 1, -1, 1))
-        >>> phase.show()
+        >>> pp.show()
         """
         dd = self.box(left_edge, right_edge)
-        plot = self.plot_phase_region(
+        pp = self.plot_phase_region(
             dd,
             x_field,
             y_field,
@@ -441,7 +438,7 @@ class FLEKSData(BoxlibDataset):
             domain_size=domain_size,
         )
 
-        return plot
+        return pp
 
     def plot_particles_region(
         self,
@@ -458,42 +455,39 @@ class FLEKSData(BoxlibDataset):
         Parameters
         ----------
         region : YTSelectionContainer Object
-        The data object to be profiled, such as all_data, box, region, or
-        sphere.
+        The data object to be profiled, such as all_data, box, region, or sphere.
 
         x_field & y_field: string
-            The x- y- axes. Potential input: "p_x", "p_y", "p_z".
+            The x- y- axes, from "p_x", "p_y", "p_z".
 
         z_field: string
-            It is usually the particle wegith: "p_w".
+            It is usually the particle weight: "p_w".
 
         unit_type : string
             The unit system of the plots. "planet" or "si".
 
         Examples
         --------
-        >>> phase = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x",
+        >>> pp = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x",
                      "p_y", "p_w", unit_type="planet")
-        >>> phase.show()
+        >>> pp.show()
         """
-        var_type = "particles"
-
         nmap = {
             "p_x": "particle_position_x",
             "p_y": "particle_position_y",
             "p_z": "particle_position_z",
         }
-        plot = yt.ParticlePlot(
+        pp = yt.ParticlePlot(
             self,
-            (var_type, nmap[x_field]),
-            (var_type, nmap[y_field]),
-            (var_type, z_field),
+            self.pvar(nmap[x_field]),
+            self.pvar(nmap[y_field]),
+            self.pvar(z_field),
             data_source=region,
         )
-        plot.set_axes_unit((get_unit(x_field, unit_type), get_unit(y_field, unit_type)))
-        plot.set_unit((var_type, z_field), get_unit(z_field, unit_type))
+        pp.set_axes_unit((get_unit(x_field, unit_type), get_unit(y_field, unit_type)))
+        pp.set_unit(self.pvar(z_field), get_unit(z_field, unit_type))
 
-        return plot
+        return pp
 
     def plot_particles(
         self,
@@ -515,22 +509,22 @@ class FLEKSData(BoxlibDataset):
             Example: left_edge=(9, -0.1, 0.2), right_edge=(10, 1, 2)
 
         x_field & y_field: string
-            The x- y- axes. Potential input: "p_x", "p_y", "p_z".
+            The x- y- axes, selected from "p_x", "p_y", "p_z".
 
         z_field: string
-            It is usually the particle wegith: "p_w".
+            It is usually the particle weight: "p_w".
 
         unit_type : string
             The unit system of the plots. "planet" or "si".
 
         Examples
         --------
-        >>> phase = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x",
+        >>> pp = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x",
                      "p_y", "p_w", unit_type="planet")
-        >>> phase.show()
+        >>> pp.show()
         """
         dd = self.box(left_edge, right_edge)
-        plot = self.plot_particles_region(
+        pp = self.plot_particles_region(
             dd,
             x_field,
             y_field,
@@ -539,4 +533,4 @@ class FLEKSData(BoxlibDataset):
             x_bins=x_bins,
             y_bins=y_bins,
         )
-        return plot
+        return pp
