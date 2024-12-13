@@ -203,14 +203,12 @@ class FLEKSData(BoxlibDataset):
     def get_slice(self, norm, cut_loc):
         r"""
         This method returns a dataContainer2D object that contains a slice along
-        the 'norm' direction at 'cut_loc'
+        the normal direction.
 
         Parameters
         ---------------------
-        norm: String
-        'x', 'y' or 'z'
-
-        cut_loc: Float
+        norm (str): slice normal direction in "x", "y" or "z"
+        cut_loc (float): cut location along the normal direction
         """
 
         axDir = {"X": 0, "Y": 1, "Z": 2}
@@ -219,19 +217,18 @@ class FLEKSData(BoxlibDataset):
         if type(cut_loc) != yt.units.yt_array.YTArray:
             cut_loc = self.arr(cut_loc, "code_length")
 
-        # Define the slice range -------------------
-        slice_dimension = self.domain_dimensions
-        slice_dimension[idir] = 1
+        # Define the slice range
+        slice_dim = self.domain_dimensions.copy()
+        slice_dim[idir] = 1
 
-        left_edge = self.domain_left_edge
-        right_edge = self.domain_right_edge
+        left_edge = self.domain_left_edge.copy()
+        right_edge = self.domain_right_edge.copy()
 
         dd = (right_edge[idir] - left_edge[idir]) * 1e-6
         left_edge[idir] = cut_loc - dd
         right_edge[idir] = cut_loc + dd
-        # ----------------------------------------------
 
-        abArr = self.arbitrary_grid(left_edge, right_edge, slice_dimension)
+        abArr = self.arbitrary_grid(left_edge, right_edge, slice_dim)
 
         dataSets = {}
         for var in self.field_list:
@@ -363,7 +360,7 @@ class FLEKSData(BoxlibDataset):
                                 "p_ux", "p_uy", "p_w", (-1, 1, -1, 1))
         >>> phase.show()
         """
-        var_type = "particle"
+        var_type = "particles"
 
         # The bins should be uniform instead of logarithmic
         logs = {(var_type, x_field): False, (var_type, y_field): False}
@@ -415,13 +412,10 @@ class FLEKSData(BoxlibDataset):
             Example: left_edge=(9, -0.1, 0.2), right_edge=(10, 1, 2)
 
         x_field & y_field: string
-            The x- y- axes. Potential input: "p_ux", "p_uy", "p_uz".
-            Eventhough this is assumed to be a 'phase' plot, the x- and y- axex
-            can also be set as 'p_x', 'p_y' or 'p_z' and it will show the
-            spatial distribution of the particles.
+            The x- y- axes, selected from "p_x", "p_y" or "p_z", "p_ux", "p_uy", "p_uz".
 
         z_field: string
-            It is usually the particle wegith: "p_w".
+            It is usually the particle weight "p_w".
 
         unit_type : string
             The unit system of the plots. "planet" or "si".
@@ -482,7 +476,7 @@ class FLEKSData(BoxlibDataset):
                      "p_y", "p_w", unit_type="planet")
         >>> phase.show()
         """
-        var_type = "particle"
+        var_type = "particles"
 
         nmap = {
             "p_x": "particle_position_x",
