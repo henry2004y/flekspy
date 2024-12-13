@@ -10,6 +10,9 @@ dist/
 data/
 tests/data/
 *.pyc
+*.png
+3d_particle*
+cut_particle*
 
 # MacOS
 .DS_Store

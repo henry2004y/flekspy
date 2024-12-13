@@ -6,6 +6,7 @@ import flekspy
 from flekspy.util.utilities import download_testfile
 
 import matplotlib
+
 matplotlib.use("agg")
 
 
@@ -17,6 +18,10 @@ if not os.path.isfile(filedir + "/data/3d_raw.out"):
 
 if not os.path.isdir(filedir + "/data/test_particles"):
     url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles.tar.gz"
+    download_testfile(url, "tests/data")
+
+if not os.path.isdir(filedir + "/data/3d_particle_region0_1_t00000002_n00000007_amrex"):
+    url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/3d_particle.tar.gz"
     download_testfile(url, "tests/data")
 
 
@@ -54,13 +59,52 @@ class TestIDL:
 
 
 class TestAMReX:
-    files = ("z=0_fluid_region0_0_t00001640_n00010142.out",)
+    files = ("z=0_fluid_region0_0_t00001640_n00010142.out", "3d*amrex")
     files = [os.path.join("tests/data/", file) for file in files]
 
     def test_load(self):
         ds = flekspy.load(self.files[0])
         assert ds.data["uxS0"][2, 1] == np.float32(-131.71918)
         assert ds.data["uxS1"].shape == (601, 2)
+
+    def test_pic(self):
+        ds = flekspy.load(self.files[1])
+        assert ds.domain_left_edge[0].v == -0.016
+        dc = ds.get_slice("z", 0.5)
+        assert dc.data["particle_id"][0].value == 216050.
+
+    def test_phase(self):
+        ds = flekspy.load(self.files[1])
+        x_field = "p_uy"
+        y_field = "p_uz"
+        z_field = "p_w"
+        xleft = [-0.016, -0.01, ds.domain_left_edge[2]]
+        xright = [0.016, 0.01, ds.domain_right_edge[2]]
+
+        ## Select and plot the particles inside a box defined by xleft and xright
+        pp = ds.plot_phase(
+            xleft,
+            xright,
+            x_field,
+            y_field,
+            z_field,
+            unit_type="si",
+            x_bins=100,
+            y_bins=32,
+            domain_size=(xleft[0], xright[0], xleft[1], xright[1]),
+        )
+        ## Plot inside a sphere
+        center = [0, 0, 0]
+        radius = 1
+        # Object sphere is defined in yt/data_objects/selection_objects/spheroids.py
+        sp = ds.sphere(center, radius)
+        pp = ds.plot_particles_region(
+            sp, "p_x", "p_y", "p_w", unit_type="si", x_bins=32, y_bins=32
+        )
+        pp = ds.plot_phase_region(
+            sp, "p_uy", "p_uz", "p_w", unit_type="si", x_bins=64, y_bins=64
+        )
+        assert True
 
 
 class TestParticles:
