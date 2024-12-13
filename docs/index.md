@@ -6,6 +6,7 @@
 :hidden:
 
 tutorial.ipynb
+demo_amrex_output.ipynb
 changelog.md
 contributing.md
 conduct.md
