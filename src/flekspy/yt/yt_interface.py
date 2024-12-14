@@ -485,7 +485,6 @@ class FLEKSData(BoxlibDataset):
             data_source=region,
         )
         pp.set_axes_unit((get_unit(x_field, unit_type), get_unit(y_field, unit_type)))
-        pp.set_unit(self.pvar(z_field), get_unit(z_field, unit_type))
 
         return pp
 
