@@ -18,7 +18,7 @@
   </a>
 </p>
 
-Python package for processing FLEKS (FLexible Exascale Kinetic Simulator) data.
+Python package for processing [FLEKS](https://github.com/SWMFsoftware/FLEKS) (FLexible Exascale Kinetic Simulator) data.
 
 ## Installation
 
@@ -36,7 +36,7 @@ import flekspy
 ds = flekspy.load("sample_data/3*amrex")
 ```
 
-Plotting is supported via Matplotlib and YT. For more detailed usage, please refer to the [documentation](https://henry2004y.github.io/flekspy/).
+Plotting is supported via Matplotlib and YT. For more detailed usage and contribution guide, please refer to the [documentation](https://henry2004y.github.io/flekspy/).
 
 ## License
 
