@@ -1,0 +1,15 @@
+flekspy.idl
+===========
+
+.. py:module:: flekspy.idl
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/idl/idl_format_data/index
+
+
