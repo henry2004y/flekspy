@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 import flekspy
-from flekspy.util.utilities import download_testfile
+from flekspy.util import download_testfile
 
 import matplotlib
 
