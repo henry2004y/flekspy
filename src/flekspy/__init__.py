@@ -5,11 +5,9 @@ flekspy Public API.
 import glob
 import os
 import errno
-from flekspy.idl.idl_format_data import IDLData
-from flekspy.yt.yt_interface import FLEKSData
-from flekspy.tp.test_particles import FLEKSTP
-
-from flekspy.yt.yt_interface import extract_phase
+from flekspy.idl import IDLData
+from flekspy.yt import FLEKSData, extract_phase
+from flekspy.tp import FLEKSTP
 
 
 def load(filename: str, iDomain=0, iSpecies=0, readFieldData=False):
