@@ -9,6 +9,8 @@ from flekspy.idl.idl_format_data import IDLData
 from flekspy.yt.yt_interface import FLEKSData
 from flekspy.tp.test_particles import FLEKSTP
 
+from flekspy.yt.yt_interface import extract_phase
+
 
 def load(filename: str, iDomain=0, iSpecies=0, readFieldData=False):
     """Load FLEKS data.

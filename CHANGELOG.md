@@ -9,3 +9,9 @@
 ## v0.1.3 (2024/12/13)
 
 - Port all the functionalities from the original repo; add runnable examples.
+
+## v0.2.0 (2024/12/20)
+
+- `plot_phase_region` is deprecated; use `plot_phase` with the `region` keyword instead. Add customized decoration option.
+- `plot_particles_region` is deprecated; use `plot_particles` with the `region` keyword instead.
+- Add utility method `extract_phase` for extracting phase space coordinates and values.
