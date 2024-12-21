@@ -2,17 +2,17 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import struct
-import math
-import flekspy.util.utilities as utilities
 import yt
-import flekspy.util.data_container as data_container
+
+from flekspy.util import get_unit
+from flekspy.util import DataContainer1D, DataContainer2D, DataContainer3D
 
 x_ = 0
 y_ = 1
 z_ = 2
 
 
-class selector:
+class Selector:
     def __getitem__(self, keys) -> list:
         self.indices = list(keys)
         if len(self.indices) < 3:
@@ -20,12 +20,12 @@ class selector:
         return self.indices
 
 
-class dataframe:
+class Dataframe:
     def __init__(self):
         self.array = None
         self.name = None
         # Selector for the spatial indices
-        self.cut = selector()
+        self.cut = Selector()
         self.cut[:, :, :]
 
     def setData(self, dataIn, nameIn):
@@ -81,7 +81,7 @@ class IDLData(object):
 
         self.filename = fileList[ifile - 1]
         self.isOuts = self.filename[-4:] == "outs"
-        self.data = dataframe()
+        self.data = Dataframe()
         self.nInstance = None if self.isOuts else 1
         self.npict = 1
         self.fileformat = None
@@ -122,14 +122,14 @@ class IDLData(object):
         )
         return str
 
-    def get_domain(self):
+    def get_domain(self) -> DataContainer3D:
         r"""
-        Returns a dataContainer3D object that contains all the 3D data.
+        Returns all the 3D data.
         """
         dataSets = {}
         for varname in self.data.name:
             idx = self.data.name.index(varname)
-            unit = utilities.get_unit(varname, self.unit)
+            unit = get_unit(varname, self.unit)
             dataSets[varname] = yt.YTArray(
                 np.squeeze(self.data.array[idx, :, :, :]), unit, registry=self.registry
             )
@@ -140,7 +140,7 @@ class IDLData(object):
             name = self.variables[idim]
             idx = self.data.name.index(name)
             labels[idim] = name.upper()
-            unit = utilities.get_unit("X", self.unit)
+            unit = get_unit("X", self.unit)
             name = name.upper()
             if name in ["X", "Y", "Z"]:
                 axes[idim] = yt.YTArray(
@@ -148,7 +148,7 @@ class IDLData(object):
                 )
 
         if self.gencoord:
-            dc = data_container.dataContainer2D(
+            dc = DataContainer2D(
                 dataSets,
                 np.squeeze(axes[0]),
                 np.squeeze(axes[1]),
@@ -160,7 +160,7 @@ class IDLData(object):
                 gencoord=True,
             )
         elif self.ndim == 1:
-            dc = data_container.dataContainer1D(
+            dc = DataContainer1D(
                 dataSets,
                 np.squeeze(axes[0]),
                 labels[0],
@@ -169,7 +169,7 @@ class IDLData(object):
                 filename=self.filename,
             )
         elif self.ndim == 2:
-            dc = data_container.dataContainer2D(
+            dc = DataContainer2D(
                 dataSets,
                 np.squeeze(axes[0])[:, 0],
                 np.squeeze(axes[1])[0, :],
@@ -180,7 +180,7 @@ class IDLData(object):
                 filename=self.filename,
             )
         else:
-            dc = data_container.dataContainer3D(
+            dc = DataContainer3D(
                 dataSets,
                 axes[0][:, 0, 0],
                 axes[1][0, :, 0],
