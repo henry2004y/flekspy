@@ -342,25 +342,23 @@ class FLEKSData(BoxlibDataset):
     ) -> PhasePlot:
         r"""Plot phase space distribution of particle
 
-        Parameters
-        ----------
-        region : YTSelectionContainer
-            Spatial region to be selected, such as all_data, box, region, or sphere.
+        Args:
+            region: YTSelectionContainer
+                Spatial region to be selected, such as all_data, box, region, or sphere.
 
-        x_field & y_field: string
-            The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
+            x_field & y_field: string
+                The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
 
-        z_field: string
-            It is usually the particle weight: "p_w".
+            z_field: string
+                It is usually the particle weight: "p_w".
 
-        unit_type : string
-            The unit system of the plots. "planet" or "si".
+            unit_type: string
+                The unit system of the plots. "planet" or "si".
 
-        domain_size : tuple
-            Axis range of 4 elements: x_min, x_max, y_min, y_max
+            domain_size: tuple
+                Axis range of 4 elements: x_min, x_max, y_min, y_max
 
-        Examples
-        --------
+        Examples:
         >>> pp = ds.plot_phase_region("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
         >>> pp.show()
         """

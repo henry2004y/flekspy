@@ -15,3 +15,4 @@
 - `plot_phase_region` is deprecated; use `plot_phase` with the `region` keyword instead. Add customized decoration option.
 - `plot_particles_region` is deprecated; use `plot_particles` with the `region` keyword instead.
 - Add utility method `extract_phase` for extracting phase space coordinates and values.
+- `_unit_one` -> `unit_one`.
