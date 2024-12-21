@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 import flekspy
-from flekspy.util.utilities import download_testfile
+from flekspy.util import download_testfile
 
 import matplotlib
 
@@ -82,12 +82,12 @@ class TestAMReX:
         xright = [0.016, 0.01, ds.domain_right_edge[2]]
 
         ## Select and plot the particles inside a box defined by xleft and xright
+        region = ds.box(xleft, xright)
         pp = ds.plot_phase(
-            xleft,
-            xright,
             x_field,
             y_field,
             z_field,
+            region=region,
             unit_type="si",
             x_bins=100,
             y_bins=32,
@@ -98,13 +98,14 @@ class TestAMReX:
         radius = 1
         # Object sphere is defined in yt/data_objects/selection_objects/spheroids.py
         sp = ds.sphere(center, radius)
-        pp = ds.plot_particles_region(
-            sp, "p_x", "p_y", "p_w", unit_type="si", x_bins=32, y_bins=32
+        pp = ds.plot_particles(
+            "p_x", "p_y", "p_w", region=sp, unit_type="planet", x_bins=32, y_bins=32
         )
-        pp = ds.plot_phase_region(
-            sp, "p_uy", "p_uz", "p_w", unit_type="si", x_bins=64, y_bins=64
+        pp = ds.plot_phase(
+            "p_uy", "p_uz", "p_w", region=sp, unit_type="si", x_bins=16, y_bins=16
         )
-        assert True
+        f = flekspy.extract_phase(pp)
+        assert f[0].size == 16 and f[2].shape == (16, 16)
 
 
 class TestParticles:
