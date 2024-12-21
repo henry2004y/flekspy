@@ -1,0 +1,49 @@
+flekspy.util
+============
+
+.. py:module:: flekspy.util
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/util/data_container/index
+   /autoapi/flekspy/util/utilities/index
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.download_testfile
+   flekspy.util.unit_one
+   flekspy.util.get_unit
+   flekspy.util.get_ticks
+
+
+Package Contents
+----------------
+
+.. py:function:: download_testfile(url, target_path='.')
+
+   Downloads a tar.gz file from a URL and extracts its contents.
+
+   :param url: The URL of the tar.gz file.
+   :param target_path: The directory to extract the files to.
+                       Defaults to the current directory.
+
+
+.. py:function:: unit_one(field, data)
+
+   Utility function for setting equal weights for macroparticles.
+   TBD: add units.
+
+
+.. py:function:: get_unit(var, unit_type='planet')
+
+.. py:function:: get_ticks(vmin, vmax)
+
