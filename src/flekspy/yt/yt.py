@@ -11,8 +11,8 @@ from yt.data_objects.selection_objects.data_selection_objects import (
 )
 from yt.visualization.profile_plotter import PhasePlot
 
-import flekspy.util.data_container as data_container
-from flekspy.util.utilities import get_unit
+from flekspy.util import DataContainer2D, DataContainer3D
+from flekspy.util import get_unit
 
 
 class FLEKSFieldInfo(FieldInfoContainer):
@@ -206,15 +206,14 @@ class FLEKSData(BoxlibDataset):
     def pvar(self, var):
         return (self.particle_types[0], var)
 
-    def get_slice(self, norm, cut_loc):
+    def get_slice(self, norm, cut_loc) -> DataContainer2D:
         r"""
-        This method returns a dataContainer2D object that contains a slice along
+        This method returns a DataContainer2D object that contains a slice along
         the normal direction.
 
-        Parameters
-        ---------------------
-        norm (str): slice normal direction in "x", "y" or "z"
-        cut_loc (float): cut location along the normal direction
+        Args:
+            norm (str): slice normal direction in "x", "y" or "z"
+            cut_loc (float): cut location along the normal direction
         """
 
         axDir = {"X": 0, "Y": 1, "Z": 2}
@@ -253,7 +252,7 @@ class FLEKSData(BoxlibDataset):
                 )
             )
 
-        return data_container.dataContainer2D(
+        return DataContainer2D(
             dataSets,
             axes[0],
             axes[1],
@@ -263,9 +262,9 @@ class FLEKSData(BoxlibDataset):
             cut_loc,
         )
 
-    def get_domain(self):
+    def get_domain(self) -> DataContainer3D:
         r"""
-        Reading in all the simulation data into a 3D box. It returns a dataContainer3D object.
+        Reading in all the simulation data into a 3D box.
         """
         domain = self.covering_grid(
             level=0, left_edge=self.domain_left_edge, dims=self.domain_dimensions
@@ -285,7 +284,7 @@ class FLEKSData(BoxlibDataset):
                 )
             )
 
-        return data_container.dataContainer3D(dataSets, axes[0], axes[1], axes[2])
+        return DataContainer3D(dataSets, axes[0], axes[1], axes[2])
 
     def plot_slice(self, norm, cut_loc, vars, unit_type="planet", *args, **kwargs):
         r"""Plot 2D slice
