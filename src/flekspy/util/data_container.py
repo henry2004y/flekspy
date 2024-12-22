@@ -42,12 +42,6 @@ class DataContainer(object):
         gencoord=False,
         filename="",
     ):
-
-        # Re-generate the coordinates to make sure they are equally spaced.
-        # x = np.linspace(x[0], x[-1], len(x))
-        # y = np.linspace(y[0], y[-1], len(y))
-        # z = np.linspace(z[0], z[-1], len(z))
-
         self.data = dataSets
         self.x = x
         self.y = y
@@ -64,22 +58,14 @@ class DataContainer(object):
         self.filename = filename
         self.gencoord = gencoord
 
-    def __repr__(self):
-        print("\n-----------------------------")
-        print("Variables       :", self.vars)
-        print("\nData range      :", self.range)
-        print("\nData dimensions :", self.dimensions)
-        print("\n")
+    def __repr__(self) -> str:
+        str = (
+            f"variables   : {self.vars}\n"
+            f"data range  : {self.range}\n"
+            f"dimension   : {self.dimensions}\n"
+        )
 
-        header = ("var", "min", "max", "mean")
-        s = "{:8}   " + "{:18}" * 3
-        print(s.format(*header))
-        for v in self.vars:
-            d = self.data[v]
-            s = "{:10}" + "{:+.6e},   " * 3
-            print(s.format(v, float(d.min()), float(d.max()), float(d.mean())))
-        print("-----------------------------")
-        return "\n"
+        return str
 
     def add_bottom_line(self, f, verbose):
         if verbose > 0:
@@ -126,7 +112,7 @@ class DataContainer(object):
 
     def evaluate_expression(self, expression: str, unit: str = "planet"):
         r"""
-        This method calculates the variable expression and return the result, which is a YTArray.
+        This method calculates the variable expression and return the result of an YTArray.
 
         Args:
             expression: str

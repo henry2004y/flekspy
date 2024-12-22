@@ -119,16 +119,13 @@ class FLEKSData(BoxlibDataset):
     r"""
     Read and plot the AMReX format output from FLEKS.
 
-    Parameters
-    ----------
-    output_dir : String
-        The path to the data.
+    Args:
+        output_dir : String
+            The path to the data.
 
-    Examples
-    --------
-
-    >>> import flekspy
-    >>> ds = flekspy.FLEKSData("3d_particle*n00004750_amrex")
+    Examples:
+        >>> import flekspy
+        >>> ds = flekspy.FLEKSData("3d_particle*n00004750_amrex")
     """
 
     _index_class = FLEKSHierarchy
@@ -208,8 +205,7 @@ class FLEKSData(BoxlibDataset):
 
     def get_slice(self, norm, cut_loc) -> DataContainer2D:
         r"""
-        This method returns a DataContainer2D object that contains a slice along
-        the normal direction.
+        This method returns a DataContainer2D object that contains a slice along the normal direction.
 
         Args:
             norm (str): slice normal direction in "x", "y" or "z"
@@ -237,7 +233,8 @@ class FLEKSData(BoxlibDataset):
 
         dataSets = {}
         for var in self.field_list:
-            dataSets[var[1]] = np.squeeze(abArr[var])
+            if abArr[var].size != 0: # remove empty sliced particle output
+                dataSets[var[1]] = np.squeeze(abArr[var])
 
         axLabes = {0: ("Y", "Z"), 1: ("X", "Z"), 2: ("X", "Y")}
 
