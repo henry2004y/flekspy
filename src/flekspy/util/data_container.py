@@ -1,12 +1,13 @@
+from copy import deepcopy
+
 import yt
 import numpy as np
 import matplotlib.pyplot as plt
-import math
+import matplotlib.tri as tri
+from scipy.interpolate import griddata
+
 from flekspy.util.utilities import get_unit
 from flekspy.plot.streamplot import streamplot
-from copy import deepcopy
-from scipy.interpolate import griddata
-import matplotlib.tri as tri
 
 
 def compare(d1, d2):
@@ -60,9 +61,9 @@ class DataContainer(object):
 
     def __repr__(self) -> str:
         str = (
-            f"variables   : {self.vars}\n"
-            f"data range  : {self.range}\n"
-            f"dimension   : {self.dimensions}\n"
+            f"variables : {self.vars}\n"
+            f"data range: {self.range}\n"
+            f"dimension : {self.dimensions}\n"
         )
 
         return str
@@ -80,13 +81,13 @@ class DataContainer(object):
 
     def analyze_variable_string(self, var):
         r"""
-        This method analyzes the plot string and return the plot variable and plot range.
+        Parses the input string and return the plot variable and plot range.
 
         Args:
             var: str
             Example: var = "{bb}<(-10)>(-9.8)"
 
-        Return: a tuple contains the variable name, variable min and max.
+        Return: a tuple of the variable name, variable min and max.
         """
         vMin = None
         vMax = None
@@ -112,7 +113,7 @@ class DataContainer(object):
 
     def evaluate_expression(self, expression: str, unit: str = "planet"):
         r"""
-        This method calculates the variable expression and return the result of an YTArray.
+        Evaluates the variable expression and return the result of an YTArray.
 
         Args:
             expression: str
@@ -134,7 +135,7 @@ class DataContainer(object):
 
     def add_variable(self, name, val):
         r"""
-        This method adds a variable to the dataset for visualization purpose.
+        Adds a variable to the dataset.
 
         Args:
             name: str
@@ -153,11 +154,11 @@ class DataContainer(object):
 
     def get_variable(self, var, unit="planet"):
         r"""
-        This method calculate the value of the variable.
+        Return raw variables or calculate derived variables.
 
         Args:
             var: str
-            Example: var = "pbeta"
+                variable name
 
         Return: YTArray
         """
@@ -558,7 +559,7 @@ class DataContainer2D(DataContainer):
             xy = np.zeros((len(self.x), 2))
             xy[:, 0] = self.x.value
             xy[:, 1] = self.y.value
-            # The first and last row/column may be None. Remove them
+            # Remove the first and last row/column since they may be None
             vect1 = griddata(xy, v1, (gridx, gridy), method="linear")[1:-1, 1:-1]
             vect2 = griddata(xy, v2, (gridx, gridy), method="linear")[1:-1, 1:-1]
             xx = gridx[1:-1, 0]
@@ -594,7 +595,7 @@ class DataContainer1D(DataContainer):
 
             x: 1D YTArray
 
-            xlabel: String
+            xlabel: str
         """
 
         ylabel = None
