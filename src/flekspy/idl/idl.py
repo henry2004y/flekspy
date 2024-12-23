@@ -68,7 +68,6 @@ class IDLData(object):
     Example:
     >>> ds = IDLData("3d.out")
     >>> dc2d = ds.get_slice("y", 1)
-    >>> dc3d = ds.get_domain()
     """
 
     def __init__(self, filename="none"):
@@ -129,9 +128,7 @@ class IDLData(object):
         return str
 
     def get_domain(self) -> DataContainer:
-        r"""
-        Return data as data container.
-        """
+        """Return data as data container."""
         dataSets = {}
         for varname in self.data.name:
             idx = self.data.name.index(varname)
