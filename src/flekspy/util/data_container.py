@@ -227,8 +227,7 @@ class DataContainer3D(DataContainer):
         )
 
     def get_slice(self, norm, cut_loc) -> "DataContainer2D":
-        r"""
-        Get a 2D slice from the 3D box data.
+        """Get a 2D slice from the 3D box data.
 
         Args:
             norm: str
