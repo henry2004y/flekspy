@@ -290,7 +290,7 @@ class DataContainer2D(DataContainer):
         cut_norm=None,
         cut_loc=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         r"""
         Args:
@@ -338,7 +338,7 @@ class DataContainer2D(DataContainer):
         bottomline=10,
         showcolorbar=True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         r"""
         2D plots.
@@ -415,7 +415,7 @@ class DataContainer2D(DataContainer):
                         cmap=cmap,
                         extend="both",
                         *args,
-                        **kwargs
+                        **kwargs,
                     )
             else:
                 if pcolor or abs(vmin - vmax) < 1e-20 * abs(vmax):
@@ -431,7 +431,7 @@ class DataContainer2D(DataContainer):
                         cmap=cmap,
                         extend="both",
                         *args,
-                        **kwargs
+                        **kwargs,
                     )
             if addgrid:
                 if self.gencoord:
@@ -516,7 +516,7 @@ class DataContainer2D(DataContainer):
         ymax=None,
         rmask=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         r"""
         Adding streamlines to an axis.
@@ -617,7 +617,7 @@ class DataContainer1D(DataContainer):
         figsize=(12, 8),
         bottomline=10,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Examples:
