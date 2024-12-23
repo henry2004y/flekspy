@@ -72,6 +72,7 @@ class TestAMReX:
         assert ds.domain_left_edge[0].v == -0.016
         dc = ds.get_slice("z", 0.5)
         assert dc.data["particle_id"][0].value == 216050.
+        assert dc.__repr__().startswith("variables")
 
     def test_phase(self):
         ds = flekspy.load(self.files[1])

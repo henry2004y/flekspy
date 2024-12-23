@@ -1,12 +1,13 @@
+from copy import deepcopy
+
 import yt
 import numpy as np
 import matplotlib.pyplot as plt
-import math
-from flekspy.util.utilities import get_unit, get_ticks
-from flekspy.plot.streamplot import streamplot
-from copy import deepcopy
-from scipy.interpolate import griddata
 import matplotlib.tri as tri
+from scipy.interpolate import griddata
+
+from flekspy.util.utilities import get_unit
+from flekspy.plot.streamplot import streamplot
 
 
 def compare(d1, d2):
@@ -27,7 +28,7 @@ def compare(d1, d2):
         print(s.format(*l))
 
 
-class dataContainer(object):
+class DataContainer(object):
     def __init__(
         self,
         dataSets,
@@ -42,12 +43,6 @@ class dataContainer(object):
         gencoord=False,
         filename="",
     ):
-
-        # Re-generate the coordinates to make sure they are equally spaced.
-        # x = np.linspace(x[0], x[-1], len(x))
-        # y = np.linspace(y[0], y[-1], len(y))
-        # z = np.linspace(z[0], z[-1], len(z))
-
         self.data = dataSets
         self.x = x
         self.y = y
@@ -64,22 +59,14 @@ class dataContainer(object):
         self.filename = filename
         self.gencoord = gencoord
 
-    def __repr__(self):
-        print("\n-----------------------------")
-        print("Variables       :", self.vars)
-        print("\nData range      :", self.range)
-        print("\nData dimensions :", self.dimensions)
-        print("\n")
+    def __repr__(self) -> str:
+        str = (
+            f"variables : {self.vars}\n"
+            f"data range: {self.range}\n"
+            f"dimension : {self.dimensions}\n"
+        )
 
-        header = ("var", "min", "max", "mean")
-        s = "{:8}   " + "{:18}" * 3
-        print(s.format(*header))
-        for v in self.vars:
-            d = self.data[v]
-            s = "{:10}" + "{:+.6e},   " * 3
-            print(s.format(v, float(d.min()), float(d.max()), float(d.mean())))
-        print("-----------------------------")
-        return "\n"
+        return str
 
     def add_bottom_line(self, f, verbose):
         if verbose > 0:
@@ -94,15 +81,13 @@ class dataContainer(object):
 
     def analyze_variable_string(self, var):
         r"""
-        This method analyzes the plot string and return the plot variable and plot range.
+        Parses the input string and return the plot variable and plot range.
 
-        Parameters
-        ----------------------
-        var: String
-        Example: var = "{bb}<(-10)>(-9.8)"
+        Args:
+            var: str
+            Example: var = "{bb}<(-10)>(-9.8)"
 
-        Return: a tuple contains the variable name, variable min and max.
-        Example: return "{bb}", -10, -9.8
+        Return: a tuple of the variable name, variable min and max.
         """
         vMin = None
         vMax = None
@@ -126,15 +111,13 @@ class dataContainer(object):
 
         return varName, vMin, vMax
 
-    def evaluate_expression(self, expression, unit="planet"):
+    def evaluate_expression(self, expression: str, unit: str = "planet"):
         r"""
-        This method calculates the variable expression and return the result, which is
-        a YTArray.
+        Evaluates the variable expression and return the result of an YTArray.
 
-        Parameters
-        -------------------
-        expression: String
-        Example: expression = "np.log({rhos0}+{rhos1})"
+        Args:
+            expression: str
+            Example: expression = "np.log({rhos0}+{rhos1})"
         """
 
         if expression.find("{") < 0:
@@ -152,16 +135,14 @@ class dataContainer(object):
 
     def add_variable(self, name, val):
         r"""
-        This method adds a variable to the dataset for visualization purpose
+        Adds a variable to the dataset.
 
-        Parameters
-        ------------------
-        name: String
-        The name of the variable to be added into self.data
+        Args:
+            name: str
+                The name of the variable to be added into self.data
 
-        val: array-like structure
-        Values of the variable stored in an array
-
+            val: array-like structure
+                Values of the variable stored in an array
         """
 
         if type(val) != yt.units.yt_array.YTArray:
@@ -173,14 +154,13 @@ class dataContainer(object):
 
     def get_variable(self, var, unit="planet"):
         r"""
-        This method calculate the value of the variable.
+        Return raw variables or calculate derived variables.
 
-        Parameters
-        ------------------
-        var: String
-        Example: var = "pbeta"
+        Args:
+            var: str
+                variable name
 
-        Return: A YTArray
+        Return: YTArray
         """
 
         if var in self.data.keys():
@@ -227,7 +207,7 @@ class dataContainer(object):
         return ytarr if str(ytarr.units) == "dimensionless" else ytarr.in_units(varUnit)
 
 
-class dataContainer3D(dataContainer):
+class DataContainer3D(DataContainer):
     r"""
     A class handles 3D box data sets.
     """
@@ -236,30 +216,28 @@ class dataContainer3D(dataContainer):
         self, dataSets, x, y, z, xlabel="X", ylabel="Y", zlabel="Z", *args, **kwargs
     ):
         r"""
-        Parameters
-        ---------------------
-        dataSets: dictonary
-        The key is the variable name, and the dictionary value is usually a YTArray.
+        Args:
+            dataSets: dictonary
+                The key is the variable name, and the dictionary value is usually a YTArray.
 
-        x/y/z: A 1D YTArray
+            x/y/z: A 1D YTArray
         """
-        super(dataContainer3D, self).__init__(
+        super(DataContainer3D, self).__init__(
             dataSets, x, y, z, xlabel, ylabel, zlabel, *args, **kwargs
         )
 
-    def get_slice(self, norm, cut_loc):
+    def get_slice(self, norm, cut_loc) -> "DataContainer2D":
         r"""
         Get a 2D slice from the 3D box data.
 
-        Parameters
-        ------------------
-        norm: String
-        The normal direction of the slice. Potential value: 'x', 'y' or 'z'
+        Args:
+            norm: str
+                The normal direction of the slice from "x", "y" or "z"
 
-        cur_loc: Float
-        The position of slicing.
+            cur_loc: float
+                The position of slicing.
 
-        Return: A dataContainer2D object
+        Return: DataContainer2D
         """
 
         axDir = {"X": 0, "Y": 1, "Z": 2}
@@ -286,7 +264,7 @@ class dataContainer3D(dataContainer):
         axLabes = {0: ("Y", "Z"), 1: ("X", "Z"), 2: ("X", "Y")}
         ax = {0: (1, 2), 1: (0, 2), 2: (0, 1)}
 
-        return dataContainer2D(
+        return DataContainer2D(
             dataSets,
             axes[ax[idir][0]],
             axes[ax[idir][1]],
@@ -297,7 +275,7 @@ class dataContainer3D(dataContainer):
         )
 
 
-class dataContainer2D(dataContainer):
+class DataContainer2D(DataContainer):
     r"""
     A class handles 2D Cartesian data.
     """
@@ -312,29 +290,27 @@ class dataContainer2D(dataContainer):
         cut_norm=None,
         cut_loc=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         r"""
-        Parameters
-        ---------------------
-        dataSets: dictonary
-        The key is the variable name, and the dictionary value is usually a YTArray.
+        Args:
+            dataSets: dictonary
+                The keys are variable names, and the values are YTArrays.
 
-        x/y: A 1D YTArray
+            x/y: 1D YTArray
 
-        xlabel/ylabel: String
+            xlabel/ylabel: str
 
-        cut_norm: String
-        'x', 'y' or 'z'
+            cut_norm: str
+                "x", "y" or "z"
 
-        cut_loc: Float
-        cut_norm and cut_loc are used to record the position of slice if this 2D
-        data set is obtained from a 3D box.
+            cut_loc: float
+                cut_norm and cut_loc are used to record the position of slice if this 2D data set is obtained from a 3D box.
         """
 
         zlabel = None
         z = (0, 0)
-        super(dataContainer2D, self).__init__(
+        super(DataContainer2D, self).__init__(
             dataSets, x, y, z, xlabel, ylabel, zlabel, *args, **kwargs
         )
 
@@ -347,7 +323,7 @@ class dataContainer2D(dataContainer):
             dif.data[var] -= other.data[var]
         return dif
 
-    def contour(
+    def plot(
         self,
         vars,
         xlim=None,
@@ -357,60 +333,45 @@ class dataContainer2D(dataContainer):
         cmap="turbo",
         figsize=(10, 6),
         pcolor=False,
-        log=False,
+        logscale=False,
         addgrid=False,
         bottomline=10,
-        plot=None,
-        cbticks=None,
         showcolorbar=True,
-        createcanvas=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         r"""
-        Contour plots.
+        2D plots.
 
-        Parameters
-        ----------------------
-        vars: String
-        Ploting variables and ploting range.
-        Example: vars = "Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)"
+        Args:
+            vars: str
+                Ploting variables and ploting range.
+            Example: vars = "Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)"
 
-        xlim/ylim: A list/tuple contains the x- y-axis range
+            xlim/ylim: A list/tuple contains the x- y-axis range
 
-        unit: String
-        'planet' or 'si'
+            unit: str
+                "planet" or "si"
 
-        nlevels: Integer
-        Number of the countour plot color levels
+            nlevels: int
+                Number of the contour levels
 
-        cmap: String
-        Color map type
+            cmap: str
+                Color map type
 
-        figsize: A tuple
+            figsize: tuple
 
-        log: Bool
-        Using log plot or not.
+            logscale: Bool
+                True to scale the variable in log.
 
-        plot: list or tuple of [f, axes]
-        Used to fine tune the individual subplot
-
-        createcanvas: boolean
-        If set to True, skip the contour making process to get an empty
-        canvas which can be used to generate subplots in different styles.
-        Set this flag to get the value for 'plot' parameter.
-
-        Examples
-        ----------------
-        >>> f,axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)",xlim=[-40,-5])
+        Examples:
+            >>> f, axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
         """
 
         if type(vars) == str:
             vars = vars.split()
 
         nvar = len(vars)
-        nRow = int(round(np.sqrt(nvar)))
-        nCol = math.ceil(nvar / nRow)
 
         varNames = []
         varMin = []
@@ -421,17 +382,11 @@ class dataContainer2D(dataContainer):
             varMin.append(vmin)
             varMax.append(vmax)
 
-        if plot:
-            f, axes = plot
-        else:
-            f, axes = plt.subplots(nRow, nCol, figsize=figsize)
-            axes = np.array(axes)  # in case nRow = nCol = 1
-
+        f, axes = plt.subplots(nvar, 1, figsize=figsize, layout="constrained")
+        axes = np.array(axes)  # in case nrows == ncols == 1
         axes = axes.reshape(-1)
 
         for isub, ax in zip(range(nvar), axes):
-            if createcanvas:  # no need to make any contour, just keep
-                break  # the canvas clean
             ytVar = self.evaluate_expression(varNames[isub], unit)
             v = ytVar
             varUnit = "dimensionless"
@@ -442,8 +397,7 @@ class dataContainer2D(dataContainer):
             vmin = v.min() if varMin[isub] == None else varMin[isub]
             vmax = v.max() if varMax[isub] == None else varMax[isub]
 
-            logplot = log and vmin > 0
-            if logplot:
+            if logscale:
                 v = np.log10(v)
 
             levels = np.linspace(vmin, vmax, nlevels)
@@ -461,7 +415,7 @@ class dataContainer2D(dataContainer):
                         cmap=cmap,
                         extend="both",
                         *args,
-                        **kwargs
+                        **kwargs,
                     )
             else:
                 if pcolor or abs(vmin - vmax) < 1e-20 * abs(vmax):
@@ -477,7 +431,7 @@ class dataContainer2D(dataContainer):
                         cmap=cmap,
                         extend="both",
                         *args,
-                        **kwargs
+                        **kwargs,
                     )
             if addgrid:
                 if self.gencoord:
@@ -490,13 +444,8 @@ class dataContainer2D(dataContainer):
 
                 ax.plot(gx, gy, "x")
 
-            if cbticks:
-                ticks = cbticks
-            else:
-                ticks = get_ticks(vmin, vmax)
-
             if showcolorbar:
-                cb = f.colorbar(cs, ax=ax, ticks=ticks)
+                cb = f.colorbar(cs, ax=ax, pad=0.01)
                 cb.formatter.set_powerlimits((0, 0))
 
             ax.set_xlim(xlim)
@@ -505,36 +454,29 @@ class dataContainer2D(dataContainer):
             ax.set_ylabel(self.ylabel)
             title = varNames[isub]
             if varUnit != "dimensionless":
-                title = title + " [" + varUnit + "]"
-            if logplot:
+                title += " [" + varUnit + "]"
+            if logscale:
                 title = "$log_{10}$(" + title + ")"
             ax.set_title(title)
 
-        # Delete axes for empty subplots
-        for ax in axes[nvar : nRow * nCol]:
-            f.delaxes(ax)
-
-        plt.tight_layout()
         if self.cut_norm != None and self.cut_loc != None:
             print("Plots at " + self.cut_norm + " = ", self.cut_loc)
 
         self.add_bottom_line(f, bottomline)
-        return f, axes.reshape(nRow, nCol)
+
+        return f, axes
 
     def add_contour(self, ax, var, unit="planet", rmask=None, *args, **kwargs):
-        r"""
-        Adding contour lines to an axis.
+        r"""Adding contour lines to an axis.
 
-        Parameters
-        --------------------
-        ax: matplotlib axis
-        The aixs to plot contour lines.
+        Args:
+            ax: matplotlib axis
+                The axis to plot contour lines.
 
-        var: String
+            var: string
 
-        Examples
-        ----------------------
-        >>> f,axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)",xlim=[-40,-5])
+        Examples:
+        >>> f, axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
         >>> dc.add_contour(axes[0,0], "rhos1>1")
         """
 
@@ -574,24 +516,23 @@ class dataContainer2D(dataContainer):
         ymax=None,
         rmask=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         r"""
         Adding streamlines to an axis.
 
-        Parameters
-        --------------------
-        ax: matplotlib axis
-        The aixs to add streamlines
+        Args:
+            ax: matplotlib axis
+                The axis to add streamlines
 
-        var1/var2: String
+            var1/var2: str
+                Streamline variable names
 
-        density: Int
-        It controls the number of streamlines.
+            density: int
+                It controls the number of streamlines.
 
-        Examples
-        ----------------------
-        >>> f,axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)",xlim=[-40,-5])
+        Examples:
+        >>> f, axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
         >>> dc.add_stream(axes[1,0], "Bx", "Bz", density=2)
         """
 
@@ -618,7 +559,7 @@ class dataContainer2D(dataContainer):
             xy = np.zeros((len(self.x), 2))
             xy[:, 0] = self.x.value
             xy[:, 1] = self.y.value
-            # The first and last row/column may be None. Remove them
+            # Remove the first and last row/column since they may be None
             vect1 = griddata(xy, v1, (gridx, gridy), method="linear")[1:-1, 1:-1]
             vect2 = griddata(xy, v2, (gridx, gridy), method="linear")[1:-1, 1:-1]
             xx = gridx[1:-1, 0]
@@ -638,26 +579,23 @@ class dataContainer2D(dataContainer):
                         vect1[i, j] = np.nan
                         vect2[i, j] = np.nan
 
-        streamplot(
-            ax, xx, yy, vect1.T, vect2.T, density=density, *args, **kwargs
-        )
+        streamplot(ax, xx, yy, vect1.T, vect2.T, density=density, *args, **kwargs)
 
 
-class dataContainer1D(dataContainer):
+class DataContainer1D(DataContainer):
     r"""
     A class handles 1D Cartesian data.
     """
 
     def __init__(self, dataSets, x, xlabel, *args, **kwargs):
         r"""
-        Parameters
-        ---------------------
-        dataSets: dictonary
-        The key is the variable name, and the dictionary value is usually a YTArray.
+        Args:
+            dataSets: dictonary
+                The key is the variable name, and the dictionary value is usually a YTArray.
 
-        x: A 1D YTArray
+            x: 1D YTArray
 
-        xlabel: String
+            xlabel: str
         """
 
         ylabel = None
@@ -666,7 +604,7 @@ class dataContainer1D(dataContainer):
         zlabel = None
         z = (0, 0)
 
-        super(dataContainer1D, self).__init__(
+        super(DataContainer1D, self).__init__(
             dataSets, x, y, z, xlabel, ylabel, zlabel, *args, **kwargs
         )
 
@@ -675,25 +613,21 @@ class dataContainer1D(dataContainer):
         vars,
         xlim=None,
         ylim=None,
-        unit="planet",
+        unit: str = "planet",
         figsize=(12, 8),
-        log=False,
         bottomline=10,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
-        Examples
-        ----------------
-        >>> f,axes=dc.plot("absdivb bx",xlim=[-5,5],color='k',linestyle='solid',marker='x')
+        Examples:
+        >>> f, axes = dc.plot("absdivb bx", xlim=[-5,5])
         """
 
         if type(vars) == str:
             vars = vars.split()
 
         nvar = len(vars)
-        nRow = int(round(np.sqrt(nvar)))
-        nCol = math.ceil(nvar / nRow)
 
         varNames = []
         varMin = []
@@ -704,18 +638,13 @@ class dataContainer1D(dataContainer):
             varMin.append(vmin)
             varMax.append(vmax)
 
-        f, axes = plt.subplots(nRow, nCol, figsize=figsize)
-        axes = np.array(axes)  # in case nRow = nCol = 1
-
+        f, axes = plt.subplots(nvar, 1, figsize=figsize)
+        axes = np.array(axes)  # in case nrows == ncols == 1
         axes = axes.reshape(-1)
 
         for isub, ax in zip(range(nvar), axes):
             ytVar = self.evaluate_expression(varNames[isub], unit)
             v = ytVar
-            varUnit = "dimensionless"
-            if type(ytVar) == yt.units.yt_array.YTArray:
-                v = ytVar.value
-                varUnit = str(ytVar.units)
 
             vmin = v.min() if varMin[isub] == None else varMin[isub]
             vmax = v.max() if varMax[isub] == None else varMax[isub]
@@ -728,4 +657,5 @@ class dataContainer1D(dataContainer):
             ax.legend()
 
         self.add_bottom_line(f, bottomline)
+
         return f, axes

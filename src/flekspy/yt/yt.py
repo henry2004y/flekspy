@@ -1,8 +1,8 @@
-import yt
 import os
 import glob
 import numpy as np
 
+import yt
 from yt.funcs import setdefaultattr
 from yt.frontends.boxlib.api import BoxlibHierarchy, BoxlibDataset
 from yt.fields.field_info_container import FieldInfoContainer
@@ -11,8 +11,8 @@ from yt.data_objects.selection_objects.data_selection_objects import (
 )
 from yt.visualization.profile_plotter import PhasePlot
 
-import flekspy.util.data_container as data_container
-from flekspy.util.utilities import get_unit
+from flekspy.util import DataContainer2D, DataContainer3D
+from flekspy.util import get_unit
 
 
 class FLEKSFieldInfo(FieldInfoContainer):
@@ -119,16 +119,13 @@ class FLEKSData(BoxlibDataset):
     r"""
     Read and plot the AMReX format output from FLEKS.
 
-    Parameters
-    ----------
-    output_dir : String
-        The path to the data.
+    Args:
+        output_dir : String
+            The path to the data.
 
-    Examples
-    --------
-
-    >>> import flekspy
-    >>> ds = flekspy.FLEKSData("3d_particle*n00004750_amrex")
+    Examples:
+        >>> import flekspy
+        >>> ds = flekspy.FLEKSData("3d_particle*n00004750_amrex")
     """
 
     _index_class = FLEKSHierarchy
@@ -206,15 +203,13 @@ class FLEKSData(BoxlibDataset):
     def pvar(self, var):
         return (self.particle_types[0], var)
 
-    def get_slice(self, norm, cut_loc):
+    def get_slice(self, norm, cut_loc) -> DataContainer2D:
         r"""
-        This method returns a dataContainer2D object that contains a slice along
-        the normal direction.
+        Returns a DataContainer2D object that contains a slice along the normal direction.
 
-        Parameters
-        ---------------------
-        norm (str): slice normal direction in "x", "y" or "z"
-        cut_loc (float): cut location along the normal direction
+        Args:
+            norm (str): slice normal direction in "x", "y" or "z"
+            cut_loc (float): cut location along the normal direction
         """
 
         axDir = {"X": 0, "Y": 1, "Z": 2}
@@ -238,7 +233,8 @@ class FLEKSData(BoxlibDataset):
 
         dataSets = {}
         for var in self.field_list:
-            dataSets[var[1]] = np.squeeze(abArr[var])
+            if abArr[var].size != 0:  # remove empty sliced particle output
+                dataSets[var[1]] = np.squeeze(abArr[var])
 
         axLabes = {0: ("Y", "Z"), 1: ("X", "Z"), 2: ("X", "Y")}
 
@@ -253,7 +249,7 @@ class FLEKSData(BoxlibDataset):
                 )
             )
 
-        return data_container.dataContainer2D(
+        return DataContainer2D(
             dataSets,
             axes[0],
             axes[1],
@@ -263,9 +259,9 @@ class FLEKSData(BoxlibDataset):
             cut_loc,
         )
 
-    def get_domain(self):
+    def get_domain(self) -> DataContainer3D:
         r"""
-        Reading in all the simulation data into a 3D box. It returns a dataContainer3D object.
+        Read all the simulation data into a 3D box.
         """
         domain = self.covering_grid(
             level=0, left_edge=self.domain_left_edge, dims=self.domain_dimensions
@@ -285,25 +281,23 @@ class FLEKSData(BoxlibDataset):
                 )
             )
 
-        return data_container.dataContainer3D(dataSets, axes[0], axes[1], axes[2])
+        return DataContainer3D(dataSets, axes[0], axes[1], axes[2])
 
     def plot_slice(self, norm, cut_loc, vars, unit_type="planet", *args, **kwargs):
         r"""Plot 2D slice
 
-        Parameters
-        ----------
-        norm : string, one of 'x', 'y' or 'z'. Norm direction of the slice.
+        Args:
+            norm: str
+                Normal direction of the slice in "x", "y" or "z".
+            cut_loc: float
+                The location of the slice.
 
-        cut_loc : float. The location of the slice.
+            vars: a list or string of plotting variables.
+                Example: "Bx rhos0" or ["Bx", "rhos0"]
 
-        vars : a list or string of plotting variables.
-            Example: "Bx rhos0" or ["Bx", "rhos0"]
+        unit_type: The unit system of the plots. "planet" or "si".
 
-        unit_type : The unit system of the plots. "planet" or "si".
-
-        Examples
-        --------
-
+        Examples:
         >>> vars = ["rhos0", "uzs0", "Bz", "pxxs1", "Ex"]
         >>> splt = ds.plot_slice("y", 0.0, vars)
         >>> splt.display()
@@ -427,26 +421,23 @@ class FLEKSData(BoxlibDataset):
     ):
         r"""Plot the particle position of particles inside a box.
 
-        Parameters
-        ----------
-        x_field & y_field: string
-            The x- y- axes, from "p_x", "p_y", "p_z".
+        Args:
+            x_field & y_field: str
+                The x- y- axes, from "p_x", "p_y", "p_z".
 
-        z_field: string
-            It is usually the particle weight: "p_w".
+            z_field: str
+                color variable, usually the particle weight "p_w".
 
-        region : YTSelectionContainer
-            Spatial region to be selected, such as all_data, box, region, or sphere.
+            region: YTSelectionContainer
+                Spatial region to be selected, such as all_data, box, region, or sphere.
 
-        unit_type : string
-            The unit system of the plots. "planet" or "si".
+            unit_type: str
+                The unit system of the plots. "planet" or "si".
 
         See more at https://yt-project.org/doc/reference/api/yt.visualization.particle_plots.html#yt.visualization.particle_plots.ParticlePlot
 
-        Examples
-        --------
-        >>> pp = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x",
-                     "p_y", "p_w", unit_type="planet")
+        Examples:
+        >>> pp = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x", "p_y", "p_w", unit_type="planet")
         >>> pp.show()
         """
         if region is None:
