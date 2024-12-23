@@ -16,3 +16,8 @@
 - `plot_particles_region` is deprecated; use `plot_particles` with the `region` keyword instead.
 - Add utility method `extract_phase` for extracting phase space coordinates and values.
 - `_unit_one` -> `unit_one`.
+
+## v0.2.1 (2024/12/22)
+
+- `dataContainer` and its related classes are renamed to be consistent with Python naming conventions.
+- `contour` has been renamed to `plot` for `DataContainer2D`.

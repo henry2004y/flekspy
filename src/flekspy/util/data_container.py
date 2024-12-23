@@ -476,7 +476,7 @@ class DataContainer2D(DataContainer):
             var: string
 
         Examples:
-        >>> f, axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
+        >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
         >>> dc.add_contour(axes[0,0], "rhos1>1")
         """
 
@@ -532,7 +532,7 @@ class DataContainer2D(DataContainer):
                 It controls the number of streamlines.
 
         Examples:
-        >>> f, axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
+        >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
         >>> dc.add_stream(axes[1,0], "Bx", "Bz", density=2)
         """
 
