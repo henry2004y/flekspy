@@ -5,7 +5,12 @@ import struct
 import yt
 
 from flekspy.util import get_unit
-from flekspy.util import DataContainer1D, DataContainer2D, DataContainer3D
+from flekspy.util import (
+    DataContainer,
+    DataContainer1D,
+    DataContainer2D,
+    DataContainer3D,
+)
 
 x_ = 0
 y_ = 1
@@ -63,7 +68,6 @@ class IDLData(object):
     Example:
     >>> ds = IDLData("3d.out")
     >>> dc2d = ds.get_slice("y", 1)
-    >>> dc3d = ds.get_domain()
     """
 
     def __init__(self, filename="none"):
@@ -123,10 +127,8 @@ class IDLData(object):
         )
         return str
 
-    def get_domain(self) -> DataContainer3D:
-        r"""
-        Returns all the 3D data.
-        """
+    def get_domain(self) -> DataContainer:
+        """Return data as data container."""
         dataSets = {}
         for varname in self.data.name:
             idx = self.data.name.index(varname)
@@ -148,7 +150,7 @@ class IDLData(object):
                     self.data.array[idx, :, :, :], unit, registry=self.registry
                 )
 
-        if self.gencoord:
+        if self.gencoord and self.ndim == 2:
             dc = DataContainer2D(
                 dataSets,
                 np.squeeze(axes[0]),
@@ -192,6 +194,23 @@ class IDLData(object):
             )
 
         return dc
+
+    def get_slice(self, norm, cut_loc) -> DataContainer2D:
+        """Get a 2D slice from the 3D IDL data.
+
+        Args:
+            norm: str
+                The normal direction of the slice from "x", "y" or "z"
+
+            cur_loc: float
+                The position of slicing.
+
+        Return: DataContainer2D
+        """
+        domain = self.get_domain()
+        ds = domain.get_slice(norm, cut_loc)
+
+        return ds
 
     def save_data(self, saveName, saveFormat="ascii"):
         # Currently only support ascii output.

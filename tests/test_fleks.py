@@ -29,6 +29,7 @@ class TestIDL:
     files = (
         "1d__raw_2_t25.60000_n00000258.out",
         "z=0_fluid_region0_0_t00001640_n00010142.out",
+        "3d_raw.out",
     )
     files = [os.path.join("tests/data/", file) for file in files]
 
@@ -48,6 +49,12 @@ class TestIDL:
         sat = np.array([[-28000.0, 0.0], [9000.0, 0.0]])
         d = ds.extract_data(sat)
         assert d[0][1] == 0.0
+
+    def test_slice(self):
+        ds = flekspy.load(self.files[2])
+        slice = ds.get_slice("z", 0.0)
+        assert slice.dimensions == (8, 8)
+        assert slice.data["absdivB"][2, 3].value == np.float32(3.3033288e-05)
 
     def test_plot(self):
         ds = flekspy.load(self.files[0])
@@ -71,7 +78,7 @@ class TestAMReX:
         ds = flekspy.load(self.files[1])
         assert ds.domain_left_edge[0].v == -0.016
         dc = ds.get_slice("z", 0.5)
-        assert dc.data["particle_id"][0].value == 216050.
+        assert dc.data["particle_id"][0].value == 216050.0
         assert dc.__repr__().startswith("variables")
 
     def test_phase(self):
