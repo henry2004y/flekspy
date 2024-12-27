@@ -120,8 +120,7 @@ class FLEKSData(BoxlibDataset):
     Read and plot the AMReX format output from FLEKS.
 
     Args:
-        output_dir : String
-            The path to the data.
+        output_dir (str): the path to the data.
 
     Examples:
         >>> import flekspy
