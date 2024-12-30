@@ -134,8 +134,10 @@ def download_testfile(url: str, target_path="."):
 
     Args:
       url (str): the URL of the tar.gz file.
-      target_path: the directory to extract the files to. Defaults to the current directory.
+      target_path (str): the directory to extract the files to. Defaults to the current directory.
     """
+    import os
+
     try:
         response = requests.get(url, stream=True)
         response.raise_for_status()  # Raise an exception for bad status codes
@@ -155,7 +157,5 @@ def download_testfile(url: str, target_path="."):
     except tarfile.TarError as e:
         print(f"Error extracting tar file: {e}")
     finally:
-        import os
-
         if os.path.exists("temp.tar.gz"):
             os.remove("temp.tar.gz")  # Clean up temporary file
