@@ -134,6 +134,9 @@ def download_testfile(url, target_path="."):
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
 
+        if not os.path.exists(target_path): 
+            os.makedirs(target_path)
+
         with tarfile.open("temp.tar.gz", "r:gz") as tar:
             tar.extractall(target_path)
 
