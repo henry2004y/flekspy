@@ -1,0 +1,251 @@
+flekspy.tp
+==========
+
+.. py:module:: flekspy.tp
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/tp/test_particles/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.tp.FLEKSTP
+
+
+Package Contents
+----------------
+
+.. py:class:: FLEKSTP(dirs: Union[str, List[str]], iDomain: int = 0, iSpecies: int = 0, iListStart: int = 0, iListEnd: int = -1, readAllFiles: bool = False)
+
+   Bases: :py:obj:`object`
+
+
+   A class that is used to read and plot test particles. Each particle ID consists of
+   a CPU index, a particle index on each CPU, and a location index.
+   By default, 7 real numbers saved for each step: time + position + velocity.
+
+   :param dirs: the path to the test particle dataset.
+   :type dirs: str
+
+   Examples:
+   >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
+   >>> pIDs = list(tp.IDs())
+   >>> tp.plot_trajectory(pIDs[3])
+   >>> tp.save_trajectory_to_csv(pIDs[5])
+   >>> ids, pData = tp.read_particles_at_time(6500.8, doSave=True)
+   >>> f = tp.plot_loc(pData)
+
+
+   .. py:attribute:: it_
+      :value: 0
+
+
+
+   .. py:attribute:: ix_
+      :value: 1
+
+
+
+   .. py:attribute:: iy_
+      :value: 2
+
+
+
+   .. py:attribute:: iz_
+      :value: 3
+
+
+
+   .. py:attribute:: iu_
+      :value: 4
+
+
+
+   .. py:attribute:: iv_
+      :value: 5
+
+
+
+   .. py:attribute:: iw_
+      :value: 6
+
+
+
+   .. py:attribute:: iBx_
+      :value: 7
+
+
+
+   .. py:attribute:: iBy_
+      :value: 8
+
+
+
+   .. py:attribute:: iBz_
+      :value: 9
+
+
+
+   .. py:attribute:: iEx_
+      :value: 10
+
+
+
+   .. py:attribute:: iEy_
+      :value: 11
+
+
+
+   .. py:attribute:: iEz_
+      :value: 12
+
+
+
+   .. py:attribute:: iSpecies
+      :value: 0
+
+
+
+   .. py:attribute:: plistfiles
+      :value: []
+
+
+
+   .. py:attribute:: pfiles
+      :value: []
+
+
+
+   .. py:attribute:: list_index_to_time
+      :value: []
+
+
+
+   .. py:attribute:: plists
+      :type:  List[Dict[Tuple[int, int], int]]
+      :value: []
+
+
+
+   .. py:attribute:: IDs
+
+
+   .. py:attribute:: file_time
+      :value: []
+
+
+
+   .. py:method:: getIDs()
+
+
+   .. py:method:: get_index_to_time() -> List
+
+      Getter method for accessing list_index_to_time.
+
+
+
+   .. py:method:: read_particle_list(fileName: str) -> Dict[Tuple[int, int], int]
+
+      Read and return a list of the particle IDs.
+
+
+
+   .. py:method:: _read_the_first_record(fileName: str) -> Union[List[float], None]
+
+      Get the first record stored in one file.
+
+
+
+   .. py:method:: read_particles_at_time(time: float, doSave: bool = False) -> Tuple[numpy.ndarray, numpy.ndarray]
+
+      Get the information of all the particles at a given time, and save to a csv file
+      with the name "particles_t***.csv" in the current directory if doSave is True.
+
+      :returns: a numpy array of tuples contains the particle IDs.
+                pData: a numpy real array with the particle weight, location and velocity.
+      :rtype: ids
+
+      Examples:
+      >>> ids, pData = pt.read_particles_at_time(3700, doSave=True)
+
+
+
+   .. py:method:: save_trajectory_to_csv(pID: Tuple[int, int], fileName: str = None, shiftTime: bool = False, scaleTime: bool = False) -> None
+
+      Save the trajectory of a particle to a csv file.
+
+      :param pID: particle ID.
+      :param shiftTime: If set to True, set the initial time to be 0.
+      :type shiftTime: bool
+      :param scaleTime: If set to True, scale the time into [0,1] range, only scale time if shiftTime = True.
+      :type scaleTime: bool
+
+      Example:
+      >>> tp.save_trajectory_to_csv((3,15))
+
+
+
+   .. py:method:: read_particle_trajectory(pID: Tuple[int, int])
+
+      Read and return the trajectory of a particle.
+
+      :param pID: particle ID
+
+      Examples:
+      >>> trajectory = tp.read_particle_trajectory((66,888))
+
+
+
+   .. py:method:: read_initial_location(pID)
+
+      Read and return the initial location of a test particle
+
+
+
+   .. py:method:: select_particles(fSelect: Callable = None) -> List[Tuple[int, int]]
+
+      Select and return the particles whose initial condition satisfy the requirement
+      set by the user defined function fSelect. The first argument of fSelect is the
+      particle ID, and the second argument is the initial record (time, location,
+      velocity and weight of a particle) of a particle.
+
+      Examples:
+      >>> def fselect(tp, pid):
+      >>>     pdata = tp.read_initial_loc_with_ID(pid)
+      >>>     intime = pdata[FLEKSTP.it_] < 3601
+      >>>     inregion = pdata[FLEKSTP.ix_] > 20
+      >>>     return intime and inregion
+      >>>
+      >>> pselected = tp.select_particles(fselect)
+      >>> tp.plot_trajectory(list(pselected.keys())[1])
+
+
+
+   .. py:method:: plot_trajectory(pID: Tuple[int, int])
+
+      Plots the trajectory and velocities of the particle pID.
+
+      Example:
+      >>> tp.plot_trajectory((3,15))
+
+
+
+   .. py:method:: plot_loc(pData: numpy.ndarray)
+
+      Plot the location of particles pData.
+
+      Examples:
+      >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
+      >>> f = tp.plot_loc(pData)
+
+
+
