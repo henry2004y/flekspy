@@ -13,13 +13,10 @@ class FLEKSTP(object):
     a CPU index, a particle index on each CPU, and a location index.
     By default, 7 real numbers saved for each step: time + position + velocity.
 
-    Parameters
-    -----------
-    dirs: String
-        The path to the test particle dataset.
+    Args:
+        dirs (str): the path to the test particle dataset.
 
-    Examples
-    ----------
+    Examples:
     >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
     >>> pIDs = list(tp.IDs())
     >>> tp.plot_trajectory(pIDs[3])
@@ -162,13 +159,11 @@ class FLEKSTP(object):
         Get the information of all the particles at a given time, and save to a csv file
         with the name "particles_t***.csv" in the current directory if doSave is True.
 
-        Returns
-        -----------
-        ids: a numpy array of tuples contains the particle IDs.
-        pData: a numpy real array with the particle weight, location and velocity.
+        Returns:
+            ids: a numpy array of tuples contains the particle IDs.
+            pData: a numpy real array with the particle weight, location and velocity.
 
-        Examples
-        ----------
+        Examples:
         >>> ids, pData = pt.read_particles_at_time(3700, doSave=True)
         """
 
@@ -235,15 +230,12 @@ class FLEKSTP(object):
         r"""
         Save the trajectory of a particle to a csv file.
 
-        Parameters
-        ----------
-        pID: particle ID.
-        shiftTime: If set to True, set the initial time to be 0.
-        scaleTime: If set to True, scale the time into [0,1] range, only scale time if
-                    shiftTime = True.
+        Args:
+            pID: particle ID.
+            shiftTime (bool): If set to True, set the initial time to be 0.
+            scaleTime (bool): If set to True, scale the time into [0,1] range, only scale time if shiftTime = True.
 
-        Example
-        -----------------
+        Example:
         >>> tp.save_trajectory_to_csv((3,15))
         """
         pData = self.read_particle_trajectory(pID)
@@ -266,12 +258,10 @@ class FLEKSTP(object):
         r"""
         Read and return the trajectory of a particle.
 
-        Parameters
-        ----------
-        pID: particle ID
+        Args:
+            pID: particle ID
 
-        Examples
-        ----------
+        Examples:
         >>> trajectory = tp.read_particle_trajectory((66,888))
         """
         dataList = list()
@@ -314,8 +304,7 @@ class FLEKSTP(object):
         particle ID, and the second argument is the initial record (time, location,
         velocity and weight of a particle) of a particle.
 
-        Examples
-        ----------
+        Examples:
         >>> def fselect(tp, pid):
         >>>     pdata = tp.read_initial_loc_with_ID(pid)
         >>>     intime = pdata[FLEKSTP.it_] < 3601
@@ -339,8 +328,7 @@ class FLEKSTP(object):
         r"""
         Plots the trajectory and velocities of the particle pID.
 
-        Example
-        -----------------
+        Example:
         >>> tp.plot_trajectory((3,15))
         """
 
@@ -404,8 +392,7 @@ class FLEKSTP(object):
         r"""
         Plot the location of particles pData.
 
-        Examples
-        ----------
+        Examples:
         >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
         >>> f = tp.plot_loc(pData)
         """

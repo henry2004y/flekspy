@@ -76,7 +76,16 @@ plot_unit_si = {
 }
 
 
-def get_unit(var, unit_type="planet"):
+def get_unit(var: str, unit_type="planet") -> str:
+    """Return the unit of variable.
+
+    Args:
+        var (str): variable name.
+        unit_type (str, optional): unit system. Defaults to "planet".
+
+    Returns:
+        str: unit in the specified unit system.
+    """
     if var[-1].isdigit():
         # Example: pxxs0 -> pxx
         var = var[0:-2]
@@ -111,20 +120,21 @@ def get_ticks(vmin, vmax):
     nticks = int((tickMax - tickMin) / dv) + 1
     return np.linspace(tickMin, tickMax, nticks)
 
+
 def unit_one(field, data):
     """Utility function for setting equal weights for macroparticles.
     TBD: add units.
     """
     return np.ones_like(data[("particles", "p_w")])
 
-def download_testfile(url, target_path="."):
+
+def download_testfile(url: str, target_path="."):
     """
     Downloads a tar.gz file from a URL and extracts its contents.
 
     Args:
-      url: The URL of the tar.gz file.
-      target_path: The directory to extract the files to.
-                    Defaults to the current directory.
+      url (str): the URL of the tar.gz file.
+      target_path: the directory to extract the files to. Defaults to the current directory.
     """
     try:
         response = requests.get(url, stream=True)
@@ -134,7 +144,7 @@ def download_testfile(url, target_path="."):
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-        if not os.path.exists(target_path): 
+        if not os.path.exists(target_path):
             os.makedirs(target_path)
 
         with tarfile.open("temp.tar.gz", "r:gz") as tar:

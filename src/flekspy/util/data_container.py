@@ -79,12 +79,12 @@ class DataContainer(object):
         if verbose > 0:
             f.text(0.01, 0.01, s)
 
-    def analyze_variable_string(self, var):
+    def analyze_variable_string(self, var: str):
         r"""
         Parses the input string and return the plot variable and plot range.
 
         Args:
-            var: str
+            var (str): string of variables to be parsed
             Example: var = "{bb}<(-10)>(-9.8)"
 
         Return: a tuple of the variable name, variable min and max.
@@ -116,7 +116,7 @@ class DataContainer(object):
         Evaluates the variable expression and return the result of an YTArray.
 
         Args:
-            expression: str
+            expression (str): Python codes to be executed
             Example: expression = "np.log({rhos0}+{rhos1})"
         """
 
@@ -138,8 +138,7 @@ class DataContainer(object):
         Adds a variable to the dataset.
 
         Args:
-            name: str
-                The name of the variable to be added into self.data
+            name (str): The name of the variable to be added.
 
             val: array-like structure
                 Values of the variable stored in an array
@@ -157,8 +156,7 @@ class DataContainer(object):
         Return raw variables or calculate derived variables.
 
         Args:
-            var: str
-                variable name
+            var (str): variable name
 
         Return: YTArray
         """
@@ -217,8 +215,7 @@ class DataContainer3D(DataContainer):
     ):
         r"""
         Args:
-            dataSets: dictonary
-                The key is the variable name, and the dictionary value is usually a YTArray.
+            dataSets (dict): The keys are variable names, and the dictionary values are YTArray.
 
             x/y/z: A 1D YTArray
         """
@@ -230,11 +227,9 @@ class DataContainer3D(DataContainer):
         """Get a 2D slice from the 3D box data.
 
         Args:
-            norm: str
-                The normal direction of the slice from "x", "y" or "z"
+            norm (str): The normal direction of the slice from "x", "y" or "z"
 
-            cur_loc: float
-                The position of slicing.
+            cur_loc (float): The position of slicing.
 
         Return: DataContainer2D
         """
@@ -293,18 +288,15 @@ class DataContainer2D(DataContainer):
     ):
         r"""
         Args:
-            dataSets: dictonary
-                The keys are variable names, and the values are YTArrays.
+            dataSets (dict): The keys are variable names, and the values are YTArrays.
 
             x/y: 1D YTArray
 
-            xlabel/ylabel: str
+            xlabel/ylabel (str): x, y dimension labels
 
-            cut_norm: str
-                "x", "y" or "z"
+            cut_norm (str): "x", "y" or "z"
 
-            cut_loc: float
-                cut_norm and cut_loc are used to record the position of slice if this 2D data set is obtained from a 3D box.
+            cut_loc (float): cut_norm and cut_loc are used to record the position of slice if this 2D data set is obtained from a 3D box.
         """
 
         zlabel = None
@@ -327,15 +319,15 @@ class DataContainer2D(DataContainer):
         vars,
         xlim=None,
         ylim=None,
-        unit="planet",
-        nlevels=200,
-        cmap="turbo",
+        unit: str = "planet",
+        nlevels: int = 200,
+        cmap: str = "turbo",
         figsize=(10, 6),
         pcolor=False,
         logscale=False,
         addgrid=False,
         bottomline=10,
-        showcolorbar=True,
+        showcolorbar: bool = True,
         *args,
         **kwargs,
     ):
@@ -343,25 +335,20 @@ class DataContainer2D(DataContainer):
         2D plots.
 
         Args:
-            vars: str
-                Ploting variables and ploting range.
+            vars (str): ploting variables and ploting range.
             Example: vars = "Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)"
 
             xlim/ylim: A list/tuple contains the x- y-axis range
 
-            unit: str
-                "planet" or "si"
+            unit (str): "planet" or "si"
 
-            nlevels: int
-                Number of the contour levels
+            nlevels (int): Number of the contour levels. Default 200.
 
-            cmap: str
-                Color map type
+            cmap (str): color map type from Matplotlib
 
-            figsize: tuple
+            figsize (tuple): size of figure. Default (10, 6).
 
-            logscale: Bool
-                True to scale the variable in log.
+            logscale (bool): True to scale the variable in log.
 
         Examples:
             >>> f, axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
@@ -469,10 +456,9 @@ class DataContainer2D(DataContainer):
         r"""Adding contour lines to an axis.
 
         Args:
-            ax: matplotlib axis
-                The axis to plot contour lines.
+            ax (matplotlib axis): the axis to plot contour lines.
 
-            var: string
+            var (str): variable of contours.
 
         Examples:
         >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
@@ -521,14 +507,11 @@ class DataContainer2D(DataContainer):
         Adding streamlines to an axis.
 
         Args:
-            ax: matplotlib axis
-                The axis to add streamlines
+            ax (matplotlib axis): the axis to add streamlines.
 
-            var1/var2: str
-                Streamline variable names
+            var1/var2 (str): streamline variable names.
 
-            density: int
-                It controls the number of streamlines.
+            density (float): it controls the number of streamlines.
 
         Examples:
         >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
@@ -589,12 +572,11 @@ class DataContainer1D(DataContainer):
     def __init__(self, dataSets, x, xlabel, *args, **kwargs):
         r"""
         Args:
-            dataSets: dictonary
-                The key is the variable name, and the dictionary value is usually a YTArray.
+            dataSets (dict): the keys are variable names, and the values are YTArrays.
 
             x: 1D YTArray
 
-            xlabel: str
+            xlabel (str): x axis label.
         """
 
         ylabel = None
