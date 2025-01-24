@@ -360,12 +360,12 @@ class FLEKSTP(object):
         """
 
         def plot_data(dd, label, irow, icol):
-            axs[irow, icol].plot(t, dd, label=label)
-            axs[irow, icol].scatter(
+            ax[irow, icol].plot(t, dd, label=label)
+            ax[irow, icol].scatter(
                 t, dd, c=plt.cm.winter(tNorm), edgecolor="none", marker="o", s=10
             )
-            axs[irow, icol].set_xlabel("time")
-            axs[irow, icol].set_ylabel(label)
+            ax[irow, icol].set_xlabel("time")
+            ax[irow, icol].set_ylabel(label)
 
         def plot_vector(idx, labels, irow):
             for i, (id, label) in enumerate(zip(idx, labels)):
@@ -391,14 +391,14 @@ class FLEKSTP(object):
             elif self.nReal == 13:  # additional B and E field
                 nrow = 5
 
-            f, axs = plt.subplots(nrow, ncol, figsize=(12, 6), constrained_layout=True)
+            f, ax = plt.subplots(nrow, ncol, figsize=(12, 6), constrained_layout=True)
 
             # Plot trajectories
-            for i, ax in enumerate(axs[0, :]):
+            for i, a in enumerate(ax[0, :]):
                 x_id = FLEKSTP.ix_ if i < 2 else FLEKSTP.iy_
                 y_id = FLEKSTP.iy_ if i == 0 else FLEKSTP.iz_
-                ax.plot(data[:, x_id], data[:, y_id], "k")
-                ax.scatter(
+                a.plot(data[:, x_id], data[:, y_id], "k")
+                a.scatter(
                     data[:, x_id],
                     data[:, y_id],
                     c=plt.cm.winter(tNorm),
@@ -406,8 +406,8 @@ class FLEKSTP(object):
                     marker="o",
                     s=10,
                 )
-                ax.set_xlabel("x" if i < 2 else "y")
-                ax.set_ylabel("y" if i == 0 else "z")
+                a.set_xlabel("x" if i < 2 else "y")
+                a.set_ylabel("y" if i == 0 else "z")
 
             plot_vector([FLEKSTP.ix_, FLEKSTP.iy_, FLEKSTP.iz_], ["x", "y", "z"], 1)
             plot_vector([FLEKSTP.iu_, FLEKSTP.iv_, FLEKSTP.iw_], ["Vx", "Vy", "Vz"], 2)
@@ -439,7 +439,7 @@ class FLEKSTP(object):
 
         # create subplot mosaic with different keyword arguments
         skeys = ["A", "B", "C", "D"]
-        f, axs = plt.subplot_mosaic(
+        f, ax = plt.subplot_mosaic(
             "AB;CD",
             per_subplot_kw={("D"): {"projection": "3d"}},
             gridspec_kw={"width_ratios": [1, 1], "wspace": 0.1, "hspace": 0.1},
@@ -451,14 +451,14 @@ class FLEKSTP(object):
         for i, (x, y, labels) in enumerate(
             zip([px, px, py], [py, pz, pz], [("x", "y"), ("x", "z"), ("y", "z")])
         ):
-            axs[skeys[i]].scatter(x, y, s=1)
-            axs[skeys[i]].set_xlabel(labels[0])
-            axs[skeys[i]].set_ylabel(labels[1])
+            ax[skeys[i]].scatter(x, y, s=1)
+            ax[skeys[i]].set_xlabel(labels[0])
+            ax[skeys[i]].set_ylabel(labels[1])
 
         # Create 3D scatter plot
-        axs[skeys[3]].scatter(px, py, pz, s=1)
-        axs[skeys[3]].set_xlabel("x")
-        axs[skeys[3]].set_ylabel("y")
-        axs[skeys[3]].set_zlabel("z")
+        ax[skeys[3]].scatter(px, py, pz, s=1)
+        ax[skeys[3]].set_xlabel("x")
+        ax[skeys[3]].set_ylabel("y")
+        ax[skeys[3]].set_zlabel("z")
 
         return
