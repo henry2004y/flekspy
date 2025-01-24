@@ -129,6 +129,8 @@ class TestParticles:
     assert x[1] == traj[0, 1]
     ids, pData = tp.read_particles_at_time(0.0, doSave=False)
     assert ids[1][1] == 5129
+    ax = tp.plot_trajectory(pIDs[0], type="single")
+    assert ax.get_xlim()[1] == 2.140599811077118
 
 
 def load(files):

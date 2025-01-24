@@ -13,6 +13,8 @@ tests/data/
 *.png
 3d_particle*
 cut_particle*
+FLEKS*
+Header
 
 # MacOS
 .DS_Store

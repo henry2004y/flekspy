@@ -170,8 +170,7 @@ class FLEKSTP(object):
         nFile = len(self.pfiles)
         for iFile in range(nFile):
             if iFile == 0 and time < self.file_time[iFile]:
-                raise Exception("Error: There is no particle at the given time")
-
+                raise Exception("There is no particle at the given time.")
             if iFile == nFile - 1:
                 break
             if time >= self.file_time[iFile] and time < self.file_time[iFile + 1]:
@@ -324,42 +323,41 @@ class FLEKSTP(object):
 
         return pselected
 
-    def plot_trajectory(self, pID: Tuple[int, int]):
+    def get_data(self, data, name: str):
+        match name:
+            case "t":
+                x = data[:, FLEKSTP.it_]
+            case "x":
+                x = data[:, FLEKSTP.ix_]
+            case "y":
+                x = data[:, FLEKSTP.iy_]
+            case "z":
+                x = data[:, FLEKSTP.iz_]
+            case "vx":
+                x = data[:, FLEKSTP.iu_]
+            case "vy":
+                x = data[:, FLEKSTP.iv_]
+            case "vz":
+                x = data[:, FLEKSTP.iw_]
+
+        return x
+
+    def plot_trajectory(
+        self,
+        pID: Tuple[int, int],
+        *,
+        type="all",
+        xaxis="t",
+        yaxis="x",
+        ax=None,
+        **kwargs,
+    ):
         r"""
         Plots the trajectory and velocities of the particle pID.
 
         Example:
         >>> tp.plot_trajectory((3,15))
         """
-
-        data = self.read_particle_trajectory(pID)
-        t = data[:, FLEKSTP.it_]
-        tNorm = (t - t[0]) / (t[-1] - t[0])
-
-        ncol = 3
-        nrow = 3  # Default for X, V
-        if self.nReal == 10:  # additional B field
-            nrow = 4
-        elif self.nReal == 13:  # additional B and E field
-            nrow = 5
-
-        f, axs = plt.subplots(nrow, ncol, figsize=(12, 6), constrained_layout=True)
-
-        # Plot trajectories
-        for i, ax in enumerate(axs[0, :]):
-            x_id = FLEKSTP.ix_ if i < 2 else FLEKSTP.iy_
-            y_id = FLEKSTP.iy_ if i == 0 else FLEKSTP.iz_
-            ax.plot(data[:, x_id], data[:, y_id], "k")
-            ax.scatter(
-                data[:, x_id],
-                data[:, y_id],
-                c=plt.cm.winter(tNorm),
-                edgecolor="none",
-                marker="o",
-                s=10,
-            )
-            ax.set_xlabel("x" if i < 2 else "y")
-            ax.set_ylabel("y" if i == 0 else "z")
 
         def plot_data(dd, label, irow, icol):
             axs[irow, icol].plot(t, dd, label=label)
@@ -371,22 +369,60 @@ class FLEKSTP(object):
 
         def plot_vector(idx, labels, irow):
             for i, (id, label) in enumerate(zip(idx, labels)):
-                plot_data(data[:, id], label, irow, i)
+                plot_data(data[:, id], label, irow, i, **kwargs)
 
-        plot_vector([FLEKSTP.ix_, FLEKSTP.iy_, FLEKSTP.iz_], ["x", "y", "z"], 1)
-        plot_vector([FLEKSTP.iu_, FLEKSTP.iv_, FLEKSTP.iw_], ["Vx", "Vy", "Vz"], 2)
+        data = self.read_particle_trajectory(pID)
+        t = data[:, FLEKSTP.it_]
+        tNorm = (t - t[0]) / (t[-1] - t[0])
 
-        if self.nReal > FLEKSTP.iBx_:
-            plot_vector(
-                [FLEKSTP.iBx_, FLEKSTP.iBy_, FLEKSTP.iBz_], ["Bx", "By", "Bz"], 3
-            )
+        if type == "single":
+            x = self.get_data(data, xaxis)
+            y = self.get_data(data, yaxis)
 
-        if self.nReal > FLEKSTP.iEx_:
-            plot_vector(
-                [FLEKSTP.iEx_, FLEKSTP.iEy_, FLEKSTP.iEz_], ["Ex", "Ey", "Ez"], 4
-            )
+            if ax == None:
+                f, ax = plt.subplots(1, 1, figsize=(10, 6), constrained_layout=True)
 
-        return
+            ax.plot(x, y, **kwargs)
+        elif type == "all":
+            ncol = 3
+            nrow = 3  # Default for X, V
+            if self.nReal == 10:  # additional B field
+                nrow = 4
+            elif self.nReal == 13:  # additional B and E field
+                nrow = 5
+
+            f, axs = plt.subplots(nrow, ncol, figsize=(12, 6), constrained_layout=True)
+
+            # Plot trajectories
+            for i, ax in enumerate(axs[0, :]):
+                x_id = FLEKSTP.ix_ if i < 2 else FLEKSTP.iy_
+                y_id = FLEKSTP.iy_ if i == 0 else FLEKSTP.iz_
+                ax.plot(data[:, x_id], data[:, y_id], "k")
+                ax.scatter(
+                    data[:, x_id],
+                    data[:, y_id],
+                    c=plt.cm.winter(tNorm),
+                    edgecolor="none",
+                    marker="o",
+                    s=10,
+                )
+                ax.set_xlabel("x" if i < 2 else "y")
+                ax.set_ylabel("y" if i == 0 else "z")
+
+            plot_vector([FLEKSTP.ix_, FLEKSTP.iy_, FLEKSTP.iz_], ["x", "y", "z"], 1)
+            plot_vector([FLEKSTP.iu_, FLEKSTP.iv_, FLEKSTP.iw_], ["Vx", "Vy", "Vz"], 2)
+
+            if self.nReal > FLEKSTP.iBx_:
+                plot_vector(
+                    [FLEKSTP.iBx_, FLEKSTP.iBy_, FLEKSTP.iBz_], ["Bx", "By", "Bz"], 3
+                )
+
+            if self.nReal > FLEKSTP.iEx_:
+                plot_vector(
+                    [FLEKSTP.iEx_, FLEKSTP.iEy_, FLEKSTP.iEz_], ["Ex", "Ey", "Ez"], 4
+                )
+
+        return ax
 
     def plot_loc(self, pData: np.ndarray):
         r"""
