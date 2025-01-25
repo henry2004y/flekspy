@@ -74,13 +74,13 @@ class FLEKSTP(object):
         self.plistfiles.sort()
         self.pfiles.sort()
 
-        self.list_index_to_time = []
+        self.indextotime = []
         if readAllFiles:
             for filename in self.pfiles:
                 record = self._read_the_first_record(filename)
                 if record == None:
                     continue
-                self.list_index_to_time.append(record[FLEKSTP.it_])
+                self.indextotime.append(record[FLEKSTP.it_])
 
         if iListEnd == -1:
             iListEnd = len(self.plistfiles)
@@ -95,12 +95,12 @@ class FLEKSTP(object):
         for plist in self.plists:
             self.IDs.update(plist.keys())
 
-        self.file_time = []
+        self.filetime = []
         for filename in self.pfiles:
             record = self._read_the_first_record(filename)
             if record == None:
                 continue
-            self.file_time.append(record[FLEKSTP.it_])
+            self.filetime.append(record[FLEKSTP.it_])
 
         print(f"Particles of species {self.iSpecies} are read from {dirs}")
         print(f"Number of particles: {len(self.IDs)}")
@@ -110,11 +110,11 @@ class FLEKSTP(object):
 
     def get_index_to_time(self) -> List:
         r"""
-        Getter method for accessing list_index_to_time.
+        Getter method for accessing indextotime.
         """
-        if len(self.list_index_to_time) == 0:
+        if len(self.indextotime) == 0:
             print("Index to time mapping was not initialized")
-        return self.list_index_to_time
+        return self.indextotime
 
     def read_particle_list(self, fileName: str) -> Dict[Tuple[int, int], int]:
         r"""
@@ -168,11 +168,11 @@ class FLEKSTP(object):
         """
 
         nFile = len(self.pfiles)
-        if time < self.file_time[0] or time > self.file_time[-1]:
+        if time < self.filetime[0] or time > self.filetime[-1]:
             raise Exception(f"There are no particles at time {time}.")
         iFile = 0
         while iFile < nFile - 1:
-            if time < self.file_time[iFile + 1]:
+            if time < self.filetime[iFile + 1]:
                 break
             iFile += 1
         
