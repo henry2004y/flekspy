@@ -168,18 +168,18 @@ class FLEKSTP(object):
         """
 
         nFile = len(self.pfiles)
-        for iFile in range(nFile):
-            if iFile == 0 and time < self.file_time[iFile]:
-                raise Exception("There is no particle at the given time.")
-            if iFile == nFile - 1:
+        if time < self.file_time[0] or time > self.file_time[-1]:
+            raise Exception(f"There are no particles at time {time}.")
+        iFile = 0
+        while iFile < nFile - 1:
+            if time < self.file_time[iFile + 1]:
                 break
-            if time >= self.file_time[iFile] and time < self.file_time[iFile + 1]:
-                break
-
+            iFile += 1
+        
         fileName = self.pfiles[iFile]
 
-        dataList = []
-        idList = []
+        dataList: list[float] = []
+        idList: list[tuple] = []
         with open(fileName, "rb") as f:
             while True:
                 binaryData = f.read(4 * 4)
@@ -333,12 +333,14 @@ class FLEKSTP(object):
                 x = data[:, FLEKSTP.iy_]
             case "z":
                 x = data[:, FLEKSTP.iz_]
-            case "vx":
+            case "u" | "vx" | "ux":
                 x = data[:, FLEKSTP.iu_]
-            case "vy":
+            case "v" | "vy" | "uy":
                 x = data[:, FLEKSTP.iv_]
-            case "vz":
+            case "w" | "vz" | "uz":
                 x = data[:, FLEKSTP.iw_]
+            case _:
+                raise Exception(f"Unknown plot variable {name}")
 
         return x
 
@@ -461,4 +463,4 @@ class FLEKSTP(object):
         ax[skeys[3]].set_ylabel("y")
         ax[skeys[3]].set_zlabel("z")
 
-        return
+        return ax
