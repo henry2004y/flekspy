@@ -109,7 +109,7 @@ class FLEKSTP(object):
         return list(sorted(self.IDs))
 
     def get_index_to_time(self) -> List:
-        r"""
+        """
         Getter method for accessing indextotime.
         """
         if len(self.indextotime) == 0:
@@ -117,7 +117,7 @@ class FLEKSTP(object):
         return self.indextotime
 
     def read_particle_list(self, fileName: str) -> Dict[Tuple[int, int], int]:
-        r"""
+        """
         Read and return a list of the particle IDs.
         """
         # 2 integers + 1 unsigned long long
@@ -133,7 +133,7 @@ class FLEKSTP(object):
         return plist
 
     def _read_the_first_record(self, fileName: str) -> Union[List[float], None]:
-        r"""
+        """
         Get the first record stored in one file.
         """
         dataList = list()
