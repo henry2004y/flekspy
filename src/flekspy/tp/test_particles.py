@@ -74,13 +74,13 @@ class FLEKSTP(object):
         self.plistfiles.sort()
         self.pfiles.sort()
 
-        self.list_index_to_time = []
+        self.indextotime = []
         if readAllFiles:
             for filename in self.pfiles:
                 record = self._read_the_first_record(filename)
                 if record == None:
                     continue
-                self.list_index_to_time.append(record[FLEKSTP.it_])
+                self.indextotime.append(record[FLEKSTP.it_])
 
         if iListEnd == -1:
             iListEnd = len(self.plistfiles)
@@ -95,12 +95,12 @@ class FLEKSTP(object):
         for plist in self.plists:
             self.IDs.update(plist.keys())
 
-        self.file_time = []
+        self.filetime = []
         for filename in self.pfiles:
             record = self._read_the_first_record(filename)
             if record == None:
                 continue
-            self.file_time.append(record[FLEKSTP.it_])
+            self.filetime.append(record[FLEKSTP.it_])
 
         print(f"Particles of species {self.iSpecies} are read from {dirs}")
         print(f"Number of particles: {len(self.IDs)}")
@@ -109,15 +109,15 @@ class FLEKSTP(object):
         return list(sorted(self.IDs))
 
     def get_index_to_time(self) -> List:
-        r"""
-        Getter method for accessing list_index_to_time.
         """
-        if len(self.list_index_to_time) == 0:
+        Getter method for accessing indextotime.
+        """
+        if len(self.indextotime) == 0:
             print("Index to time mapping was not initialized")
-        return self.list_index_to_time
+        return self.indextotime
 
     def read_particle_list(self, fileName: str) -> Dict[Tuple[int, int], int]:
-        r"""
+        """
         Read and return a list of the particle IDs.
         """
         # 2 integers + 1 unsigned long long
@@ -133,7 +133,7 @@ class FLEKSTP(object):
         return plist
 
     def _read_the_first_record(self, fileName: str) -> Union[List[float], None]:
-        r"""
+        """
         Get the first record stored in one file.
         """
         dataList = list()
@@ -168,19 +168,18 @@ class FLEKSTP(object):
         """
 
         nFile = len(self.pfiles)
-        for iFile in range(nFile):
-            if iFile == 0 and time < self.file_time[iFile]:
-                raise Exception("Error: There is no particle at the given time")
-
-            if iFile == nFile - 1:
+        if time < self.filetime[0] or time > self.filetime[-1]:
+            raise Exception(f"There are no particles at time {time}.")
+        iFile = 0
+        while iFile < nFile - 1:
+            if time < self.filetime[iFile + 1]:
                 break
-            if time >= self.file_time[iFile] and time < self.file_time[iFile + 1]:
-                break
-
+            iFile += 1
+        
         fileName = self.pfiles[iFile]
 
-        dataList = []
-        idList = []
+        dataList: list[float] = []
+        idList: list[tuple] = []
         with open(fileName, "rb") as f:
             while True:
                 binaryData = f.read(4 * 4)
@@ -324,7 +323,37 @@ class FLEKSTP(object):
 
         return pselected
 
-    def plot_trajectory(self, pID: Tuple[int, int]):
+    def get_data(self, data, name: str):
+        match name:
+            case "t":
+                x = data[:, FLEKSTP.it_]
+            case "x":
+                x = data[:, FLEKSTP.ix_]
+            case "y":
+                x = data[:, FLEKSTP.iy_]
+            case "z":
+                x = data[:, FLEKSTP.iz_]
+            case "u" | "vx" | "ux":
+                x = data[:, FLEKSTP.iu_]
+            case "v" | "vy" | "uy":
+                x = data[:, FLEKSTP.iv_]
+            case "w" | "vz" | "uz":
+                x = data[:, FLEKSTP.iw_]
+            case _:
+                raise Exception(f"Unknown plot variable {name}")
+
+        return x
+
+    def plot_trajectory(
+        self,
+        pID: Tuple[int, int],
+        *,
+        type="all",
+        xaxis="t",
+        yaxis="x",
+        ax=None,
+        **kwargs,
+    ):
         r"""
         Plots the trajectory and velocities of the particle pID.
 
@@ -332,61 +361,70 @@ class FLEKSTP(object):
         >>> tp.plot_trajectory((3,15))
         """
 
+        def plot_data(dd, label, irow, icol):
+            ax[irow, icol].plot(t, dd, label=label)
+            ax[irow, icol].scatter(
+                t, dd, c=plt.cm.winter(tNorm), edgecolor="none", marker="o", s=10
+            )
+            ax[irow, icol].set_xlabel("time")
+            ax[irow, icol].set_ylabel(label)
+
+        def plot_vector(idx, labels, irow):
+            for i, (id, label) in enumerate(zip(idx, labels)):
+                plot_data(data[:, id], label, irow, i, **kwargs)
+
         data = self.read_particle_trajectory(pID)
         t = data[:, FLEKSTP.it_]
         tNorm = (t - t[0]) / (t[-1] - t[0])
 
-        ncol = 3
-        nrow = 3  # Default for X, V
-        if self.nReal == 10:  # additional B field
-            nrow = 4
-        elif self.nReal == 13:  # additional B and E field
-            nrow = 5
+        if type == "single":
+            x = self.get_data(data, xaxis)
+            y = self.get_data(data, yaxis)
 
-        f, axs = plt.subplots(nrow, ncol, figsize=(12, 6), constrained_layout=True)
+            if ax == None:
+                f, ax = plt.subplots(1, 1, figsize=(10, 6), constrained_layout=True)
 
-        # Plot trajectories
-        for i, ax in enumerate(axs[0, :]):
-            x_id = FLEKSTP.ix_ if i < 2 else FLEKSTP.iy_
-            y_id = FLEKSTP.iy_ if i == 0 else FLEKSTP.iz_
-            ax.plot(data[:, x_id], data[:, y_id], "k")
-            ax.scatter(
-                data[:, x_id],
-                data[:, y_id],
-                c=plt.cm.winter(tNorm),
-                edgecolor="none",
-                marker="o",
-                s=10,
-            )
-            ax.set_xlabel("x" if i < 2 else "y")
-            ax.set_ylabel("y" if i == 0 else "z")
+            ax.plot(x, y, **kwargs)
+        elif type == "all":
+            ncol = 3
+            nrow = 3  # Default for X, V
+            if self.nReal == 10:  # additional B field
+                nrow = 4
+            elif self.nReal == 13:  # additional B and E field
+                nrow = 5
 
-        def plot_data(dd, label, irow, icol):
-            axs[irow, icol].plot(t, dd, label=label)
-            axs[irow, icol].scatter(
-                t, dd, c=plt.cm.winter(tNorm), edgecolor="none", marker="o", s=10
-            )
-            axs[irow, icol].set_xlabel("time")
-            axs[irow, icol].set_ylabel(label)
+            f, ax = plt.subplots(nrow, ncol, figsize=(12, 6), constrained_layout=True)
 
-        def plot_vector(idx, labels, irow):
-            for i, (id, label) in enumerate(zip(idx, labels)):
-                plot_data(data[:, id], label, irow, i)
+            # Plot trajectories
+            for i, a in enumerate(ax[0, :]):
+                x_id = FLEKSTP.ix_ if i < 2 else FLEKSTP.iy_
+                y_id = FLEKSTP.iy_ if i == 0 else FLEKSTP.iz_
+                a.plot(data[:, x_id], data[:, y_id], "k")
+                a.scatter(
+                    data[:, x_id],
+                    data[:, y_id],
+                    c=plt.cm.winter(tNorm),
+                    edgecolor="none",
+                    marker="o",
+                    s=10,
+                )
+                a.set_xlabel("x" if i < 2 else "y")
+                a.set_ylabel("y" if i == 0 else "z")
 
-        plot_vector([FLEKSTP.ix_, FLEKSTP.iy_, FLEKSTP.iz_], ["x", "y", "z"], 1)
-        plot_vector([FLEKSTP.iu_, FLEKSTP.iv_, FLEKSTP.iw_], ["Vx", "Vy", "Vz"], 2)
+            plot_vector([FLEKSTP.ix_, FLEKSTP.iy_, FLEKSTP.iz_], ["x", "y", "z"], 1)
+            plot_vector([FLEKSTP.iu_, FLEKSTP.iv_, FLEKSTP.iw_], ["Vx", "Vy", "Vz"], 2)
 
-        if self.nReal > FLEKSTP.iBx_:
-            plot_vector(
-                [FLEKSTP.iBx_, FLEKSTP.iBy_, FLEKSTP.iBz_], ["Bx", "By", "Bz"], 3
-            )
+            if self.nReal > FLEKSTP.iBx_:
+                plot_vector(
+                    [FLEKSTP.iBx_, FLEKSTP.iBy_, FLEKSTP.iBz_], ["Bx", "By", "Bz"], 3
+                )
 
-        if self.nReal > FLEKSTP.iEx_:
-            plot_vector(
-                [FLEKSTP.iEx_, FLEKSTP.iEy_, FLEKSTP.iEz_], ["Ex", "Ey", "Ez"], 4
-            )
+            if self.nReal > FLEKSTP.iEx_:
+                plot_vector(
+                    [FLEKSTP.iEx_, FLEKSTP.iEy_, FLEKSTP.iEz_], ["Ex", "Ey", "Ez"], 4
+                )
 
-        return
+        return ax
 
     def plot_loc(self, pData: np.ndarray):
         r"""
@@ -403,7 +441,7 @@ class FLEKSTP(object):
 
         # create subplot mosaic with different keyword arguments
         skeys = ["A", "B", "C", "D"]
-        f, axs = plt.subplot_mosaic(
+        f, ax = plt.subplot_mosaic(
             "AB;CD",
             per_subplot_kw={("D"): {"projection": "3d"}},
             gridspec_kw={"width_ratios": [1, 1], "wspace": 0.1, "hspace": 0.1},
@@ -415,14 +453,14 @@ class FLEKSTP(object):
         for i, (x, y, labels) in enumerate(
             zip([px, px, py], [py, pz, pz], [("x", "y"), ("x", "z"), ("y", "z")])
         ):
-            axs[skeys[i]].scatter(x, y, s=1)
-            axs[skeys[i]].set_xlabel(labels[0])
-            axs[skeys[i]].set_ylabel(labels[1])
+            ax[skeys[i]].scatter(x, y, s=1)
+            ax[skeys[i]].set_xlabel(labels[0])
+            ax[skeys[i]].set_ylabel(labels[1])
 
         # Create 3D scatter plot
-        axs[skeys[3]].scatter(px, py, pz, s=1)
-        axs[skeys[3]].set_xlabel("x")
-        axs[skeys[3]].set_ylabel("y")
-        axs[skeys[3]].set_zlabel("z")
+        ax[skeys[3]].scatter(px, py, pz, s=1)
+        ax[skeys[3]].set_xlabel("x")
+        ax[skeys[3]].set_ylabel("y")
+        ax[skeys[3]].set_zlabel("z")
 
-        return
+        return ax
