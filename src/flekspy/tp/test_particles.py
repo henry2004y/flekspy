@@ -106,7 +106,7 @@ class FLEKSTP(object):
         str = (
             f"Particles of species {self.iSpecies}\n"
             f"Number of particles: {len(self.IDs)}\n"
-            f"Time interval: {self.filetime}\n"
+            f"Recorded time tags: {self.filetime}\n"
         )
         return str
 
@@ -161,8 +161,10 @@ class FLEKSTP(object):
         self, time: float, doSave: bool = False
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Get the information of all the particles at a given time, and save to a csv file
-        with the name "particles_t***.csv" in the current directory if doSave is True.
+        Get the information of all the particles at a given time.
+        If doSave, save to a CSV file with the name "particles_t***.csv".
+
+        Note that the time tags in filetime do not include the last saved time.
 
         Returns:
             ids: a numpy array of tuples contains the particle IDs.
@@ -173,7 +175,7 @@ class FLEKSTP(object):
         """
 
         nFile = len(self.pfiles)
-        if time < self.filetime[0] or time > self.filetime[-1]:
+        if time < self.filetime[0]:
             raise Exception(f"There are no particles at time {time}.")
         iFile = 0
         while iFile < nFile - 1:
@@ -195,18 +197,24 @@ class FLEKSTP(object):
                 binaryData = f.read(4 * self.nReal * nRecord)
                 allRecords = list(struct.unpack("f" * nRecord * self.nReal, binaryData))
                 for i in range(nRecord):
-                    if (
-                        allRecords[self.nReal * i + FLEKSTP.it_] >= time
-                        or i == nRecord - 1
-                    ):
+                    if allRecords[self.nReal * i + FLEKSTP.it_] >= time:
                         dataList.append(
                             allRecords[self.nReal * i : self.nReal * (i + 1)]
                         )
                         idList.append((cpu, idtmp))
                         break
+                    elif (
+                        i == nRecord - 1
+                        and allRecords[self.nReal * i + FLEKSTP.it_] < time
+                    ):
+                        continue
 
         npData = np.array(dataList)
         idData = np.array(idList, dtype="i,i")
+        # Selected time is larger than the last saved time
+        if idData.size == 0:
+            raise Exception(f"There are no particles at time {time}.")
+
         if doSave:
             fileName = f"particles_t{time}.csv"
             header = "cpu,iid,time,x,y,z,ux,uy,uz"

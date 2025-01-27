@@ -142,6 +142,8 @@ class TestParticles:
         ax = tp.plot_loc(pData[0:2,:])
         assert ax["A"].get_xlim()[1] == -0.03136133626103401
         with pytest.raises(Exception):
+            ids, pData = tp.read_particles_at_time(-10.0, doSave=False)
+        with pytest.raises(Exception):
             ids, pData = tp.read_particles_at_time(10.0, doSave=False)
 
     def test_particle_select(self):
