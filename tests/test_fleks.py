@@ -126,6 +126,7 @@ class TestParticles:
     def test_particles(self):
         tp = self.tp
         pIDs = self.pIDs
+        assert tp.__repr__().startswith("Particles")
         assert pIDs[0] == (0, 5121)
         traj = tp.read_particle_trajectory(pIDs[10])
         assert traj[0, 1] == -0.031386006623506546
@@ -142,6 +143,17 @@ class TestParticles:
         assert ax["A"].get_xlim()[1] == -0.03136133626103401
         with pytest.raises(Exception):
             ids, pData = tp.read_particles_at_time(10.0, doSave=False)
+
+    def test_particle_select(self):
+        from flekspy import FLEKSTP
+        def f_select(tp, pid):
+            pData = tp.read_initial_location(pid)
+            inRegion = pData[FLEKSTP.ix_] > 0 and pData[FLEKSTP.iy_] > 0
+            return inRegion
+    
+        pSelected = self.tp.select_particles(f_select)
+        assert len(pSelected) == 2560
+        
 
     def test_trajectory(self):
         tp = self.tp

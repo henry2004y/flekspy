@@ -8,7 +8,7 @@ import struct
 
 
 class FLEKSTP(object):
-    r"""
+    """
     A class that is used to read and plot test particles. Each particle ID consists of
     a CPU index, a particle index on each CPU, and a location index.
     By default, 7 real numbers saved for each step: time + position + velocity.
@@ -102,8 +102,13 @@ class FLEKSTP(object):
                 continue
             self.filetime.append(record[FLEKSTP.it_])
 
-        print(f"Particles of species {self.iSpecies} are read from {dirs}")
-        print(f"Number of particles: {len(self.IDs)}")
+    def __repr__(self):
+        str = (
+            f"Particles of species {self.iSpecies}\n"
+            f"Number of particles: {len(self.IDs)}\n"
+            f"Time interval: {self.filetime}\n"
+        )
+        return str
 
     def getIDs(self):
         return list(sorted(self.IDs))
@@ -155,7 +160,7 @@ class FLEKSTP(object):
     def read_particles_at_time(
         self, time: float, doSave: bool = False
     ) -> Tuple[np.ndarray, np.ndarray]:
-        r"""
+        """
         Get the information of all the particles at a given time, and save to a csv file
         with the name "particles_t***.csv" in the current directory if doSave is True.
 
@@ -175,7 +180,7 @@ class FLEKSTP(object):
             if time < self.filetime[iFile + 1]:
                 break
             iFile += 1
-        
+
         fileName = self.pfiles[iFile]
 
         dataList: list[float] = []
@@ -226,7 +231,7 @@ class FLEKSTP(object):
         shiftTime: bool = False,
         scaleTime: bool = False,
     ) -> None:
-        r"""
+        """
         Save the trajectory of a particle to a csv file.
 
         Args:
@@ -254,8 +259,8 @@ class FLEKSTP(object):
         np.savetxt(fileName, pData, delimiter=",", header=header, comments="")
 
     def read_particle_trajectory(self, pID: Tuple[int, int]):
-        r"""
-        Read and return the trajectory of a particle.
+        """
+        Return the trajectory of a test particle.
 
         Args:
             pID: particle ID
@@ -280,8 +285,8 @@ class FLEKSTP(object):
         return np.array(dataList).reshape(nRecord, self.nReal)
 
     def read_initial_location(self, pID):
-        r"""
-        Read and return the initial location of a test particle
+        """
+        Return the initial location of a test particle.
         """
 
         for fileName, plist in zip(self.pfiles, self.plists):
@@ -296,32 +301,31 @@ class FLEKSTP(object):
                     dataList = list(struct.unpack("f" * nRead * self.nReal, binaryData))
                 return dataList
 
-    def select_particles(self, fSelect: Callable = None) -> List[Tuple[int, int]]:
-        r"""
-        Select and return the particles whose initial condition satisfy the requirement
-        set by the user defined function fSelect. The first argument of fSelect is the
-        particle ID, and the second argument is the initial record (time, location,
-        velocity and weight of a particle) of a particle.
+    def select_particles(self, f_select: Callable = None) -> List[Tuple[int, int]]:
+        """
+        Return the test particles whose initial conditions satisfy the requirement
+        set by the user defined function f_select. The first argument of f_select is the
+        particle ID, and the second argument is the ID of a particle.
 
         Examples:
-        >>> def fselect(tp, pid):
-        >>>     pdata = tp.read_initial_loc_with_ID(pid)
-        >>>     intime = pdata[FLEKSTP.it_] < 3601
-        >>>     inregion = pdata[FLEKSTP.ix_] > 20
-        >>>     return intime and inregion
+        >>> def f_select(tp, pid):
+        >>>     pData = tp.read_initial_location(pid)
+        >>>     inTime = pData[FLEKSTP.it_] < 3601
+        >>>     inRegion = pData[FLEKSTP.ix_] > 20
+        >>>     return inTime and inRegion
         >>>
-        >>> pselected = tp.select_particles(fselect)
+        >>> pselected = tp.select_particles(f_select)
         >>> tp.plot_trajectory(list(pselected.keys())[1])
         """
 
-        if fSelect == None:
+        if f_select == None:
 
-            def fSelect(tp, pid):
+            def f_select(tp, pid):
                 return True
 
-        pselected = list(filter(lambda pid: fSelect(self, pid), self.IDs))
+        pSelected = list(filter(lambda pid: f_select(self, pid), self.IDs))
 
-        return pselected
+        return pSelected
 
     def get_data(self, data, name: str):
         match name:
@@ -385,6 +389,8 @@ class FLEKSTP(object):
                 f, ax = plt.subplots(1, 1, figsize=(10, 6), constrained_layout=True)
 
             ax.plot(x, y, **kwargs)
+            ax.set_xlabel(xaxis)
+            ax.set_ylabel(yaxis)
         elif type == "all":
             ncol = 3
             nrow = 3  # Default for X, V
@@ -427,7 +433,7 @@ class FLEKSTP(object):
         return ax
 
     def plot_loc(self, pData: np.ndarray):
-        r"""
+        """
         Plot the location of particles pData.
 
         Examples:
