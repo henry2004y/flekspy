@@ -22,7 +22,7 @@ class FLEKSTP(object):
     >>> tp.plot_trajectory(pIDs[3])
     >>> tp.save_trajectory_to_csv(pIDs[5])
     >>> ids, pData = tp.read_particles_at_time(6500.8, doSave=True)
-    >>> f = tp.plot_loc(pData)
+    >>> f = tp.plot_location(pData)
     """
 
     it_ = 0
@@ -104,9 +104,10 @@ class FLEKSTP(object):
 
     def __repr__(self):
         str = (
-            f"Particles of species {self.iSpecies}\n"
-            f"Number of particles: {len(self.IDs)}\n"
-            f"Recorded time tags: {self.filetime}\n"
+            f"Particles species ID: {self.iSpecies}\n"
+            f"Number of particles : {len(self.IDs)}\n"
+            f"First time tag      : {self.filetime[0]}\n"
+            f"Last  time tag      : {self.filetime[-1]}\n"
         )
         return str
 
@@ -390,7 +391,10 @@ class FLEKSTP(object):
         tNorm = (t - t[0]) / (t[-1] - t[0])
 
         if type == "single":
-            x = self.get_data(data, xaxis)
+            if xaxis == "t":
+                x = t
+            else:
+                x = self.get_data(data, xaxis)
             y = self.get_data(data, yaxis)
 
             if ax == None:
@@ -399,6 +403,34 @@ class FLEKSTP(object):
             ax.plot(x, y, **kwargs)
             ax.set_xlabel(xaxis)
             ax.set_ylabel(yaxis)
+        elif type == "xv":
+            if ax == None:
+                f, ax = plt.subplots(
+                    2, 1, figsize=(10, 6), constrained_layout=True, sharex=True
+                )
+            y1 = self.get_data(data, "x")
+            y2 = self.get_data(data, "y")
+            y3 = self.get_data(data, "z")
+
+            ax[0].set_xlabel("t")
+            ax[0].set_ylabel("location")
+            ax[1].set_ylabel("velocity")
+            ax[0].plot(t, y1, label="x")
+            ax[0].plot(t, y2, label="y")
+            ax[0].plot(t, y3, label="z")
+
+            y1 = self.get_data(data, "u")
+            y2 = self.get_data(data, "v")
+            y3 = self.get_data(data, "w")
+            
+            ax[1].plot(t, y1, label="vx")
+            ax[1].plot(t, y2, label="vy")
+            ax[1].plot(t, y3, label="vz")
+            
+            for a in ax:
+                a.legend()
+                a.grid()
+
         elif type == "all":
             ncol = 3
             nrow = 3  # Default for X, V
@@ -440,13 +472,13 @@ class FLEKSTP(object):
 
         return ax
 
-    def plot_loc(self, pData: np.ndarray):
+    def plot_location(self, pData: np.ndarray):
         """
         Plot the location of particles pData.
 
         Examples:
         >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
-        >>> f = tp.plot_loc(pData)
+        >>> f = tp.plot_location(pData)
         """
 
         px = pData[:, FLEKSTP.ix_]
