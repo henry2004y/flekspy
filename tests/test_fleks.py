@@ -139,7 +139,7 @@ class TestParticles:
         assert x[1] == traj[0, 1]
         ids, pData = tp.read_particles_at_time(0.0, doSave=False)
         assert ids[1][1] == 5129
-        ax = tp.plot_loc(pData[0:2, :])
+        ax = tp.plot_location(pData[0:2, :])
         assert ax["A"].get_xlim()[1] == -0.03136133626103401
         with pytest.raises(Exception):
             ids, pData = tp.read_particles_at_time(-10.0, doSave=False)

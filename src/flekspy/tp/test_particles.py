@@ -22,7 +22,7 @@ class FLEKSTP(object):
     >>> tp.plot_trajectory(pIDs[3])
     >>> tp.save_trajectory_to_csv(pIDs[5])
     >>> ids, pData = tp.read_particles_at_time(6500.8, doSave=True)
-    >>> f = tp.plot_loc(pData)
+    >>> f = tp.plot_location(pData)
     """
 
     it_ = 0
@@ -472,13 +472,13 @@ class FLEKSTP(object):
 
         return ax
 
-    def plot_loc(self, pData: np.ndarray):
+    def plot_location(self, pData: np.ndarray):
         """
         Plot the location of particles pData.
 
         Examples:
         >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
-        >>> f = tp.plot_loc(pData)
+        >>> f = tp.plot_location(pData)
         """
 
         px = pData[:, FLEKSTP.ix_]
