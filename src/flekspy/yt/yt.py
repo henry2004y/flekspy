@@ -352,7 +352,7 @@ class FLEKSData(BoxlibDataset):
                 Axis range of 4 elements: x_min, x_max, y_min, y_max
 
         Examples:
-        >>> pp = ds.plot_phase_region("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
+        >>> pp = ds.plot_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
         >>> pp.show()
         """
 
