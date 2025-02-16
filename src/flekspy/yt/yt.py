@@ -319,43 +319,16 @@ class FLEKSData(BoxlibDataset):
 
         return splt
 
-    def plot_phase(
+    def _get_profile(
         self,
         x_field,
         y_field,
         z_field,
         region: YTSelectionContainer | None = None,
-        unit_type: str = "planet",
         x_bins: int = 128,
         y_bins: int = 128,
         domain_size: tuple | None = None,
-        font_size: float = 18,
-        figure_size: float = 8,
-        customized: bool = False,
-    ) -> PhasePlot:
-        r"""Plot phase space distribution of particle
-
-        Args:
-            region: YTSelectionContainer
-                Spatial region to be selected, such as all_data, box, region, or sphere.
-
-            x_field & y_field: string
-                The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
-
-            z_field: string
-                It is usually the particle weight: "p_w".
-
-            unit_type: string
-                The unit system of the plots. "planet" or "si".
-
-            domain_size: tuple
-                Axis range of 4 elements: x_min, x_max, y_min, y_max
-
-        Examples:
-        >>> pp = ds.plot_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
-        >>> pp.show()
-        """
-
+    ):
         if region is None:
             region = self.box(self.domain_left_edge, self.domain_right_edge)
 
@@ -378,6 +351,98 @@ class FLEKSData(BoxlibDataset):
             weight_field=None,
             extrema=extrema,
             logs=logs,
+        )
+
+        return profile
+
+    def get_phase(
+        self,
+        x_field,
+        y_field,
+        z_field,
+        region: YTSelectionContainer | None = None,
+        x_bins: int = 128,
+        y_bins: int = 128,
+        domain_size: tuple | None = None,
+    ):
+        """Get particle phase space distribution.
+
+        Args:
+            region: YTSelectionContainer
+                Spatial region to be selected, such as all_data, box, region, or sphere.
+
+            x_field & y_field: string
+                The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
+
+            z_field: string
+                It is usually the particle weight: "p_w".
+
+            domain_size: tuple
+                Axis range of 4 elements: x_min, x_max, y_min, y_max
+
+        Examples:
+        >>> x, y, w = ds.get_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
+        """
+        profile = self._get_profile(
+            x_field,
+            y_field,
+            z_field,
+            region=region,
+            x_bins=x_bins,
+            y_bins=y_bins,
+            domain_size=domain_size,
+        )
+
+        return (
+            profile.x.ndarray_view(),
+            profile.y.ndarray_view(),
+            profile[self.pvar(z_field)].ndarray_view(),
+        )
+
+    def plot_phase(
+        self,
+        x_field,
+        y_field,
+        z_field,
+        region: YTSelectionContainer | None = None,
+        unit_type: str = "planet",
+        x_bins: int = 128,
+        y_bins: int = 128,
+        domain_size: tuple | None = None,
+        font_size: float = 18,
+        figure_size: float = 8,
+        customized: bool = False,
+    ) -> PhasePlot:
+        """Plot particle phase space distribution.
+
+        Args:
+            region: YTSelectionContainer
+                Spatial region to be selected, such as all_data, box, region, or sphere.
+
+            x_field & y_field: string
+                The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
+
+            z_field: string
+                It is usually the particle weight: "p_w".
+
+            unit_type: string
+                The unit system of the plots. "planet" or "si".
+
+            domain_size: tuple
+                Axis range of 4 elements: x_min, x_max, y_min, y_max
+
+        Examples:
+        >>> pp = ds.plot_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
+        >>> pp.show()
+        """
+        profile = self._get_profile(
+            x_field,
+            y_field,
+            z_field,
+            region=region,
+            x_bins=x_bins,
+            y_bins=y_bins,
+            domain_size=domain_size,
         )
 
         pp = yt.PhasePlot.from_profile(

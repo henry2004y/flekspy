@@ -21,3 +21,7 @@
 
 - `dataContainer` and its related classes are renamed to be consistent with Python naming conventions.
 - `contour` has been renamed to `plot` for `DataContainer2D`.
+
+## v0.2.8 (2025/02/15)
+
+- Add `get_phase` to obtain the direct phase space distributions, which is useful for customized decoration of plots.

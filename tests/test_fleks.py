@@ -91,6 +91,9 @@ class TestAMReX:
 
         ## Select and plot the particles inside a box defined by xleft and xright
         region = ds.box(xleft, xright)
+        x, y, w = ds.get_phase(x_field, y_field, z_field, region=region,
+            domain_size=(xleft[0], xright[0], xleft[1], xright[1]))
+        assert x.shape == (128,) and w.max() == 2.8024863240162035e+23
         pp = ds.plot_phase(
             x_field,
             y_field,
