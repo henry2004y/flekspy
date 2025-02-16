@@ -461,8 +461,8 @@ class DataContainer2D(DataContainer):
             var (str): variable of contours.
 
         Examples:
-        >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
-        >>> dc.add_contour(axes[0,0], "rhos1>1")
+            >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
+            >>> dc.add_contour(axes[0,0], "rhos1>1")
         """
 
         vname, vmin, vmax = self.analyze_variable_string(var)
@@ -514,8 +514,8 @@ class DataContainer2D(DataContainer):
             density (float): it controls the number of streamlines.
 
         Examples:
-        >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
-        >>> dc.add_stream(axes[1,0], "Bx", "Bz", density=2)
+            >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
+            >>> dc.add_stream(axes[1,0], "Bx", "Bz", density=2)
         """
 
         v1 = self.evaluate_expression(var1).value
@@ -602,7 +602,7 @@ class DataContainer1D(DataContainer):
     ):
         """
         Examples:
-        >>> f, axes = dc.plot("absdivb bx", xlim=[-5,5])
+            >>> f, axes = dc.plot("absdivb bx", xlim=[-5,5])
         """
 
         if type(vars) == str:

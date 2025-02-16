@@ -116,7 +116,7 @@ class FLEKSHierarchy(BoxlibHierarchy):
 
 
 class FLEKSData(BoxlibDataset):
-    r"""
+    """
     Read and plot the AMReX format output from FLEKS.
 
     Args:
@@ -259,7 +259,7 @@ class FLEKSData(BoxlibDataset):
         )
 
     def get_domain(self) -> DataContainer3D:
-        r"""
+        """
         Read all the simulation data into a 3D box.
         """
         domain = self.covering_grid(
@@ -283,7 +283,7 @@ class FLEKSData(BoxlibDataset):
         return DataContainer3D(dataSets, axes[0], axes[1], axes[2])
 
     def plot_slice(self, norm, cut_loc, vars, unit_type="planet", *args, **kwargs):
-        r"""Plot 2D slice
+        """Plot 2D slice
 
         Args:
             norm: str
@@ -297,9 +297,9 @@ class FLEKSData(BoxlibDataset):
         unit_type: The unit system of the plots. "planet" or "si".
 
         Examples:
-        >>> vars = ["rhos0", "uzs0", "Bz", "pxxs1", "Ex"]
-        >>> splt = ds.plot_slice("y", 0.0, vars)
-        >>> splt.display()
+            >>> vars = ["rhos0", "uzs0", "Bz", "pxxs1", "Ex"]
+            >>> splt = ds.plot_slice("y", 0.0, vars)
+            >>> splt.display()
         """
 
         if type(vars) == str:
@@ -381,7 +381,7 @@ class FLEKSData(BoxlibDataset):
                 Axis range of 4 elements: x_min, x_max, y_min, y_max
 
         Examples:
-        >>> x, y, w = ds.get_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
+            >>> x, y, w = ds.get_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
         """
         profile = self._get_profile(
             x_field,
@@ -432,8 +432,8 @@ class FLEKSData(BoxlibDataset):
                 Axis range of 4 elements: x_min, x_max, y_min, y_max
 
         Examples:
-        >>> pp = ds.plot_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
-        >>> pp.show()
+            >>> pp = ds.plot_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
+            >>> pp.show()
         """
         profile = self._get_profile(
             x_field,
@@ -501,8 +501,8 @@ class FLEKSData(BoxlibDataset):
         See more at https://yt-project.org/doc/reference/api/yt.visualization.particle_plots.html#yt.visualization.particle_plots.ParticlePlot
 
         Examples:
-        >>> pp = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x", "p_y", "p_w", unit_type="planet")
-        >>> pp.show()
+            >>> pp = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x", "p_y", "p_w", unit_type="planet")
+            >>> pp.show()
         """
         if region is None:
             region = self.box(self.domain_left_edge, self.domain_right_edge)
