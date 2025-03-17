@@ -258,7 +258,11 @@ class IDLData(object):
         if self.fileformat == "ascii":
             self.read_ascii()
         elif self.fileformat == "binary":
-            self.read_binary()
+            try: 
+                self.read_binary()
+            except:
+                print("It seems the lengths of instances are different. Try slow reading...")
+                self.read_binary_slow()
         else:
             raise ValueError(f"Unknown format = {self.fileformat}")
 
@@ -371,6 +375,14 @@ class IDLData(object):
         with open(self.filename, "rb") as f:
             if self.isOuts:
                 f.seek((self.npict) * self.nInstanceLength, 0)
+            self.read_binary_instance(f)
+
+    def read_binary_slow(self):
+        with open(self.filename, "rb") as f:
+            if self.isOuts:                
+                # Skip previous instances
+                for i in range(self.npict):                       
+                    self.read_binary_instance(f)
             self.read_binary_instance(f)
 
     def read_binary_instance(self, infile):
