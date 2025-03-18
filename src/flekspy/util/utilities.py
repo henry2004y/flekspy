@@ -1,6 +1,5 @@
 import math
 import numpy as np
-import requests
 import tarfile
 
 plot_unit_planet = {
@@ -136,7 +135,7 @@ def download_testfile(url: str, target_path="."):
       url (str): the URL of the tar.gz file.
       target_path (str): the directory to extract the files to. Defaults to the current directory.
     """
-    import os
+    import os, requests
 
     try:
         response = requests.get(url, stream=True)
