@@ -323,6 +323,8 @@ class DataContainer2D(DataContainer):
         nlevels: int = 200,
         cmap: str = "turbo",
         figsize=(10, 6),
+        f = None,
+        axes = None,
         pcolor=False,
         logscale=False,
         addgrid=False,
@@ -367,8 +369,8 @@ class DataContainer2D(DataContainer):
             varNames.append(vname)
             varMin.append(vmin)
             varMax.append(vmax)
-
-        f, axes = plt.subplots(nvar, 1, figsize=figsize, layout="constrained")
+        if f is None:
+            f, axes = plt.subplots(nvar, 1, figsize=figsize, layout="constrained")
         axes = np.array(axes)  # in case nrows == ncols == 1
         axes = axes.reshape(-1)
 
