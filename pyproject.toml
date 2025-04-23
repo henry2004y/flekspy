@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "flekspy"
-version = "0.2.10"
+version = "0.2.11"
 description = "Python utilities for processing FLEKS data"
 authors = ["Yuxi Chen <yuxichen@umich.edu>, Hongyang Zhou <hyzhou@umich.edu>"]
 readme = "README.md"
 packages = [{include = "flekspy", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 yt = "^4.3.0"
 numpy = ">=1.26.4"
 matplotlib = "^3.8.2"
