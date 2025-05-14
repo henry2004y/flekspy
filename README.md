@@ -38,6 +38,39 @@ ds = flekspy.load("sample_data/3*amrex")
 
 Plotting is supported via Matplotlib and YT. For more detailed usage and contribution guide, please refer to the [documentation](https://henry2004y.github.io/flekspy/).
 
+### ParaView Plugin
+
+`flekspy` provides a ParaView plugin for visualizing FLEKS data. To use the plugin, follow these steps:
+
+1. Make sure the ParaView version is 5.13 or higher.
+
+2. Install flekspy for pvpython.
+  - Go into the ParaView directory and create a virtual environment for Python
+
+```bash
+./bin/pvpython -m venv .venv
+```
+
+  - Check the Python version of `pvpython`
+
+```bash
+./bin/pvpython -c "import sys; print(sys.version)"
+```
+
+  - Install flekspy in the directory right in the venv. You may need to adjust the target path if `pvpython` does not detect `flekspy`. Assuming the Python version is 3.10.11, run
+
+```bash
+python3 -m pip  install --only-binary=:all: --python-version 3.10.11 --target ./.venv/lib/python3.10/site-packages/ flekspy
+```
+
+3. Launch ParaView with the virtual environment
+
+```bash
+./bin/paraview --venv .venv
+```
+
+4. In Tools > Manage Plugins, load the `BATSRUSReader` plugin.
+
 ## License
 
 `flekspy` is licensed under the terms of the MIT license.
