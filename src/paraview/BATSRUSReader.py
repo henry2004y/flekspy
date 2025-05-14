@@ -13,12 +13,12 @@ import flekspy
 
 
 @smproxy.reader(
-    name="SWMFReader",  # Internal name for the reader
-    label="SWMF Simulation Reader",  # Name displayed in ParaView's UI
+    name="BATSReader",  # Internal name for the reader
+    label="BATSRUS Simulation Reader",  # Name displayed in ParaView's UI
     extensions="out",  # custom file extension(s), space-separated if multiple
-    file_description="SWMF Files",
+    file_description="BATSRUS Files",
 )
-class SWMFReader(VTKPythonAlgorithmBase):
+class BATSReader(VTKPythonAlgorithmBase):
     def __init__(self):
         VTKPythonAlgorithmBase.__init__(
             self, nInputPorts=0, nOutputPorts=1, outputType="vtkImageData"
@@ -33,9 +33,9 @@ class SWMFReader(VTKPythonAlgorithmBase):
 
     @smproperty.stringvector(name="FileName", panel_visibility="advanced")
     @smdomain.filelist()
-    @smhint.filechooser(extensions="out", file_description="SWMF Files")
+    @smhint.filechooser(extensions="out", file_description="BATSRUS Files")
     def SetFileName(self, name):
-        """Specify the filename for the SWMF simulation data."""
+        """Specify the filename for the BATSRUS simulation data."""
         if self._filename != name:
             self._filename = name
             self.Modified()  # Important: Mark the algorithm as modified
@@ -59,10 +59,10 @@ class SWMFReader(VTKPythonAlgorithmBase):
     # --- RequestInformation: Provide metadata about the data ---
     def RequestInformation(self, request, inInfoVec, outInfoVec):
         if not self._filename:
-            print("SWMFReader: No filename set.")
+            print("BATSReader: No filename set.")
             return 0  # Indicate failure
 
-        print(f"SWMFReader: RequestInformation for {self._filename}")
+        print(f"BATSReader: RequestInformation for {self._filename}")
 
         # (1) Use flekspy to get metadata (e.g., dimensions) from your file
         try:
@@ -99,10 +99,10 @@ class SWMFReader(VTKPythonAlgorithmBase):
                 nx = grid
                 ny, nz = 1, 1
             self._data_extents = [0, nx - 1, 0, ny - 1, 0, nz - 1]
-            print(f"SWMFReader: Determined extents: {self._data_extents}")
+            print(f"BATSReader: Determined extents: {self._data_extents}")
 
         except Exception as e:
-            print(f"SWMFReader: Error getting metadata: {e}")
+            print(f"BATSReader: Error getting metadata: {e}")
             return 0
 
         # (2) Set the WHOLE_EXTENT for vtkImageData
@@ -133,10 +133,10 @@ class SWMFReader(VTKPythonAlgorithmBase):
     # --- RequestData: Load the actual data ---
     def RequestData(self, request, inInfoVec, outInfoVec):
         if not self._filename:
-            print("SWMFReader: No filename set for RequestData.")
+            print("BATSReader: No filename set for RequestData.")
             return 0
 
-        print(f"SWMFReader: RequestData for {self._filename}")
+        print(f"BATSReader: RequestData for {self._filename}")
         output_port_info = outInfoVec.GetInformationObject(0)
         output_data = vtkImageData.GetData(output_port_info)
 
@@ -159,7 +159,7 @@ class SWMFReader(VTKPythonAlgorithmBase):
             ds = flekspy.load(self._filename)
 
         except Exception as e:
-            print(f"SWMFReader: Error loading data with flekspy: {e}")
+            print(f"BATSReader: Error loading data with flekspy: {e}")
             return 0
 
         # (4) Convert data to vtkImageData
@@ -232,5 +232,5 @@ class SWMFReader(VTKPythonAlgorithmBase):
         # if self._timesteps:
         #    output_data.GetInformation().Set(vtkDataObject.DATA_TIME_STEP(), current_time_step_value)
 
-        print(f"SWMFReader: Successfully prepared vtkImageData for {self._filename}")
+        print(f"BATSReader: Successfully prepared vtkImageData for {self._filename}")
         return 1  # Indicate success
