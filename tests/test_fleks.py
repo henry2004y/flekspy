@@ -2,7 +2,7 @@ import pytest
 import os
 import numpy as np
 
-import flekspy
+import flekspy as fs
 from flekspy.util import download_testfile
 
 import matplotlib
@@ -34,7 +34,7 @@ class TestIDL:
     files = [os.path.join("tests/data/", file) for file in files]
 
     def test_load(self):
-        ds = flekspy.load(self.files[0])
+        ds = fs.load(self.files[0])
         assert ds.__repr__().startswith("filename")
         assert ds.time == 25.6
         assert ds.data["x"][1] == -126.5
@@ -42,24 +42,24 @@ class TestIDL:
 
     def test_load_error(self):
         with pytest.raises(FileNotFoundError):
-            ds = flekspy.load("None")
+            ds = fs.load("None")
 
     def test_extract(self):
-        ds = flekspy.load(self.files[1])
+        ds = fs.load(self.files[1])
         sat = np.array([[-28000.0, 0.0], [9000.0, 0.0]])
         d = ds.extract_data(sat)
         assert d[0][1] == 0.0
 
     def test_slice(self):
-        ds = flekspy.load(self.files[2])
+        ds = fs.load(self.files[2])
         slice = ds.get_slice("z", 0.0)
         assert slice.dimensions == (8, 8)
         assert slice.data["absdivB"][2, 3].value == np.float32(3.3033288e-05)
 
     def test_plot(self):
-        ds = flekspy.load(self.files[0])
+        ds = fs.load(self.files[0])
         ds.plot("p")
-        ds = flekspy.load(self.files[1])
+        ds = fs.load(self.files[1])
         ds.pcolormesh("x")
         ds.pcolormesh("Bx", "By", "Bz")
         assert True
@@ -70,19 +70,19 @@ class TestAMReX:
     files = [os.path.join("tests/data/", file) for file in files]
 
     def test_load(self):
-        ds = flekspy.load(self.files[0])
+        ds = fs.load(self.files[0])
         assert ds.data["uxS0"][2, 1] == np.float32(-131.71918)
         assert ds.data["uxS1"].shape == (601, 2)
 
     def test_pic(self):
-        ds = flekspy.load(self.files[1])
+        ds = fs.load(self.files[1])
         assert ds.domain_left_edge[0].v == -0.016
         dc = ds.get_slice("z", 0.5)
         assert dc.data["particle_id"][0].value == 216050.0
         assert dc.__repr__().startswith("variables")
 
     def test_phase(self):
-        ds = flekspy.load(self.files[1])
+        ds = fs.load(self.files[1])
         x_field = "p_uy"
         y_field = "p_uz"
         z_field = "p_w"
@@ -115,7 +115,7 @@ class TestAMReX:
         pp = ds.plot_phase(
             "p_uy", "p_uz", "p_w", region=sp, unit_type="si", x_bins=16, y_bins=16
         )
-        f = flekspy.extract_phase(pp)
+        f = fs.extract_phase(pp)
         assert f[0].size == 16 and f[2].shape == (16, 16)
 
 
@@ -177,8 +177,8 @@ def load(files):
     """
     Benchmarking flekspy loading.
     """
-    ds = flekspy.load(files[0])
-    ds = flekspy.load(files[1])
+    ds = fs.load(files[0])
+    ds = fs.load(files[1])
     return ds
 
 
@@ -192,4 +192,4 @@ def test_load(benchmark):
 
     result = benchmark(load, files)
 
-    assert type(result) == flekspy.IDLData
+    assert type(result) == fs.IDLData
