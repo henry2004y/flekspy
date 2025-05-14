@@ -65,45 +65,38 @@ class BATSReader(VTKPythonAlgorithmBase):
         print(f"BATSReader: RequestInformation for {self._filename}")
 
         # (1) Use flekspy to get metadata (e.g., dimensions) from your file
-        try:
-            with open(self._filename, "rb") as f:
-                end_char = "<"  # Endian marker (default: little)
-                record_len_raw = f.read(4)
-                record_len = (struct.unpack(end_char + "l", record_len_raw))[0]
-                f.read(record_len)  # skip headline
+        with open(self._filename, "rb") as f:
+            end_char = "<"  # Endian marker (default: little)
+            record_len_raw = f.read(4)
+            record_len = (struct.unpack(end_char + "l", record_len_raw))[0]
+            f.read(record_len)  # skip headline
 
-                (old_len, record_len) = struct.unpack(end_char + "2l", f.read(8))
-                pformat = "f"
-                # Parse rest of header; detect double-precision file
-                if record_len > 20:
-                    pformat = "d"
-                (iter, time, ndim, nparam, nvar) = struct.unpack(
-                    "{0}l{1}3l".format(end_char, pformat), f.read(record_len)
-                )
-                gencoord = ndim < 0
-                self.ndim = abs(ndim)
-                # Get gridsize
-                (old_len, record_len) = struct.unpack(end_char + "2l", f.read(8))
-                grid = np.array(
-                    struct.unpack(
-                        "{0}{1}l".format(end_char, self.ndim), f.read(record_len)
-                    )
-                )
+            (old_len, record_len) = struct.unpack(end_char + "2l", f.read(8))
+            pformat = "f"
+            # Parse rest of header; detect double-precision file
+            if record_len > 20:
+                pformat = "d"
+            (iter, time, ndim, nparam, nvar) = struct.unpack(
+                "{0}l{1}3l".format(end_char, pformat), f.read(record_len)
+            )
+            gencoord = ndim < 0
+            self.ndim = abs(ndim)
+            # Get gridsize
+            (old_len, record_len) = struct.unpack(end_char + "2l", f.read(8))
+            grid = np.array(
+                struct.unpack("{0}{1}l".format(end_char, self.ndim), f.read(record_len))
+            )
 
-            if self.ndim == 3:
-                nx, ny, nz = grid
-            elif self.ndim == 2:
-                nx, ny = grid
-                nz = 1
-            elif self.ndim == 1:
-                nx = grid
-                ny, nz = 1, 1
-            self._data_extents = [0, nx - 1, 0, ny - 1, 0, nz - 1]
-            print(f"BATSReader: Determined extents: {self._data_extents}")
-
-        except Exception as e:
-            print(f"BATSReader: Error getting metadata: {e}")
-            return 0
+        if self.ndim == 3:
+            nx, ny, nz = grid
+        elif self.ndim == 2:
+            nx, ny = grid
+            nz = 1
+        elif self.ndim == 1:
+            nx = grid
+            ny, nz = 1, 1
+        self._data_extents = [0, nx - 1, 0, ny - 1, 0, nz - 1]
+        print(f"BATSReader: Determined extents: {self._data_extents}")
 
         # (2) Set the WHOLE_EXTENT for vtkImageData
         # This tells ParaView the overall dimensions of the structured grid.
@@ -114,19 +107,18 @@ class BATSReader(VTKPythonAlgorithmBase):
             vtkStreamingDemandDrivenPipeline.WHOLE_EXTENT(), self._data_extents, 6
         )
 
-        # (3) Handle Time Steps (if applicable)
-        # If your file format supports multiple time steps:
-        #   timesteps_from_file = flekspy.get_timesteps(self._filename)
-        #   if timesteps_from_file:
-        #       self._timesteps = list(timesteps_from_file)
-        #       output_info.Set(vtkStreamingDemandDrivenPipeline.TIME_STEPS(), self._timesteps, len(self._timesteps))
-        #       timeRange = [self._timesteps[0], self._timesteps[-1]]
-        #       output_info.Set(vtkStreamingDemandDrivenPipeline.TIME_RANGE(), timeRange, 2)
-        #   else: # If no time steps or single time step
-        #       output_info.Remove(vtkStreamingDemandDrivenPipeline.TIME_STEPS())
-        #       output_info.Remove(vtkStreamingDemandDrivenPipeline.TIME_RANGE())
-
-        # (4) Specify Data Array Information (optional but good for performance)
+        # (3) Handle Time Steps
+        self._timesteps = time
+        # This file represents a single point in time.
+        # When ParaView groups files into a series, it will use these
+        # individual time values to build the animation sequence.
+        time_steps = [self._timesteps]
+        output_info.Set(
+            vtkStreamingDemandDrivenPipeline.TIME_STEPS(), time_steps, len(time_steps)
+        )
+        # The time range for a single step is just that step itself.
+        time_range = [self._timesteps, self._timesteps]
+        output_info.Set(vtkStreamingDemandDrivenPipeline.TIME_RANGE(), time_range, 2)
 
         return 1  # Indicate success
 
@@ -148,21 +140,10 @@ class BATSReader(VTKPythonAlgorithmBase):
             vtkStreamingDemandDrivenPipeline.UPDATE_EXTENT()
         )
 
-        # (2) Handle Time (if applicable)
-        # current_time_step_value = 0.0
-        # if output_port_info.Has(vtkStreamingDemandDrivenPipeline.UPDATE_TIME_STEP()):
-        #    current_time_step_value = output_port_info.Get(vtkStreamingDemandDrivenPipeline.UPDATE_TIME_STEP())
-        #    # self._current_timestep_index = self._timesteps.index(current_time_step_value)
+        # (2) Load data using flekspy
+        ds = flekspy.load(self._filename)
 
-        # (3) Load data using flekspy
-        try:
-            ds = flekspy.load(self._filename)
-
-        except Exception as e:
-            print(f"BATSReader: Error loading data with flekspy: {e}")
-            return 0
-
-        # (4) Convert data to vtkImageData
+        # (3) Convert data to vtkImageData
         output_data.SetExtent(*self._data_extents)
 
         # Set Spacing
@@ -178,8 +159,6 @@ class BATSReader(VTKPythonAlgorithmBase):
         output_data.SetOrigin(ox, oy, oz)
 
         # Add the actual data array to the vtkImageData
-        num_components = 1  # For scalar data
-
         for i, name in enumerate(ds.data.name):
             if name.endswith("x") and name != "x":
                 num_components = 3
@@ -220,17 +199,10 @@ class BATSReader(VTKPythonAlgorithmBase):
             vtk_data_array.SetNumberOfComponents(num_components)
             output_data.GetPointData().AddArray(vtk_data_array)
 
-        # for key, sim_data in data_dict.items():
-        # vtk_data_array = dsa.numpyTovtkDataArray(
-        # sim_data.ravel(order="F"), name=key
-        # )
-        # vtk_data_array.SetNumberOfComponents(num_components)
-        #
-        # output_data.GetPointData().AddArray(vtk_data_array)
-
-        # (5) Handle Time (if applicable)
-        # if self._timesteps:
-        #    output_data.GetInformation().Set(vtkDataObject.DATA_TIME_STEP(), current_time_step_value)
+        # (4) Handle Time
+        output_data.GetInformation().Set(
+            vtkDataObject.DATA_TIME_STEP(), self._timesteps
+        )
 
         print(f"BATSReader: Successfully prepared vtkImageData for {self._filename}")
         return 1  # Indicate success
