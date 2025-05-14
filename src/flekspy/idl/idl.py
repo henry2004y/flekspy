@@ -97,6 +97,8 @@ class IDLData(object):
         self.ndim = None
         self.gencoord = None
         self.grid = None
+        self.end_char = None
+        self.pformat = None
 
         self.read_data()
 
@@ -258,19 +260,20 @@ class IDLData(object):
         if self.fileformat == "ascii":
             self.read_ascii()
         elif self.fileformat == "binary":
-            try: 
+            try:
                 self.read_binary()
             except:
-                print("It seems the lengths of instances are different. Try slow reading...")
+                print(
+                    "It seems the lengths of instances are different. Try slow reading..."
+                )
                 self.read_binary_slow()
         else:
             raise ValueError(f"Unknown format = {self.fileformat}")
 
-        ndim = self.ndim
-        nvar = self.nvar
-        self.data.name = tuple(self.variables)[0 : ndim + nvar]
+        nsize = self.ndim + self.nvar
+        self.data.name = tuple(self.variables)[0:nsize]
         self.data.fixDataSize()
-        self.param_name = self.variables[ndim + nvar :]
+        self.param_name = self.variables[nsize:]
         self.__post_process_param__()
 
     def read_ascii(self):
@@ -295,56 +298,8 @@ class IDLData(object):
             self.read_ascii_instance(f)
 
     def read_ascii_instance(self, infile):
-        nline = 0
-        # Read the top header line
-        headline = infile.readline().strip()
-        nline += 1
-        self.unit = headline.split()[0]
-
-        # Read & convert iters, time, etc. from next line
-        parts = infile.readline().split()
-        nline += 1
-        self.iter = int(parts[0])
-        self.time = float(parts[1])
-        self.ndim = int(parts[2])
-        self.gencoord = self.ndim < 0
-        self.ndim = abs(self.ndim)
-        self.nparam = int(parts[3])
-        self.nvar = int(parts[4])
-
-        # Read & convert grid dimensions
-        grid = [int(x) for x in infile.readline().split()]
-        nline += 1
-        self.grid = np.array(grid)
-        self.npoints = abs(self.grid.prod())
-
-        time = self.time
-        ndim = self.grid.size
-        nvar = self.nvar
-        npar = self.nparam
-
-        # Read parameters stored in file
-        self.para = np.zeros(npar)
-        if npar > 0:
-            self.para[:] = infile.readline().split()
-            nline += 1
-
-        # Read variable names
-        names = infile.readline().split()
-        nline += 1
-
-        # Save grid names (e.g. "x" or "r") and save associated params
-        self.dims = names[0:ndim]
-        self.variables = np.array(names)
-
-        # Create string representation of time
-        self.strtime = "%4.4ih%2.2im%06.3fs" % (
-            np.floor(time / 3600.0),
-            np.floor(time % 3600.0 / 60.0),
-            time % 60.0,
-        )
-
-        nrow = ndim + nvar
+        self.get_file_head(infile)
+        nrow = self.ndim + self.nvar
         ncol = self.npoints
         self.data.array = np.zeros((nrow, ncol))
 
@@ -357,9 +312,9 @@ class IDLData(object):
             for j, p in enumerate(parts):
                 self.data.array[j][i] = float(p)
 
-        nline += self.npoints
         shapeNew = np.append([nrow], self.grid)
         self.data.array = np.reshape(self.data.array, shapeNew, order="F")
+        nline = 5 + self.npoints if self.nparam > 0 else 4 + self.npoints
 
         return nline
 
@@ -379,87 +334,127 @@ class IDLData(object):
 
     def read_binary_slow(self):
         with open(self.filename, "rb") as f:
-            if self.isOuts:                
+            if self.isOuts:
                 # Skip previous instances
-                for i in range(self.npict):                       
+                for i in range(self.npict):
                     self.read_binary_instance(f)
             self.read_binary_instance(f)
 
+    def get_file_head(self, infile):
+        if self.fileformat == "binary":
+            # On the first try, we may fail because of wrong-endianess.
+            # If that is the case, swap that endian and try again.
+            self.end_char = "<"  # Endian marker (default: little)
+            self.endian = "little"
+            record_len_raw = infile.read(4)
+
+            record_len = (struct.unpack(self.end_char + "l", record_len_raw))[0]
+            if (record_len > 10000) or (record_len < 0):
+                self.end_char = ">"
+                self.endian = "big"
+                record_len = (struct.unpack(self.end_char + "l", record_len_raw))[0]
+
+            headline = (
+                (
+                    struct.unpack(
+                        "{0}{1}s".format(self.end_char, record_len),
+                        infile.read(record_len),
+                    )
+                )[0]
+                .strip()
+                .decode()
+            )
+            self.unit = headline.split()[0]
+
+            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
+            self.pformat = "f"
+            # Parse rest of header; detect double-precision file
+            if record_len > 20:
+                self.pformat = "d"
+            (self.iter, self.time, self.ndim, self.nparam, self.nvar) = struct.unpack(
+                "{0}l{1}3l".format(self.end_char, self.pformat), infile.read(record_len)
+            )
+            self.gencoord = self.ndim < 0
+            self.ndim = abs(self.ndim)
+            # Get gridsize
+            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
+
+            self.grid = np.array(
+                struct.unpack(
+                    "{0}{1}l".format(self.end_char, self.ndim),
+                    infile.read(record_len),
+                )
+            )
+            self.npoints = abs(self.grid.prod())
+
+            # Read parameters stored in file
+            self.read_parameters(infile)
+
+            # Read variable names
+            self.read_variable_names(infile)
+        else:
+            # Read the top header line
+            headline = infile.readline().strip()
+            self.unit = headline.split()[0]
+
+            # Read & convert iters, time, etc. from next line
+            parts = infile.readline().split()
+            self.iter = int(parts[0])
+            self.time = float(parts[1])
+            self.ndim = int(parts[2])
+            self.gencoord = self.ndim < 0
+            self.ndim = abs(self.ndim)
+            self.nparam = int(parts[3])
+            self.nvar = int(parts[4])
+
+            # Read & convert grid dimensions
+            grid = [int(x) for x in infile.readline().split()]
+            self.grid = np.array(grid)
+            self.npoints = abs(self.grid.prod())
+
+            # Read parameters stored in file
+            self.para = np.zeros(self.nparam)
+            if self.nparam > 0:
+                self.para[:] = infile.readline().split()
+
+            # Read variable names
+            names = infile.readline().split()
+
+            # Save grid names (e.g. "x" or "r") and save associated params
+            self.dims = names[0 : self.ndim]
+            self.variables = np.array(names)
+
+            # Create string representation of time
+            self.strtime = "%4.4ih%2.2im%06.3fs" % (
+                np.floor(self.time / 3600.0),
+                np.floor(self.time % 3600.0 / 60.0),
+                self.time % 60.0,
+            )
+
     def read_binary_instance(self, infile):
-        # On the first try, we may fail because of wrong-endianess.
-        # If that is the case, swap that endian and try again.
-        end_char = "<"  # Endian marker (default: little)
-        self.endian = "little"
-        record_len_raw = infile.read(4)
-
-        record_len = (struct.unpack(end_char + "l", record_len_raw))[0]
-        if (record_len > 10000) or (record_len < 0):
-            end_char = ">"
-            self.endian = "big"
-            record_len = (struct.unpack(end_char + "l", record_len_raw))[0]
-
-        headline = (
-            struct.unpack(
-                "{0}{1}s".format(end_char, record_len), infile.read(record_len)
-            )
-        )[0].strip()
-        if str is not bytes:
-            headline = headline.decode()
-        self.unit = headline.split()[0]
-
-        (old_len, record_len) = struct.unpack(end_char + "2l", infile.read(8))
-        pformat = "f"
-        # Parse rest of header; detect double-precision file
-        if record_len > 20:
-            pformat = "d"
-        (self.iter, self.time, self.ndim, self.nparam, self.nvar) = struct.unpack(
-            "{0}l{1}3l".format(end_char, pformat), infile.read(record_len)
-        )
-        self.gencoord = self.ndim < 0
-        self.ndim = abs(self.ndim)
-        # Get gridsize
-        (old_len, record_len) = struct.unpack(end_char + "2l", infile.read(8))
-
-        self.grid = np.array(
-            struct.unpack(
-                "{0}{1}l".format(end_char, abs(self.ndim)), infile.read(record_len)
-            )
-        )
-        self.npoints = abs(self.grid.prod())
-
-        npts = self.npoints
-        ndim = self.grid.size
-        nvar = self.nvar
-        npar = self.nparam
-
-        # Read parameters stored in file
-        self.read_parameters(infile, end_char, pformat, npar)
-
-        # Read variable names
-        self.read_variable_names(infile, end_char)
-
-        nrow = ndim + nvar
-        n_col = self.npoints
-        self.data.array = np.zeros((nrow, n_col), dtype=np.float32)
+        self.get_file_head(infile)
+        nrow = self.ndim + self.nvar
+        self.data.array = np.zeros((nrow, self.npoints), dtype=np.float32)
 
         # Get the grid points...
-        (old_len, record_len) = struct.unpack(end_char + "2l", infile.read(8))
-        for i in range(0, ndim):
+        (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
+        for i in range(0, self.ndim):
             # Read the data into a temporary grid
             tempgrid = np.array(
                 struct.unpack(
-                    "{0}{1}{2}".format(end_char, npts, pformat),
-                    infile.read(int(record_len // ndim)),
+                    "{0}{1}{2}".format(self.end_char, self.npoints, self.pformat),
+                    infile.read(int(record_len // self.ndim)),
                 )
             )
             self.data.array[i, :] = tempgrid
 
         # Get the actual data and sort
-        for i in range(ndim, nvar + ndim):
-            (old_len, record_len) = struct.unpack(end_char + "2l", infile.read(8))
+        for i in range(self.ndim, self.nvar + self.ndim):
+            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
             tmp = np.array(
                 struct.unpack(
-                    "{0}{1}{2}".format(end_char, npts, pformat), infile.read(record_len)
+                    "{0}{1}{2}".format(self.end_char, self.npoints, self.pformat),
+                    infile.read(record_len),
                 )
             )
             self.data.array[i, :] = tmp
@@ -469,22 +464,22 @@ class IDLData(object):
         shape_new = np.append([nrow], self.grid)
         self.data.array = np.reshape(self.data.array, shape_new, order="F")
 
-    def read_parameters(self, infile, end_char, pformat, num_params):
+    def read_parameters(self, infile):
         """Reads parameters from the binary file."""
-        self.para = np.zeros(num_params)
-        if num_params > 0:
-            (old_len, record_len) = struct.unpack(end_char + "2l", infile.read(8))
+        self.para = np.zeros(self.nparam)
+        if self.nparam > 0:
+            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
             self.para[:] = struct.unpack(
-                "{0}{1}{2}".format(end_char, num_params, pformat),
+                "{0}{1}{2}".format(self.end_char, self.nparam, self.pformat),
                 infile.read(record_len),
             )
 
-    def read_variable_names(self, infile, end_char):
+    def read_variable_names(self, infile):
         """Reads variable names from the binary file."""
-        (old_len, record_len) = struct.unpack(end_char + "2l", infile.read(8))
+        (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
         names = (
             struct.unpack(
-                "{0}{1}s".format(end_char, record_len), infile.read(record_len)
+                "{0}{1}s".format(self.end_char, record_len), infile.read(record_len)
             )
         )[0]
         if str is not bytes:
