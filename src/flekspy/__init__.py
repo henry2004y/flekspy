@@ -2,19 +2,18 @@
 flekspy Public API.
 """
 
-import glob
-import os
+from pathlib import Path
 import errno
 from flekspy.idl import IDLData
 from flekspy.yt import FLEKSData, extract_phase
 from flekspy.tp import FLEKSTP
 
 
-def load(filename: str, iDomain=0, iSpecies=0, readFieldData=False):
+def load(filename: str, iDomain=0, iSpecies=0, readFieldData: bool = False):
     """Load FLEKS data.
 
     Args:
-        filename (str): Input file name.
+        filename (str): Input file name pattern.
         iDomain (int, optional): Test particle domain index. Defaults to 0.
         iSpecies (int, optional): Test particle species index. Defaults to 0.
         readFieldData (bool, optional): Whether or not to read field data for test particles. Defaults to False.
@@ -22,18 +21,20 @@ def load(filename: str, iDomain=0, iSpecies=0, readFieldData=False):
     Returns:
         FLEKS data: IDLData, FLEKSData, or FLEKSTP
     """
-    files = glob.glob(filename)
+    files = list(Path().glob(filename))
     if len(files) == 0:
-        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), files)
-    filename = files[0]
+        message = f"No files found matching pattern: '{filename}'"
+        raise FileNotFoundError(errno.ENOENT, message, filename)
+    filename = str(files[0].resolve())
 
-    basename = os.path.basename(os.path.normpath(filename))
+    filepath = Path(filename)
+    basename = filepath.name
 
     if basename == "test_particles":
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
-    elif basename.find(".") != -1 and basename.split(".")[-1] in ["out", "outs"]:
+    elif filepath.suffix in [".out", ".outs"]:
         return IDLData(filename)
-    elif basename[-6:] == "_amrex":
+    elif basename.endswith("_amrex"):
         return FLEKSData(filename, readFieldData)
     else:
         raise Exception("Error: unknown file format!")

@@ -135,26 +135,29 @@ def download_testfile(url: str, target_path="."):
       url (str): the URL of the tar.gz file.
       target_path (str): the directory to extract the files to. Defaults to the current directory.
     """
-    import os, requests
+    import requests
+    from pathlib import Path
+
+    target_dir = Path(target_path)
+    temp_file = Path("temp.tar.gz")
 
     try:
         response = requests.get(url, stream=True)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        response.raise_for_status() # Raise an exception for bad status codes
 
-        with open("temp.tar.gz", "wb") as f:
+        with open(temp_file, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-        if not os.path.exists(target_path):
-            os.makedirs(target_path)
+        target_dir.mkdir(parents=True, exist_ok=True)
 
-        with tarfile.open("temp.tar.gz", "r:gz") as tar:
-            tar.extractall(target_path)
+        with tarfile.open(temp_file, "r:gz") as tar:
+            tar.extractall(target_dir)
 
     except requests.exceptions.RequestException as e:
         print(f"Error downloading file: {e}")
     except tarfile.TarError as e:
         print(f"Error extracting tar file: {e}")
     finally:
-        if os.path.exists("temp.tar.gz"):
-            os.remove("temp.tar.gz")  # Clean up temporary file
+        if temp_file.exists():
+            temp_file.unlink(missing_ok=True) # Clean up temporary file

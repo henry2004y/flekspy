@@ -26,12 +26,12 @@ if not os.path.isdir(filedir + "/data/3d_particle_region0_1_t00000002_n00000007_
 
 
 class TestIDL:
-    files = (
+    filenames = (
         "1d__raw_2_t25.60000_n00000258.out",
         "z=0_fluid_region0_0_t00001640_n00010142.out",
         "3d_raw.out",
     )
-    files = [os.path.join("tests/data/", file) for file in files]
+    files = [os.path.join("tests/data/", file) for file in filenames]
 
     def test_load(self):
         ds = fs.load(self.files[0])
@@ -91,9 +91,14 @@ class TestAMReX:
 
         ## Select and plot the particles inside a box defined by xleft and xright
         region = ds.box(xleft, xright)
-        x, y, w = ds.get_phase(x_field, y_field, z_field, region=region,
-            domain_size=(xleft[0], xright[0], xleft[1], xright[1]))
-        assert x.shape == (128,) and w.max() == 2.8024863240162035e+23
+        x, y, w = ds.get_phase(
+            x_field,
+            y_field,
+            z_field,
+            region=region,
+            domain_size=(xleft[0], xright[0], xleft[1], xright[1]),
+        )
+        assert x.shape == (128,) and w.max() == 2.8024863240162035e23
         pp = ds.plot_phase(
             x_field,
             y_field,
@@ -183,12 +188,11 @@ def load(files):
 
 
 def test_load(benchmark):
-    path = "tests/data/"
-    files = (
+    filenames = (
         "1d__raw_2_t25.60000_n00000258.out",
         "z=0_fluid_region0_0_t00001640_n00010142.out",
     )
-    files = [os.path.join(path, file) for file in files]
+    files = [os.path.join("tests/data/", file) for file in filenames]
 
     result = benchmark(load, files)
 

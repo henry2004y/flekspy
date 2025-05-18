@@ -1,5 +1,4 @@
-import os
-import glob
+from pathlib import Path
 import numpy as np
 
 import yt
@@ -159,7 +158,7 @@ class FLEKSData(BoxlibDataset):
     def _parse_parameter_file(self):
         super(FLEKSData, self)._parse_parameter_file()
 
-        fleks_header = os.path.join(self.output_dir, "FLEKSHeader")
+        fleks_header = Path(self.output_dir) / "FLEKSHeader"
         with open(fleks_header, "r") as f:
             plot_string = f.readline().lower()
             self.radius = float(f.readline())  # should be in unit [m]
@@ -178,8 +177,10 @@ class FLEKSData(BoxlibDataset):
         else:
             self.parameters["fleks_unit"] = "unknown"
 
-        particle_types = glob.glob(self.output_dir + "/*/Header")
-        particle_types = [cpt.split(os.sep)[-2] for cpt in particle_types]
+        output_dir_path = Path(self.output_dir)
+        header_paths_generator = output_dir_path.glob("*/Header")
+        particle_types = [p.parent.name for p in header_paths_generator]
+
         if len(particle_types) > 0 and not self.read_field_data:
             self.parameters["particles"] = 1
             self.particle_types = tuple(particle_types)
