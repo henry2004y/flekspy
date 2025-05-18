@@ -1,7 +1,7 @@
 from typing import List, Tuple, Dict, Union, Callable
 
 import matplotlib.pyplot as plt
-import os
+from pathlib import Path
 import numpy as np
 import glob
 import struct
@@ -51,8 +51,8 @@ class FLEKSTP(object):
         if type(dirs) == str:
             dirs = [dirs]
 
-        header = dirs[0] + "/Header"
-        if os.path.exists(header):
+        header = Path(dirs[0] + "/Header")
+        if header.exists():
             with open(header, "r") as f:
                 self.nReal = int(f.readline())
         else:
@@ -88,8 +88,8 @@ class FLEKSTP(object):
         self.pfiles = self.pfiles[iListStart:iListEnd]
 
         self.plists: List[Dict[Tuple[int, int], int]] = []
-        for fileName in self.plistfiles:
-            self.plists.append(self.read_particle_list(fileName))
+        for filename in self.plistfiles:
+            self.plists.append(self.read_particle_list(filename))
 
         self.IDs = set()
         for plist in self.plists:
@@ -122,28 +122,28 @@ class FLEKSTP(object):
             print("Index to time mapping was not initialized")
         return self.indextotime
 
-    def read_particle_list(self, fileName: str) -> Dict[Tuple[int, int], int]:
+    def read_particle_list(self, filename: str) -> Dict[Tuple[int, int], int]:
         """
         Read and return a list of the particle IDs.
         """
         # 2 integers + 1 unsigned long long
         listUnitSize = 2 * 4 + 8
-        nByte = os.path.getsize(fileName)
+        nByte = Path(filename).stat().st_size
         nPart = int(nByte / listUnitSize)
         plist = {}
-        with open(fileName, "rb") as f:
+        with open(filename, "rb") as f:
             for _ in range(nPart):
                 binaryData = f.read(listUnitSize)
                 (cpu, id, loc) = struct.unpack("iiQ", binaryData)
                 plist.update({(cpu, id): loc})
         return plist
 
-    def _read_the_first_record(self, fileName: str) -> Union[List[float], None]:
+    def _read_the_first_record(self, filename: str) -> Union[List[float], None]:
         """
         Get the first record stored in one file.
         """
         dataList = list()
-        with open(fileName, "rb") as f:
+        with open(filename, "rb") as f:
             while True:
                 binaryData = f.read(4 * 4)
 
@@ -184,11 +184,11 @@ class FLEKSTP(object):
                 break
             iFile += 1
 
-        fileName = self.pfiles[iFile]
+        filename = self.pfiles[iFile]
 
         dataList: list[float] = []
         idList: list[tuple] = []
-        with open(fileName, "rb") as f:
+        with open(filename, "rb") as f:
             while True:
                 binaryData = f.read(4 * 4)
                 if not binaryData:
@@ -217,14 +217,14 @@ class FLEKSTP(object):
             raise Exception(f"There are no particles at time {time}.")
 
         if doSave:
-            fileName = f"particles_t{time}.csv"
+            filename = f"particles_t{time}.csv"
             header = "cpu,iid,time,x,y,z,ux,uy,uz"
             if self.nReal == 10:
                 header += ",bx,by,bz"
             elif self.nReal == 13:
                 header += ",bx,by,bz,ex,ey,ez"
 
-            with open(fileName, "w") as f:
+            with open(filename, "w") as f:
                 f.write(header + "\n")
                 for id_row, data_row in zip(idData, npData):
                     f.write(
@@ -236,7 +236,7 @@ class FLEKSTP(object):
     def save_trajectory_to_csv(
         self,
         pID: Tuple[int, int],
-        fileName: str = None,
+        filename: str = None,
         shiftTime: bool = False,
         scaleTime: bool = False,
     ) -> None:
@@ -252,8 +252,8 @@ class FLEKSTP(object):
         >>> tp.save_trajectory_to_csv((3,15))
         """
         pData = self.read_particle_trajectory(pID)
-        if fileName == None:
-            fileName = "trajectory_" + str(pID[0]) + "_" + str(pID[1]) + ".csv"
+        if filename == None:
+            filename = "trajectory_" + str(pID[0]) + "_" + str(pID[1]) + ".csv"
         header = "time [s], X [R], Y [R], Z [R], U_x [km/s], U_y [km/s], U_z [km/s]"
         if self.nReal == 10:
             header += ", B_x [nT], B_y [nT], B_z [nT]"
@@ -265,7 +265,7 @@ class FLEKSTP(object):
             pData[:, 0] -= pData[0, 0]
             if scaleTime:
                 pData[:, 0] /= pData[-1, 0]
-        np.savetxt(fileName, pData, delimiter=",", header=header, comments="")
+        np.savetxt(filename, pData, delimiter=",", header=header, comments="")
 
     def read_particle_trajectory(self, pID: Tuple[int, int]):
         """
@@ -278,10 +278,10 @@ class FLEKSTP(object):
         >>> trajectory = tp.read_particle_trajectory((66,888))
         """
         dataList = list()
-        for fileName, plist in zip(self.pfiles, self.plists):
+        for filename, plist in zip(self.pfiles, self.plists):
             if pID in plist:
                 ploc = plist[pID]
-                with open(fileName, "rb") as f:
+                with open(filename, "rb") as f:
                     f.seek(ploc)
                     binaryData = f.read(4 * 4)
                     (cpu, idtmp, nRecord, weight) = struct.unpack("iiif", binaryData)
@@ -298,10 +298,10 @@ class FLEKSTP(object):
         Return the initial location of a test particle.
         """
 
-        for fileName, plist in zip(self.pfiles, self.plists):
+        for filename, plist in zip(self.pfiles, self.plists):
             if pID in plist:
                 ploc = plist[pID]
-                with open(fileName, "rb") as f:
+                with open(filename, "rb") as f:
                     f.seek(ploc)
                     binaryData = f.read(4 * 4)
                     (cpu, idtmp, nRecord, weight) = struct.unpack("iiif", binaryData)
