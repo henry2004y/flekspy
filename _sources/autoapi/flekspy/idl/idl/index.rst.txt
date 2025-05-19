@@ -1,0 +1,265 @@
+flekspy.idl.idl
+===============
+
+.. py:module:: flekspy.idl.idl
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.idl.idl.x_
+   flekspy.idl.idl.y_
+   flekspy.idl.idl.z_
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.idl.idl.Selector
+   flekspy.idl.idl.Dataframe
+   flekspy.idl.idl.IDLData
+
+
+Module Contents
+---------------
+
+.. py:data:: x_
+   :value: 0
+
+
+.. py:data:: y_
+   :value: 1
+
+
+.. py:data:: z_
+   :value: 2
+
+
+.. py:class:: Selector
+
+   .. py:method:: __getitem__(keys) -> list
+
+
+.. py:class:: Dataframe
+
+   .. py:attribute:: array
+      :value: None
+
+
+
+   .. py:attribute:: name
+      :value: None
+
+
+
+   .. py:attribute:: cut
+
+
+   .. py:method:: setData(dataIn, nameIn)
+
+
+   .. py:method:: fixDataSize()
+
+
+   .. py:method:: __getitem__(keys)
+
+      Example:
+      d["varname", 3:, 1:4:2, 3]
+
+
+
+.. py:class:: IDLData(filename='none')
+
+   Bases: :py:obj:`object`
+
+
+   A class used to handle the `*.out` format SWMF data.
+
+   Example:
+   >>> ds = IDLData("3d.out")
+   >>> dc2d = ds.get_slice("y", 1)
+
+
+   .. py:attribute:: filename
+
+
+   .. py:attribute:: isOuts
+
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: nInstance
+      :value: None
+
+
+
+   .. py:attribute:: npict
+      :value: 1
+
+
+
+   .. py:attribute:: fileformat
+      :value: None
+
+
+
+   .. py:attribute:: variables
+      :value: None
+
+
+
+   .. py:attribute:: unit
+      :value: None
+
+
+
+   .. py:attribute:: iter
+      :value: None
+
+
+
+   .. py:attribute:: time
+      :value: None
+
+
+
+   .. py:attribute:: ndim
+      :value: None
+
+
+
+   .. py:attribute:: gencoord
+      :value: None
+
+
+
+   .. py:attribute:: grid
+      :value: None
+
+
+
+   .. py:attribute:: end_char
+      :value: None
+
+
+
+   .. py:attribute:: pformat
+      :value: None
+
+
+
+   .. py:method:: __post_process_param__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: get_domain() -> flekspy.util.DataContainer
+
+      Return data as data container.
+
+
+
+   .. py:method:: get_slice(norm, cut_loc) -> flekspy.util.DataContainer2D
+
+      Get a 2D slice from the 3D IDL data.
+
+      :param norm: str
+                   The normal direction of the slice from "x", "y" or "z"
+      :param cur_loc: float
+                      The position of slicing.
+
+      Return: DataContainer2D
+
+
+
+   .. py:method:: save_data(saveName, saveFormat='ascii')
+
+
+   .. py:method:: save_ascii_instance(saveName)
+
+
+   .. py:method:: read_data()
+
+
+   .. py:method:: read_ascii()
+
+
+   .. py:method:: read_ascii_instance(infile)
+
+
+   .. py:method:: read_binary()
+
+
+   .. py:method:: read_binary_slow()
+
+
+   .. py:method:: get_file_head(infile)
+
+
+   .. py:method:: read_binary_instance(infile)
+
+
+   .. py:method:: read_parameters(infile)
+
+      Reads parameters from the binary file.
+
+
+
+   .. py:method:: read_variable_names(infile)
+
+      Reads variable names from the binary file.
+
+
+
+   .. py:method:: plot(*dvname, **kwargs)
+
+      Plot 1D IDL outputs.
+
+      :param \*dvname: variable names
+      :type \*dvname: str
+      :param \*\*kwargs: keyword argument to be passed to `plot`.
+
+
+
+   .. py:method:: pcolormesh(*dvname, scale: bool = True, **kwargs)
+
+      Plot 2D pcolormeshes of variables.
+
+      :param \*dvname: variable names
+      :type \*dvname: str
+      :param scale: whether to scale the plots according to the axis range.
+                    Default True.
+      :type scale: bool
+
+
+
+   .. py:method:: extract_data(sat: numpy.ndarray) -> numpy.ndarray
+
+      Extract data at a series of locations.
+
+      :param sat: 2D/3D point locations.
+      :type sat: np.ndarray
+
+      :returns: 2D array of variables at each point.
+      :rtype: np.ndarray
+
+
+
+   .. py:method:: get_data(loc: numpy.ndarray) -> numpy.ndarray
+
+      Extract data at a given point using bilinear interpolation.
+
+      :param loc: 2D/3D point location.
+      :type loc: np.ndarray
+
+      :returns: 1D array of saved variables at the survey point.
+      :rtype: np.ndarray
+
+
+
