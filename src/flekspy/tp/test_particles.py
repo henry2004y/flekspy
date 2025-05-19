@@ -126,15 +126,17 @@ class FLEKSTP(object):
         """
         Read and return a list of the particle IDs.
         """
-        # 2 integers + 1 unsigned long long
-        listUnitSize = 2 * 4 + 8
+        record_format = "iiQ" # 2 integers + 1 unsigned long long
+        record_size = struct.calcsize(record_format)
+        record_struct = struct.Struct(record_format)
         nByte = Path(filename).stat().st_size
-        nPart = int(nByte / listUnitSize)
+        nPart = int(nByte / record_size)
         plist = {}
+        
         with open(filename, "rb") as f:
             for _ in range(nPart):
-                binaryData = f.read(listUnitSize)
-                (cpu, id, loc) = struct.unpack("iiQ", binaryData)
+                dataChunk = f.read(record_size)
+                (cpu, id, loc) = record_struct.unpack(dataChunk)
                 plist.update({(cpu, id): loc})
         return plist
 
@@ -278,13 +280,17 @@ class FLEKSTP(object):
         >>> trajectory = tp.read_particle_trajectory((66,888))
         """
         dataList = list()
+        record_format = "iiif"
+        record_size = struct.calcsize(record_format)
+        record_struct = struct.Struct(record_format)
+
         for filename, plist in zip(self.pfiles, self.plists):
             if pID in plist:
                 ploc = plist[pID]
                 with open(filename, "rb") as f:
                     f.seek(ploc)
-                    binaryData = f.read(4 * 4)
-                    (cpu, idtmp, nRecord, weight) = struct.unpack("iiif", binaryData)
+                    dataChunk = f.read(record_size)
+                    (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
                     binaryData = f.read(4 * self.nReal * nRecord)
                     dataList = dataList + list(
                         struct.unpack("f" * nRecord * self.nReal, binaryData)
