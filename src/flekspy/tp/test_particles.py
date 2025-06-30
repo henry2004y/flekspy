@@ -248,7 +248,7 @@ class FLEKSTP(object):
         Args:
             pID: particle ID.
             shiftTime (bool): If set to True, set the initial time to be 0.
-            scaleTime (bool): If set to True, scale the time into [0,1] range, only scale time if shiftTime = True.
+            scaleTime (bool): If set to True, scale the time into [0,1] range.
 
         Example:
         >>> tp.save_trajectory_to_csv((3,15))
@@ -358,6 +358,18 @@ class FLEKSTP(object):
                 x = data[:, FLEKSTP.iv_]
             case "w" | "vz" | "uz":
                 x = data[:, FLEKSTP.iw_]
+            case "Bx" | "bx":
+                x = data[:, FLEKSTP.iBx_]
+            case "By" | "by":
+                x = data[:, FLEKSTP.iBy_]
+            case "Bz" | "bz":
+                x = data[:, FLEKSTP.iBz_]
+            case "Ex" | "ex":
+                x = data[:, FLEKSTP.iEx_]
+            case "Ey" | "ey":
+                x = data[:, FLEKSTP.iEy_]
+            case "Ez" | "ez":
+                x = data[:, FLEKSTP.iEz_]
             case _:
                 raise Exception(f"Unknown plot variable {name}")
 
