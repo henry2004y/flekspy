@@ -378,6 +378,40 @@ class FLEKSTP(object):
 
         return x
 
+    def get_pitch_angle(self, pID):
+        data = self.read_particle_trajectory(pID)
+        vx = self.get_data(data, "u")
+        vy = self.get_data(data, "v")
+        vz = self.get_data(data, "w")
+        bx = self.get_data(data, "bx")
+        by = self.get_data(data, "by")
+        bz = self.get_data(data, "bz")
+        # Pitch Angle Calculation
+        v_vec = np.vstack((vx, vy, vz)).T
+        b_vec = np.vstack((bx, by, bz)).T
+
+        # Calculate magnitudes of velocity and B-field vectors
+        v_mag = np.linalg.norm(v_vec, axis=1)
+        b_mag = np.linalg.norm(b_vec, axis=1)
+
+        # Calculate the dot product between V and B for each time step
+        # Equivalent to (vx*bx + vy*by + vz*bz)
+        v_dot_b = np.sum(v_vec * b_vec, axis=1)
+
+        # To avoid division by zero if either vector magnitude is zero
+        epsilon = 1e-15
+
+        # Calculate the cosine of the pitch angle
+        cos_alpha = v_dot_b / (v_mag * b_mag + epsilon)
+
+        # Due to potential floating point inaccuracies, clip values to the valid range for arccos
+        cos_alpha = np.clip(cos_alpha, -1.0, 1.0)
+
+        # Calculate pitch angle and convert from radians to degrees
+        pitch_angle = np.arccos(cos_alpha) * 180.0 / np.pi
+
+        return pitch_angle
+
     def plot_trajectory(
         self,
         pID: Tuple[int, int],
