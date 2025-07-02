@@ -21,7 +21,9 @@ def load(filename: str, iDomain=0, iSpecies=0, readFieldData: bool = False):
     Returns:
         FLEKS data: IDLData, FLEKSData, or FLEKSTP
     """
-    files = list(Path().glob(filename))
+    p = Path(filename)
+    files = list(p.parent.glob(p.name))
+
     if len(files) == 0:
         message = f"No files found matching pattern: '{filename}'"
         raise FileNotFoundError(errno.ENOENT, message, filename)
