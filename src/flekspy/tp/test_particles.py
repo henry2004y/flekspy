@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import glob
 import struct
+from enum import IntEnum
 
 
 class FLEKSTP(object):
@@ -25,19 +26,21 @@ class FLEKSTP(object):
     >>> f = tp.plot_location(pData)
     """
 
-    it_ = 0
-    ix_ = 1
-    iy_ = 2
-    iz_ = 3
-    iu_ = 4
-    iv_ = 5
-    iw_ = 6
-    iBx_ = 7
-    iBy_ = 8
-    iBz_ = 9
-    iEx_ = 10
-    iEy_ = 11
-    iEz_ = 12
+    class Indices(IntEnum):
+        """Defines constant indices for test particles."""
+        TIME = 0
+        X = 1
+        Y = 2
+        Z = 3
+        VX = 4
+        VY = 5
+        VZ = 6
+        BX = 7
+        BY = 8
+        BZ = 9
+        EX = 10
+        EY = 11
+        EZ = 12
 
     def __init__(
         self,
@@ -80,7 +83,7 @@ class FLEKSTP(object):
                 record = self._read_the_first_record(filename)
                 if record == None:
                     continue
-                self.indextotime.append(record[FLEKSTP.it_])
+                self.indextotime.append(record[self.Indices.TIME])
 
         if iListEnd == -1:
             iListEnd = len(self.plistfiles)
@@ -100,7 +103,7 @@ class FLEKSTP(object):
             record = self._read_the_first_record(filename)
             if record == None:
                 continue
-            self.filetime.append(record[FLEKSTP.it_])
+            self.filetime.append(record[self.Indices.TIME])
 
     def __repr__(self):
         str = (
@@ -200,7 +203,7 @@ class FLEKSTP(object):
                 binaryData = f.read(4 * self.nReal * nRecord)
                 allRecords = list(struct.unpack("f" * nRecord * self.nReal, binaryData))
                 for i in range(nRecord):
-                    if allRecords[self.nReal * i + FLEKSTP.it_] >= time:
+                    if allRecords[self.nReal * i + self.Indices.TIME] >= time:
                         dataList.append(
                             allRecords[self.nReal * i : self.nReal * (i + 1)]
                         )
@@ -208,7 +211,7 @@ class FLEKSTP(object):
                         break
                     elif (
                         i == nRecord - 1
-                        and allRecords[self.nReal * i + FLEKSTP.it_] < time
+                        and allRecords[self.nReal * i + self.Indices.TIME] < time
                     ):
                         continue
 
@@ -220,7 +223,7 @@ class FLEKSTP(object):
 
         if doSave:
             filename = f"particles_t{time}.csv"
-            header = "cpu,iid,time,x,y,z,ux,uy,uz"
+            header = "cpu,iid,time,x,y,z,vx,vy,vz"
             if self.nReal == 10:
                 header += ",bx,by,bz"
             elif self.nReal == 13:
@@ -248,7 +251,7 @@ class FLEKSTP(object):
         Args:
             pID: particle ID.
             shiftTime (bool): If set to True, set the initial time to be 0.
-            scaleTime (bool): If set to True, scale the time into [0,1] range, only scale time if shiftTime = True.
+            scaleTime (bool): If set to True, scale the time into [0,1] range.
 
         Example:
         >>> tp.save_trajectory_to_csv((3,15))
@@ -325,8 +328,8 @@ class FLEKSTP(object):
         Examples:
         >>> def f_select(tp, pid):
         >>>     pData = tp.read_initial_location(pid)
-        >>>     inTime = pData[FLEKSTP.it_] < 3601
-        >>>     inRegion = pData[FLEKSTP.ix_] > 20
+        >>>     inTime = pData[tp.indices.TIME] < 3601
+        >>>     inRegion = pData[self.Indices.X] > 20
         >>>     return inTime and inRegion
         >>>
         >>> pselected = tp.select_particles(f_select)
@@ -345,23 +348,69 @@ class FLEKSTP(object):
     def get_data(self, data, name: str):
         match name:
             case "t":
-                x = data[:, FLEKSTP.it_]
+                x = data[:, self.Indices.TIME]
             case "x":
-                x = data[:, FLEKSTP.ix_]
+                x = data[:, self.Indices.X]
             case "y":
-                x = data[:, FLEKSTP.iy_]
+                x = data[:, self.Indices.Y]
             case "z":
-                x = data[:, FLEKSTP.iz_]
+                x = data[:, self.Indices.Z]
             case "u" | "vx" | "ux":
-                x = data[:, FLEKSTP.iu_]
+                x = data[:, self.Indices.VX]
             case "v" | "vy" | "uy":
-                x = data[:, FLEKSTP.iv_]
+                x = data[:, self.Indices.VY]
             case "w" | "vz" | "uz":
-                x = data[:, FLEKSTP.iw_]
+                x = data[:, self.Indices.VZ]
+            case "Bx" | "bx":
+                x = data[:, self.Indices.BX]
+            case "By" | "by":
+                x = data[:, self.Indices.BY]
+            case "Bz" | "bz":
+                x = data[:, self.Indices.BZ]
+            case "Ex" | "ex":
+                x = data[:, self.Indices.EX]
+            case "Ey" | "ey":
+                x = data[:, self.Indices.EY]
+            case "Ez" | "ez":
+                x = data[:, self.Indices.EZ]
             case _:
                 raise Exception(f"Unknown plot variable {name}")
 
         return x
+
+    def get_pitch_angle(self, pID):
+        data = self.read_particle_trajectory(pID)
+        vx = self.get_data(data, "u")
+        vy = self.get_data(data, "v")
+        vz = self.get_data(data, "w")
+        bx = self.get_data(data, "bx")
+        by = self.get_data(data, "by")
+        bz = self.get_data(data, "bz")
+        # Pitch Angle Calculation
+        v_vec = np.vstack((vx, vy, vz)).T
+        b_vec = np.vstack((bx, by, bz)).T
+
+        # Calculate magnitudes of velocity and B-field vectors
+        v_mag = np.linalg.norm(v_vec, axis=1)
+        b_mag = np.linalg.norm(b_vec, axis=1)
+
+        # Calculate the dot product between V and B for each time step
+        # Equivalent to (vx*bx + vy*by + vz*bz)
+        v_dot_b = np.sum(v_vec * b_vec, axis=1)
+
+        # To avoid division by zero if either vector magnitude is zero
+        epsilon = 1e-15
+
+        # Calculate the cosine of the pitch angle
+        cos_alpha = v_dot_b / (v_mag * b_mag + epsilon)
+
+        # Due to potential floating point inaccuracies, clip values to the valid range for arccos
+        cos_alpha = np.clip(cos_alpha, -1.0, 1.0)
+
+        # Calculate pitch angle and convert from radians to degrees
+        pitch_angle = np.arccos(cos_alpha) * 180.0 / np.pi
+
+        return pitch_angle
 
     def plot_trajectory(
         self,
@@ -393,7 +442,7 @@ class FLEKSTP(object):
                 plot_data(data[:, id], label, irow, i, **kwargs)
 
         data = self.read_particle_trajectory(pID)
-        t = data[:, FLEKSTP.it_]
+        t = data[:, self.Indices.TIME]
         tNorm = (t - t[0]) / (t[-1] - t[0])
 
         if type == "single":
@@ -425,9 +474,9 @@ class FLEKSTP(object):
             ax[0].plot(t, y2, label="y")
             ax[0].plot(t, y3, label="z")
 
-            y1 = self.get_data(data, "u")
-            y2 = self.get_data(data, "v")
-            y3 = self.get_data(data, "w")
+            y1 = self.get_data(data, "vx")
+            y2 = self.get_data(data, "vy")
+            y3 = self.get_data(data, "vz")
             
             ax[1].plot(t, y1, label="vx")
             ax[1].plot(t, y2, label="vy")
@@ -449,8 +498,8 @@ class FLEKSTP(object):
 
             # Plot trajectories
             for i, a in enumerate(ax[0, :]):
-                x_id = FLEKSTP.ix_ if i < 2 else FLEKSTP.iy_
-                y_id = FLEKSTP.iy_ if i == 0 else FLEKSTP.iz_
+                x_id = self.Indices.X if i < 2 else self.Indices.Y
+                y_id = self.Indices.Y if i == 0 else self.Indices.Z
                 a.plot(data[:, x_id], data[:, y_id], "k")
                 a.scatter(
                     data[:, x_id],
@@ -463,17 +512,17 @@ class FLEKSTP(object):
                 a.set_xlabel("x" if i < 2 else "y")
                 a.set_ylabel("y" if i == 0 else "z")
 
-            plot_vector([FLEKSTP.ix_, FLEKSTP.iy_, FLEKSTP.iz_], ["x", "y", "z"], 1)
-            plot_vector([FLEKSTP.iu_, FLEKSTP.iv_, FLEKSTP.iw_], ["Vx", "Vy", "Vz"], 2)
+            plot_vector([self.Indices.X, self.Indices.Y, self.Indices.Z], ["x", "y", "z"], 1)
+            plot_vector([self.Indices.VX, self.Indices.VY, self.Indices.VZ], ["Vx", "Vy", "Vz"], 2)
 
-            if self.nReal > FLEKSTP.iBx_:
+            if self.nReal > self.Indices.BX:
                 plot_vector(
-                    [FLEKSTP.iBx_, FLEKSTP.iBy_, FLEKSTP.iBz_], ["Bx", "By", "Bz"], 3
+                    [self.Indices.BX, self.Indices.BY, self.Indices.BZ], ["Bx", "By", "Bz"], 3
                 )
 
-            if self.nReal > FLEKSTP.iEx_:
+            if self.nReal > self.Indices.EX:
                 plot_vector(
-                    [FLEKSTP.iEx_, FLEKSTP.iEy_, FLEKSTP.iEz_], ["Ex", "Ey", "Ez"], 4
+                    [self.Indices.EX, self.Indices.EY, self.Indices.EZ], ["Ex", "Ey", "Ez"], 4
                 )
 
         return ax
@@ -487,9 +536,9 @@ class FLEKSTP(object):
         >>> f = tp.plot_location(pData)
         """
 
-        px = pData[:, FLEKSTP.ix_]
-        py = pData[:, FLEKSTP.iy_]
-        pz = pData[:, FLEKSTP.iz_]
+        px = pData[:, self.Indices.X]
+        py = pData[:, self.Indices.Y]
+        pz = pData[:, self.Indices.Z]
 
         # create subplot mosaic with different keyword arguments
         skeys = ["A", "B", "C", "D"]

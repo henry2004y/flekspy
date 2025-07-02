@@ -141,6 +141,8 @@ class TestParticles:
         assert tp.get_data(traj, "u")[3] == 5.870406312169507e-05
         assert tp.get_data(traj, "v")[5] == 4.103916944586672e-05
         assert tp.get_data(traj, "w").shape == (8,)
+        assert tp.Indices.TIME == 0
+        assert tp.Indices.BX == 7 and tp.Indices.EZ == 12
         with pytest.raises(Exception):
             tp.get_data(traj, "unknown")
         x = tp.read_initial_location(pIDs[10])
@@ -159,7 +161,7 @@ class TestParticles:
 
         def f_select(tp, pid):
             pData = tp.read_initial_location(pid)
-            inRegion = pData[FLEKSTP.ix_] > 0 and pData[FLEKSTP.iy_] > 0
+            inRegion = pData[tp.Indices.X] > 0 and pData[tp.Indices.Y] > 0
             return inRegion
 
         pSelected = self.tp.select_particles(f_select)
