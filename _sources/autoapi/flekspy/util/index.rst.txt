@@ -1,0 +1,294 @@
+flekspy.util
+============
+
+.. py:module:: flekspy.util
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/util/data_container/index
+   /autoapi/flekspy/util/utilities/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.util.DataContainer
+   flekspy.util.DataContainer1D
+   flekspy.util.DataContainer2D
+   flekspy.util.DataContainer3D
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.download_testfile
+   flekspy.util.unit_one
+   flekspy.util.get_unit
+   flekspy.util.get_ticks
+
+
+Package Contents
+----------------
+
+.. py:function:: download_testfile(url: str, target_path='.')
+
+   Downloads a tar.gz file from a URL and extracts its contents.
+
+   :param url: the URL of the tar.gz file.
+   :type url: str
+   :param target_path: the directory to extract the files to. Defaults to the current directory.
+   :type target_path: str
+
+
+.. py:function:: unit_one(field, data)
+
+   Utility function for setting equal weights for macroparticles.
+   TBD: add units.
+
+
+.. py:function:: get_unit(var: str, unit_type='planet') -> str
+
+   Return the unit of variable.
+
+   :param var: variable name.
+   :type var: str
+   :param unit_type: unit system. Defaults to "planet".
+   :type unit_type: str, optional
+
+   :returns: unit in the specified unit system.
+   :rtype: str
+
+
+.. py:function:: get_ticks(vmin, vmax)
+
+.. py:class:: DataContainer(dataSets, x, y, z, xlabel, ylabel, zlabel, step=-1, time=-1, gencoord=False, filename='')
+
+   Bases: :py:obj:`object`
+
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: x
+
+
+   .. py:attribute:: y
+
+
+   .. py:attribute:: z
+
+
+   .. py:attribute:: xlabel
+
+
+   .. py:attribute:: ylabel
+
+
+   .. py:attribute:: zlabel
+
+
+   .. py:attribute:: vars
+
+
+   .. py:attribute:: range
+
+
+   .. py:attribute:: dimensions
+
+
+   .. py:attribute:: nstep
+      :value: -1
+
+
+
+   .. py:attribute:: time
+      :value: -1
+
+
+
+   .. py:attribute:: filename
+      :value: ''
+
+
+
+   .. py:attribute:: gencoord
+      :value: False
+
+
+
+   .. py:method:: __repr__() -> DataContainer.__repr__.str
+
+
+   .. py:method:: add_bottom_line(f, verbose)
+
+
+   .. py:method:: analyze_variable_string(var: str)
+
+      Parses the input string and return the plot variable and plot range.
+
+      :param var: string of variables to be parsed
+      :type var: str
+      :param Example: var = "{bb}<(-10)>(-9.8)"
+
+      Return: a tuple of the variable name, variable min and max.
+
+
+
+   .. py:method:: evaluate_expression(expression: str, unit: str = 'planet')
+
+      Evaluates the variable expression and return the result of an YTArray.
+
+      :param expression: Python codes to be executed
+      :type expression: str
+      :param Example: expression = "np.log({rhos0}+{rhos1})"
+
+
+
+   .. py:method:: add_variable(name, val)
+
+      Adds a variable to the dataset.
+
+      :param name: The name of the variable to be added.
+      :type name: str
+      :param val: array-like structure
+                  Values of the variable stored in an array
+
+
+
+   .. py:method:: get_variable(var, unit='planet')
+
+      Return raw variables or calculate derived variables.
+
+      :param var: variable name
+      :type var: str
+
+      Return: YTArray
+
+
+
+.. py:class:: DataContainer1D(dataSets, x, xlabel, *args, **kwargs)
+
+   Bases: :py:obj:`DataContainer`
+
+
+   A class handles 1D Cartesian data.
+
+
+   .. py:method:: plot(vars, xlim=None, ylim=None, unit: str = 'planet', figsize=(12, 8), bottomline=10, *args, **kwargs)
+
+      .. rubric:: Examples
+
+      >>> f, axes = dc.plot("absdivb bx", xlim=[-5,5])
+
+
+
+.. py:class:: DataContainer2D(dataSets, x, y, xlabel, ylabel, cut_norm=None, cut_loc=None, *args, **kwargs)
+
+   Bases: :py:obj:`DataContainer`
+
+
+   A class handles 2D Cartesian data.
+
+
+   .. py:attribute:: cut_norm
+      :value: None
+
+
+
+   .. py:attribute:: cut_loc
+      :value: None
+
+
+
+   .. py:method:: __sub__(other)
+
+
+   .. py:method:: plot(vars, xlim=None, ylim=None, unit: str = 'planet', nlevels: int = 200, cmap: str = 'turbo', figsize=(10, 6), f=None, axes=None, pcolor=False, logscale=False, addgrid=False, bottomline=10, showcolorbar: bool = True, *args, **kwargs)
+
+      2D plots.
+
+      :param vars: ploting variables and ploting range.
+      :type vars: str
+      :param Example: vars = "Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)"
+      :param xlim/ylim: A list/tuple contains the x- y-axis range
+      :param unit: "planet" or "si"
+      :type unit: str
+      :param nlevels: Number of the contour levels. Default 200.
+      :type nlevels: int
+      :param cmap: color map type from Matplotlib
+      :type cmap: str
+      :param figsize: size of figure. Default (10, 6).
+      :type figsize: tuple
+      :param logscale: True to scale the variable in log.
+      :type logscale: bool
+
+      .. rubric:: Examples
+
+      >>> f, axes = dc.contour("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
+
+
+
+   .. py:method:: add_contour(ax, var, unit='planet', rmask=None, *args, **kwargs)
+
+      Adding contour lines to an axis.
+
+      :param ax: the axis to plot contour lines.
+      :type ax: matplotlib axis
+      :param var: variable of contours.
+      :type var: str
+
+      .. rubric:: Examples
+
+      >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
+      >>> dc.add_contour(axes[0,0], "rhos1>1")
+
+
+
+   .. py:method:: add_stream(ax, var1, var2, density=1, nx=400, ny=400, xmin=None, xmax=None, ymin=None, ymax=None, rmask=None, *args, **kwargs)
+
+      Adding streamlines to an axis.
+
+      :param ax: the axis to add streamlines.
+      :type ax: matplotlib axis
+      :param var1/var2: streamline variable names.
+      :type var1/var2: str
+      :param density: it controls the number of streamlines.
+      :type density: float
+
+      .. rubric:: Examples
+
+      >>> f, axes = dc.plot("Bx<(50)>(-50) By (np.log(2*{rhos0}))>(-5)", xlim=[-40,-5])
+      >>> dc.add_stream(axes[1,0], "Bx", "Bz", density=2)
+
+
+
+.. py:class:: DataContainer3D(dataSets, x, y, z, xlabel='X', ylabel='Y', zlabel='Z', *args, **kwargs)
+
+   Bases: :py:obj:`DataContainer`
+
+
+   A class handles 3D box data sets.
+
+
+   .. py:method:: get_slice(norm, cut_loc) -> DataContainer2D
+
+      Get a 2D slice from the 3D box data.
+
+      :param norm: The normal direction of the slice from "x", "y" or "z"
+      :type norm: str
+      :param cur_loc: The position of slicing.
+      :type cur_loc: float
+
+      Return: DataContainer2D
+
+
+
