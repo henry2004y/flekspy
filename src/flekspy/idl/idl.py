@@ -1,8 +1,8 @@
-import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import struct
 import yt
+from enum import IntEnum
 
 from flekspy.util import get_unit
 from flekspy.util import (
@@ -11,10 +11,6 @@ from flekspy.util import (
     DataContainer2D,
     DataContainer3D,
 )
-
-x_ = 0
-y_ = 1
-z_ = 2
 
 
 class Selector:
@@ -70,21 +66,15 @@ class IDLData(object):
     >>> dc2d = ds.get_slice("y", 1)
     """
 
-    def __init__(self, filename="none"):
-        fileList = glob.glob(filename)
-        nfiles = len(fileList)
-        assert nfiles > 0, "Error: can not find file!"
-        if nfiles > 1:
-            fileList.sort()
-            print("nfiles = ", nfiles)
-            ifile = input("ifile= ? start from 1             ")
-            while ifile > nfiles or ifile < 1:
-                print("ifile = ", ifile, " is a bad value. Input again")
-                ifile = input("ifile= ? start from 1             ")
-        else:
-            ifile = 1
+    class Indices(IntEnum):
+        """Defines constant indices for IDL data."""
 
-        self.filename = fileList[ifile - 1]
+        X = 0
+        Y = 1
+        Z = 2
+
+    def __init__(self, filename="none"):
+        self.filename = filename
         self.isOuts = self.filename[-4:] == "outs"
         self.data = Dataframe()
         self.nInstance = None if self.isOuts else 1
@@ -580,18 +570,18 @@ class IDLData(object):
         if self.ndim == 2:
             # Find the indices of the surrounding grid points
             i1, j1 = 0, 0
-            while self.data["x"][i1, 0] < loc[x_]:
+            while self.data["x"][i1, 0] < loc[self.Indices.X]:
                 i1 += 1
-            while self.data["y"][0, j1] < loc[y_]:
+            while self.data["y"][0, j1] < loc[self.Indices.Y]:
                 j1 += 1
             i0 = i1 - 1
             j0 = j1 - 1
 
             # Calculate the weights
-            wx0 = (self.data["x"][i1, 0] - loc[x_]) / (
+            wx0 = (self.data["x"][i1, 0] - loc[self.Indices.X]) / (
                 self.data["x"][i1, 0] - self.data["x"][i0, 0]
             )
-            wy0 = (self.data["y"][0, j1] - loc[y_]) / (
+            wy0 = (self.data["y"][0, j1] - loc[self.Indices.Y]) / (
                 self.data["y"][0, j1] - self.data["y"][0, j0]
             )
             wx1 = 1.0 - wx0
@@ -606,24 +596,24 @@ class IDLData(object):
             )
         elif self.ndim == 3:
             i1, j1, k1 = 0, 0, 0
-            while self.data["x"][i1, 0, 0] < loc[x_]:
+            while self.data["x"][i1, 0, 0] < loc[self.Indices.X]:
                 i1 += 1
-            while self.data["y"][0, j1, 0] < loc[y_]:
+            while self.data["y"][0, j1, 0] < loc[self.Indices.Y]:
                 j1 += 1
-            while self.data["z"][0, 0, k1] < loc[z_]:
+            while self.data["z"][0, 0, k1] < loc[self.Indices.Z]:
                 k1 += 1
 
             i0 = i1 - 1
             j0 = j1 - 1
             k0 = k1 - 1
 
-            wx0 = (self.data["x"][i1, 0, 0] - loc[x_]) / (
+            wx0 = (self.data["x"][i1, 0, 0] - loc[self.Indices.X]) / (
                 self.data["x"][i1, 0, 0] - self.data["x"][i0, 0, 0]
             )
-            wy0 = (self.data["y"][0, j1, 0] - loc[y_]) / (
+            wy0 = (self.data["y"][0, j1, 0] - loc[self.Indices.Y]) / (
                 self.data["y"][0, j1, 0] - self.data["y"][0, j0, 0]
             )
-            wz0 = (self.data["z"][0, 0, k1] - loc[z_]) / (
+            wz0 = (self.data["z"][0, 0, k1] - loc[self.Indices.Z]) / (
                 self.data["z"][0, 0, k1] - self.data["z"][0, 0, k0]
             )
 
