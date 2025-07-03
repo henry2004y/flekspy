@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flekspy"
-version = "0.2.13"
+version = "0.2.14"
 description = "Python utilities for processing FLEKS data"
 authors = ["Yuxi Chen <yuxichen@umich.edu>, Hongyang Zhou <hyzhou@umich.edu>"]
 readme = "README.md"
