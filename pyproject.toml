@@ -1,6 +1,10 @@
 [tool.poetry]
 name = "flekspy"
+<<<<<<< HEAD
 version = "0.2.14"
+=======
+version = "0.2.12"
+>>>>>>> a4c898e (Add test file for particle distribution)
 description = "Python utilities for processing FLEKS data"
 authors = ["Yuxi Chen <yuxichen@umich.edu>, Hongyang Zhou <hyzhou@umich.edu>"]
 readme = "README.md"
