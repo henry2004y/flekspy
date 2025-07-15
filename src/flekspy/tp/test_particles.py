@@ -108,38 +108,6 @@ class ParticleTrajectory:
                 f"Unknown key: '{key}'. Valid keys include {list(component_map.keys()) + list(vector_map.keys())}"
             )
 
-    def get_vector(self, vector_type: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        A generic function to get vector components from a ParticleTrajectory.
-
-        Args:
-            pt (ParticleTrajectory): The particle trajectory object.
-            vector_type (str): The type of vector to retrieve. Valid options are:
-                               "x", "v", "b", "e".
-
-        Returns:
-            A tuple containing the three vector component arrays (e.g., x, y, z).
-        """
-        component_map = {
-            "x": ("x", "y", "z"),
-            "v": ("u", "v", "w"),
-            "b": ("bx", "by", "bz"),
-            "e": ("ex", "ey", "ez"),
-        }
-
-        if vector_type not in component_map:
-            raise ValueError(
-                f"Unknown vector_type: '{vector_type}'. "
-                f"Valid options are {list(component_map.keys())}"
-            )
-
-        components = component_map[vector_type]
-        c1 = self[components[0]]
-        c2 = self[components[1]]
-        c3 = self[components[2]]
-
-        return c1, c2, c3
-
 
 class FLEKSTP(object):
     """
@@ -472,8 +440,8 @@ class FLEKSTP(object):
 
     def get_pitch_angle(self, pID):
         pt = self.read_particle_trajectory(pID)
-        vx, vy, vz = pt.get_vector("v")
-        bx, by, bz = pt.get_vector("b")
+        vx, vy, vz = pt["velocity"]
+        bx, by, bz = pt["b"]
         # Pitch Angle Calculation
         pitch_angle = self.get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
 
@@ -509,8 +477,8 @@ class FLEKSTP(object):
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
         pt = self.read_particle_trajectory(pID)
-        vx, vy, vz = pt.get_vector("v")
-        bx, by, bz = pt.get_vector("b")
+        vx, vy, vz = pt["velocity"]
+        bx, by, bz = pt["b"]
 
         v_vec = np.vstack((vx, vy, vz)).T
         b_vec = np.vstack((bx, by, bz)).T
@@ -587,7 +555,7 @@ class FLEKSTP(object):
                 f, ax = plt.subplots(
                     2, 1, figsize=(10, 6), constrained_layout=True, sharex=True
                 )
-            y1, y2, y3 = pt.get_vector("x")
+            y1, y2, y3 = pt["position"]
 
             ax[0].set_xlabel("t")
             ax[0].set_ylabel("location")
@@ -596,7 +564,7 @@ class FLEKSTP(object):
             ax[0].plot(t, y2, label="y")
             ax[0].plot(t, y3, label="z")
 
-            y1, y2, y3 = pt.get_vector("v")
+            y1, y2, y3 = pt["velocity"]
 
             ax[1].plot(t, y1, label="vx")
             ax[1].plot(t, y2, label="vy")
@@ -657,15 +625,15 @@ class FLEKSTP(object):
 
             # --- Data Extraction ---
             t = pt.trajectory[:, Indices.TIME]  # [s]
-            x, y, z = pt.get_vector("x")  # [RE]
-            vx, vy, vz = pt.get_vector("v")  # [km/s]
-            bx, by, bz = pt.get_vector("b")  # [nT]
-            ex, ey, ez = pt.get_vector("e")  # [muV/m]
+            x, y, z = pt["position"]  # [RE]
+            vx, vy, vz = pt["velocity"]  # [km/s]
+            bx, by, bz = pt["b"]  # [nT]
+            ex, ey, ez = pt["e"]  # [muV/m]
 
             # --- Derived Quantities Calculation ---
 
             # Kinetic Energy
-            ke = self.get_kinetic_energy(vx, vy, vz) * 1e6 # [eV]
+            ke = self.get_kinetic_energy(vx, vy, vz) * 1e6  # [eV]
 
             # Vectorize B and V fields for easier calculations
             v_vec = np.vstack((vx, vy, vz)).T

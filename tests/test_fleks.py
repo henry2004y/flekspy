@@ -141,7 +141,7 @@ class TestParticles:
         assert pt["u"][3] == 5.870406312169507e-05
         assert pt["v"][5] == 4.103916944586672e-05
         assert pt["w"].shape == (8,)
-        assert pt.get_vector("x")[0].shape == (8,)
+        assert pt["position"][0].shape == (8,)
         with pytest.raises(Exception):
             pt["unknown"]
         x = tp.read_initial_location(pIDs[10])
