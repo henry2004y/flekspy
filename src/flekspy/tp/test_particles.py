@@ -622,7 +622,7 @@ class FLEKSTP(object):
                 )
         elif type == "full":
             print(f"Analyzing particle ID: {pt.pid}")
-
+            #TODO Proper unit handling
             # --- Data Extraction ---
             t = pt.trajectory[:, Indices.TIME]  # [s]
             x, y, z = pt["position"]  # [RE]
@@ -643,13 +643,13 @@ class FLEKSTP(object):
             # Calculate magnitudes of vectors
             v_mag = np.linalg.norm(v_vec, axis=1)  # [km/s]
             b_mag = np.linalg.norm(b_vec, axis=1)  # [nT]
-            e_mag = np.linalg.norm(e_vec, axis=1)  # [muV/m]
+            e_mag = np.linalg.norm(e_vec, axis=1) * 1e-3  # [mV/m]
 
             # Magnetic Field Energy Density Calculation
             U_B = (b_mag * 1e-9) ** 2 / (2 * mu_0)  # [J/m^3]
 
             # Electric Field Energy Density Calculation
-            U_E = 0.5 * epsilon_0 * (e_mag * 1e-6) ** 2  # [J/m^3]
+            U_E = 0.5 * epsilon_0 * (e_mag * 1e-3) ** 2  # [J/m^3]
 
             # Pitch Angle Calculation
             v_dot_b = np.sum(v_vec * b_vec, axis=1)
@@ -713,7 +713,7 @@ class FLEKSTP(object):
             ax[5].plot(t, ex, label="$E_x$")
             ax[5].plot(t, ey, label="$E_y$")
             ax[5].plot(t, ez, label="$E_z$")
-            ax[5].set_ylabel(r"E [$mu$V/m]", fontsize=14)
+            ax[5].set_ylabel("E [mV/m]", fontsize=14)
 
             # Panel 6: Pitch Angle
             ax[6].plot(t, pitch_angle, color="tab:brown")
@@ -766,7 +766,7 @@ class FLEKSTP(object):
         py = pData[:, Indices.Y]
         pz = pData[:, Indices.Z]
 
-        # create subplot mosaic with different keyword arguments
+        # Create subplot mosaic with different keyword arguments
         skeys = ["A", "B", "C", "D"]
         f, ax = plt.subplot_mosaic(
             "AB;CD",
