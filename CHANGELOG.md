@@ -25,3 +25,7 @@
 ## v0.2.8 (2025/02/15)
 
 - Add `get_phase` to obtain the direct phase space distributions, which is useful for customized decoration of plots.
+
+## v0.3.0 (2025/07/15)
+
+- Refactor the test particle module to bind the particle ID and data closely through a new class `ParticleTrajectory`.
