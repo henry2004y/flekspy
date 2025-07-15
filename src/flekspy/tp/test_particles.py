@@ -108,9 +108,7 @@ class ParticleTrajectory:
                 f"Unknown key: '{key}'. Valid keys include {list(component_map.keys()) + list(vector_map.keys())}"
             )
 
-    def get_vector(
-        self, vector_type: str
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_vector(self, vector_type: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         A generic function to get vector components from a ParticleTrajectory.
 
@@ -298,7 +296,6 @@ class FLEKSTP(object):
         Examples:
         >>> ids, pData = pt.read_particles_at_time(3700, doSave=True)
         """
-
         nFile = len(self.pfiles)
         if time < self.filetime[0]:
             raise Exception(f"There are no particles at time {time}.")
@@ -420,6 +417,7 @@ class FLEKSTP(object):
 
         nRecord = int(len(dataList) / self.nReal)
         trajectory_data = np.array(dataList).reshape(nRecord, self.nReal)
+
         return ParticleTrajectory(pID, trajectory_data)
 
     def read_initial_location(self, pID):
@@ -465,6 +463,7 @@ class FLEKSTP(object):
 
         return pSelected
 
+    @staticmethod
     def get_kinetic_energy(vx, vy, vz, mass=proton_mass):
         # Assume velocity in units of [m/s]
         ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
@@ -633,9 +632,7 @@ class FLEKSTP(object):
                 a.set_xlabel("x" if i < 2 else "y")
                 a.set_ylabel("y" if i == 0 else "z")
 
-            plot_vector(
-                [Indices.X, Indices.Y, Indices.Z], ["x", "y", "z"], 1
-            )
+            plot_vector([Indices.X, Indices.Y, Indices.Z], ["x", "y", "z"], 1)
             plot_vector(
                 [Indices.VX, Indices.VY, Indices.VZ],
                 ["Vx", "Vy", "Vz"],
@@ -660,18 +657,15 @@ class FLEKSTP(object):
 
             # --- Data Extraction ---
             t = pt.trajectory[:, Indices.TIME]  # [s]
-            x, y, z = pt.get_vector("x") # [RE]
-            vx, vy, vz = pt.get_vector("v") # [km/s]
-            bx, by, bz = pt.get_vector("b") # [nT]
-            ex, ey, ez = pt.get_vector("e") # [muV/m]
+            x, y, z = pt.get_vector("x")  # [RE]
+            vx, vy, vz = pt.get_vector("v")  # [km/s]
+            bx, by, bz = pt.get_vector("b")  # [nT]
+            ex, ey, ez = pt.get_vector("e")  # [muV/m]
 
             # --- Derived Quantities Calculation ---
 
             # Kinetic Energy
-            # ke = tp.get_kinetic_energy(vx, vy, vz) * 1e6 # [eV]
-            ke = (
-                0.5 * proton_mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge
-            )  # [eV]
+            ke = self.get_kinetic_energy(vx, vy, vz) * 1e6 # [eV]
 
             # Vectorize B and V fields for easier calculations
             v_vec = np.vstack((vx, vy, vz)).T
@@ -687,7 +681,7 @@ class FLEKSTP(object):
             U_B = (b_mag * 1e-9) ** 2 / (2 * mu_0)  # [J/m^3]
 
             # Electric Field Energy Density Calculation
-            U_E = 0.5 * epsilon_0 * (e_mag * 1e-3) ** 2  # [J/m^3]
+            U_E = 0.5 * epsilon_0 * (e_mag * 1e-6) ** 2  # [J/m^3]
 
             # Pitch Angle Calculation
             v_dot_b = np.sum(v_vec * b_vec, axis=1)
