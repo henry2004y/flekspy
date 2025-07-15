@@ -136,17 +136,18 @@ class TestParticles:
         pIDs = self.pIDs
         assert tp.__repr__().startswith("Particles")
         assert pIDs[0] == (0, 5121)
-        traj = tp.read_particle_trajectory(pIDs[10])
-        assert traj[0, 1] == -0.031386006623506546
-        assert tp.get_data(traj, "u")[3] == 5.870406312169507e-05
-        assert tp.get_data(traj, "v")[5] == 4.103916944586672e-05
-        assert tp.get_data(traj, "w").shape == (8,)
+        pt = tp.read_particle_trajectory(pIDs[10])
+        assert pt.trajectory[0, 1] == -0.031386006623506546
+        assert tp.get_data(pt, "u")[3] == 5.870406312169507e-05
+        assert tp.get_data(pt, "v")[5] == 4.103916944586672e-05
+        assert tp.get_data(pt, "w").shape == (8,)
+        assert tp.get_vector(pt, "x")[0].shape == (8,)
         assert tp.Indices.TIME == 0
         assert tp.Indices.BX == 7 and tp.Indices.EZ == 12
         with pytest.raises(Exception):
-            tp.get_data(traj, "unknown")
+            tp.get_data(pt, "unknown")
         x = tp.read_initial_location(pIDs[10])
-        assert x[1] == traj[0, 1]
+        assert x[1] == pt.trajectory[0, 1]
         ids, pData = tp.read_particles_at_time(0.0, doSave=False)
         assert ids[1][1] == 5129
         ax = tp.plot_location(pData[0:2, :])

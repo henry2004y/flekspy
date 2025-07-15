@@ -6,6 +6,22 @@ import numpy as np
 import glob
 import struct
 from enum import IntEnum
+from scipy.constants import proton_mass, elementary_charge
+
+
+class ParticleTrajectory:
+    """
+    A class to store particle trajectory data.
+    """
+
+    def __init__(self, particle_id: Tuple[int, int], trajectory_data: np.ndarray):
+        """
+        Args:
+            particle_id (Tuple[int, int]): The ID of the particle.
+            trajectory_data (np.ndarray): A 2D numpy array of the trajectory data.
+        """
+        self.particle_id = particle_id
+        self.trajectory = trajectory_data
 
 
 class FLEKSTP(object):
@@ -28,6 +44,7 @@ class FLEKSTP(object):
 
     class Indices(IntEnum):
         """Defines constant indices for test particles."""
+
         TIME = 0
         X = 1
         Y = 2
@@ -129,13 +146,13 @@ class FLEKSTP(object):
         """
         Read and return a list of the particle IDs.
         """
-        record_format = "iiQ" # 2 integers + 1 unsigned long long
+        record_format = "iiQ"  # 2 integers + 1 unsigned long long
         record_size = struct.calcsize(record_format)
         record_struct = struct.Struct(record_format)
         nByte = Path(filename).stat().st_size
         nPart = int(nByte / record_size)
         plist = {}
-        
+
         with open(filename, "rb") as f:
             for _ in range(nPart):
                 dataChunk = f.read(record_size)
@@ -256,7 +273,7 @@ class FLEKSTP(object):
         Example:
         >>> tp.save_trajectory_to_csv((3,15))
         """
-        pData = self.read_particle_trajectory(pID)
+        pData = self.read_particle_trajectory(pID).trajectory
         if filename == None:
             filename = "trajectory_" + str(pID[0]) + "_" + str(pID[1]) + ".csv"
         header = "time [s], X [R], Y [R], Z [R], U_x [km/s], U_y [km/s], U_z [km/s]"
@@ -300,7 +317,8 @@ class FLEKSTP(object):
                     )
 
         nRecord = int(len(dataList) / self.nReal)
-        return np.array(dataList).reshape(nRecord, self.nReal)
+        trajectory_data = np.array(dataList).reshape(nRecord, self.nReal)
+        return ParticleTrajectory(pID, trajectory_data)
 
     def read_initial_location(self, pID):
         """
@@ -345,47 +363,94 @@ class FLEKSTP(object):
 
         return pSelected
 
-    def get_data(self, data, name: str):
+    def get_data(self, pt: ParticleTrajectory, name: str):
         match name:
             case "t":
-                x = data[:, self.Indices.TIME]
+                x = pt.trajectory[:, self.Indices.TIME]
             case "x":
-                x = data[:, self.Indices.X]
+                x = pt.trajectory[:, self.Indices.X]
             case "y":
-                x = data[:, self.Indices.Y]
+                x = pt.trajectory[:, self.Indices.Y]
             case "z":
-                x = data[:, self.Indices.Z]
+                x = pt.trajectory[:, self.Indices.Z]
             case "u" | "vx" | "ux":
-                x = data[:, self.Indices.VX]
+                x = pt.trajectory[:, self.Indices.VX]
             case "v" | "vy" | "uy":
-                x = data[:, self.Indices.VY]
+                x = pt.trajectory[:, self.Indices.VY]
             case "w" | "vz" | "uz":
-                x = data[:, self.Indices.VZ]
+                x = pt.trajectory[:, self.Indices.VZ]
             case "Bx" | "bx":
-                x = data[:, self.Indices.BX]
+                x = pt.trajectory[:, self.Indices.BX]
             case "By" | "by":
-                x = data[:, self.Indices.BY]
+                x = pt.trajectory[:, self.Indices.BY]
             case "Bz" | "bz":
-                x = data[:, self.Indices.BZ]
+                x = pt.trajectory[:, self.Indices.BZ]
             case "Ex" | "ex":
-                x = data[:, self.Indices.EX]
+                x = pt.trajectory[:, self.Indices.EX]
             case "Ey" | "ey":
-                x = data[:, self.Indices.EY]
+                x = pt.trajectory[:, self.Indices.EY]
             case "Ez" | "ez":
-                x = data[:, self.Indices.EZ]
+                x = pt.trajectory[:, self.Indices.EZ]
             case _:
                 raise Exception(f"Unknown plot variable {name}")
 
         return x
 
+    def get_vector(
+        self, pt: ParticleTrajectory, vector_type: str
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        A generic function to get vector components from a ParticleTrajectory.
+
+        Args:
+            pt (ParticleTrajectory): The particle trajectory object.
+            vector_type (str): The type of vector to retrieve. Valid options are:
+                               "x", "v", "b", "e".
+
+        Returns:
+            A tuple containing the three vector component arrays (e.g., x, y, z).
+        """
+        component_map = {
+            "x": ("x", "y", "z"),
+            "v": ("u", "v", "w"),
+            "b": ("bx", "by", "bz"),
+            "e": ("ex", "ey", "ez"),
+        }
+
+        if vector_type not in component_map:
+            raise ValueError(
+                f"Unknown vector_type: '{vector_type}'. "
+                f"Valid options are {list(component_map.keys())}"
+            )
+
+        components = component_map[vector_type]
+        c1 = self.get_data(pt, components[0])
+        c2 = self.get_data(pt, components[1])
+        c3 = self.get_data(pt, components[2])
+
+        return c1, c2, c3
+
+    def get_kinetic_energy(vx, vy, vz, mass=proton_mass):
+        # Assume velocity in units of [m/s]
+        ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
+
+        return ke
+
     def get_pitch_angle(self, pID):
-        data = self.read_particle_trajectory(pID)
-        vx = self.get_data(data, "u")
-        vy = self.get_data(data, "v")
-        vz = self.get_data(data, "w")
-        bx = self.get_data(data, "bx")
-        by = self.get_data(data, "by")
-        bz = self.get_data(data, "bz")
+        pt = self.read_particle_trajectory(pID)
+        vx = self.get_data(pt, "u")
+        vy = self.get_data(pt, "v")
+        vz = self.get_data(pt, "w")
+        bx = self.get_data(pt, "bx")
+        by = self.get_data(pt, "by")
+        bz = self.get_data(pt, "bz")
+        # Pitch Angle Calculation
+        pitch_angle = self.get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
+
+        return pitch_angle
+
+    @staticmethod
+    def get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz):
         # Pitch Angle Calculation
         v_vec = np.vstack((vx, vy, vz)).T
         b_vec = np.vstack((bx, by, bz)).T
@@ -411,6 +476,39 @@ class FLEKSTP(object):
         pitch_angle = np.arccos(cos_alpha) * 180.0 / np.pi
 
         return pitch_angle
+
+    def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
+        pt = self.read_particle_trajectory(pID)
+        vx = self.get_data(pt, "u")
+        vy = self.get_data(pt, "v")
+        vz = self.get_data(pt, "w")
+        bx = self.get_data(pt, "bx")
+        by = self.get_data(pt, "by")
+        bz = self.get_data(pt, "bz")
+
+        v_vec = np.vstack((vx, vy, vz)).T
+        b_vec = np.vstack((bx, by, bz)).T
+
+        # Calculate magnitudes of velocity and B-field vectors
+        v_mag = np.linalg.norm(v_vec, axis=1)
+        b_mag = np.linalg.norm(b_vec, axis=1)
+
+        # Calculate the dot product between V and B for each time step
+        # Equivalent to (vx*bx + vy*by + vz*bz)
+        v_dot_b = np.sum(v_vec * b_vec, axis=1)
+
+        # To avoid division by zero if either vector magnitude is zero
+        epsilon = 1e-15
+
+        # Calculate the sine square of the pitch angle
+        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
+
+        v_perp_sq = v_mag * v_mag * sin_alpha_sq
+
+        epsilon = 1e-15  # Avoid division by zero
+        mu = (0.5 * proton_mass * v_perp_sq) / (b_mag + epsilon)  # [J/T]
+
+        return mu
 
     def plot_trajectory(
         self,
@@ -439,18 +537,18 @@ class FLEKSTP(object):
 
         def plot_vector(idx, labels, irow):
             for i, (id, label) in enumerate(zip(idx, labels)):
-                plot_data(data[:, id], label, irow, i, **kwargs)
+                plot_data(pt.trajectory[:, id], label, irow, i, **kwargs)
 
-        data = self.read_particle_trajectory(pID)
-        t = data[:, self.Indices.TIME]
+        pt = self.read_particle_trajectory(pID)
+        t = pt.trajectory[:, self.Indices.TIME]
         tNorm = (t - t[0]) / (t[-1] - t[0])
 
         if type == "single":
             if xaxis == "t":
                 x = t
             else:
-                x = self.get_data(data, xaxis)
-            y = self.get_data(data, yaxis)
+                x = self.get_data(pt, xaxis)
+            y = self.get_data(pt, yaxis)
 
             if ax == None:
                 f, ax = plt.subplots(1, 1, figsize=(10, 6), constrained_layout=True)
@@ -463,9 +561,9 @@ class FLEKSTP(object):
                 f, ax = plt.subplots(
                     2, 1, figsize=(10, 6), constrained_layout=True, sharex=True
                 )
-            y1 = self.get_data(data, "x")
-            y2 = self.get_data(data, "y")
-            y3 = self.get_data(data, "z")
+            y1 = self.get_data(pt, "x")
+            y2 = self.get_data(pt, "y")
+            y3 = self.get_data(pt, "z")
 
             ax[0].set_xlabel("t")
             ax[0].set_ylabel("location")
@@ -474,14 +572,14 @@ class FLEKSTP(object):
             ax[0].plot(t, y2, label="y")
             ax[0].plot(t, y3, label="z")
 
-            y1 = self.get_data(data, "vx")
-            y2 = self.get_data(data, "vy")
-            y3 = self.get_data(data, "vz")
-            
+            y1 = self.get_data(pt, "vx")
+            y2 = self.get_data(pt, "vy")
+            y3 = self.get_data(pt, "vz")
+
             ax[1].plot(t, y1, label="vx")
             ax[1].plot(t, y2, label="vy")
             ax[1].plot(t, y3, label="vz")
-            
+
             for a in ax:
                 a.legend()
                 a.grid()
@@ -500,10 +598,10 @@ class FLEKSTP(object):
             for i, a in enumerate(ax[0, :]):
                 x_id = self.Indices.X if i < 2 else self.Indices.Y
                 y_id = self.Indices.Y if i == 0 else self.Indices.Z
-                a.plot(data[:, x_id], data[:, y_id], "k")
+                a.plot(pt.trajectory[:, x_id], pt.trajectory[:, y_id], "k")
                 a.scatter(
-                    data[:, x_id],
-                    data[:, y_id],
+                    pt.trajectory[:, x_id],
+                    pt.trajectory[:, y_id],
                     c=plt.cm.winter(tNorm),
                     edgecolor="none",
                     marker="o",
@@ -512,17 +610,27 @@ class FLEKSTP(object):
                 a.set_xlabel("x" if i < 2 else "y")
                 a.set_ylabel("y" if i == 0 else "z")
 
-            plot_vector([self.Indices.X, self.Indices.Y, self.Indices.Z], ["x", "y", "z"], 1)
-            plot_vector([self.Indices.VX, self.Indices.VY, self.Indices.VZ], ["Vx", "Vy", "Vz"], 2)
+            plot_vector(
+                [self.Indices.X, self.Indices.Y, self.Indices.Z], ["x", "y", "z"], 1
+            )
+            plot_vector(
+                [self.Indices.VX, self.Indices.VY, self.Indices.VZ],
+                ["Vx", "Vy", "Vz"],
+                2,
+            )
 
             if self.nReal > self.Indices.BX:
                 plot_vector(
-                    [self.Indices.BX, self.Indices.BY, self.Indices.BZ], ["Bx", "By", "Bz"], 3
+                    [self.Indices.BX, self.Indices.BY, self.Indices.BZ],
+                    ["Bx", "By", "Bz"],
+                    3,
                 )
 
             if self.nReal > self.Indices.EX:
                 plot_vector(
-                    [self.Indices.EX, self.Indices.EY, self.Indices.EZ], ["Ex", "Ey", "Ez"], 4
+                    [self.Indices.EX, self.Indices.EY, self.Indices.EZ],
+                    ["Ex", "Ey", "Ez"],
+                    4,
                 )
 
         return ax
