@@ -6,12 +6,37 @@ import numpy as np
 import glob
 import struct
 from enum import IntEnum
-from scipy.constants import proton_mass, elementary_charge
+from scipy.constants import proton_mass, elementary_charge, mu_0, epsilon_0
+
+
+class Indices(IntEnum):
+    """Defines constant indices for test particles."""
+
+    TIME = 0
+    X = 1
+    Y = 2
+    Z = 3
+    VX = 4
+    VY = 5
+    VZ = 6
+    BX = 7
+    BY = 8
+    BZ = 9
+    EX = 10
+    EY = 11
+    EZ = 12
 
 
 class ParticleTrajectory:
     """
     A class to store particle trajectory data.
+    Data can be accessed directly using dictionary-like keys.
+
+    Examples:
+    >>> pt = tp.read_particle_trajectory((66,888))
+    >>> time = pt["t"]
+    >>> x_position = pt["x"]
+    >>> x_vel, y_vel, z_vel = pt["velocity"]
     """
 
     def __init__(self, particle_id: Tuple[int, int], trajectory_data: np.ndarray):
@@ -22,6 +47,100 @@ class ParticleTrajectory:
         """
         self.particle_id = particle_id
         self.trajectory = trajectory_data
+
+    def __getitem__(self, key: str):
+        """
+        Gets trajectory data using dictionary-like keys for components or vectors.
+        """
+        # Mapping for single components (and common aliases)
+        component_map = {
+            "t": Indices.TIME,
+            "x": Indices.X,
+            "y": Indices.Y,
+            "z": Indices.Z,
+            "u": Indices.VX,
+            "v": Indices.VY,
+            "w": Indices.VZ,
+            "vx": Indices.VX,
+            "vy": Indices.VY,
+            "vz": Indices.VZ,
+            "ux": Indices.VX,
+            "uy": Indices.VY,
+            "uz": Indices.VZ,
+            "bx": Indices.BX,
+            "by": Indices.BY,
+            "bz": Indices.BZ,
+            "ex": Indices.EX,
+            "ey": Indices.EY,
+            "ez": Indices.EZ,
+        }
+
+        # Mapping for vector quantities
+        vector_map = {
+            "position": (Indices.X, Indices.Y, Indices.Z),
+            "velocity": (Indices.VX, Indices.VY, Indices.VZ),
+            "b": (Indices.BX, Indices.BY, Indices.BZ),
+            "e": (Indices.EX, Indices.EY, Indices.EZ),
+        }
+
+        if key.lower() in component_map:
+            idx = component_map[key.lower()]
+            if self.trajectory.shape[1] > idx:
+                return self.trajectory[:, idx]
+            else:
+                raise KeyError(
+                    f"Component '{key}' not available in this trajectory data."
+                )
+
+        elif key.lower() in vector_map:
+            indices = vector_map[key.lower()]
+            if self.trajectory.shape[1] > max(indices):
+                return (
+                    self.trajectory[:, indices[0]],
+                    self.trajectory[:, indices[1]],
+                    self.trajectory[:, indices[2]],
+                )
+            else:
+                raise KeyError(f"Vector '{key}' not available in this trajectory data.")
+
+        else:
+            raise KeyError(
+                f"Unknown key: '{key}'. Valid keys include {list(component_map.keys()) + list(vector_map.keys())}"
+            )
+
+    def get_vector(
+        self, vector_type: str
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        A generic function to get vector components from a ParticleTrajectory.
+
+        Args:
+            pt (ParticleTrajectory): The particle trajectory object.
+            vector_type (str): The type of vector to retrieve. Valid options are:
+                               "x", "v", "b", "e".
+
+        Returns:
+            A tuple containing the three vector component arrays (e.g., x, y, z).
+        """
+        component_map = {
+            "x": ("x", "y", "z"),
+            "v": ("u", "v", "w"),
+            "b": ("bx", "by", "bz"),
+            "e": ("ex", "ey", "ez"),
+        }
+
+        if vector_type not in component_map:
+            raise ValueError(
+                f"Unknown vector_type: '{vector_type}'. "
+                f"Valid options are {list(component_map.keys())}"
+            )
+
+        components = component_map[vector_type]
+        c1 = self[components[0]]
+        c2 = self[components[1]]
+        c3 = self[components[2]]
+
+        return c1, c2, c3
 
 
 class FLEKSTP(object):
@@ -41,23 +160,6 @@ class FLEKSTP(object):
     >>> ids, pData = tp.read_particles_at_time(6500.8, doSave=True)
     >>> f = tp.plot_location(pData)
     """
-
-    class Indices(IntEnum):
-        """Defines constant indices for test particles."""
-
-        TIME = 0
-        X = 1
-        Y = 2
-        Z = 3
-        VX = 4
-        VY = 5
-        VZ = 6
-        BX = 7
-        BY = 8
-        BZ = 9
-        EX = 10
-        EY = 11
-        EZ = 12
 
     def __init__(
         self,
@@ -100,7 +202,7 @@ class FLEKSTP(object):
                 record = self._read_the_first_record(filename)
                 if record == None:
                     continue
-                self.indextotime.append(record[self.Indices.TIME])
+                self.indextotime.append(record[Indices.TIME])
 
         if iListEnd == -1:
             iListEnd = len(self.plistfiles)
@@ -120,7 +222,7 @@ class FLEKSTP(object):
             record = self._read_the_first_record(filename)
             if record == None:
                 continue
-            self.filetime.append(record[self.Indices.TIME])
+            self.filetime.append(record[Indices.TIME])
 
     def __repr__(self):
         str = (
@@ -220,7 +322,7 @@ class FLEKSTP(object):
                 binaryData = f.read(4 * self.nReal * nRecord)
                 allRecords = list(struct.unpack("f" * nRecord * self.nReal, binaryData))
                 for i in range(nRecord):
-                    if allRecords[self.nReal * i + self.Indices.TIME] >= time:
+                    if allRecords[self.nReal * i + Indices.TIME] >= time:
                         dataList.append(
                             allRecords[self.nReal * i : self.nReal * (i + 1)]
                         )
@@ -228,7 +330,7 @@ class FLEKSTP(object):
                         break
                     elif (
                         i == nRecord - 1
-                        and allRecords[self.nReal * i + self.Indices.TIME] < time
+                        and allRecords[self.nReal * i + Indices.TIME] < time
                     ):
                         continue
 
@@ -346,8 +448,8 @@ class FLEKSTP(object):
         Examples:
         >>> def f_select(tp, pid):
         >>>     pData = tp.read_initial_location(pid)
-        >>>     inTime = pData[tp.indices.TIME] < 3601
-        >>>     inRegion = pData[self.Indices.X] > 20
+        >>>     inTime = pData[tp.Indices.TIME] < 3601
+        >>>     inRegion = pData[Indices.X] > 20
         >>>     return inTime and inRegion
         >>>
         >>> pselected = tp.select_particles(f_select)
@@ -363,73 +465,6 @@ class FLEKSTP(object):
 
         return pSelected
 
-    def get_data(self, pt: ParticleTrajectory, name: str):
-        match name:
-            case "t":
-                x = pt.trajectory[:, self.Indices.TIME]
-            case "x":
-                x = pt.trajectory[:, self.Indices.X]
-            case "y":
-                x = pt.trajectory[:, self.Indices.Y]
-            case "z":
-                x = pt.trajectory[:, self.Indices.Z]
-            case "u" | "vx" | "ux":
-                x = pt.trajectory[:, self.Indices.VX]
-            case "v" | "vy" | "uy":
-                x = pt.trajectory[:, self.Indices.VY]
-            case "w" | "vz" | "uz":
-                x = pt.trajectory[:, self.Indices.VZ]
-            case "Bx" | "bx":
-                x = pt.trajectory[:, self.Indices.BX]
-            case "By" | "by":
-                x = pt.trajectory[:, self.Indices.BY]
-            case "Bz" | "bz":
-                x = pt.trajectory[:, self.Indices.BZ]
-            case "Ex" | "ex":
-                x = pt.trajectory[:, self.Indices.EX]
-            case "Ey" | "ey":
-                x = pt.trajectory[:, self.Indices.EY]
-            case "Ez" | "ez":
-                x = pt.trajectory[:, self.Indices.EZ]
-            case _:
-                raise Exception(f"Unknown plot variable {name}")
-
-        return x
-
-    def get_vector(
-        self, pt: ParticleTrajectory, vector_type: str
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        A generic function to get vector components from a ParticleTrajectory.
-
-        Args:
-            pt (ParticleTrajectory): The particle trajectory object.
-            vector_type (str): The type of vector to retrieve. Valid options are:
-                               "x", "v", "b", "e".
-
-        Returns:
-            A tuple containing the three vector component arrays (e.g., x, y, z).
-        """
-        component_map = {
-            "x": ("x", "y", "z"),
-            "v": ("u", "v", "w"),
-            "b": ("bx", "by", "bz"),
-            "e": ("ex", "ey", "ez"),
-        }
-
-        if vector_type not in component_map:
-            raise ValueError(
-                f"Unknown vector_type: '{vector_type}'. "
-                f"Valid options are {list(component_map.keys())}"
-            )
-
-        components = component_map[vector_type]
-        c1 = self.get_data(pt, components[0])
-        c2 = self.get_data(pt, components[1])
-        c3 = self.get_data(pt, components[2])
-
-        return c1, c2, c3
-
     def get_kinetic_energy(vx, vy, vz, mass=proton_mass):
         # Assume velocity in units of [m/s]
         ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
@@ -438,12 +473,8 @@ class FLEKSTP(object):
 
     def get_pitch_angle(self, pID):
         pt = self.read_particle_trajectory(pID)
-        vx = self.get_data(pt, "u")
-        vy = self.get_data(pt, "v")
-        vz = self.get_data(pt, "w")
-        bx = self.get_data(pt, "bx")
-        by = self.get_data(pt, "by")
-        bz = self.get_data(pt, "bz")
+        vx, vy, vz = pt.get_vector("v")
+        bx, by, bz = pt.get_vector("b")
         # Pitch Angle Calculation
         pitch_angle = self.get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
 
@@ -479,12 +510,8 @@ class FLEKSTP(object):
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
         pt = self.read_particle_trajectory(pID)
-        vx = self.get_data(pt, "u")
-        vy = self.get_data(pt, "v")
-        vz = self.get_data(pt, "w")
-        bx = self.get_data(pt, "bx")
-        by = self.get_data(pt, "by")
-        bz = self.get_data(pt, "bz")
+        vx, vy, vz = pt.get_vector("v")
+        bx, by, bz = pt.get_vector("b")
 
         v_vec = np.vstack((vx, vy, vz)).T
         b_vec = np.vstack((bx, by, bz)).T
@@ -514,7 +541,7 @@ class FLEKSTP(object):
         self,
         pID: Tuple[int, int],
         *,
-        type="all",
+        type="quick",
         xaxis="t",
         yaxis="x",
         ax=None,
@@ -540,15 +567,15 @@ class FLEKSTP(object):
                 plot_data(pt.trajectory[:, id], label, irow, i, **kwargs)
 
         pt = self.read_particle_trajectory(pID)
-        t = pt.trajectory[:, self.Indices.TIME]
+        t = pt.trajectory[:, Indices.TIME]
         tNorm = (t - t[0]) / (t[-1] - t[0])
 
         if type == "single":
             if xaxis == "t":
                 x = t
             else:
-                x = self.get_data(pt, xaxis)
-            y = self.get_data(pt, yaxis)
+                x = pt[xaxis]
+            y = pt[yaxis]
 
             if ax == None:
                 f, ax = plt.subplots(1, 1, figsize=(10, 6), constrained_layout=True)
@@ -561,9 +588,7 @@ class FLEKSTP(object):
                 f, ax = plt.subplots(
                     2, 1, figsize=(10, 6), constrained_layout=True, sharex=True
                 )
-            y1 = self.get_data(pt, "x")
-            y2 = self.get_data(pt, "y")
-            y3 = self.get_data(pt, "z")
+            y1, y2, y3 = pt.get_vector("x")
 
             ax[0].set_xlabel("t")
             ax[0].set_ylabel("location")
@@ -572,9 +597,7 @@ class FLEKSTP(object):
             ax[0].plot(t, y2, label="y")
             ax[0].plot(t, y3, label="z")
 
-            y1 = self.get_data(pt, "vx")
-            y2 = self.get_data(pt, "vy")
-            y3 = self.get_data(pt, "vz")
+            y1, y2, y3 = pt.get_vector("v")
 
             ax[1].plot(t, y1, label="vx")
             ax[1].plot(t, y2, label="vy")
@@ -584,7 +607,7 @@ class FLEKSTP(object):
                 a.legend()
                 a.grid()
 
-        elif type == "all":
+        elif type == "quick":
             ncol = 3
             nrow = 3  # Default for X, V
             if self.nReal == 10:  # additional B field
@@ -596,8 +619,8 @@ class FLEKSTP(object):
 
             # Plot trajectories
             for i, a in enumerate(ax[0, :]):
-                x_id = self.Indices.X if i < 2 else self.Indices.Y
-                y_id = self.Indices.Y if i == 0 else self.Indices.Z
+                x_id = Indices.X if i < 2 else Indices.Y
+                y_id = Indices.Y if i == 0 else Indices.Z
                 a.plot(pt.trajectory[:, x_id], pt.trajectory[:, y_id], "k")
                 a.scatter(
                     pt.trajectory[:, x_id],
@@ -611,27 +634,160 @@ class FLEKSTP(object):
                 a.set_ylabel("y" if i == 0 else "z")
 
             plot_vector(
-                [self.Indices.X, self.Indices.Y, self.Indices.Z], ["x", "y", "z"], 1
+                [Indices.X, Indices.Y, Indices.Z], ["x", "y", "z"], 1
             )
             plot_vector(
-                [self.Indices.VX, self.Indices.VY, self.Indices.VZ],
+                [Indices.VX, Indices.VY, Indices.VZ],
                 ["Vx", "Vy", "Vz"],
                 2,
             )
 
-            if self.nReal > self.Indices.BX:
+            if self.nReal > Indices.BX:
                 plot_vector(
-                    [self.Indices.BX, self.Indices.BY, self.Indices.BZ],
+                    [Indices.BX, Indices.BY, Indices.BZ],
                     ["Bx", "By", "Bz"],
                     3,
                 )
 
-            if self.nReal > self.Indices.EX:
+            if self.nReal > Indices.EX:
                 plot_vector(
-                    [self.Indices.EX, self.Indices.EY, self.Indices.EZ],
+                    [Indices.EX, Indices.EY, Indices.EZ],
                     ["Ex", "Ey", "Ez"],
                     4,
                 )
+        elif type == "full":
+            print(f"Analyzing particle ID: {pt.pid}")
+
+            # --- Data Extraction ---
+            t = pt.trajectory[:, Indices.TIME]  # [s]
+            x, y, z = pt.get_vector("x") # [RE]
+            vx, vy, vz = pt.get_vector("v") # [km/s]
+            bx, by, bz = pt.get_vector("b") # [nT]
+            ex, ey, ez = pt.get_vector("e") # [muV/m]
+
+            # --- Derived Quantities Calculation ---
+
+            # Kinetic Energy
+            # ke = tp.get_kinetic_energy(vx, vy, vz) * 1e6 # [eV]
+            ke = (
+                0.5 * proton_mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge
+            )  # [eV]
+
+            # Vectorize B and V fields for easier calculations
+            v_vec = np.vstack((vx, vy, vz)).T
+            b_vec = np.vstack((bx, by, bz)).T
+            e_vec = np.vstack((ex, ey, ez)).T
+
+            # Calculate magnitudes of vectors
+            v_mag = np.linalg.norm(v_vec, axis=1)  # [km/s]
+            b_mag = np.linalg.norm(b_vec, axis=1)  # [nT]
+            e_mag = np.linalg.norm(e_vec, axis=1)  # [muV/m]
+
+            # Magnetic Field Energy Density Calculation
+            U_B = (b_mag * 1e-9) ** 2 / (2 * mu_0)  # [J/m^3]
+
+            # Electric Field Energy Density Calculation
+            U_E = 0.5 * epsilon_0 * (e_mag * 1e-3) ** 2  # [J/m^3]
+
+            # Pitch Angle Calculation
+            v_dot_b = np.sum(v_vec * b_vec, axis=1)
+            epsilon = 1e-15
+            cos_alpha = v_dot_b / (v_mag * b_mag + epsilon)
+            cos_alpha = np.clip(cos_alpha, -1.0, 1.0)
+            pitch_angle_rad = np.arccos(cos_alpha)
+            pitch_angle = pitch_angle_rad * 180.0 / np.pi
+
+            # --- First Adiabatic Invariant (mu) Calculation ---
+            # mu = mv_perp^2 / 2B.  v_perp = v * sin(alpha)
+            # Ensure units are SI: v [m/s], B [T]
+            # Calculate perpendicular velocity squared
+            v_perp_sq = (v_mag * 1e3 * np.sin(pitch_angle_rad)) ** 2
+
+            # Calculate mu, handle potential division by zero in B
+            mu = (0.5 * proton_mass * v_perp_sq) / (b_mag * 1e-9)  # [J/T]
+
+            # --- Plotting ---
+            # Create 7 subplots, sharing the x-axis
+            f, ax = plt.subplots(
+                8, 1, figsize=(10, 12), constrained_layout=True, sharex=True
+            )
+
+            # Panel 0: Particle Location
+            ax[0].set_ylabel(r"Location [$R_E$]", fontsize=14)
+            ax[0].plot(t, x, label="x")
+            ax[0].plot(t, y, label="y")
+            ax[0].plot(t, z, label="z")
+
+            # Panel 1: Particle Velocity
+            ax[1].set_ylabel("V [km/s]", fontsize=14)
+            ax[1].plot(t, vx, label="$v_x$")
+            ax[1].plot(t, vy, label="$v_y$")
+            ax[1].plot(t, vz, label="$v_z$")
+
+            # Panel 2: Kinetic Energy
+            ax[2].plot(t, ke, label="KE", color="tab:brown")
+            ax[2].set_ylabel("KE [eV]", fontsize=14)
+            ax[2].set_yscale("log")
+
+            # Panel 3: Field Energy Densities (on twin axes)
+            ax[3].plot(t, U_B, label=r"$U_B$", color="tab:red")
+            ax[3].set_ylabel(r"$U_B$ [J/m$^3$]", fontsize=14, color="tab:red")
+            # ax[3].set_yscale("log")
+            ax[3].tick_params(axis="y", labelcolor="tab:red")
+
+            ax3_twin = ax[3].twinx()
+            ax3_twin.plot(t, U_E, label=r"$U_E$", color="tab:purple")
+            ax3_twin.set_ylabel(r"$U_E$ [J/m$^3$]", fontsize=14, color="tab:purple")
+            # ax3_twin.set_yscale("log")
+            ax3_twin.tick_params(axis="y", labelcolor="tab:purple")
+
+            # Panel 4: Magnetic Field
+            ax[4].plot(t, bx, label="$B_x$")
+            ax[4].plot(t, by, label="$B_y$")
+            ax[4].plot(t, bz, label="$B_z$")
+            ax[4].set_ylabel("B [nT]", fontsize=14)
+
+            # Panel 5: Electric Field
+            ax[5].plot(t, ex, label="$E_x$")
+            ax[5].plot(t, ey, label="$E_y$")
+            ax[5].plot(t, ez, label="$E_z$")
+            ax[5].set_ylabel(r"E [$mu$V/m]", fontsize=14)
+
+            # Panel 6: Pitch Angle
+            ax[6].plot(t, pitch_angle, color="tab:brown")
+            ax[6].set_ylabel(r"Pitch Angle [$^\circ$]", fontsize=14)
+            ax[6].set_ylim(0, 180)
+            ax[6].set_yticks([0, 45, 90, 135, 180])
+
+            # Panel 7: First Adiabatic Invariant
+            ax[7].plot(t, mu, color="tab:brown")
+            ax[7].set_ylabel(r"$\mu$ [J/T]", fontsize=14)
+            ax[7].set_yscale("log")  # mu can vary, log scale is often useful
+
+            # --- Decorations ---
+            ax[-1].set_xlabel("t [s]", fontsize=14)
+
+            # Add legends and grid to all plots
+            for i, a in enumerate(ax):
+                # Set tick label size for all axes
+                a.tick_params(axis="both", which="major", labelsize="medium")
+
+                # Skip legend for the last panel (pitch angle) as it only has one line
+                if i == 6:
+                    a.grid(True, which="both", linestyle="--", linewidth=0.5)
+                    a.set_xlim(left=t.min(), right=t.max())
+                    continue
+
+                # For panels with 3 items, arrange legend in 3 columns
+                if i in [0, 1, 4, 5]:
+                    a.legend(ncols=3, loc="best", fontsize="large")
+                else:
+                    pass
+
+                a.grid(True, which="both", linestyle="--", linewidth=0.5)
+                a.set_xlim(left=t.min(), right=t.max())
+
+            f.suptitle(f"Test Particle ID: {pt.pid}", fontsize=16)
 
         return ax
 
@@ -644,9 +800,9 @@ class FLEKSTP(object):
         >>> f = tp.plot_location(pData)
         """
 
-        px = pData[:, self.Indices.X]
-        py = pData[:, self.Indices.Y]
-        pz = pData[:, self.Indices.Z]
+        px = pData[:, Indices.X]
+        py = pData[:, Indices.Y]
+        pz = pData[:, Indices.Z]
 
         # create subplot mosaic with different keyword arguments
         skeys = ["A", "B", "C", "D"]

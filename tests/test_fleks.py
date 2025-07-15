@@ -138,14 +138,12 @@ class TestParticles:
         assert pIDs[0] == (0, 5121)
         pt = tp.read_particle_trajectory(pIDs[10])
         assert pt.trajectory[0, 1] == -0.031386006623506546
-        assert tp.get_data(pt, "u")[3] == 5.870406312169507e-05
-        assert tp.get_data(pt, "v")[5] == 4.103916944586672e-05
-        assert tp.get_data(pt, "w").shape == (8,)
-        assert tp.get_vector(pt, "x")[0].shape == (8,)
-        assert tp.Indices.TIME == 0
-        assert tp.Indices.BX == 7 and tp.Indices.EZ == 12
+        assert pt["u"][3] == 5.870406312169507e-05
+        assert pt["v"][5] == 4.103916944586672e-05
+        assert pt["w"].shape == (8,)
+        assert pt.get_vector("x")[0].shape == (8,)
         with pytest.raises(Exception):
-            tp.get_data(pt, "unknown")
+            pt["unknown"]
         x = tp.read_initial_location(pIDs[10])
         assert x[1] == pt.trajectory[0, 1]
         ids, pData = tp.read_particles_at_time(0.0, doSave=False)
@@ -158,11 +156,11 @@ class TestParticles:
             ids, pData = tp.read_particles_at_time(10.0, doSave=False)
 
     def test_particle_select(self):
-        from flekspy import FLEKSTP
+        from flekspy.tp import Indices
 
         def f_select(tp, pid):
             pData = tp.read_initial_location(pid)
-            inRegion = pData[tp.Indices.X] > 0 and pData[tp.Indices.Y] > 0
+            inRegion = pData[Indices.X] > 0 and pData[Indices.Y] > 0
             return inRegion
 
         pSelected = self.tp.select_particles(f_select)
