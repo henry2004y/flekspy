@@ -45,7 +45,7 @@ class ParticleTrajectory:
             particle_id (Tuple[int, int]): The ID of the particle.
             trajectory_data (np.ndarray): A 2D numpy array of the trajectory data.
         """
-        self.particle_id = particle_id
+        self.pid = particle_id
         self.trajectory = trajectory_data
 
     def __getitem__(self, key: str):
