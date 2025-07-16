@@ -230,14 +230,6 @@ class FLEKSTP(object):
     def getIDs(self):
         return list(sorted(self.IDs))
 
-    def get_index_to_time(self) -> List:
-        """
-        Getter method for accessing indextotime.
-        """
-        if len(self.indextotime) == 0:
-            print("Index to time mapping was not initialized")
-        return self.indextotime
-
     def read_particle_list(self, filename: str) -> Dict[Tuple[int, int], int]:
         """
         Read and return a list of the particle IDs.
@@ -384,7 +376,7 @@ class FLEKSTP(object):
                 pData[:, 0] /= pData[-1, 0]
         np.savetxt(filename, pData, delimiter=",", header=header, comments="")
 
-    def read_particle_trajectory(self, pID: Tuple[int, int]):
+    def read_particle_trajectory(self, pID: Tuple[int, int]) -> ParticleTrajectory:
         """
         Return the trajectory of a test particle.
 
@@ -440,9 +432,10 @@ class FLEKSTP(object):
         particle ID, and the second argument is the ID of a particle.
 
         Examples:
+        >>> from flekspy.tp import Indices
         >>> def f_select(tp, pid):
         >>>     pData = tp.read_initial_location(pid)
-        >>>     inTime = pData[tp.Indices.TIME] < 3601
+        >>>     inTime = pData[Indices.TIME] < 3601
         >>>     inRegion = pData[Indices.X] > 20
         >>>     return inTime and inRegion
         >>>
