@@ -108,6 +108,34 @@ class ParticleTrajectory:
                 f"Unknown key: '{key}'. Valid keys include {list(component_map.keys()) + list(vector_map.keys())}"
             )
 
+    def get_first_adiabatic_invariant(self, mass=proton_mass):
+        vx, vy, vz = self["velocity"]
+        bx, by, bz = self["b"]
+
+        v_vec = np.vstack((vx, vy, vz)).T
+        b_vec = np.vstack((bx, by, bz)).T
+
+        # Calculate magnitudes of velocity and B-field vectors
+        v_mag = np.linalg.norm(v_vec, axis=1)
+        b_mag = np.linalg.norm(b_vec, axis=1)
+
+        # Calculate the dot product between V and B for each time step
+        # Equivalent to (vx*bx + vy*by + vz*bz)
+        v_dot_b = np.sum(v_vec * b_vec, axis=1)
+
+        # To avoid division by zero if either vector magnitude is zero
+        epsilon = 1e-15
+
+        # Calculate the sine square of the pitch angle
+        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
+
+        v_perp_sq = v_mag * v_mag * sin_alpha_sq
+
+        epsilon = 1e-15  # Avoid division by zero
+        mu = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)  # [J/T]
+
+        return mu
+
 
 class FLEKSTP(object):
     """
@@ -201,14 +229,6 @@ class FLEKSTP(object):
 
     def getIDs(self):
         return list(sorted(self.IDs))
-
-    def get_index_to_time(self) -> List:
-        """
-        Getter method for accessing indextotime.
-        """
-        if len(self.indextotime) == 0:
-            print("Index to time mapping was not initialized")
-        return self.indextotime
 
     def read_particle_list(self, filename: str) -> Dict[Tuple[int, int], int]:
         """
@@ -356,7 +376,7 @@ class FLEKSTP(object):
                 pData[:, 0] /= pData[-1, 0]
         np.savetxt(filename, pData, delimiter=",", header=header, comments="")
 
-    def read_particle_trajectory(self, pID: Tuple[int, int]):
+    def read_particle_trajectory(self, pID: Tuple[int, int]) -> ParticleTrajectory:
         """
         Return the trajectory of a test particle.
 
@@ -412,9 +432,10 @@ class FLEKSTP(object):
         particle ID, and the second argument is the ID of a particle.
 
         Examples:
+        >>> from flekspy.tp import Indices
         >>> def f_select(tp, pid):
         >>>     pData = tp.read_initial_location(pid)
-        >>>     inTime = pData[tp.Indices.TIME] < 3601
+        >>>     inTime = pData[Indices.TIME] < 3601
         >>>     inRegion = pData[Indices.X] > 20
         >>>     return inTime and inRegion
         >>>
@@ -477,30 +498,7 @@ class FLEKSTP(object):
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
         pt = self.read_particle_trajectory(pID)
-        vx, vy, vz = pt["velocity"]
-        bx, by, bz = pt["b"]
-
-        v_vec = np.vstack((vx, vy, vz)).T
-        b_vec = np.vstack((bx, by, bz)).T
-
-        # Calculate magnitudes of velocity and B-field vectors
-        v_mag = np.linalg.norm(v_vec, axis=1)
-        b_mag = np.linalg.norm(b_vec, axis=1)
-
-        # Calculate the dot product between V and B for each time step
-        # Equivalent to (vx*bx + vy*by + vz*bz)
-        v_dot_b = np.sum(v_vec * b_vec, axis=1)
-
-        # To avoid division by zero if either vector magnitude is zero
-        epsilon = 1e-15
-
-        # Calculate the sine square of the pitch angle
-        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
-
-        v_perp_sq = v_mag * v_mag * sin_alpha_sq
-
-        epsilon = 1e-15  # Avoid division by zero
-        mu = (0.5 * proton_mass * v_perp_sq) / (b_mag + epsilon)  # [J/T]
+        mu = pt.get_first_adiabatic_invariant(mass=mass)
 
         return mu
 
@@ -622,7 +620,7 @@ class FLEKSTP(object):
                 )
         elif type == "full":
             print(f"Analyzing particle ID: {pt.pid}")
-            #TODO Proper unit handling
+            # TODO Proper unit handling
             # --- Data Extraction ---
             t = pt.trajectory[:, Indices.TIME]  # [s]
             x, y, z = pt["position"]  # [RE]
