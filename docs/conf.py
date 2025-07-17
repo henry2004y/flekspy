@@ -6,9 +6,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"flekspy"
-copyright = u"2024, Yuxi Chen, Hongyang Zhou"
-author = u"Yuxi Chen, Hongyang Zhou"
+project = "flekspy"
+copyright = "2024, Yuxi Chen, Hongyang Zhou"
+author = "Yuxi Chen, Hongyang Zhou"
 
 # -- General configuration ---------------------------------------------------
 
@@ -27,6 +27,9 @@ autoapi_dirs = ["../src"]
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+
+# If True, the build process is continued even if a runtime exception occurs:
+nbsphinx_allow_errors = False
 
 # -- Options for HTML output -------------------------------------------------
 
