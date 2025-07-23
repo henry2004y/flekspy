@@ -1,0 +1,303 @@
+flekspy.tp
+==========
+
+.. py:module:: flekspy.tp
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/tp/test_particles/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.tp.FLEKSTP
+   flekspy.tp.Indices
+   flekspy.tp.ParticleTrajectory
+
+
+Package Contents
+----------------
+
+.. py:class:: FLEKSTP(dirs: Union[str, List[str]], iDomain: int = 0, iSpecies: int = 0, iListStart: int = 0, iListEnd: int = -1, readAllFiles: bool = False)
+
+   Bases: :py:obj:`object`
+
+
+   A class that is used to read and plot test particles. Each particle ID consists of
+   a CPU index, a particle index on each CPU, and a location index.
+   By default, 7 real numbers saved for each step: time + position + velocity.
+
+   :param dirs: the path to the test particle dataset.
+   :type dirs: str
+
+   Examples:
+   >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
+   >>> pIDs = list(tp.IDs())
+   >>> tp.plot_trajectory(pIDs[3])
+   >>> tp.save_trajectory_to_csv(pIDs[5])
+   >>> ids, pData = tp.read_particles_at_time(6500.8, doSave=True)
+   >>> f = tp.plot_location(pData)
+
+
+   .. py:attribute:: iSpecies
+      :value: 0
+
+
+
+   .. py:attribute:: plistfiles
+      :value: []
+
+
+
+   .. py:attribute:: pfiles
+      :value: []
+
+
+
+   .. py:attribute:: indextotime
+      :value: []
+
+
+
+   .. py:attribute:: plists
+      :type:  List[Dict[Tuple[int, int], int]]
+      :value: []
+
+
+
+   .. py:attribute:: IDs
+
+
+   .. py:attribute:: filetime
+      :value: []
+
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: getIDs()
+
+
+   .. py:method:: read_particle_list(filename: str) -> Dict[Tuple[int, int], int]
+
+      Read and return a list of the particle IDs.
+
+
+
+   .. py:method:: _read_the_first_record(filename: str) -> Union[List[float], None]
+
+      Get the first record stored in one file.
+
+
+
+   .. py:method:: read_particles_at_time(time: float, doSave: bool = False) -> Tuple[numpy.ndarray, numpy.ndarray]
+
+      Get the information of all the particles at a given time.
+      If doSave, save to a CSV file with the name "particles_t***.csv".
+
+      Note that the time tags in filetime do not include the last saved time.
+
+      :returns: a numpy array of tuples contains the particle IDs.
+                pData: a numpy real array with the particle weight, location and velocity.
+      :rtype: ids
+
+      Examples:
+      >>> ids, pData = pt.read_particles_at_time(3700, doSave=True)
+
+
+
+   .. py:method:: save_trajectory_to_csv(pID: Tuple[int, int], filename: str = None, shiftTime: bool = False, scaleTime: bool = False) -> None
+
+      Save the trajectory of a particle to a csv file.
+
+      :param pID: particle ID.
+      :param shiftTime: If set to True, set the initial time to be 0.
+      :type shiftTime: bool
+      :param scaleTime: If set to True, scale the time into [0,1] range.
+      :type scaleTime: bool
+
+      Example:
+      >>> tp.save_trajectory_to_csv((3,15))
+
+
+
+   .. py:method:: read_particle_trajectory(pID: Tuple[int, int]) -> ParticleTrajectory
+
+      Return the trajectory of a test particle.
+
+      :param pID: particle ID
+
+      Examples:
+      >>> trajectory = tp.read_particle_trajectory((66,888))
+
+
+
+   .. py:method:: read_initial_location(pID)
+
+      Return the initial location of a test particle.
+
+
+
+   .. py:method:: select_particles(f_select: Callable = None) -> List[Tuple[int, int]]
+
+      Return the test particles whose initial conditions satisfy the requirement
+      set by the user defined function f_select. The first argument of f_select is the
+      particle ID, and the second argument is the ID of a particle.
+
+      Examples:
+      >>> from flekspy.tp import Indices
+      >>> def f_select(tp, pid):
+      >>>     pData = tp.read_initial_location(pid)
+      >>>     inTime = pData[Indices.TIME] < 3601
+      >>>     inRegion = pData[Indices.X] > 20
+      >>>     return inTime and inRegion
+      >>>
+      >>> pselected = tp.select_particles(f_select)
+      >>> tp.plot_trajectory(list(pselected.keys())[1])
+
+
+
+   .. py:method:: get_kinetic_energy(vx, vy, vz, mass=proton_mass)
+      :staticmethod:
+
+
+
+   .. py:method:: get_pitch_angle(pID)
+
+
+   .. py:method:: get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
+      :staticmethod:
+
+
+
+   .. py:method:: get_first_adiabatic_invariant(pID, mass=proton_mass)
+
+
+   .. py:method:: plot_trajectory(pID: Tuple[int, int], *, type='quick', xaxis='t', yaxis='x', ax=None, **kwargs)
+
+      Plots the trajectory and velocities of the particle pID.
+
+      Example:
+      >>> tp.plot_trajectory((3,15))
+
+
+
+   .. py:method:: plot_location(pData: numpy.ndarray)
+
+      Plot the location of particles pData.
+
+      Examples:
+      >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
+      >>> f = tp.plot_location(pData)
+
+
+
+.. py:class:: Indices
+
+   Bases: :py:obj:`enum.IntEnum`
+
+
+   Defines constant indices for test particles.
+
+
+   .. py:attribute:: TIME
+      :value: 0
+
+
+
+   .. py:attribute:: X
+      :value: 1
+
+
+
+   .. py:attribute:: Y
+      :value: 2
+
+
+
+   .. py:attribute:: Z
+      :value: 3
+
+
+
+   .. py:attribute:: VX
+      :value: 4
+
+
+
+   .. py:attribute:: VY
+      :value: 5
+
+
+
+   .. py:attribute:: VZ
+      :value: 6
+
+
+
+   .. py:attribute:: BX
+      :value: 7
+
+
+
+   .. py:attribute:: BY
+      :value: 8
+
+
+
+   .. py:attribute:: BZ
+      :value: 9
+
+
+
+   .. py:attribute:: EX
+      :value: 10
+
+
+
+   .. py:attribute:: EY
+      :value: 11
+
+
+
+   .. py:attribute:: EZ
+      :value: 12
+
+
+
+.. py:class:: ParticleTrajectory(particle_id: Tuple[int, int], trajectory_data: numpy.ndarray)
+
+   A class to store particle trajectory data.
+   Data can be accessed directly using dictionary-like keys.
+
+   Examples:
+   >>> pt = tp.read_particle_trajectory((66,888))
+   >>> time = pt["t"]
+   >>> x_position = pt["x"]
+   >>> x_vel, y_vel, z_vel = pt["velocity"]
+
+
+   .. py:attribute:: pid
+
+
+   .. py:attribute:: trajectory
+
+
+   .. py:method:: __getitem__(key: str)
+
+      Gets trajectory data using dictionary-like keys for components or vectors.
+
+
+
+   .. py:method:: get_first_adiabatic_invariant(mass=proton_mass)
+
+
