@@ -132,7 +132,7 @@ class ParticleTrajectory:
         v_perp_sq = v_mag * v_mag * sin_alpha_sq
 
         epsilon = 1e-15  # Avoid division by zero
-        mu = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)  # [J/T]
+        mu = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)  # [J/nT]
 
         return mu
 

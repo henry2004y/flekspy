@@ -1,28 +1,41 @@
-[tool.poetry]
+[project]
 name = "flekspy"
 version = "0.3.1"
 description = "Python utilities for processing FLEKS data"
-authors = ["Yuxi Chen <yuxichen@umich.edu>, Hongyang Zhou <hyzhou@umich.edu>"]
+authors = [
+    {name = "Yuxi Chen", email = "yuxichen@umich.edu"},
+    {name = "Hongyang Zhou", email = "hyzhou@umich.edu"},
+]
+requires-python = ">=3.10, <4"
 readme = "README.md"
-packages = [{include = "flekspy", from = "src"}]
+dependencies = [
+    "yt>=4.3.0,<5",
+    "numpy>=1.26.4",
+    "matplotlib>=3.8.2,<4",
+    "scipy>=1.14.1,<2",
+    "requests>=2.32.3,<3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-yt = "^4.3.0"
-numpy = ">=1.26.4"
-matplotlib = "^3.8.2"
-scipy = "^1.14.1"
-requests = "^2.32.3"
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0,<9",
+    "pytest-benchmark>=4.0.0,<5",
+    "pytest-cov>=4.1.0,<5",
+    "jupyter>=1.0.0,<2",
+    "myst-nb>=1.0.0,<2",
+    "sphinx-autoapi>=3.0.0,<4",
+    "sphinx-rtd-theme>=2.0.0,<3",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
-pytest-benchmark = "^4.0.0"
-pytest-cov = "^4.1.0"
-jupyter = "^1.0.0"
-myst-nb = "^1.0.0"
-sphinx-autoapi = "^3.0.0"
-sphinx-rtd-theme = "^2.0.0"
+[tool.hatch.build.targets.sdist]
+include = ["src/flekspy"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/flekspy"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/flekspy" = "flekspy"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

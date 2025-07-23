@@ -29,3 +29,7 @@
 ## v0.3.0 (2025/07/15)
 
 - Refactor the test particle module to bind the particle ID and data closely through a new class `ParticleTrajectory`.
+
+## v0.3.1 (2025/07/23)
+
+- Switch from `poetry` to `uv` for package management.
