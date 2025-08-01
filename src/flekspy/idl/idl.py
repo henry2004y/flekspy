@@ -212,14 +212,14 @@ class IDLData(object):
         with open(saveName, "w") as f:
             f.write(self.unit + "\n")
             f.write(
-                "{:d}\t{:e}\t{:d}\t{:d}\t{:d}\n".format(
+                "{0:d}\t{1:e}\t{2:d}\t{3:d}\t{4:d}\n".format(
                     self.iter, self.time, self.ndim, self.nparam, self.nvar
                 )
             )
-            [f.write("{:d}\t".format(i)) for i in self.grid]
+            [f.write("{0:d}\t".format(i)) for i in self.grid]
             f.write("\n")
             if self.nparam > 0:
-                [f.write("{:e}\t".format(i)) for i in self.para]
+                [f.write("{0:e}\t".format(i)) for i in self.para]
                 f.write("\n")
             [f.write(i + " ") for i in self.variables]
             f.write("\n")
@@ -231,7 +231,7 @@ class IDLData(object):
                 for jj in range(nj):
                     for ii in range(ni):
                         [
-                            f.write("{:e}\t".format(i))
+                            f.write("{0:e}\t".format(i))
                             for i in self.data.array[:, ii, jj, kk]
                         ]
                         f.write("\n")
@@ -424,30 +424,30 @@ class IDLData(object):
     def read_binary_instance(self, infile):
         self.get_file_head(infile)
         nrow = self.ndim + self.nvar
-        self.data.array = np.zeros((nrow, self.npoints), dtype=np.float32)
 
-        # Get the grid points...
+        if self.pformat == "f":
+            dtype = np.float32
+        else:
+            dtype = np.float64
+
+        self.data.array = np.empty((nrow, self.npoints), dtype=dtype)
+        dtype_str = f"{self.end_char}{self.pformat}"
+
+        # Get the grid points
         (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-        for i in range(0, self.ndim):
-            # Read the data into a temporary grid
-            tempgrid = np.array(
-                struct.unpack(
-                    "{0}{1}{2}".format(self.end_char, self.npoints, self.pformat),
-                    infile.read(int(record_len // self.ndim)),
-                )
-            )
-            self.data.array[i, :] = tempgrid
+        buffer = infile.read(record_len)
+        grid_data = np.frombuffer(
+            buffer, dtype=dtype_str, count=self.npoints * self.ndim
+        )
+        self.data.array[0 : self.ndim, :] = grid_data.reshape((self.ndim, self.npoints))
 
         # Get the actual data and sort
         for i in range(self.ndim, self.nvar + self.ndim):
             (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-            tmp = np.array(
-                struct.unpack(
-                    "{0}{1}{2}".format(self.end_char, self.npoints, self.pformat),
-                    infile.read(record_len),
-                )
+            buffer = infile.read(record_len)
+            self.data.array[i, :] = np.frombuffer(
+                buffer, dtype=dtype_str, count=self.npoints
             )
-            self.data.array[i, :] = tmp
         # Consume the last record length
         infile.read(4)
 
