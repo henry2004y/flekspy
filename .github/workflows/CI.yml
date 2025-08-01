@@ -40,6 +40,27 @@ jobs:
           files: ./coverage.xml   # coverage report
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Run benchmark on main branch
+        run: |
+          git checkout main
+          uv run pytest --benchmark-only --benchmark-json=base.json tests/
+
+      - name: Run benchmark on current branch
+        run: |
+          git checkout -
+          uv run pytest --benchmark-only --benchmark-json=new.json tests/
+
+      - name: Compare benchmarks
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'pytest'
+          output-file-path: new.json
+          benchmark-data-file-path: base.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: true
+          fail-on-alert: true
+          alert-threshold: '200%'
+
       - name: Build documentation
         run: uv run make html --directory docs/
 
