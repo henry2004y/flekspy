@@ -393,11 +393,11 @@ class FLEKSTP(object):
                     if nRecord > 0:
                         binaryData = f.read(4 * self.nReal * nRecord)
                         dataList.extend(
-                            list(struct.unpack("f" * nRecord * self.nReal, binaryData))
+                            struct.unpack("f" * nRecord * self.nReal, binaryData)
                         )
         return dataList
 
-    def _read_particle_record(self, pID: Tuple[int, int], index: int = -1) -> list:
+    def _read_particle_record(self, pID: Tuple[int, int], index: int = -1) -> Union[list, None]:
         """
         Return a specific record of a test particle given its ID.
 
@@ -428,7 +428,7 @@ class FLEKSTP(object):
         # Optimized path for the last record (index=-1)
         if index == -1:
             # Iterate backwards to find the last file with data for this particle
-            for filename, plist in reversed(list(zip(self.pfiles, self.plists))):
+            for filename, plist in zip(reversed(self.pfiles), reversed(self.plists)):
                 if pID in plist:
                     ploc = plist[pID]
                     with open(filename, "rb") as f:
@@ -464,13 +464,13 @@ class FLEKSTP(object):
 
         return ParticleTrajectory(pID, trajectory_data)
 
-    def read_initial_condition(self, pID):
+    def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
         Return the initial conditions of a test particle.
         """
         return self._read_particle_record(pID, index=0)
 
-    def read_final_condition(self, pID):
+    def read_final_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
         Return the final conditions of a test particle.
         """
