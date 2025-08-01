@@ -433,14 +433,13 @@ class IDLData(object):
         self.data.array = np.empty((nrow, self.npoints), dtype=dtype)
         dtype_str = f"{self.end_char}{self.pformat}"
 
-        # Get the grid points...
+        # Get the grid points
         (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-        chunk_size = int(record_len // self.ndim)
-        for i in range(0, self.ndim):
-            buffer = infile.read(chunk_size)
-            self.data.array[i, :] = np.frombuffer(
-                buffer, dtype=dtype_str, count=self.npoints
-            )
+        buffer = infile.read(record_len)
+        grid_data = np.frombuffer(
+            buffer, dtype=dtype_str, count=self.npoints * self.ndim
+        )
+        self.data.array[0 : self.ndim, :] = grid_data.reshape((self.ndim, self.npoints))
 
         # Get the actual data and sort
         for i in range(self.ndim, self.nvar + self.ndim):
