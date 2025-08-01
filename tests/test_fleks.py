@@ -144,8 +144,10 @@ class TestParticles:
         assert pt["position"][0].shape == (8,)
         with pytest.raises(Exception):
             pt["unknown"]
-        x = tp.read_initial_location(pIDs[10])
+        x = tp.read_initial_condition(pIDs[10])
         assert x[1] == pt.trajectory[0, 1]
+        x = tp.read_final_condition(pIDs[10])
+        assert x[1] == pt.trajectory[-1, 1]
         ids, pData = tp.read_particles_at_time(0.0, doSave=False)
         assert ids[1][1] == 5129
         ax = tp.plot_location(pData[0:2, :])
@@ -159,7 +161,7 @@ class TestParticles:
         from flekspy.tp import Indices
 
         def f_select(tp, pid):
-            pData = tp.read_initial_location(pid)
+            pData = tp.read_initial_condition(pid)
             inRegion = pData[Indices.X] > 0 and pData[Indices.Y] > 0
             return inRegion
 
