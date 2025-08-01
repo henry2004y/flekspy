@@ -376,17 +376,9 @@ class FLEKSTP(object):
                 pData[:, 0] /= pData[-1, 0]
         np.savetxt(filename, pData, delimiter=",", header=header, comments="")
 
-    def read_particle_trajectory(self, pID: Tuple[int, int]) -> ParticleTrajectory:
-        """
-        Return the trajectory of a test particle.
-
-        Args:
-            pID: particle ID
-
-        Examples:
-        >>> trajectory = tp.read_particle_trajectory((66,888))
-        """
-        dataList = list()
+    def _get_particle_raw_data(self, pID: Tuple[int, int]) -> list:
+        """Reads all raw trajectory data for a particle across multiple files."""
+        dataList = []
         record_format = "iiif"
         record_size = struct.calcsize(record_format)
         record_struct = struct.Struct(record_format)
@@ -398,32 +390,91 @@ class FLEKSTP(object):
                     f.seek(ploc)
                     dataChunk = f.read(record_size)
                     (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
-                    binaryData = f.read(4 * self.nReal * nRecord)
-                    dataList = dataList + list(
-                        struct.unpack("f" * nRecord * self.nReal, binaryData)
-                    )
+                    if nRecord > 0:
+                        binaryData = f.read(4 * self.nReal * nRecord)
+                        dataList.extend(
+                            struct.unpack("f" * nRecord * self.nReal, binaryData)
+                        )
+        return dataList
+
+    def _read_particle_record(self, pID: Tuple[int, int], index: int = -1) -> Union[list, None]:
+        """
+        Return a specific record of a test particle given its ID.
+
+        Args:
+            pID: particle ID
+            index: The index of the record to be returned.
+                   0: first record.
+                   -1: last record (default).
+        """
+        record_format = "iiif"
+        record_size = struct.calcsize(record_format)
+        record_struct = struct.Struct(record_format)
+
+        # Optimized path for the first record (index=0)
+        if index == 0:
+            for filename, plist in zip(self.pfiles, self.plists):
+                if pID in plist:
+                    ploc = plist[pID]
+                    with open(filename, "rb") as f:
+                        f.seek(ploc)
+                        dataChunk = f.read(record_size)
+                        (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
+                        if nRecord > 0:
+                            # Found the first chunk with records, read the first one and return
+                            binaryData = f.read(4 * self.nReal)
+                            return list(struct.unpack("f" * self.nReal, binaryData))
+
+        # Optimized path for the last record (index=-1)
+        if index == -1:
+            # Iterate backwards to find the last file with data for this particle
+            for filename, plist in zip(reversed(self.pfiles), reversed(self.plists)):
+                if pID in plist:
+                    ploc = plist[pID]
+                    with open(filename, "rb") as f:
+                        f.seek(ploc)
+                        dataChunk = f.read(record_size)
+                        (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
+                        if nRecord > 0:
+                            # This is the last chunk of data for this particle.
+                            # Seek to the last record within this chunk.
+                            offset = ploc + record_size + (nRecord - 1) * 4 * self.nReal
+                            f.seek(offset)
+                            binaryData = f.read(4 * self.nReal)
+                            return list(struct.unpack("f" * self.nReal, binaryData))
+
+    def read_particle_trajectory(self, pID: Tuple[int, int]) -> ParticleTrajectory:
+        """
+        Return the trajectory of a test particle.
+
+        Args:
+            pID: particle ID
+
+        Examples:
+        >>> trajectory = tp.read_particle_trajectory((66,888))
+        """
+        dataList = self._get_particle_raw_data(pID)
+
+        if not dataList:
+            # Return an empty trajectory if no data is found
+            return ParticleTrajectory(pID, np.empty((0, self.nReal)))
 
         nRecord = int(len(dataList) / self.nReal)
         trajectory_data = np.array(dataList).reshape(nRecord, self.nReal)
 
         return ParticleTrajectory(pID, trajectory_data)
 
-    def read_initial_location(self, pID):
+    def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
-        Return the initial location of a test particle.
+        Return the initial conditions of a test particle.
         """
+        return self._read_particle_record(pID, index=0)
 
-        for filename, plist in zip(self.pfiles, self.plists):
-            if pID in plist:
-                ploc = plist[pID]
-                with open(filename, "rb") as f:
-                    f.seek(ploc)
-                    binaryData = f.read(4 * 4)
-                    (cpu, idtmp, nRecord, weight) = struct.unpack("iiif", binaryData)
-                    nRead = 1
-                    binaryData = f.read(4 * self.nReal * nRead)
-                    dataList = list(struct.unpack("f" * nRead * self.nReal, binaryData))
-                return dataList
+    def read_final_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
+        """
+        Return the final conditions of a test particle.
+        """
+        return self._read_particle_record(pID, index=-1)
 
     def select_particles(self, f_select: Callable = None) -> List[Tuple[int, int]]:
         """
@@ -434,7 +485,7 @@ class FLEKSTP(object):
         Examples:
         >>> from flekspy.tp import Indices
         >>> def f_select(tp, pid):
-        >>>     pData = tp.read_initial_location(pid)
+        >>>     pData = tp.read_initial_condition(pid)
         >>>     inTime = pData[Indices.TIME] < 3601
         >>>     inRegion = pData[Indices.X] > 20
         >>>     return inTime and inRegion

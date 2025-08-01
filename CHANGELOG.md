@@ -33,3 +33,7 @@
 ## v0.3.1 (2025/07/23)
 
 - Switch from `poetry` to `uv` for package management.
+
+## v0.3.2 (2025/08/01)
+
+- `read_initial_location` -> `read_initial_condition` for test particles.
