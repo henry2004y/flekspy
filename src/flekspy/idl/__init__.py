@@ -1,1 +1,1 @@
-from .idl import IDLData
+from .idl import IDLDataX

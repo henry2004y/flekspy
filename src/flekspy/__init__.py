@@ -5,7 +5,7 @@ flekspy Public API.
 from pathlib import Path
 import errno
 from itertools import islice
-from flekspy.idl import IDLData
+from flekspy.idl import IDLDataX
 from flekspy.yt import FLEKSData, extract_phase
 from flekspy.tp import FLEKSTP
 
@@ -28,7 +28,7 @@ def load(
         readFieldData (bool, optional): Whether or not to read field data for test particles. Defaults to False.
 
     Returns:
-        FLEKS data: IDLData, FLEKSData, or FLEKSTP
+        FLEKS data: IDLDataX, FLEKSData, or FLEKSTP
     """
     p = Path(filename)
     file_generator = p.parent.rglob(p.name)
@@ -52,7 +52,7 @@ def load(
     if basename == "test_particles":
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
     elif filepath.suffix in [".out", ".outs"]:
-        return IDLData(filename)
+        return IDLDataX(filename)
     elif basename.endswith("_amrex"):
         return FLEKSData(filename, readFieldData)
     else:
