@@ -649,15 +649,18 @@ class IDLDataX(IDLData):
 
         coords = {}
         dims = []
-        for i in range(self.ndim):
-            dim_name = self.dims[i]
-            dims.append(dim_name)
-            dim_idx = self.data.name.index(dim_name)
-            slicer = [0] * 3
-            slicer[i] = slice(None, self.grid[i])
-            coords[dim_name] = np.squeeze(
-                self.data.array[dim_idx, slicer[0], slicer[1], slicer[2]]
-            )
+        if self.ndim >= 1:
+            dims.append(self.dims[0])
+            x_idx = list(self.data.name).index(self.dims[0])
+            coords[self.dims[0]] = np.squeeze(self.data.array[x_idx, :self.grid[0], 0, 0])
+        if self.ndim >= 2:
+            dims.append(self.dims[1])
+            y_idx = list(self.data.name).index(self.dims[1])
+            coords[self.dims[1]] = np.squeeze(self.data.array[y_idx, 0, :self.grid[1], 0])
+        if self.ndim >= 3:
+            dims.append(self.dims[2])
+            z_idx = list(self.data.name).index(self.dims[2])
+            coords[self.dims[2]] = np.squeeze(self.data.array[z_idx, 0, 0, :self.grid[2]])
 
         data_vars = {}
         for i, var_name in enumerate(self.data.name):
@@ -737,11 +740,10 @@ class IDLDataX(IDLData):
             axes = [axes]
 
         for i, var in enumerate(dvname):
-            plot_kwargs = kwargs.copy()
-            if 'cmap' not in plot_kwargs:
-                plot_kwargs['cmap'] = 'turbo'
+            if 'cmap' not in kwargs:
+                kwargs['cmap'] = 'turbo'
 
-            self.data[var].plot.pcolormesh(ax=axes[i], **plot_kwargs)
+            self.data[var].plot.pcolormesh(ax=axes[i], **kwargs)
             axes[i].set_title(var)
 
         if scale:
@@ -762,14 +764,10 @@ class IDLDataX(IDLData):
         Returns:
             np.ndarray: 1D array of saved variables at the survey point.
         """
-        if self.ndim == 1:
-            point = {self.dims[0]: loc[0]}
-        elif self.ndim == 2:
-            point = {self.dims[0]: loc[0], self.dims[1]: loc[1]}
-        elif self.ndim == 3:
-            point = {self.dims[0]: loc[0], self.dims[1]: loc[1], self.dims[2]: loc[2]}
-        else:
+        if not 1 <= self.ndim <= 3:
             raise ValueError(f"get_data not supported for ndim={self.ndim}")
+
+        point = {self.dims[i]: loc[i] for i in range(self.ndim)}
 
         interp_data = self.data.interp(point)
 
