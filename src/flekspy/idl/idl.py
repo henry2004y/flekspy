@@ -740,10 +740,11 @@ class IDLDataX(IDLData):
             axes = [axes]
 
         for i, var in enumerate(dvname):
-            if 'cmap' not in kwargs:
-                kwargs['cmap'] = 'turbo'
+            plot_kwargs = kwargs.copy()
+            if 'cmap' not in plot_kwargs:
+                plot_kwargs['cmap'] = 'turbo'
 
-            self.data[var].plot.pcolormesh(ax=axes[i], **kwargs)
+            self.data[var].plot.pcolormesh(ax=axes[i], **plot_kwargs)
             axes[i].set_title(var)
 
         if scale:
