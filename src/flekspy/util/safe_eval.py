@@ -85,7 +85,7 @@ class SafeExpressionEvaluator:
                 f"Unsupported function call: {ast.dump(node.func)}"
             )
         else:
-            raise TypeError(f"Unsupported node type: {node_type.__name__}")
+            raise NotImplementedError(f"Handling for node type {node_type.__name__} is not implemented.")
 
     def eval(self, expression):
         try:
