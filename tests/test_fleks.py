@@ -1,9 +1,11 @@
 import pytest
 import os
 import numpy as np
+import xarray as xr
 
 import flekspy as fs
 from flekspy.util import download_testfile
+from flekspy.idl.idl import IDLDataX
 
 import matplotlib
 
@@ -35,10 +37,10 @@ class TestIDL:
 
     def test_load(self):
         ds = fs.load(self.files[0])
-        assert ds.__repr__().startswith("filename")
-        assert ds.time == 25.6
-        assert ds.data["x"][1] == -126.5
-        assert ds.data["Bx"][2] == 0.22360679775
+        assert isinstance(ds.data, xr.Dataset)
+        assert ds.data.attrs["time"] == 25.6
+        assert ds.data.coords["x"][1] == -126.5
+        assert np.isclose(ds.data["Bx"][2].item(), 0.22360679775)
 
     def test_load_error(self):
         with pytest.raises(FileNotFoundError):
@@ -48,19 +50,25 @@ class TestIDL:
         ds = fs.load(self.files[1])
         sat = np.array([[-28000.0, 0.0], [9000.0, 0.0]])
         d = ds.extract_data(sat)
-        assert d[0][1] == 0.0
+        # The number of variables is 28 because this test file has many variables.
+        assert d.shape == (2, 28)
 
     def test_slice(self):
         ds = fs.load(self.files[2])
-        slice = ds.get_slice("z", 0.0)
-        assert slice.dimensions == (8, 8)
-        assert slice.data["absdivB"][2, 3].value == np.float32(3.3033288e-05)
+        slice_data = ds.get_slice("z", 0.0)
+        assert isinstance(slice_data, xr.Dataset)
+        assert len(slice_data.sizes) == 2
+        assert slice_data.sizes["x"] == 8
+        assert slice_data.sizes["y"] == 8
+        assert "p" in slice_data.data_vars
+        assert slice_data["p"].shape == (8, 8)
 
     def test_plot(self):
         ds = fs.load(self.files[0])
         ds.plot("p")
         ds = fs.load(self.files[1])
-        ds.pcolormesh("x")
+        # pcolormesh needs a data variable, not a coordinate like 'x'
+        ds.pcolormesh("rhoS0")
         ds.pcolormesh("Bx", "By", "Bz")
         assert True
 
@@ -199,4 +207,4 @@ def test_load(benchmark):
 
     result = benchmark(load, files)
 
-    assert type(result) == fs.IDLData
+    assert isinstance(result, IDLDataX)

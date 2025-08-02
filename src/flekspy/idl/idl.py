@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import struct
 import yt
+import xarray as xr
 from enum import IntEnum
 
 from flekspy.util import get_unit
@@ -640,3 +641,158 @@ class IDLData(object):
             )
 
         return res
+
+
+class IDLDataX(IDLData):
+    def __init__(self, filename="none"):
+        super().__init__(filename)
+
+        coords = {}
+        dims = []
+        if self.ndim >= 1:
+            dims.append(self.dims[0])
+            x_idx = list(self.data.name).index(self.dims[0])
+            coords[self.dims[0]] = np.squeeze(self.data.array[x_idx, :self.grid[0], 0, 0])
+        if self.ndim >= 2:
+            dims.append(self.dims[1])
+            y_idx = list(self.data.name).index(self.dims[1])
+            coords[self.dims[1]] = np.squeeze(self.data.array[y_idx, 0, :self.grid[1], 0])
+        if self.ndim >= 3:
+            dims.append(self.dims[2])
+            z_idx = list(self.data.name).index(self.dims[2])
+            coords[self.dims[2]] = np.squeeze(self.data.array[z_idx, 0, 0, :self.grid[2]])
+
+        data_vars = {}
+        for i, var_name in enumerate(self.data.name):
+            if var_name not in self.dims:
+                data_slice = self.data.array[i, :self.grid[0], :self.grid[1] if self.ndim > 1 else 1, :self.grid[2] if self.ndim > 2 else 1]
+                data_vars[var_name] = (dims, np.squeeze(data_slice))
+
+        self.data = xr.Dataset(data_vars, coords=coords)
+
+        self.data.attrs['time'] = self.time
+        self.data.attrs['iter'] = self.iter
+        self.data.attrs['unit'] = self.unit
+        self.data.attrs['gencoord'] = self.gencoord
+
+    def get_domain(self):
+        """Return data as an xarray.Dataset."""
+        return self.data
+
+    def get_slice(self, norm, cut_loc):
+        """Get a 2D slice from the 3D IDL data.
+
+        Args:
+            norm: str
+                The normal direction of the slice from "x", "y" or "z"
+
+            cur_loc: float
+                The position of slicing.
+
+        Return: xarray.Dataset
+        """
+        return self.data.sel({norm: cut_loc}, method="nearest")
+
+    def plot(self, *dvname, **kwargs):
+        """Plot 1D IDL outputs.
+
+        Args:
+            *dvname (str): variable names
+            **kwargs: keyword argument to be passed to `plot`.
+        """
+        if self.ndim != 1:
+            raise ValueError("plot() is for 1D data only.")
+
+        nvar = len(dvname)
+        if nvar == 0:
+            return
+
+        f, axes = plt.subplots(nvar, 1, constrained_layout=True, sharex=True)
+        if nvar == 1:
+            axes = [axes]
+
+        for i, var in enumerate(dvname):
+            self.data[var].plot(ax=axes[i], **kwargs)
+
+        return axes
+
+    def pcolormesh(self, *dvname, scale: bool = True, **kwargs):
+        """Plot 2D pcolormeshes of variables.
+
+        Args:
+            *dvname (str): variable names
+            scale (bool): whether to scale the plots according to the axis range.
+                Default True.
+            **kwargs: keyword arguments to be passed to `pcolormesh`.
+        """
+        if self.ndim != 2:
+            raise ValueError("pcolormesh() is for 2D data only.")
+
+        nvar = len(dvname)
+        if nvar == 0:
+            return
+
+        f, axes = plt.subplots(
+            nvar, 1, constrained_layout=True, sharex=True, sharey=True,
+            figsize=kwargs.pop('figsize', (6, 4*nvar))
+        )
+        if nvar == 1:
+            axes = [axes]
+
+        for i, var in enumerate(dvname):
+            if 'cmap' not in kwargs:
+                kwargs['cmap'] = 'turbo'
+
+            self.data[var].plot.pcolormesh(ax=axes[i], **kwargs)
+            axes[i].set_title(var)
+
+        if scale:
+            x_coords = self.data.coords[self.dims[0]]
+            y_coords = self.data.coords[self.dims[1]]
+            aspect_ratio = (y_coords.max() - y_coords.min()) / (x_coords.max() - x_coords.min())
+            for ax in axes:
+                ax.set_aspect(float(aspect_ratio.values))
+
+        return axes
+
+    def get_data(self, loc: np.ndarray) -> np.ndarray:
+        """Extract data at a given point using bilinear interpolation.
+
+        Args:
+            loc (np.ndarray): 2D/3D point location.
+
+        Returns:
+            np.ndarray: 1D array of saved variables at the survey point.
+        """
+        if self.ndim == 1:
+            point = {self.dims[0]: loc[0]}
+        elif self.ndim == 2:
+            point = {self.dims[0]: loc[0], self.dims[1]: loc[1]}
+        elif self.ndim == 3:
+            point = {self.dims[0]: loc[0], self.dims[1]: loc[1], self.dims[2]: loc[2]}
+        else:
+            raise ValueError(f"get_data not supported for ndim={self.ndim}")
+
+        interp_data = self.data.interp(point)
+
+        return np.array([interp_data[var].values for var in self.data.data_vars])
+
+    def extract_data(self, sat: np.ndarray) -> np.ndarray:
+        """Extract data at a series of locations.
+
+        Args:
+            sat (np.ndarray): 2D/3D point locations, shape (n_points, n_dims).
+
+        Returns:
+            np.ndarray: 2D array of variables at each point.
+        """
+        if sat.ndim != 2 or sat.shape[1] < self.ndim:
+            raise ValueError("Input `sat` must be a 2D array with shape (n_points, n_dims)")
+
+        points = {}
+        for i in range(self.ndim):
+            points[self.dims[i]] = ('points', sat[:, i])
+
+        interp_data = self.data.interp(points)
+
+        return interp_data.to_array().values.T

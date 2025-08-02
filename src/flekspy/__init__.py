@@ -5,7 +5,7 @@ flekspy Public API.
 from pathlib import Path
 import errno
 from itertools import islice
-from flekspy.idl import IDLData
+from flekspy.idl.idl import IDLDataX
 from flekspy.yt import FLEKSData, extract_phase
 from flekspy.tp import FLEKSTP
 
@@ -52,7 +52,7 @@ def load(
     if basename == "test_particles":
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
     elif filepath.suffix in [".out", ".outs"]:
-        return IDLData(filename)
+        return IDLDataX(filename)
     elif basename.endswith("_amrex"):
         return FLEKSData(filename, readFieldData)
     else:
