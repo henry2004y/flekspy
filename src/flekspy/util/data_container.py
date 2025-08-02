@@ -138,9 +138,8 @@ class DataContainer(object):
         expression_for_eval = re.sub(r'\{(.*?)\}', repl, expression)
 
         # Evaluate the expression in the prepared context.
-        # We allow access to numpy (np) and the variables in the expression.
         # We provide an empty `__builtins__` to restrict access to other built-in functions for security.
-        return eval(expression_for_eval, {"__builtins__": {}, "np": np}, eval_context)
+        return eval(expression_for_eval, {"__builtins__": {}}, eval_context)
 
     def add_variable(self, name, val):
         r"""
