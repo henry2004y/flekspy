@@ -25,26 +25,14 @@ jobs:
 
       - name: Run benchmark
         run: |
-          uv run pytest --benchmark-only --md-report --md-report-verbose=1 --md-report-output benchmark.md
+          uv run pytest --benchmark-only --benchmark-json=benchmark.json
 
-      - name: Add title to report
-        run: |
-          echo "## Benchmark Results" > new_benchmark.md
-          cat benchmark.md >> new_benchmark.md
-          mv new_benchmark.md benchmark.md
-
-      - name: Find comment
-        uses: peter-evans/find-comment@v3
-        id: find
+      - name: Store benchmark result
+        uses: j3hempsey-actions/github-action-benchmark@v1
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: "## Benchmark Results"
-
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: benchmark.md
-          edit-mode: replace
+          name: Pytest Benchmark
+          tool: 'pytest'
+          output-file-path: benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: true
+          fail-on-alert: true
