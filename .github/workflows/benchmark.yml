@@ -25,7 +25,7 @@ jobs:
 
       - name: Run benchmark
         run: |
-          uv run pytest --benchmark-only --md-report --md-report-output benchmark.md
+          uv run pytest --benchmark-only --md-report --md-report-verbose=1 --md-report-output benchmark.md
 
       - name: Add title to report
         run: |
