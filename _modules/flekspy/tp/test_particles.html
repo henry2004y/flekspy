@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>flekspy.tp.test_particles &mdash; flekspy  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            flekspy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">FLEKS Python Visualization Toolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_amrex_output.html">Analyzing AMReX Outputs From FLEKS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">flekspy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../flekspy.html">flekspy</a></li>
+      <li class="breadcrumb-item active">flekspy.tp.test_particles</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for flekspy.tp.test_particles</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">proton_mass</span><span class="p">,</span> <span class="n">elementary_charge</span><span class="p">,</span> <span class="n">mu_0</span><span class="p">,</span> <span class="n">epsilon_0</span>
+
+
+<div class="viewcode-block" id="Indices">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.Indices">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Indices</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines constant indices for test particles.&quot;&quot;&quot;</span>
+
+    <span class="n">TIME</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">VX</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">VY</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">VZ</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">BX</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">BY</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">BZ</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">EX</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">EY</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">EZ</span> <span class="o">=</span> <span class="mi">12</span></div>
+
+
+
+<div class="viewcode-block" id="ParticleTrajectory">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.ParticleTrajectory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParticleTrajectory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to store particle trajectory data.</span>
+<span class="sd">    Data can be accessed directly using dictionary-like keys.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">    &gt;&gt;&gt; pt = tp.read_particle_trajectory((66,888))</span>
+<span class="sd">    &gt;&gt;&gt; time = pt[&quot;t&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; x_position = pt[&quot;x&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; x_vel, y_vel, z_vel = pt[&quot;velocity&quot;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particle_id</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">trajectory_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            particle_id (Tuple[int, int]): The ID of the particle.</span>
+<span class="sd">            trajectory_data (np.ndarray): A 2D numpy array of the trajectory data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pid</span> <span class="o">=</span> <span class="n">particle_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span> <span class="o">=</span> <span class="n">trajectory_data</span>
+
+<div class="viewcode-block" id="ParticleTrajectory.__getitem__">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.ParticleTrajectory.__getitem__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets trajectory data using dictionary-like keys for components or vectors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Mapping for single components (and common aliases)</span>
+        <span class="n">component_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">TIME</span><span class="p">,</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
+            <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span>
+            <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span>
+            <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VX</span><span class="p">,</span>
+            <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VY</span><span class="p">,</span>
+            <span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VZ</span><span class="p">,</span>
+            <span class="s2">&quot;vx&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VX</span><span class="p">,</span>
+            <span class="s2">&quot;vy&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VY</span><span class="p">,</span>
+            <span class="s2">&quot;vz&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VZ</span><span class="p">,</span>
+            <span class="s2">&quot;ux&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VX</span><span class="p">,</span>
+            <span class="s2">&quot;uy&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VY</span><span class="p">,</span>
+            <span class="s2">&quot;uz&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VZ</span><span class="p">,</span>
+            <span class="s2">&quot;bx&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BX</span><span class="p">,</span>
+            <span class="s2">&quot;by&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BY</span><span class="p">,</span>
+            <span class="s2">&quot;bz&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BZ</span><span class="p">,</span>
+            <span class="s2">&quot;ex&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EX</span><span class="p">,</span>
+            <span class="s2">&quot;ey&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EY</span><span class="p">,</span>
+            <span class="s2">&quot;ez&quot;</span><span class="p">:</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EZ</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Mapping for vector quantities</span>
+        <span class="n">vector_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Indices</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Z</span><span class="p">),</span>
+            <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Indices</span><span class="o">.</span><span class="n">VX</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VY</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VZ</span><span class="p">),</span>
+            <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Indices</span><span class="o">.</span><span class="n">BX</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BY</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BZ</span><span class="p">),</span>
+            <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Indices</span><span class="o">.</span><span class="n">EX</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EY</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EZ</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">component_map</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">component_map</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">idx</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Component &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not available in this trajectory data.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">vector_map</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">vector_map</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">indices</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vector &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not available in this trajectory data.&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown key: &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;. Valid keys include </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">component_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">list</span><span class="p">(</span><span class="n">vector_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ParticleTrajectory.get_first_adiabatic_invariant">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.ParticleTrajectory.get_first_adiabatic_invariant">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_first_adiabatic_invariant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="n">proton_mass</span><span class="p">):</span>
+        <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">]</span>
+        <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span>
+
+        <span class="n">v_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">b_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># Calculate magnitudes of velocity and B-field vectors</span>
+        <span class="n">v_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">b_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the dot product between V and B for each time step</span>
+        <span class="c1"># Equivalent to (vx*bx + vy*by + vz*bz)</span>
+        <span class="n">v_dot_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v_vec</span> <span class="o">*</span> <span class="n">b_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># To avoid division by zero if either vector magnitude is zero</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-15</span>
+
+        <span class="c1"># Calculate the sine square of the pitch angle</span>
+        <span class="n">sin_alpha_sq</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">v_dot_b</span> <span class="o">/</span> <span class="p">(</span><span class="n">v_mag</span> <span class="o">*</span> <span class="n">b_mag</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="n">v_perp_sq</span> <span class="o">=</span> <span class="n">v_mag</span> <span class="o">*</span> <span class="n">v_mag</span> <span class="o">*</span> <span class="n">sin_alpha_sq</span>
+
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-15</span>  <span class="c1"># Avoid division by zero</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">v_perp_sq</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b_mag</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>  <span class="c1"># [J/nT]</span>
+
+        <span class="k">return</span> <span class="n">mu</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FLEKSTP">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FLEKSTP</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class that is used to read and plot test particles. Each particle ID consists of</span>
+<span class="sd">    a CPU index, a particle index on each CPU, and a location index.</span>
+<span class="sd">    By default, 7 real numbers saved for each step: time + position + velocity.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dirs (str): the path to the test particle dataset.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">    &gt;&gt;&gt; tp = FLEKSTP(&quot;res/run1/PC/test_particles&quot;, iSpecies=1)</span>
+<span class="sd">    &gt;&gt;&gt; pIDs = list(tp.IDs())</span>
+<span class="sd">    &gt;&gt;&gt; tp.plot_trajectory(pIDs[3])</span>
+<span class="sd">    &gt;&gt;&gt; tp.save_trajectory_to_csv(pIDs[5])</span>
+<span class="sd">    &gt;&gt;&gt; ids, pData = tp.read_particles_at_time(6500.8, doSave=True)</span>
+<span class="sd">    &gt;&gt;&gt; f = tp.plot_location(pData)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dirs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+        <span class="n">iDomain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">iSpecies</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">iListStart</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">iListEnd</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">readAllFiles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dirs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">dirs</span><span class="p">]</span>
+
+        <span class="n">header</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dirs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/Header&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Header file not found in </span><span class="si">{</span><span class="n">dirs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">iSpecies</span> <span class="o">=</span> <span class="n">iSpecies</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">outputDir</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span> <span class="o">+</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">outputDir</span><span class="si">}</span><span class="s2">/FLEKS</span><span class="si">{</span><span class="n">iDomain</span><span class="si">}</span><span class="s2">_particle_list_species_</span><span class="si">{</span><span class="n">iSpecies</span><span class="si">}</span><span class="s2">_*&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span> <span class="o">+</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">outputDir</span><span class="si">}</span><span class="s2">/FLEKS</span><span class="si">{</span><span class="n">iDomain</span><span class="si">}</span><span class="s2">_particle_species_</span><span class="si">{</span><span class="n">iSpecies</span><span class="si">}</span><span class="s2">_*&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">indextotime</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">readAllFiles</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">:</span>
+                <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_the_first_record</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">record</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">indextotime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="n">Indices</span><span class="o">.</span><span class="n">TIME</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">iListEnd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">iListEnd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span><span class="p">[</span><span class="n">iListStart</span><span class="p">:</span><span class="n">iListEnd</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">[</span><span class="n">iListStart</span><span class="p">:</span><span class="n">iListEnd</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">plists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plistfiles</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_particle_list</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">IDs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">plist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plists</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">IDs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plist</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filetime</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_the_first_record</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">record</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filetime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="n">Indices</span><span class="o">.</span><span class="n">TIME</span><span class="p">])</span>
+
+<div class="viewcode-block" id="FLEKSTP.__repr__">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Particles species ID: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iSpecies</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of particles : </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">IDs</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;First time tag      : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filetime</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Last  time tag      : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filetime</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.getIDs">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.getIDs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getIDs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">IDs</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.read_particle_list">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.read_particle_list">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_particle_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read and return a list of the particle IDs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">record_format</span> <span class="o">=</span> <span class="s2">&quot;iiQ&quot;</span>  <span class="c1"># 2 integers + 1 unsigned long long</span>
+        <span class="n">record_size</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">calcsize</span><span class="p">(</span><span class="n">record_format</span><span class="p">)</span>
+        <span class="n">record_struct</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="n">record_format</span><span class="p">)</span>
+        <span class="n">nByte</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+        <span class="n">nPart</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nByte</span> <span class="o">/</span> <span class="n">record_size</span><span class="p">)</span>
+        <span class="n">plist</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nPart</span><span class="p">):</span>
+                <span class="n">dataChunk</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">record_size</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">cpu</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span> <span class="o">=</span> <span class="n">record_struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">dataChunk</span><span class="p">)</span>
+                <span class="n">plist</span><span class="o">.</span><span class="n">update</span><span class="p">({(</span><span class="n">cpu</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span> <span class="n">loc</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">plist</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP._read_the_first_record">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP._read_the_first_record">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_the_first_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the first record stored in one file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">binaryData</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">binaryData</span><span class="p">:</span>
+                    <span class="k">break</span>  <span class="c1"># EOF</span>
+
+                <span class="p">(</span><span class="n">cpu</span><span class="p">,</span> <span class="n">idtmp</span><span class="p">,</span> <span class="n">nRecord</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;iiif&quot;</span><span class="p">,</span> <span class="n">binaryData</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">nRecord</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">binaryData</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">)</span>
+                    <span class="n">dataList</span> <span class="o">=</span> <span class="n">dataList</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span>
+                        <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;f&quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">,</span> <span class="n">binaryData</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="n">dataList</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.read_particles_at_time">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.read_particles_at_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_particles_at_time</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">doSave</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the information of all the particles at a given time.</span>
+<span class="sd">        If doSave, save to a CSV file with the name &quot;particles_t***.csv&quot;.</span>
+
+<span class="sd">        Note that the time tags in filetime do not include the last saved time.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ids: a numpy array of tuples contains the particle IDs.</span>
+<span class="sd">            pData: a numpy real array with the particle weight, location and velocity.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">        &gt;&gt;&gt; ids, pData = pt.read_particles_at_time(3700, doSave=True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nFile</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">filetime</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There are no particles at time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">iFile</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">iFile</span> <span class="o">&lt;</span> <span class="n">nFile</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">filetime</span><span class="p">[</span><span class="n">iFile</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+                <span class="k">break</span>
+            <span class="n">iFile</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">[</span><span class="n">iFile</span><span class="p">]</span>
+
+        <span class="n">dataList</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">idList</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">binaryData</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">binaryData</span><span class="p">:</span>
+                    <span class="k">break</span>  <span class="c1"># EOF</span>
+
+                <span class="p">(</span><span class="n">cpu</span><span class="p">,</span> <span class="n">idtmp</span><span class="p">,</span> <span class="n">nRecord</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;iiif&quot;</span><span class="p">,</span> <span class="n">binaryData</span><span class="p">)</span>
+                <span class="n">binaryData</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">*</span> <span class="n">nRecord</span><span class="p">)</span>
+                <span class="n">allRecords</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;f&quot;</span> <span class="o">*</span> <span class="n">nRecord</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">,</span> <span class="n">binaryData</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nRecord</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">allRecords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">Indices</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">time</span><span class="p">:</span>
+                        <span class="n">dataList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">allRecords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">*</span> <span class="n">i</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                        <span class="p">)</span>
+                        <span class="n">idList</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cpu</span><span class="p">,</span> <span class="n">idtmp</span><span class="p">))</span>
+                        <span class="k">break</span>
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="n">i</span> <span class="o">==</span> <span class="n">nRecord</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="ow">and</span> <span class="n">allRecords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">Indices</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">time</span>
+                    <span class="p">):</span>
+                        <span class="k">continue</span>
+
+        <span class="n">npData</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dataList</span><span class="p">)</span>
+        <span class="n">idData</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">idList</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;i,i&quot;</span><span class="p">)</span>
+        <span class="c1"># Selected time is larger than the last saved time</span>
+        <span class="k">if</span> <span class="n">idData</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There are no particles at time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">doSave</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;particles_t</span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;cpu,iid,time,x,y,z,vx,vy,vz&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">+=</span> <span class="s2">&quot;,bx,by,bz&quot;</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">+=</span> <span class="s2">&quot;,bx,by,bz,ex,ey,ez&quot;</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">id_row</span><span class="p">,</span> <span class="n">data_row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idData</span><span class="p">,</span> <span class="n">npData</span><span class="p">):</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">id_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">id_row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">data_row</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">idData</span><span class="p">,</span> <span class="n">npData</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.save_trajectory_to_csv">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.save_trajectory_to_csv">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_trajectory_to_csv</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pID</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">shiftTime</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">scaleTime</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save the trajectory of a particle to a csv file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pID: particle ID.</span>
+<span class="sd">            shiftTime (bool): If set to True, set the initial time to be 0.</span>
+<span class="sd">            scaleTime (bool): If set to True, scale the time into [0,1] range.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        &gt;&gt;&gt; tp.save_trajectory_to_csv((3,15))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_particle_trajectory</span><span class="p">(</span><span class="n">pID</span><span class="p">)</span><span class="o">.</span><span class="n">trajectory</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;trajectory_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pID</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pID</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;.csv&quot;</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;time [s], X [R], Y [R], Z [R], U_x [km/s], U_y [km/s], U_z [km/s]&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">+=</span> <span class="s2">&quot;, B_x [nT], B_y [nT], B_z [nT]&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;, B_x [nT], B_y [nT], B_z [nT], E_x [uV/m], E_y [uV/m], E_z [uV/m]&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">shiftTime</span><span class="p">:</span>
+            <span class="n">pData</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">pData</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">scaleTime</span><span class="p">:</span>
+                <span class="n">pData</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="n">pData</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">pData</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP._get_particle_raw_data">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP._get_particle_raw_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_particle_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pID</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reads all raw trajectory data for a particle across multiple files.&quot;&quot;&quot;</span>
+        <span class="n">dataList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">record_format</span> <span class="o">=</span> <span class="s2">&quot;iiif&quot;</span>
+        <span class="n">record_size</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">calcsize</span><span class="p">(</span><span class="n">record_format</span><span class="p">)</span>
+        <span class="n">record_struct</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="n">record_format</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plist</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plists</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pID</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">:</span>
+                <span class="n">ploc</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="n">pID</span><span class="p">]</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">ploc</span><span class="p">)</span>
+                    <span class="n">dataChunk</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">record_size</span><span class="p">)</span>
+                    <span class="p">(</span><span class="n">cpu</span><span class="p">,</span> <span class="n">idtmp</span><span class="p">,</span> <span class="n">nRecord</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span> <span class="o">=</span> <span class="n">record_struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">dataChunk</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">nRecord</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">binaryData</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">*</span> <span class="n">nRecord</span><span class="p">)</span>
+                        <span class="n">dataList</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                            <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;f&quot;</span> <span class="o">*</span> <span class="n">nRecord</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">,</span> <span class="n">binaryData</span><span class="p">)</span>
+                        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataList</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP._read_particle_record">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP._read_particle_record">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_particle_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pID</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a specific record of a test particle given its ID.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pID: particle ID</span>
+<span class="sd">            index: The index of the record to be returned.</span>
+<span class="sd">                   0: first record.</span>
+<span class="sd">                   -1: last record (default).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">record_format</span> <span class="o">=</span> <span class="s2">&quot;iiif&quot;</span>
+        <span class="n">record_size</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">calcsize</span><span class="p">(</span><span class="n">record_format</span><span class="p">)</span>
+        <span class="n">record_struct</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="n">record_format</span><span class="p">)</span>
+
+        <span class="c1"># Optimized path for the first record (index=0)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plist</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plists</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">pID</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">:</span>
+                    <span class="n">ploc</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="n">pID</span><span class="p">]</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">ploc</span><span class="p">)</span>
+                        <span class="n">dataChunk</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">record_size</span><span class="p">)</span>
+                        <span class="p">(</span><span class="n">cpu</span><span class="p">,</span> <span class="n">idtmp</span><span class="p">,</span> <span class="n">nRecord</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span> <span class="o">=</span> <span class="n">record_struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">dataChunk</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">nRecord</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="c1"># Found the first chunk with records, read the first one and return</span>
+                            <span class="n">binaryData</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;f&quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">,</span> <span class="n">binaryData</span><span class="p">))</span>
+
+        <span class="c1"># Optimized path for the last record (index=-1)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Iterate backwards to find the last file with data for this particle</span>
+            <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plist</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pfiles</span><span class="p">),</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plists</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">pID</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">:</span>
+                    <span class="n">ploc</span> <span class="o">=</span> <span class="n">plist</span><span class="p">[</span><span class="n">pID</span><span class="p">]</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">ploc</span><span class="p">)</span>
+                        <span class="n">dataChunk</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">record_size</span><span class="p">)</span>
+                        <span class="p">(</span><span class="n">cpu</span><span class="p">,</span> <span class="n">idtmp</span><span class="p">,</span> <span class="n">nRecord</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span> <span class="o">=</span> <span class="n">record_struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">dataChunk</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">nRecord</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="c1"># This is the last chunk of data for this particle.</span>
+                            <span class="c1"># Seek to the last record within this chunk.</span>
+                            <span class="n">offset</span> <span class="o">=</span> <span class="n">ploc</span> <span class="o">+</span> <span class="n">record_size</span> <span class="o">+</span> <span class="p">(</span><span class="n">nRecord</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+                            <span class="n">binaryData</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;f&quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">,</span> <span class="n">binaryData</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.read_particle_trajectory">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.read_particle_trajectory">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_particle_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pID</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ParticleTrajectory</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the trajectory of a test particle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pID: particle ID</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">        &gt;&gt;&gt; trajectory = tp.read_particle_trajectory((66,888))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_particle_raw_data</span><span class="p">(</span><span class="n">pID</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataList</span><span class="p">:</span>
+            <span class="c1"># Return an empty trajectory if no data is found</span>
+            <span class="k">return</span> <span class="n">ParticleTrajectory</span><span class="p">(</span><span class="n">pID</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">)))</span>
+
+        <span class="n">nRecord</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataList</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">)</span>
+        <span class="n">trajectory_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dataList</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nRecord</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ParticleTrajectory</span><span class="p">(</span><span class="n">pID</span><span class="p">,</span> <span class="n">trajectory_data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.read_initial_condition">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.read_initial_condition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_initial_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pID</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the initial conditions of a test particle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_particle_record</span><span class="p">(</span><span class="n">pID</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.read_final_condition">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.read_final_condition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_final_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pID</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the final conditions of a test particle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_particle_record</span><span class="p">(</span><span class="n">pID</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.select_particles">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.select_particles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_select</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the test particles whose initial conditions satisfy the requirement</span>
+<span class="sd">        set by the user defined function f_select. The first argument of f_select is the</span>
+<span class="sd">        particle ID, and the second argument is the ID of a particle.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from flekspy.tp import Indices</span>
+<span class="sd">        &gt;&gt;&gt; def f_select(tp, pid):</span>
+<span class="sd">        &gt;&gt;&gt;     pData = tp.read_initial_condition(pid)</span>
+<span class="sd">        &gt;&gt;&gt;     inTime = pData[Indices.TIME] &lt; 3601</span>
+<span class="sd">        &gt;&gt;&gt;     inRegion = pData[Indices.X] &gt; 20</span>
+<span class="sd">        &gt;&gt;&gt;     return inTime and inRegion</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; pselected = tp.select_particles(f_select)</span>
+<span class="sd">        &gt;&gt;&gt; tp.plot_trajectory(list(pselected.keys())[1])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">f_select</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">f_select</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">pSelected</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">pid</span><span class="p">:</span> <span class="n">f_select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">IDs</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">pSelected</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.get_kinetic_energy">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.get_kinetic_energy">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_kinetic_energy</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="n">proton_mass</span><span class="p">):</span>
+        <span class="c1"># Assume velocity in units of [m/s]</span>
+        <span class="n">ke</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">mass</span> <span class="o">*</span> <span class="p">(</span><span class="n">vx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">elementary_charge</span>  <span class="c1"># [eV]</span>
+
+        <span class="k">return</span> <span class="n">ke</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.get_pitch_angle">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.get_pitch_angle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pitch_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pID</span><span class="p">):</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_particle_trajectory</span><span class="p">(</span><span class="n">pID</span><span class="p">)</span>
+        <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">]</span>
+        <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span>
+        <span class="c1"># Pitch Angle Calculation</span>
+        <span class="n">pitch_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pitch_angle_from_v_b</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pitch_angle</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.get_pitch_angle_from_v_b">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.get_pitch_angle_from_v_b">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pitch_angle_from_v_b</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span><span class="p">):</span>
+        <span class="c1"># Pitch Angle Calculation</span>
+        <span class="n">v_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">b_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># Calculate magnitudes of velocity and B-field vectors</span>
+        <span class="n">v_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">b_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the dot product between V and B for each time step</span>
+        <span class="c1"># Equivalent to (vx*bx + vy*by + vz*bz)</span>
+        <span class="n">v_dot_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v_vec</span> <span class="o">*</span> <span class="n">b_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># To avoid division by zero if either vector magnitude is zero</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-15</span>
+
+        <span class="c1"># Calculate the cosine of the pitch angle</span>
+        <span class="n">cos_alpha</span> <span class="o">=</span> <span class="n">v_dot_b</span> <span class="o">/</span> <span class="p">(</span><span class="n">v_mag</span> <span class="o">*</span> <span class="n">b_mag</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+
+        <span class="c1"># Due to potential floating point inaccuracies, clip values to the valid range for arccos</span>
+        <span class="n">cos_alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">cos_alpha</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="c1"># Calculate pitch angle and convert from radians to degrees</span>
+        <span class="n">pitch_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_alpha</span><span class="p">)</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="k">return</span> <span class="n">pitch_angle</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.get_first_adiabatic_invariant">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.get_first_adiabatic_invariant">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_first_adiabatic_invariant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pID</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="n">proton_mass</span><span class="p">):</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_particle_trajectory</span><span class="p">(</span><span class="n">pID</span><span class="p">)</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">get_first_adiabatic_invariant</span><span class="p">(</span><span class="n">mass</span><span class="o">=</span><span class="n">mass</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">mu</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.plot_trajectory">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.plot_trajectory">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_trajectory</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pID</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;quick&quot;</span><span class="p">,</span>
+        <span class="n">xaxis</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>
+        <span class="n">yaxis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plots the trajectory and velocities of the particle pID.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        &gt;&gt;&gt; tp.plot_trajectory((3,15))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">plot_data</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">irow</span><span class="p">,</span> <span class="n">icol</span><span class="p">):</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">irow</span><span class="p">,</span> <span class="n">icol</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dd</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">irow</span><span class="p">,</span> <span class="n">icol</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">t</span><span class="p">,</span> <span class="n">dd</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">winter</span><span class="p">(</span><span class="n">tNorm</span><span class="p">),</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span>
+            <span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">irow</span><span class="p">,</span> <span class="n">icol</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">irow</span><span class="p">,</span> <span class="n">icol</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">plot_vector</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">irow</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">labels</span><span class="p">)):</span>
+                <span class="n">plot_data</span><span class="p">(</span><span class="n">pt</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="nb">id</span><span class="p">],</span> <span class="n">label</span><span class="p">,</span> <span class="n">irow</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">pt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_particle_trajectory</span><span class="p">(</span><span class="n">pID</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span>
+        <span class="n">tNorm</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;single&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">xaxis</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="n">xaxis</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="n">yaxis</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">ax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xaxis</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">yaxis</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;xv&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span>
+                    <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+            <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y3</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span>
+
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;location&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+
+            <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y3</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">]</span>
+
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;vx&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;vy&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;vz&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ax</span><span class="p">:</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;quick&quot;</span><span class="p">:</span>
+            <span class="n">ncol</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="n">nrow</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># Default for X, V</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>  <span class="c1"># additional B field</span>
+                <span class="n">nrow</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>  <span class="c1"># additional B and E field</span>
+                <span class="n">nrow</span> <span class="o">=</span> <span class="mi">5</span>
+
+            <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Plot trajectories</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]):</span>
+                <span class="n">x_id</span> <span class="o">=</span> <span class="n">Indices</span><span class="o">.</span><span class="n">X</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Y</span>
+                <span class="n">y_id</span> <span class="o">=</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Y</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Z</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pt</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">x_id</span><span class="p">],</span> <span class="n">pt</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">y_id</span><span class="p">],</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                    <span class="n">pt</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">x_id</span><span class="p">],</span>
+                    <span class="n">pt</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">y_id</span><span class="p">],</span>
+                    <span class="n">c</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">winter</span><span class="p">(</span><span class="n">tNorm</span><span class="p">),</span>
+                    <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                    <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;y&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;z&quot;</span><span class="p">)</span>
+
+            <span class="n">plot_vector</span><span class="p">([</span><span class="n">Indices</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Z</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">plot_vector</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">Indices</span><span class="o">.</span><span class="n">VX</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VY</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">VZ</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;Vx&quot;</span><span class="p">,</span> <span class="s2">&quot;Vy&quot;</span><span class="p">,</span> <span class="s2">&quot;Vz&quot;</span><span class="p">],</span>
+                <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">&gt;</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BX</span><span class="p">:</span>
+                <span class="n">plot_vector</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">Indices</span><span class="o">.</span><span class="n">BX</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BY</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">BZ</span><span class="p">],</span>
+                    <span class="p">[</span><span class="s2">&quot;Bx&quot;</span><span class="p">,</span> <span class="s2">&quot;By&quot;</span><span class="p">,</span> <span class="s2">&quot;Bz&quot;</span><span class="p">],</span>
+                    <span class="mi">3</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nReal</span> <span class="o">&gt;</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EX</span><span class="p">:</span>
+                <span class="n">plot_vector</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">Indices</span><span class="o">.</span><span class="n">EX</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EY</span><span class="p">,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">EZ</span><span class="p">],</span>
+                    <span class="p">[</span><span class="s2">&quot;Ex&quot;</span><span class="p">,</span> <span class="s2">&quot;Ey&quot;</span><span class="p">,</span> <span class="s2">&quot;Ez&quot;</span><span class="p">],</span>
+                    <span class="mi">4</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analyzing particle ID: </span><span class="si">{</span><span class="n">pt</span><span class="o">.</span><span class="n">pid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># TODO Proper unit handling</span>
+            <span class="c1"># --- Data Extraction ---</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[:,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span>  <span class="c1"># [s]</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span>  <span class="c1"># [RE]</span>
+            <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">]</span>  <span class="c1"># [km/s]</span>
+            <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span>  <span class="c1"># [nT]</span>
+            <span class="n">ex</span><span class="p">,</span> <span class="n">ey</span><span class="p">,</span> <span class="n">ez</span> <span class="o">=</span> <span class="n">pt</span><span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">]</span>  <span class="c1"># [muV/m]</span>
+
+            <span class="c1"># --- Derived Quantities Calculation ---</span>
+
+            <span class="c1"># Kinetic Energy</span>
+            <span class="n">ke</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span>  <span class="c1"># [eV]</span>
+
+            <span class="c1"># Vectorize B and V fields for easier calculations</span>
+            <span class="n">v_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">b_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">e_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ex</span><span class="p">,</span> <span class="n">ey</span><span class="p">,</span> <span class="n">ez</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="c1"># Calculate magnitudes of vectors</span>
+            <span class="n">v_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [km/s]</span>
+            <span class="n">b_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [nT]</span>
+            <span class="n">e_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">e_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-3</span>  <span class="c1"># [mV/m]</span>
+
+            <span class="c1"># Magnetic Field Energy Density Calculation</span>
+            <span class="n">U_B</span> <span class="o">=</span> <span class="p">(</span><span class="n">b_mag</span> <span class="o">*</span> <span class="mf">1e-9</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mu_0</span><span class="p">)</span>  <span class="c1"># [J/m^3]</span>
+
+            <span class="c1"># Electric Field Energy Density Calculation</span>
+            <span class="n">U_E</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">epsilon_0</span> <span class="o">*</span> <span class="p">(</span><span class="n">e_mag</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># [J/m^3]</span>
+
+            <span class="c1"># Pitch Angle Calculation</span>
+            <span class="n">v_dot_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v_vec</span> <span class="o">*</span> <span class="n">b_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-15</span>
+            <span class="n">cos_alpha</span> <span class="o">=</span> <span class="n">v_dot_b</span> <span class="o">/</span> <span class="p">(</span><span class="n">v_mag</span> <span class="o">*</span> <span class="n">b_mag</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+            <span class="n">cos_alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">cos_alpha</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">pitch_angle_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_alpha</span><span class="p">)</span>
+            <span class="n">pitch_angle</span> <span class="o">=</span> <span class="n">pitch_angle_rad</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+            <span class="c1"># --- First Adiabatic Invariant (mu) Calculation ---</span>
+            <span class="c1"># mu = mv_perp^2 / 2B.  v_perp = v * sin(alpha)</span>
+            <span class="c1"># Ensure units are SI: v [m/s], B [T]</span>
+            <span class="c1"># Calculate perpendicular velocity squared</span>
+            <span class="n">v_perp_sq</span> <span class="o">=</span> <span class="p">(</span><span class="n">v_mag</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pitch_angle_rad</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+
+            <span class="c1"># Calculate mu, handle potential division by zero in B</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">proton_mass</span> <span class="o">*</span> <span class="n">v_perp_sq</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b_mag</span> <span class="o">*</span> <span class="mf">1e-9</span><span class="p">)</span>  <span class="c1"># [J/T]</span>
+
+            <span class="c1"># --- Plotting ---</span>
+            <span class="c1"># Create 7 subplots, sharing the x-axis</span>
+            <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span>
+                <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Panel 0: Particle Location</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Location [$R_E$]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Panel 1: Particle Velocity</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;V [km/s]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$v_x$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$v_y$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$v_z$&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Panel 2: Kinetic Energy</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ke</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;KE&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:brown&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;KE [eV]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Panel 3: Field Energy Densities (on twin axes)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">U_B</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$U_B$&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$U_B$ [J/m$^3$]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">)</span>
+            <span class="c1"># ax[3].set_yscale(&quot;log&quot;)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">)</span>
+
+            <span class="n">ax3_twin</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+            <span class="n">ax3_twin</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">U_E</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$U_E$&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:purple&quot;</span><span class="p">)</span>
+            <span class="n">ax3_twin</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$U_E$ [J/m$^3$]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:purple&quot;</span><span class="p">)</span>
+            <span class="c1"># ax3_twin.set_yscale(&quot;log&quot;)</span>
+            <span class="n">ax3_twin</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="s2">&quot;tab:purple&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Panel 4: Magnetic Field</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$B_x$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$B_y$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">bz</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$B_z$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;B [nT]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+
+            <span class="c1"># Panel 5: Electric Field</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ex</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$E_x$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ey</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$E_y$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ez</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$E_z$&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;E [mV/m]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+
+            <span class="c1"># Panel 6: Pitch Angle</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">pitch_angle</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:brown&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Pitch Angle [$^\circ$]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="mi">180</span><span class="p">])</span>
+
+            <span class="c1"># Panel 7: First Adiabatic Invariant</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:brown&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\mu$ [J/T]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>  <span class="c1"># mu can vary, log scale is often useful</span>
+
+            <span class="c1"># --- Decorations ---</span>
+            <span class="n">ax</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;t [s]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+
+            <span class="c1"># Add legends and grid to all plots</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
+                <span class="c1"># Set tick label size for all axes</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;major&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="s2">&quot;medium&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Skip legend for the last panel (pitch angle) as it only has one line</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+                    <span class="n">a</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                    <span class="n">a</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">right</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># For panels with 3 items, arrange legend in 3 columns</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]:</span>
+                    <span class="n">a</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;large&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+                <span class="n">a</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">right</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+            <span class="n">f</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test Particle ID: </span><span class="si">{</span><span class="n">pt</span><span class="o">.</span><span class="n">pid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ax</span></div>
+
+
+<div class="viewcode-block" id="FLEKSTP.plot_location">
+<a class="viewcode-back" href="../../../autoapi/flekspy/tp/test_particles/index.html#flekspy.FLEKSTP.plot_location">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pData</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the location of particles pData.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">        &gt;&gt;&gt; ids, pData = tp.read_particles_at_time(3700, doSave=True)</span>
+<span class="sd">        &gt;&gt;&gt; f = tp.plot_location(pData)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">px</span> <span class="o">=</span> <span class="n">pData</span><span class="p">[:,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">X</span><span class="p">]</span>
+        <span class="n">py</span> <span class="o">=</span> <span class="n">pData</span><span class="p">[:,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Y</span><span class="p">]</span>
+        <span class="n">pz</span> <span class="o">=</span> <span class="n">pData</span><span class="p">[:,</span> <span class="n">Indices</span><span class="o">.</span><span class="n">Z</span><span class="p">]</span>
+
+        <span class="c1"># Create subplot mosaic with different keyword arguments</span>
+        <span class="n">skeys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]</span>
+        <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot_mosaic</span><span class="p">(</span>
+            <span class="s2">&quot;AB;CD&quot;</span><span class="p">,</span>
+            <span class="n">per_subplot_kw</span><span class="o">=</span><span class="p">{(</span><span class="s2">&quot;D&quot;</span><span class="p">):</span> <span class="p">{</span><span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="s2">&quot;3d&quot;</span><span class="p">}},</span>
+            <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;width_ratios&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;wspace&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;hspace&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Create 2D scatter plots</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">([</span><span class="n">px</span><span class="p">,</span> <span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">],</span> <span class="p">[</span><span class="n">py</span><span class="p">,</span> <span class="n">pz</span><span class="p">,</span> <span class="n">pz</span><span class="p">],</span> <span class="p">[(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)])</span>
+        <span class="p">):</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">skeys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">skeys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">skeys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Create 3D scatter plot</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">skeys</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">,</span> <span class="n">pz</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">skeys</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">skeys</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="p">[</span><span class="n">skeys</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ax</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yuxi Chen, Hongyang Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
