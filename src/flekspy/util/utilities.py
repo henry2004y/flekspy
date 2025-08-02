@@ -152,7 +152,7 @@ def download_testfile(url: str, target_path="."):
         target_dir.mkdir(parents=True, exist_ok=True)
 
         with tarfile.open(temp_file, "r:gz") as tar:
-            tar.extractall(target_dir)
+            tar.extractall(target_dir, filter="data")
 
     except requests.exceptions.RequestException as e:
         print(f"Error downloading file: {e}")

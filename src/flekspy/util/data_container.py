@@ -119,19 +119,27 @@ class DataContainer(object):
             expression (str): Python codes to be executed
             Example: expression = "np.log({rhos0}+{rhos1})"
         """
+        import re
 
-        if expression.find("{") < 0:
+        if '{' not in expression:
             return self.get_variable(expression, unit)
 
-        exp1 = expression.replace("{", "self.get_variable('")
+        # A dictionary to store the variables for eval.
+        eval_context = {'np': np}
 
-        exp2 = exp1.replace("}", "',unit)")
-        exp2 = r"result=" + exp2
+        def repl(match):
+            var_name = match.group(1)
+            # Add the variable to the context for eval.
+            # Use a name that is valid for a python identifier.
+            eval_context[var_name] = self.get_variable(var_name, unit)
+            return var_name
 
-        print(exp2)
-        exec(exp2)
+        # Replace `{var}` with `var` and populate `eval_context`.
+        expression_for_eval = re.sub(r'\{(.*?)\}', repl, expression)
 
-        return locals()["result"]
+        # Evaluate the expression in the prepared context.
+        # We provide an empty `__builtins__` to restrict access to other built-in functions for security.
+        return eval(expression_for_eval, {"__builtins__": {}}, eval_context)
 
     def add_variable(self, name, val):
         r"""
@@ -161,6 +169,7 @@ class DataContainer(object):
         Return: YTArray
         """
 
+        ytarr = None
         if var in self.data.keys():
             varUnit = get_unit(var, unit)
             ytarr = self.data[var]
@@ -201,6 +210,9 @@ class DataContainer(object):
                 if type(ytarr) != yt.units.yt_array.YTArray:
                     varUnit = "dimensionless"
                     ytarr = yt.YTArray(ytarr, varUnit)
+
+        if ytarr is None:
+            raise KeyError(f"Variable '{var}' not found in dataset.")
 
         return ytarr if str(ytarr.units) == "dimensionless" else ytarr.in_units(varUnit)
 
