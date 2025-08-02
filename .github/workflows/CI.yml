@@ -41,14 +41,16 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run benchmark
+        if: github.event_name == 'pull_request'
         run: |
-          uv run pytest --benchmark-only --benchmark-json output.json
+          uv run pytest --benchmark-only > benchmark.txt
 
-      - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          tool: 'pytest'
-          output-file-path: output.json
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body-file benchmark.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build documentation
         run: uv run make html --directory docs/
