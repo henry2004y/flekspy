@@ -490,7 +490,7 @@ class IDLDataX:
 
         interp_data = self.data.interp(point)
 
-        return np.array([interp_data[var].values for var in self.data.data_vars])
+        return interp_data.to_array().values
 
     def extract_data(self, sat: np.ndarray) -> np.ndarray:
         """Extract data at a series of locations.
