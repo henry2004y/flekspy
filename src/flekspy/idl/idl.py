@@ -58,26 +58,18 @@ class Dataframe:
         return np.squeeze(self.array[ivar, keys[1], keys[2], keys[3]])
 
 
-class IDLData(object):
+class IDLDataX:
     r"""
     A class used to handle the `*.out` format SWMF data.
-
     Example:
-    >>> ds = IDLData("3d.out")
+    >>> ds = IDLDataX("3d.out")
     >>> dc2d = ds.get_slice("y", 1)
     """
-
-    class Indices(IntEnum):
-        """Defines constant indices for IDL data."""
-
-        X = 0
-        Y = 1
-        Z = 2
 
     def __init__(self, filename="none"):
         self.filename = filename
         self.isOuts = self.filename[-4:] == "outs"
-        self.data = Dataframe()
+        self._data = Dataframe()
         self.nInstance = None if self.isOuts else 1
         self.npict = 1
         self.fileformat = None
@@ -93,6 +85,36 @@ class IDLData(object):
 
         self.read_data()
 
+        coords = {}
+        dims = []
+        for i in range(self.ndim):
+            dim_name = self.dims[i]
+            dims.append(dim_name)
+            dim_idx = self._data.name.index(dim_name)
+            slicer = [0] * 3
+            slicer[i] = slice(None, self.grid[i])
+            coords[dim_name] = np.squeeze(
+                self._data.array[dim_idx, slicer[0], slicer[1], slicer[2]]
+            )
+
+        data_vars = {}
+        for i, var_name in enumerate(self._data.name):
+            if var_name not in self.dims:
+                data_slice = self._data.array[
+                    i,
+                    : self.grid[0],
+                    : self.grid[1] if self.ndim > 1 else 1,
+                    : self.grid[2] if self.ndim > 2 else 1,
+                ]
+                data_vars[var_name] = (dims, np.squeeze(data_slice))
+
+        self.data = xr.Dataset(data_vars, coords=coords)
+
+        self.data.attrs["time"] = self.time
+        self.data.attrs["iter"] = self.iter
+        self.data.attrs["unit"] = self.unit
+        self.data.attrs["gencoord"] = self.gencoord
+
     def __post_process_param__(self):
 
         planet_radius = 1.0
@@ -106,7 +128,7 @@ class IDLData(object):
         self.registry.add("Planet_Radius", planet_radius, yt.units.dimensions.length)
 
     def __repr__(self):
-        str = (
+        string = (
             f"filename    : {self.filename}\n"
             f"variables   : {self.variables}\n"
             f"unit        : {self.unit}\n"
@@ -118,124 +140,7 @@ class IDLData(object):
             f"gencoord    : {self.gencoord}\n"
             f"grid        : {self.grid}\n"
         )
-        return str
-
-    def get_domain(self) -> DataContainer:
-        """Return data as data container."""
-        dataSets = {}
-        for varname in self.data.name:
-            idx = self.data.name.index(varname)
-            unit = get_unit(varname, self.unit)
-            dataSets[varname] = yt.YTArray(
-                np.squeeze(self.data.array[idx, :, :, :]), unit, registry=self.registry
-            )
-
-        labels = ["", "", ""]
-        axes = [None, None, None]
-        for idim in range(self.ndim):
-            name = self.variables[idim]
-            idx = self.data.name.index(name)
-            labels[idim] = name.upper()
-            unit = get_unit("X", self.unit)
-            name = name.upper()
-            if name in ["X", "Y", "Z"]:
-                axes[idim] = yt.YTArray(
-                    self.data.array[idx, :, :, :], unit, registry=self.registry
-                )
-
-        if self.gencoord and self.ndim == 2:
-            dc = DataContainer2D(
-                dataSets,
-                np.squeeze(axes[0]),
-                np.squeeze(axes[1]),
-                labels[0],
-                labels[1],
-                step=self.iter,
-                time=self.time,
-                filename=self.filename,
-                gencoord=True,
-            )
-        elif self.ndim == 1:
-            dc = DataContainer1D(
-                dataSets,
-                np.squeeze(axes[0]),
-                labels[0],
-                step=self.iter,
-                time=self.time,
-                filename=self.filename,
-            )
-        elif self.ndim == 2:
-            dc = DataContainer2D(
-                dataSets,
-                np.squeeze(axes[0])[:, 0],
-                np.squeeze(axes[1])[0, :],
-                labels[0],
-                labels[1],
-                step=self.iter,
-                time=self.time,
-                filename=self.filename,
-            )
-        else:
-            dc = DataContainer3D(
-                dataSets,
-                axes[0][:, 0, 0],
-                axes[1][0, :, 0],
-                axes[2][0, 0, :],
-                step=self.iter,
-                time=self.time,
-                filename=self.filename,
-            )
-
-        return dc
-
-    def get_slice(self, norm, cut_loc) -> DataContainer2D:
-        """Get a 2D slice from the 3D IDL data.
-
-        Args:
-            norm: str
-                The normal direction of the slice from "x", "y" or "z"
-
-            cur_loc: float
-                The position of slicing.
-
-        Return: DataContainer2D
-        """
-        domain = self.get_domain()
-        ds = domain.get_slice(norm, cut_loc)
-
-        return ds
-
-    def save_data(self, saveName, saveFormat="ascii"):
-        # Currently only support ascii output.
-        self.save_ascii_instance(saveName)
-
-    def save_ascii_instance(self, saveName):
-        with open(saveName, "w") as f:
-            f.write(self.unit + "\n")
-            f.write(
-                "{0:d}\t{1:e}\t{2:d}\t{3:d}\t{4:d}\n".format(
-                    self.iter, self.time, self.ndim, self.nparam, self.nvar
-                )
-            )
-            [f.write("{0:d}\t".format(i)) for i in self.grid]
-            f.write("\n")
-            if self.nparam > 0:
-                [f.write("{0:e}\t".format(i)) for i in self.para]
-                f.write("\n")
-            [f.write(i + " ") for i in self.variables]
-            f.write("\n")
-
-            nk = self.grid[2] if self.ndim > 2 else 1
-            nj = self.grid[1] if self.ndim > 1 else 1
-            ni = self.grid[0]
-            for kk in range(nk):
-                for jj in range(nj):
-                    for ii in range(ni):
-                        [
-                            f.write("{0:e}\t".format(i))
-                            for i in self.data.array[:, ii, jj, kk]
-                        ]
-                        f.write("\n")
+        return string
 
     def read_data(self):
         if self.fileformat is None:
@@ -262,8 +167,8 @@ class IDLData(object):
             raise ValueError(f"Unknown format = {self.fileformat}")
 
         nsize = self.ndim + self.nvar
-        self.data.name = tuple(self.variables)[0:nsize]
-        self.data.fixDataSize()
+        self._data.name = tuple(self.variables)[0:nsize]
+        self._data.fixDataSize()
         self.param_name = self.variables[nsize:]
         self.__post_process_param__()
 
@@ -292,7 +197,7 @@ class IDLData(object):
         self.get_file_head(infile)
         nrow = self.ndim + self.nvar
         ncol = self.npoints
-        self.data.array = np.zeros((nrow, ncol))
+        self._data.array = np.zeros((nrow, ncol))
 
         for i, line in enumerate(infile.readlines()):
             parts = line.split()
@@ -301,10 +206,10 @@ class IDLData(object):
                 break
 
             for j, p in enumerate(parts):
-                self.data.array[j][i] = float(p)
+                self._data.array[j][i] = float(p)
 
         shapeNew = np.append([nrow], self.grid)
-        self.data.array = np.reshape(self.data.array, shapeNew, order="F")
+        self._data.array = np.reshape(self._data.array, shapeNew, order="F")
         nline = 5 + self.npoints if self.nparam > 0 else 4 + self.npoints
 
         return nline
@@ -431,7 +336,7 @@ class IDLData(object):
         else:
             dtype = np.float64
 
-        self.data.array = np.empty((nrow, self.npoints), dtype=dtype)
+        self._data.array = np.empty((nrow, self.npoints), dtype=dtype)
         dtype_str = f"{self.end_char}{self.pformat}"
 
         # Get the grid points
@@ -440,20 +345,22 @@ class IDLData(object):
         grid_data = np.frombuffer(
             buffer, dtype=dtype_str, count=self.npoints * self.ndim
         )
-        self.data.array[0 : self.ndim, :] = grid_data.reshape((self.ndim, self.npoints))
+        self._data.array[0 : self.ndim, :] = grid_data.reshape(
+            (self.ndim, self.npoints)
+        )
 
         # Get the actual data and sort
         for i in range(self.ndim, self.nvar + self.ndim):
             (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
             buffer = infile.read(record_len)
-            self.data.array[i, :] = np.frombuffer(
+            self._data.array[i, :] = np.frombuffer(
                 buffer, dtype=dtype_str, count=self.npoints
             )
         # Consume the last record length
         infile.read(4)
 
         shape_new = np.append([nrow], self.grid)
-        self.data.array = np.reshape(self.data.array, shape_new, order="F")
+        self._data.array = np.reshape(self._data.array, shape_new, order="F")
 
     def read_parameters(self, infile):
         """Reads parameters from the binary file."""
@@ -487,217 +394,23 @@ class IDLData(object):
             int(self.time // 3600), int(self.time % 3600 // 60), self.time % 60
         )
 
-    def plot(self, *dvname, **kwargs):
-        """Plot 1D IDL outputs.
-
-        Args:
-            *dvname (str): variable names
-            **kwargs: keyword argument to be passed to `plot`.
-        """
-        x = self.data["x"]
-        nvar = len(dvname)
-
-        f, axes = plt.subplots(nvar, 1, constrained_layout=True, sharex=True)
-        axes = np.array(axes)  # in case nrows == ncols == 1
-        axes = axes.reshape(-1)
-        for isub, ax in zip(range(nvar), axes):
-            w = self.data[dvname[isub]]
-            p = ax.plot(x, w, **kwargs)
-
-            ax.set_xlabel("x", fontsize=16)
-            ax.set_ylabel(dvname[isub], fontsize=16)
-
-        return axes
-
-    def pcolormesh(self, *dvname, scale: bool = True, **kwargs):
-        """Plot 2D pcolormeshes of variables.
-
-        Args:
-            *dvname (str): variable names
-            scale (bool): whether to scale the plots according to the axis range.
-                Default True.
-        """
-        x = self.data["x"]
-        y = self.data["y"]
-
-        nvar = len(dvname)
-
-        f, axes = plt.subplots(
-            nvar, 1, constrained_layout=True, sharex=True, sharey=True
-        )
-        axes = np.array(axes)  # in case nRow = nCol = 1
-        aspect = (y.max() - y.min()) / (x.max() - x.min())
-        axes = axes.reshape(-1)
-
-        for isub, ax in zip(range(nvar), axes):
-            w = self.data[dvname[isub]]
-            p = ax.pcolormesh(x, y, w, cmap="turbo", **kwargs)
-            cb = f.colorbar(p, ax=ax, pad=0.02)
-            if scale:
-                ax.set_aspect(aspect)
-            ax.set_xlabel("X", fontsize=16)
-            ax.set_ylabel("Y", fontsize=16)
-            ax.set_title(dvname[isub], fontsize=16)
-
-        return axes
-
-    def extract_data(self, sat: np.ndarray) -> np.ndarray:
-        """Extract data at a series of locations.
-
-        Args:
-            sat (np.ndarray): 2D/3D point locations.
-
-        Returns:
-            np.ndarray: 2D array of variables at each point.
-        """
-        satData = None
-        if sat.ndim == 2 and sat.shape[1] >= self.ndim:
-            nVar = self.nvar + self.ndim
-            nPoint = sat.shape[0]
-            satData = np.zeros((nPoint, nVar))
-            for i in range(nPoint):
-                satData[i, :] = np.squeeze(self.get_data(sat[i, :]))
-        return satData
-
-    def get_data(self, loc: np.ndarray) -> np.ndarray:
-        """Extract data at a given point using bilinear interpolation.
-
-        Args:
-            loc (np.ndarray): 2D/3D point location.
-
-        Returns:
-            np.ndarray: 1D array of saved variables at the survey point.
-        """
-        if self.ndim == 2:
-            # Find the indices of the surrounding grid points
-            i1, j1 = 0, 0
-            while self.data["x"][i1, 0] < loc[self.Indices.X]:
-                i1 += 1
-            while self.data["y"][0, j1] < loc[self.Indices.Y]:
-                j1 += 1
-            i0 = i1 - 1
-            j0 = j1 - 1
-
-            # Calculate the weights
-            wx0 = (self.data["x"][i1, 0] - loc[self.Indices.X]) / (
-                self.data["x"][i1, 0] - self.data["x"][i0, 0]
-            )
-            wy0 = (self.data["y"][0, j1] - loc[self.Indices.Y]) / (
-                self.data["y"][0, j1] - self.data["y"][0, j0]
-            )
-            wx1 = 1.0 - wx0
-            wy1 = 1.0 - wy0
-
-            # Calculate the interpolated values
-            res = (
-                self.data.array[:, i0, j0] * wx0 * wy0
-                + self.data.array[:, i0, j1] * wx0 * wy1
-                + self.data.array[:, i1, j0] * wx1 * wy0
-                + self.data.array[:, i1, j1] * wx1 * wy1
-            )
-        elif self.ndim == 3:
-            i1, j1, k1 = 0, 0, 0
-            while self.data["x"][i1, 0, 0] < loc[self.Indices.X]:
-                i1 += 1
-            while self.data["y"][0, j1, 0] < loc[self.Indices.Y]:
-                j1 += 1
-            while self.data["z"][0, 0, k1] < loc[self.Indices.Z]:
-                k1 += 1
-
-            i0 = i1 - 1
-            j0 = j1 - 1
-            k0 = k1 - 1
-
-            wx0 = (self.data["x"][i1, 0, 0] - loc[self.Indices.X]) / (
-                self.data["x"][i1, 0, 0] - self.data["x"][i0, 0, 0]
-            )
-            wy0 = (self.data["y"][0, j1, 0] - loc[self.Indices.Y]) / (
-                self.data["y"][0, j1, 0] - self.data["y"][0, j0, 0]
-            )
-            wz0 = (self.data["z"][0, 0, k1] - loc[self.Indices.Z]) / (
-                self.data["z"][0, 0, k1] - self.data["z"][0, 0, k0]
-            )
-
-            wx1 = 1.0 - wx0
-            wy1 = 1.0 - wy0
-            wz1 = 1.0 - wz0
-
-            w = np.array(
-                [
-                    [
-                        [wx0 * wy0 * wz0, wx0 * wy0 * wz1],
-                        [wx0 * wy1 * wz0, wx0 * wy1 * wz1],
-                    ],
-                    [
-                        [wx1 * wy0 * wz0, wx1 * wy0 * wz1],
-                        [wx1 * wy1 * wz0, wx1 * wy1 * wz1],
-                    ],
-                ]
-            )
-
-            res = np.sum(
-                w * self.data.array[:, i0 : i0 + 2, j0 : j0 + 2, k0 : k0 + 2],
-                axis=(1, 2, 3),
-            )
-
-        return res
-
-
-class IDLDataX(IDLData):
-    def __init__(self, filename="none"):
-        super().__init__(filename)
-
-        coords = {}
-        dims = []
-        for i in range(self.ndim):
-            dim_name = self.dims[i]
-            dims.append(dim_name)
-            dim_idx = self.data.name.index(dim_name)
-            slicer = [0] * 3
-            slicer[i] = slice(None, self.grid[i])
-            coords[dim_name] = np.squeeze(
-                self.data.array[dim_idx, slicer[0], slicer[1], slicer[2]]
-            )
-
-        data_vars = {}
-        for i, var_name in enumerate(self.data.name):
-            if var_name not in self.dims:
-                data_slice = self.data.array[
-                    i,
-                    : self.grid[0],
-                    : self.grid[1] if self.ndim > 1 else 1,
-                    : self.grid[2] if self.ndim > 2 else 1,
-                ]
-                data_vars[var_name] = (dims, np.squeeze(data_slice))
-
-        self.data = xr.Dataset(data_vars, coords=coords)
-
-        self.data.attrs["time"] = self.time
-        self.data.attrs["iter"] = self.iter
-        self.data.attrs["unit"] = self.unit
-        self.data.attrs["gencoord"] = self.gencoord
-
     def get_domain(self) -> xr.Dataset:
         """Return data as an xarray.Dataset."""
         return self.data
 
     def get_slice(self, norm, cut_loc) -> xr.Dataset:
         """Get a 2D slice from the 3D IDL data.
-
         Args:
             norm: str
                 The normal direction of the slice from "x", "y" or "z"
-
             cur_loc: float
                 The position of slicing.
-
         Return: xarray.Dataset
         """
         return self.data.sel({norm: cut_loc}, method="nearest")
 
     def plot(self, *dvname, **kwargs):
         """Plot 1D IDL outputs.
-
         Args:
             *dvname (str): variable names
             **kwargs: keyword argument to be passed to `plot`.
@@ -720,7 +433,6 @@ class IDLDataX(IDLData):
 
     def pcolormesh(self, *dvname, scale: bool = True, **kwargs):
         """Plot 2D pcolormeshes of variables.
-
         Args:
             *dvname (str): variable names
             scale (bool): whether to scale the plots according to the axis range.
@@ -765,10 +477,8 @@ class IDLDataX(IDLData):
 
     def get_data(self, loc: np.ndarray) -> np.ndarray:
         """Extract data at a given point using bilinear interpolation.
-
         Args:
             loc (np.ndarray): 2D/3D point location.
-
         Returns:
             np.ndarray: 1D array of saved variables at the survey point.
         """
@@ -783,10 +493,8 @@ class IDLDataX(IDLData):
 
     def extract_data(self, sat: np.ndarray) -> np.ndarray:
         """Extract data at a series of locations.
-
         Args:
             sat (np.ndarray): 2D/3D point locations, shape (n_points, n_dims).
-
         Returns:
             np.ndarray: 2D array of variables at each point.
         """
