@@ -121,11 +121,11 @@ class DataContainer(object):
         """
         import re
 
-        if '{' not in expression:
+        if "{" not in expression:
             return self.get_variable(expression, unit)
 
         # A dictionary to store the variables for eval.
-        eval_context = {'np': np}
+        eval_context = {"np": np}
 
         def repl(match):
             var_name = match.group(1)
@@ -135,7 +135,7 @@ class DataContainer(object):
             return var_name
 
         # Replace `{var}` with `var` and populate `eval_context`.
-        expression_for_eval = re.sub(r'\{(.*?)\}', repl, expression)
+        expression_for_eval = re.sub(r"\{(.*?)\}", repl, expression)
 
         # Evaluate the expression in the prepared context.
         # We provide an empty `__builtins__` to restrict access to other built-in functions for security.
@@ -335,8 +335,8 @@ class DataContainer2D(DataContainer):
         nlevels: int = 200,
         cmap: str = "turbo",
         figsize=(10, 6),
-        f = None,
-        axes = None,
+        f=None,
+        axes=None,
         pcolor=False,
         logscale=False,
         addgrid=False,
