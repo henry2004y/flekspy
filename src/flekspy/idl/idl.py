@@ -649,37 +649,39 @@ class IDLDataX(IDLData):
 
         coords = {}
         dims = []
-        if self.ndim >= 1:
-            dims.append(self.dims[0])
-            x_idx = list(self.data.name).index(self.dims[0])
-            coords[self.dims[0]] = np.squeeze(self.data.array[x_idx, :self.grid[0], 0, 0])
-        if self.ndim >= 2:
-            dims.append(self.dims[1])
-            y_idx = list(self.data.name).index(self.dims[1])
-            coords[self.dims[1]] = np.squeeze(self.data.array[y_idx, 0, :self.grid[1], 0])
-        if self.ndim >= 3:
-            dims.append(self.dims[2])
-            z_idx = list(self.data.name).index(self.dims[2])
-            coords[self.dims[2]] = np.squeeze(self.data.array[z_idx, 0, 0, :self.grid[2]])
+        for i in range(self.ndim):
+            dim_name = self.dims[i]
+            dims.append(dim_name)
+            dim_idx = self.data.name.index(dim_name)
+            slicer = [0] * 3
+            slicer[i] = slice(None, self.grid[i])
+            coords[dim_name] = np.squeeze(
+                self.data.array[dim_idx, slicer[0], slicer[1], slicer[2]]
+            )
 
         data_vars = {}
         for i, var_name in enumerate(self.data.name):
             if var_name not in self.dims:
-                data_slice = self.data.array[i, :self.grid[0], :self.grid[1] if self.ndim > 1 else 1, :self.grid[2] if self.ndim > 2 else 1]
+                data_slice = self.data.array[
+                    i,
+                    : self.grid[0],
+                    : self.grid[1] if self.ndim > 1 else 1,
+                    : self.grid[2] if self.ndim > 2 else 1,
+                ]
                 data_vars[var_name] = (dims, np.squeeze(data_slice))
 
         self.data = xr.Dataset(data_vars, coords=coords)
 
-        self.data.attrs['time'] = self.time
-        self.data.attrs['iter'] = self.iter
-        self.data.attrs['unit'] = self.unit
-        self.data.attrs['gencoord'] = self.gencoord
+        self.data.attrs["time"] = self.time
+        self.data.attrs["iter"] = self.iter
+        self.data.attrs["unit"] = self.unit
+        self.data.attrs["gencoord"] = self.gencoord
 
-    def get_domain(self):
+    def get_domain(self) -> xr.Dataset:
         """Return data as an xarray.Dataset."""
         return self.data
 
-    def get_slice(self, norm, cut_loc):
+    def get_slice(self, norm, cut_loc) -> xr.Dataset:
         """Get a 2D slice from the 3D IDL data.
 
         Args:
@@ -733,15 +735,19 @@ class IDLDataX(IDLData):
             return
 
         f, axes = plt.subplots(
-            nvar, 1, constrained_layout=True, sharex=True, sharey=True,
-            figsize=kwargs.pop('figsize', (6, 4*nvar))
+            nvar,
+            1,
+            constrained_layout=True,
+            sharex=True,
+            sharey=True,
+            figsize=kwargs.pop("figsize", (6, 4 * nvar)),
         )
         if nvar == 1:
             axes = [axes]
 
         for i, var in enumerate(dvname):
-            if 'cmap' not in kwargs:
-                kwargs['cmap'] = 'turbo'
+            if "cmap" not in kwargs:
+                kwargs["cmap"] = "turbo"
 
             self.data[var].plot.pcolormesh(ax=axes[i], **kwargs)
             axes[i].set_title(var)
@@ -749,7 +755,9 @@ class IDLDataX(IDLData):
         if scale:
             x_coords = self.data.coords[self.dims[0]]
             y_coords = self.data.coords[self.dims[1]]
-            aspect_ratio = (y_coords.max() - y_coords.min()) / (x_coords.max() - x_coords.min())
+            aspect_ratio = (y_coords.max() - y_coords.min()) / (
+                x_coords.max() - x_coords.min()
+            )
             for ax in axes:
                 ax.set_aspect(float(aspect_ratio.values))
 
@@ -783,11 +791,13 @@ class IDLDataX(IDLData):
             np.ndarray: 2D array of variables at each point.
         """
         if sat.ndim != 2 or sat.shape[1] < self.ndim:
-            raise ValueError("Input `sat` must be a 2D array with shape (n_points, n_dims)")
+            raise ValueError(
+                "Input `sat` must be a 2D array with shape (n_points, n_dims)"
+            )
 
         points = {}
         for i in range(self.ndim):
-            points[self.dims[i]] = ('points', sat[:, i])
+            points[self.dims[i]] = ("points", sat[:, i])
 
         interp_data = self.data.interp(points)
 
