@@ -28,6 +28,7 @@ dev = [
     "myst-nb>=1.0.0,<2",
     "sphinx-autoapi>=3.0.0,<4",
     "sphinx-rtd-theme>=2.0.0,<3",
+    "pytest-md-report>=0.1.0",
 ]
 
 [tool.hatch.build.targets.sdist]

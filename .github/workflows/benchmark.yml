@@ -19,7 +19,6 @@ jobs:
       - name: Set up Python
         run: |
           uv python install
-          uv pip install --system pytest-md-report
 
       - name: Install the project
         run: uv sync --all-extras --dev
