@@ -5,34 +5,40 @@ import numpy as np
 
 
 class SafeExpressionEvaluator:
+    """A safe evaluator for Python expressions using an Abstract Syntax Tree (AST).
+
+    This class parses a string expression, validates it against a whitelist of
+    allowed AST nodes, operators, and functions, and then evaluates it.
+    This provides a secure alternative to `eval()` for handling simple
+    mathematical expressions from untrusted sources.
+    """
+    _allowed_nodes = {
+        ast.Expression,
+        ast.BinOp,
+        ast.UnaryOp,
+        ast.Call,
+        ast.Name,
+        ast.Constant,
+    }
+    _allowed_ops = {
+        ast.Add: op.add,
+        ast.Sub: op.sub,
+        ast.Mult: op.mul,
+        ast.Div: op.truediv,
+        ast.Pow: op.pow,
+        ast.USub: op.neg,
+    }
+    _allowed_functions = {
+        "np": {
+            "sqrt": np.sqrt,
+            "log": np.log,
+            "log10": np.log10,
+            "abs": np.abs,
+        }
+    }
+
     def __init__(self, context):
         self.context = context
-        self._allowed_nodes = {
-            ast.Expression,
-            ast.BinOp,
-            ast.UnaryOp,
-            ast.Call,
-            ast.Name,
-            ast.Load,
-            ast.Constant,
-            ast.Attribute,
-        }
-        self._allowed_ops = {
-            ast.Add: op.add,
-            ast.Sub: op.sub,
-            ast.Mult: op.mul,
-            ast.Div: op.truediv,
-            ast.Pow: op.pow,
-            ast.USub: op.neg,
-        }
-        self._allowed_functions = {
-            "np": {
-                "sqrt": np.sqrt,
-                "log": np.log,
-                "log10": np.log10,
-                "abs": np.abs,
-            }
-        }
 
     def _eval_node(self, node):
         if not isinstance(node, ast.AST):
@@ -90,4 +96,19 @@ class SafeExpressionEvaluator:
 
 
 def safe_eval(expression, context):
+    """Safely evaluates a string expression in a given context.
+
+    Args:
+        expression (str): The expression to evaluate.
+        context (dict): A dictionary of allowed variable names and their values.
+
+    Returns:
+        The result of the evaluated expression.
+
+    Raises:
+        ValueError: If the expression contains unsupported nodes, operators, or functions.
+        NameError: If the expression contains undefined variables or unsupported function calls.
+        SyntaxError: If the expression is not valid Python syntax.
+        TypeError: If an operation is applied to an object of an inappropriate type.
+    """
     return SafeExpressionEvaluator(context).eval(expression)
