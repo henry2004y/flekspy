@@ -14,50 +14,6 @@ from flekspy.util import (
 )
 
 
-class Selector:
-    def __getitem__(self, keys) -> list:
-        self.indices = list(keys)
-        if len(self.indices) < 3:
-            self.indices += [0] * (3 - len(self.indices))
-        return self.indices
-
-
-class Dataframe:
-    def __init__(self):
-        self.array = None
-        self.name = None
-        # Selector for the spatial indices
-        self.cut = Selector()
-        self.cut[:, :, :]
-
-    def setData(self, dataIn, nameIn):
-        assert nameIn.size == dataIn.shape[0]
-        assert dataIn.ndim <= 4
-        shape = list(dataIn.shape) + [1] * (4 - dataIn.ndim)
-        self.array = np.reshape(dataIn, shape)
-        self.name = tuple(nameIn)
-
-    def fixDataSize(self):
-        self.name = tuple(self.name)
-        assert len(self.name) == self.array.shape[0]
-        assert self.array.ndim <= 4
-        shape = list(self.array.shape) + [1] * (4 - self.array.ndim)
-        self.array = np.reshape(self.array, shape)
-
-    def __getitem__(self, keys):
-        """Example:
-        d["varname", 3:, 1:4:2, 3]
-        """
-        if type(keys) is str:
-            # If the spatial indices are not specified, use self.cut
-            keys = [keys] + self.cut.indices
-        else:
-            keys = list(keys) + [slice(None, None, None)] * (4 - len(keys))
-        ivar = self.name.index(keys[0])
-
-        return np.squeeze(self.array[ivar, keys[1], keys[2], keys[3]])
-
-
 class IDLDataX:
     r"""
     A class used to handle the `*.out` format SWMF data.
@@ -69,7 +25,6 @@ class IDLDataX:
     def __init__(self, filename="none"):
         self.filename = filename
         self.isOuts = self.filename.endswith("outs")
-        self._data = Dataframe()
         self.nInstance = None if self.isOuts else 1
         self.npict = 1
         self.fileformat = None
@@ -83,22 +38,28 @@ class IDLDataX:
         self.end_char = None
         self.pformat = None
 
-        self.read_data()
+        self._raw_data_array = self.read_data()
+
+        # Reshape data if ndim < 3
+        shape = list(self._raw_data_array.shape) + [1] * (
+            4 - self._raw_data_array.ndim
+        )
+        self._raw_data_array = np.reshape(self._raw_data_array, shape)
 
         coords = {}
         dims = []
         for i in range(self.ndim):
             dim_name = self.dims[i]
             dims.append(dim_name)
-            dim_idx = self._data.name.index(dim_name)
+            dim_idx = self._varnames.index(dim_name)
             slicer = [0] * 3
             slicer[i] = slice(None, self.grid[i])
             coords[dim_name] = np.squeeze(
-                self._data.array[dim_idx, slicer[0], slicer[1], slicer[2]]
+                self._raw_data_array[dim_idx, slicer[0], slicer[1], slicer[2]]
             )
 
         data_vars = {}
-        for i, var_name in enumerate(self._data.name):
+        for i, var_name in enumerate(self._varnames):
             if var_name not in self.dims:
                 slicer = [i]
                 for d in range(3):
@@ -106,8 +67,11 @@ class IDLDataX:
                         slicer.append(slice(self.grid[d]))
                     else:
                         slicer.append(slice(1))
-                data_slice = self._data.array[tuple(slicer)]
+                data_slice = self._raw_data_array[tuple(slicer)]
                 data_vars[var_name] = (dims, np.squeeze(data_slice))
+
+        del self._raw_data_array
+        del self._varnames
 
         self.data = xr.Dataset(data_vars, coords=coords)
 
@@ -155,23 +119,24 @@ class IDLDataX:
                     self.fileformat = "binary"
 
         if self.fileformat == "ascii":
-            self.read_ascii()
+            array = self.read_ascii()
         elif self.fileformat == "binary":
             try:
-                self.read_binary()
+                array = self.read_binary()
             except:
                 print(
                     "It seems the lengths of instances are different. Try slow reading..."
                 )
-                self.read_binary_slow()
+                array = self.read_binary_slow()
         else:
             raise ValueError(f"Unknown format = {self.fileformat}")
 
         nsize = self.ndim + self.nvar
-        self._data.name = tuple(self.variables)[0:nsize]
-        self._data.fixDataSize()
+        self._varnames = tuple(self.variables)[0:nsize]
         self.param_name = self.variables[nsize:]
         self.__post_process_param__()
+
+        return array
 
     def read_ascii(self):
         if self.nInstance is None:
@@ -182,7 +147,7 @@ class IDLDataX:
                 nLineFile = i + 1
 
             with open(self.filename, "r") as f:
-                self.nInstanceLength = self.read_ascii_instance(f)
+                self.nInstanceLength, _ = self.read_ascii_instance(f)
 
             self.nInstance = round(nLineFile / self.nInstanceLength)
 
@@ -192,13 +157,14 @@ class IDLDataX:
                 for i, line in enumerate(f):
                     if i == nLineSkip - 1:
                         break
-            self.read_ascii_instance(f)
+            _, array = self.read_ascii_instance(f)
+        return array
 
     def read_ascii_instance(self, infile):
         self.get_file_head(infile)
         nrow = self.ndim + self.nvar
         ncol = self.npoints
-        self._data.array = np.zeros((nrow, ncol))
+        array = np.zeros((nrow, ncol))
 
         for i, line in enumerate(infile.readlines()):
             parts = line.split()
@@ -207,19 +173,19 @@ class IDLDataX:
                 break
 
             for j, p in enumerate(parts):
-                self._data.array[j][i] = float(p)
+                array[j][i] = float(p)
 
         shapeNew = np.append([nrow], self.grid)
-        self._data.array = np.reshape(self._data.array, shapeNew, order="F")
+        array = np.reshape(array, shapeNew, order="F")
         nline = 5 + self.npoints if self.nparam > 0 else 4 + self.npoints
 
-        return nline
+        return nline, array
 
     def read_binary(self):
         if self.nInstance is None:
             with open(self.filename, "rb") as f:
-                self.read_binary_instance(f)
-                self.nInstanceLength = f.tell()
+                _, n_bytes = self.read_binary_instance(f)
+                self.nInstanceLength = n_bytes
                 f.seek(0, 2)
                 endPos = f.tell()
             self.nInstance = round(endPos / self.nInstanceLength)
@@ -227,7 +193,7 @@ class IDLDataX:
         with open(self.filename, "rb") as f:
             if self.isOuts:
                 f.seek((self.npict) * self.nInstanceLength, 0)
-            self.read_binary_instance(f)
+            return self.read_binary_instance(f)[0]
 
     def read_binary_slow(self):
         with open(self.filename, "rb") as f:
@@ -235,7 +201,7 @@ class IDLDataX:
                 # Skip previous instances
                 for i in range(self.npict):
                     self.read_binary_instance(f)
-            self.read_binary_instance(f)
+            return self.read_binary_instance(f)[0]
 
     def get_file_head(self, infile):
         if self.fileformat == "binary":
@@ -329,6 +295,7 @@ class IDLDataX:
             )
 
     def read_binary_instance(self, infile):
+        n_bytes_start = infile.tell()
         self.get_file_head(infile)
         nrow = self.ndim + self.nvar
 
@@ -337,7 +304,7 @@ class IDLDataX:
         else:
             dtype = np.float64
 
-        self._data.array = np.empty((nrow, self.npoints), dtype=dtype)
+        array = np.empty((nrow, self.npoints), dtype=dtype)
         dtype_str = f"{self.end_char}{self.pformat}"
 
         # Get the grid points
@@ -346,22 +313,21 @@ class IDLDataX:
         grid_data = np.frombuffer(
             buffer, dtype=dtype_str, count=self.npoints * self.ndim
         )
-        self._data.array[0 : self.ndim, :] = grid_data.reshape(
-            (self.ndim, self.npoints)
-        )
+        array[0 : self.ndim, :] = grid_data.reshape((self.ndim, self.npoints))
 
         # Get the actual data and sort
         for i in range(self.ndim, self.nvar + self.ndim):
             (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
             buffer = infile.read(record_len)
-            self._data.array[i, :] = np.frombuffer(
-                buffer, dtype=dtype_str, count=self.npoints
-            )
+            array[i, :] = np.frombuffer(buffer, dtype=dtype_str, count=self.npoints)
         # Consume the last record length
         infile.read(4)
 
         shape_new = np.append([nrow], self.grid)
-        self._data.array = np.reshape(self._data.array, shape_new, order="F")
+        array = np.reshape(array, shape_new, order="F")
+        n_bytes_end = infile.tell()
+
+        return array, n_bytes_end - n_bytes_start
 
     def read_parameters(self, infile):
         """Reads parameters from the binary file."""
