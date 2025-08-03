@@ -68,7 +68,7 @@ class IDLDataX:
 
     def __init__(self, filename="none"):
         self.filename = filename
-        self.isOuts = self.filename[-4:] == "outs"
+        self.isOuts = self.filename.endswith("outs")
         self._data = Dataframe()
         self.nInstance = None if self.isOuts else 1
         self.npict = 1
