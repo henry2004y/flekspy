@@ -38,42 +38,7 @@ class IDLDataX:
         self.end_char = None
         self.pformat = None
 
-        self._raw_data_array = self.read_data()
-
-        # Reshape data if ndim < 3
-        shape = list(self._raw_data_array.shape) + [1] * (
-            4 - self._raw_data_array.ndim
-        )
-        self._raw_data_array = np.reshape(self._raw_data_array, shape)
-
-        coords = {}
-        dims = []
-        for i in range(self.ndim):
-            dim_name = self.dims[i]
-            dims.append(dim_name)
-            dim_idx = self._varnames.index(dim_name)
-            slicer = [0] * 3
-            slicer[i] = slice(None, self.grid[i])
-            coords[dim_name] = np.squeeze(
-                self._raw_data_array[dim_idx, slicer[0], slicer[1], slicer[2]]
-            )
-
-        data_vars = {}
-        for i, var_name in enumerate(self._varnames):
-            if var_name not in self.dims:
-                slicer = [i]
-                for d in range(3):
-                    if d < self.ndim:
-                        slicer.append(slice(self.grid[d]))
-                    else:
-                        slicer.append(slice(1))
-                data_slice = self._raw_data_array[tuple(slicer)]
-                data_vars[var_name] = (dims, np.squeeze(data_slice))
-
-        del self._raw_data_array
-        del self._varnames
-
-        self.data = xr.Dataset(data_vars, coords=coords)
+        self._read_and_process_data()
 
         self.data.attrs["time"] = self.time
         self.data.attrs["iter"] = self.iter
@@ -107,7 +72,7 @@ class IDLDataX:
         )
         return string
 
-    def read_data(self):
+    def _read_and_process_data(self):
         if self.fileformat is None:
             with open(self.filename, "rb") as f:
                 EndChar = "<"  # Endian marker (default: little.)
@@ -132,11 +97,39 @@ class IDLDataX:
             raise ValueError(f"Unknown format = {self.fileformat}")
 
         nsize = self.ndim + self.nvar
-        self._varnames = tuple(self.variables)[0:nsize]
+        varnames = tuple(self.variables)[0:nsize]
         self.param_name = self.variables[nsize:]
         self.__post_process_param__()
 
-        return array
+        # Reshape data if ndim < 3
+        shape = list(array.shape) + [1] * (4 - array.ndim)
+        array = np.reshape(array, shape)
+
+        coords = {}
+        dims = []
+        for i in range(self.ndim):
+            dim_name = self.dims[i]
+            dims.append(dim_name)
+            dim_idx = varnames.index(dim_name)
+            slicer = [0] * 3
+            slicer[i] = slice(None, self.grid[i])
+            coords[dim_name] = np.squeeze(
+                array[dim_idx, slicer[0], slicer[1], slicer[2]]
+            )
+
+        data_vars = {}
+        for i, var_name in enumerate(varnames):
+            if var_name not in self.dims:
+                slicer = [i]
+                for d in range(3):
+                    if d < self.ndim:
+                        slicer.append(slice(self.grid[d]))
+                    else:
+                        slicer.append(slice(1))
+                data_slice = array[tuple(slicer)]
+                data_vars[var_name] = (dims, np.squeeze(data_slice))
+
+        self.data = xr.Dataset(data_vars, coords=coords)
 
     def read_ascii(self):
         if self.nInstance is None:
