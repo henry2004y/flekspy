@@ -100,12 +100,13 @@ class IDLDataX:
         data_vars = {}
         for i, var_name in enumerate(self._data.name):
             if var_name not in self.dims:
-                data_slice = self._data.array[
-                    i,
-                    : self.grid[0],
-                    : self.grid[1] if self.ndim > 1 else 1,
-                    : self.grid[2] if self.ndim > 2 else 1,
-                ]
+                slicer = [i]
+                for d in range(3):
+                    if d < self.ndim:
+                        slicer.append(slice(self.grid[d]))
+                    else:
+                        slicer.append(slice(1))
+                data_slice = self._data.array[tuple(slicer)]
                 data_vars[var_name] = (dims, np.squeeze(data_slice))
 
         self.data = xr.Dataset(data_vars, coords=coords)
