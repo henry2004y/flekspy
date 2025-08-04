@@ -160,7 +160,7 @@ class TestParticles:
         with pytest.raises(Exception):
             ids, pData = tp.read_particles_at_time(-10.0, doSave=False)
         with pytest.raises(Exception):
-            ids, pData = tp.read_particles_at_.time(10.0, doSave=False)
+            ids, pData = tp.read_particles_at_time(10.0, doSave=False)
 
     def test_particle_select(self):
         from flekspy.tp import Indices
