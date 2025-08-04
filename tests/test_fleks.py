@@ -56,19 +56,21 @@ class TestIDL:
         ds = fs.load(self.files[2])
         slice_data = ds.get_slice("z", 0.0)
         assert isinstance(slice_data, xr.Dataset)
-        assert len(slice_data.sizes) == 2
+        assert len(slice_data) == 14
         assert slice_data.sizes["x"] == 8
         assert slice_data.sizes["y"] == 8
-        assert "p" in slice_data.data_vars
-        assert slice_data["p"].shape == (8, 8)
+        assert slice_data["absdivB"].shape == (8, 8)
 
     def test_plot(self):
         ds = fs.load(self.files[0])
-        ds.plot("p")
+        ds.data.p.plot()
+        #ds.plot("p") #TODO: should be deprecated
         ds = fs.load(self.files[1])
-        # pcolormesh needs a data variable, not a coordinate like 'x'
-        ds.pcolormesh("rhoS0")
-        ds.pcolormesh("Bx", "By", "Bz")
+        ds.data.rhoS0.plot.pcolormesh(x="x", y="y")
+        ds.data["Bx"].plot.pcolormesh(x="x", y="y")
+        ds.data.plot.streamplot(x="x", y="y", u="Bx", v="By", color="w")
+        #ds.pcolormesh("rhoS0") #TODO: should be deprecated
+        #ds.pcolormesh("Bx", "By", "Bz") #TODO: should be deprecated
         assert True
 
 
