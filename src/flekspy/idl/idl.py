@@ -434,39 +434,3 @@ class IDLDataX:
                 ax.set_aspect(float(aspect_ratio.values))
 
         return axes
-
-    def get_data(self, loc: np.ndarray) -> np.ndarray:
-        """Extract data at a given point using bilinear interpolation.
-        Args:
-            loc (np.ndarray): 2D/3D point location.
-        Returns:
-            np.ndarray: 1D array of saved variables at the survey point.
-        """
-        if not 1 <= self.ndim <= 3:
-            raise ValueError(f"get_data not supported for ndim={self.ndim}")
-
-        point = {self.dims[i]: loc[i] for i in range(self.ndim)}
-
-        interp_data = self.data.interp(point)
-
-        return np.array([interp_data[var].values for var in self.data.data_vars])
-
-    def extract_data(self, sat: np.ndarray) -> np.ndarray:
-        """Extract data at a series of locations.
-        Args:
-            sat (np.ndarray): 2D/3D point locations, shape (n_points, n_dims).
-        Returns:
-            np.ndarray: 2D array of variables at each point.
-        """
-        if sat.ndim != 2 or sat.shape[1] < self.ndim:
-            raise ValueError(
-                "Input `sat` must be a 2D array with shape (n_points, n_dims)"
-            )
-
-        points = {}
-        for i in range(self.ndim):
-            points[self.dims[i]] = ("points", sat[:, i])
-
-        interp_data = self.data.interp(points)
-
-        return interp_data.to_array().values.T
