@@ -265,35 +265,38 @@ def read_tp_data(
     if not trajectories:
         return xr.Dataset(attrs={"nReal": nReal, "iSpecies": iSpecies})
 
-    # Create common coordinates for the dataset
-    pids = sorted(trajectories.keys())
-    time_coord = sorted(list(all_times))
-    time_to_idx = {t: i for i, t in enumerate(time_coord)}
+    # Flatten the data into 1D arrays for a memory-efficient representation
     variable_names = [e.name.lower() for e in Indices]
+    data_lists = {name: [] for name in variable_names}
+    cpu_vals, id_vals = [], []
 
-    # Create a NaN-filled data array
-    data = np.full((len(pids), len(time_coord), nReal), np.nan, dtype=np.float32)
+    for pID, traj_array in trajectories.items():
+        cpu, id = pID
+        n_steps = traj_array.shape[0]
+        cpu_vals.extend([cpu] * n_steps)
+        id_vals.extend([id] * n_steps)
+        for i, name in enumerate(variable_names):
+            if i < nReal:
+                data_lists[name].extend(traj_array[:, i])
 
-    # Fill the data array with trajectory data
-    for i, pID in enumerate(pids):
-        traj = trajectories[pID]
-        for j in range(traj.shape[0]):
-            t = traj[j, Indices.TIME]
-            ti = time_to_idx[t]
-            data[i, ti, :] = traj[j, :]
-
-    # Create the xarray Dataset
-    particle_index = pd.MultiIndex.from_tuples(pids, names=["cpu", "id"])
+    # Create the Dataset from the 1D arrays
     data_vars = {}
-    for i, var_name in enumerate(variable_names):
-        if i < nReal and var_name != "time":
-            data_vars[var_name] = xr.DataArray(
-                data[:, :, i],
-                dims=("particle", "time"),
-                coords={"particle": particle_index, "time": time_coord},
-            )
+    for name, data_list in data_lists.items():
+        if name != 'time' and data_list:
+            data_vars[name] = ("observation", data_list)
 
-    ds = xr.Dataset(data_vars, attrs={"nReal": nReal, "iSpecies": iSpecies})
+    ds = xr.Dataset(
+        data_vars,
+        coords={
+            "time": ("observation", data_lists["time"]),
+            "cpu": ("observation", cpu_vals),
+            "id": ("observation", id_vals),
+        },
+        attrs={"nReal": nReal, "iSpecies": iSpecies},
+    )
+
+    # Set a multi-index for convenient particle selection
+    ds = ds.set_index(particle=["cpu", "id"])
 
     # Add aliases for backward compatibility without copying data
     aliases = {
