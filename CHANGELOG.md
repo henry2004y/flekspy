@@ -37,3 +37,7 @@
 ## v0.3.2 (2025/08/01)
 
 - `read_initial_location` -> `read_initial_condition` for test particles.
+
+## v0.3.3 (2025/08/03)
+
+- Use XArray for handling IDL format data.

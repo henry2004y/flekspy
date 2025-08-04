@@ -1,6 +1,7 @@
 import pytest
 import os
 import numpy as np
+import xarray as xr
 
 import flekspy as fs
 from flekspy.util import download_testfile
@@ -35,10 +36,10 @@ class TestIDL:
 
     def test_load(self):
         ds = fs.load(self.files[0])
-        assert ds.__repr__().startswith("filename")
-        assert ds.time == 25.6
-        assert ds.data["x"][1] == -126.5
-        assert ds.data["Bx"][2] == 0.22360679775
+        assert isinstance(ds, xr.Dataset)
+        assert ds.attrs["time"] == 25.6
+        assert ds.coords["x"][1] == -126.5
+        assert np.isclose(ds["Bx"][2].item(), 0.22360679775)
 
     def test_load_error(self):
         with pytest.raises(FileNotFoundError):
@@ -46,22 +47,26 @@ class TestIDL:
 
     def test_extract(self):
         ds = fs.load(self.files[1])
-        sat = np.array([[-28000.0, 0.0], [9000.0, 0.0]])
-        d = ds.extract_data(sat)
-        assert d[0][1] == 0.0
+        d = ds.interp(x=-28000.0, y=0.0)
+        # The number of variables is 28.
+        assert len(d) == 28
 
     def test_slice(self):
         ds = fs.load(self.files[2])
-        slice = ds.get_slice("z", 0.0)
-        assert slice.dimensions == (8, 8)
-        assert slice.data["absdivB"][2, 3].value == np.float32(3.3033288e-05)
+        slice_data = ds.idl.get_slice("z", 0.0)
+        assert isinstance(slice_data, xr.Dataset)
+        assert len(slice_data) == 14
+        assert slice_data.sizes["x"] == 8
+        assert slice_data.sizes["y"] == 8
+        assert slice_data["absdivB"].shape == (8, 8)
 
     def test_plot(self):
         ds = fs.load(self.files[0])
-        ds.plot("p")
+        ds.p.plot()
         ds = fs.load(self.files[1])
-        ds.pcolormesh("x")
-        ds.pcolormesh("Bx", "By", "Bz")
+        ds.rhoS0.plot.pcolormesh(x="x", y="y")
+        ds["Bx"].plot.pcolormesh(x="x", y="y")
+        ds.plot.streamplot(x="x", y="y", u="Bx", v="By", color="w")
         assert True
 
 
@@ -71,8 +76,8 @@ class TestAMReX:
 
     def test_load(self):
         ds = fs.load(self.files[0])
-        assert ds.data["uxS0"][2, 1] == np.float32(-131.71918)
-        assert ds.data["uxS1"].shape == (601, 2)
+        assert ds["uxS0"][2, 1] == np.float32(-131.71918)
+        assert ds["uxS1"].shape == (601, 2)
 
     def test_pic(self):
         ds = fs.load(self.files[1])
@@ -199,4 +204,4 @@ def test_load(benchmark):
 
     result = benchmark(load, files)
 
-    assert type(result) == fs.IDLData
+    assert isinstance(result, xr.Dataset)

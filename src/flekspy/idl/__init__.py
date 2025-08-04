@@ -1,1 +1,1 @@
-from .idl import IDLData
+from .idl import read_idl, IDLAccessor
