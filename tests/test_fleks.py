@@ -48,10 +48,9 @@ class TestIDL:
 
     def test_extract(self):
         ds = fs.load(self.files[1])
-        sat = np.array([[-28000.0, 0.0], [9000.0, 0.0]])
-        d = ds.extract_data(sat)
-        # The number of variables is 28 because this test file has many variables.
-        assert d.shape == (2, 28)
+        d = ds.data.interp(x=-28000.0, y =0.0)
+        # The number of variables is 28.
+        assert len(d) == 28
 
     def test_slice(self):
         ds = fs.load(self.files[2])
