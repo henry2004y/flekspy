@@ -28,65 +28,21 @@ class Indices(IntEnum):
     EZ = 12
 
 
-class ParticleTrajectoryWrapper:
-    def __init__(self, particle_ds: xr.Dataset):
-        self.ds = particle_ds
-
-    @property
-    def trajectory(self) -> np.ndarray:
-        var_order = [
-            v.name.lower()
-            for v in Indices
-            if v.name.lower() in self.ds.data_vars
-        ]
-        return self.ds[var_order].to_array().values.T
-
-    def __getitem__(self, key: str):
-        # For backward compatibility with pt['u'] etc.
-        aliases = {
-            "t": "time",
-            "u": "vx", "v": "vy", "w": "vz",
-            "ux": "vx", "uy": "vy", "uz": "vz",
-        }
-        key = aliases.get(key.lower(), key.lower())
-        vector_map = {
-            "position": ("x", "y", "z"),
-            "velocity": ("vx", "vy", "vz"),
-            "b": ("bx", "by", "bz"),
-            "e": ("ex", "ey", "ez"),
-        }
-        if key.lower() in vector_map:
-            components = vector_map[key.lower()]
-            return tuple(self.ds[c] for c in components if c in self.ds)
-
-        return self.ds[key]
-
 @xr.register_dataset_accessor("tp")
 class TPAccessor:
     def __init__(self, ds: xr.Dataset):
-        self.ds = ds
-
-    def getIDs(self):
-        """Returns a list of all particle IDs."""
-        return self.ds.particle.values
-
-    def read_particle_trajectory(self, pID: Tuple[int, int]) -> ParticleTrajectoryWrapper:
-        """
-        Returns a backward-compatible wrapper for a single particle's trajectory.
-        """
-        particle_ds = self.ds.sel(particle=pID)
-        return ParticleTrajectoryWrapper(particle_ds)
+        self._ds = ds
 
     def get_kinetic_energy(self, pID, mass=proton_mass):
         """Calculates the kinetic energy of a particle."""
-        particle_data = self.ds.sel(particle=pID)
+        particle_data = self._ds.sel(particle=pID)
         vx, vy, vz = particle_data["vx"], particle_data["vy"], particle_data["vz"]
         ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
         return ke
 
     def get_pitch_angle(self, pID):
         """Calculates the pitch angle of a particle."""
-        particle_data = self.ds.sel(particle=pID)
+        particle_data = self._ds.sel(particle=pID)
         vx, vy, vz = particle_data["vx"], particle_data["vy"], particle_data["vz"]
         bx, by, bz = particle_data["bx"], particle_data["by"], particle_data["bz"]
 
@@ -108,7 +64,7 @@ class TPAccessor:
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
         """Calculates the first adiabatic invariant of a particle."""
-        particle_data = self.ds.sel(particle=pID)
+        particle_data = self._ds.sel(particle=pID)
         vx, vy, vz = particle_data["vx"], particle_data["vy"], particle_data["vz"]
         bx, by, bz = particle_data["bx"], particle_data["by"], particle_data["bz"]
 
@@ -126,36 +82,6 @@ class TPAccessor:
 
         return xr.DataArray(mu, dims=["time"], coords={"time": particle_data.time})
 
-    def read_initial_condition(self, pID):
-        """Reads the initial condition of a particle."""
-        p_data = self.ds.sel(particle=pID).isel(time=0)
-        var_order = [v.name.lower() for v in Indices if v.name.lower() in p_data.data_vars]
-        return p_data[var_order].to_array().values
-
-    def read_final_condition(self, pID):
-        """Reads the final condition of a particle."""
-        p_data = self.ds.sel(particle=pID).isel(time=-1)
-        var_order = [v.name.lower() for v in Indices if v.name.lower() in p_data.data_vars]
-        return p_data[var_order].to_array().values
-
-    def read_particles_at_time(self, time: float, doSave: bool = False):
-        """Reads all particle data at a specific time."""
-        p_data = self.ds.sel(time=time, method="nearest")
-        ids = p_data.particle.values
-
-        var_order = [v.name.lower() for v in Indices if v.name.lower() in p_data.data_vars]
-        p_data_array = p_data[var_order].to_array().values.T
-
-        # In the old API, ids was a structured numpy array.
-        # Here we return a simple list of tuples, which should be sufficient for the tests.
-        return ids, p_data_array
-
-    def select_particles(self, f_select: Callable):
-        """Selects particles based on a user-defined function."""
-        pids = self.getIDs()
-        selected_pids = [pid for pid in pids if f_select(self, pid)]
-        return selected_pids
-
     def plot_trajectory(
         self,
         pID: Tuple[int, int],
@@ -166,7 +92,7 @@ class TPAccessor:
         ax=None,
         **kwargs,
     ):
-        pt = self.ds.sel(particle=pID)
+        pt = self._ds.sel(particle=pID)
         t = pt.time.values
         tNorm = (t - t[0]) / (t[-1] - t[0]) if len(t) > 1 else np.zeros_like(t)
 
@@ -193,14 +119,10 @@ class TPAccessor:
         pt.x.plot(ax=ax)
         return ax
 
-    def plot_location(self, pData: np.ndarray):
-        """
-        Plot the location of particles pData.
-        This is a backward-compatible method.
-        """
-        px = pData[:, Indices.X]
-        py = pData[:, Indices.Y]
-        pz = pData[:, Indices.Z]
+    def plot_location(self, time: float, **kwargs):
+        """Plots the location of particles at a given time."""
+        pData = self._ds.sel(time=time, method="nearest")
+        px, py, pz = pData["x"].values, pData["y"].values, pData["z"].values
 
         skeys = ["A", "B", "C", "D"]
         f, ax = plt.subplot_mosaic(
@@ -214,11 +136,11 @@ class TPAccessor:
         for i, (x, y, labels) in enumerate(
             zip([px, px, py], [py, pz, pz], [("x", "y"), ("x", "z"), ("y", "z")])
         ):
-            ax[skeys[i]].scatter(x, y, s=1)
+            ax[skeys[i]].scatter(x, y, s=1, **kwargs)
             ax[skeys[i]].set_xlabel(labels[0])
             ax[skeys[i]].set_ylabel(labels[1])
 
-        ax[skeys[3]].scatter(px, py, pz, s=1)
+        ax[skeys[3]].scatter(px, py, pz, s=1, **kwargs)
         ax[skeys[3]].set_xlabel("x")
         ax[skeys[3]].set_ylabel("y")
         ax[skeys[3]].set_zlabel("z")
@@ -380,13 +302,13 @@ def read_tp_data(
     )
     ds = ds.set_index(particle=["cpu", "id"])
 
-    # Add aliases for backward compatibility
+    # Add aliases for backward compatibility without copying data
     aliases = {
         "u": "vx", "v": "vy", "w": "vz",
         "ux": "vx", "uy": "vy", "uz": "vz",
     }
     for alias, original in aliases.items():
-        if original in ds:
-            ds[alias] = ds[original]
+        if original in ds.variables:
+            ds.variables[alias] = ds.variables[original]
 
     return ds
