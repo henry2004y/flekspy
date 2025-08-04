@@ -344,13 +344,8 @@ def read_tp_data(
 
     # Create common coordinates for the dataset
     pids = sorted(trajectories.keys())
-    particle_coord = [
-        ("particle", [pid[0] for pid in pids]),
-        ("id", [pid[1] for pid in pids]),
-    ]
     time_coord = sorted(list(all_times))
     time_to_idx = {t: i for i, t in enumerate(time_coord)}
-
     variable_names = [e.name.lower() for e in Indices]
 
     # Create a NaN-filled data array
@@ -374,8 +369,17 @@ def read_tp_data(
                 coords={"time": time_coord},
             )
 
-    ds = xr.Dataset(data_vars, attrs={"nReal": nReal, "iSpecies": iSpecies})
-    ds = ds.set_index(particle=particle_coord)
+    ds = xr.Dataset(
+        data_vars,
+        coords={
+            "time": time_coord,
+            "particle": np.arange(len(pids)),
+            "cpu": ("particle", [pid[0] for pid in pids]),
+            "id": ("particle", [pid[1] for pid in pids]),
+        },
+        attrs={"nReal": nReal, "iSpecies": iSpecies},
+    )
+    ds = ds.set_index(particle=["cpu", "id"])
 
     # Add aliases for backward compatibility
     aliases = {
