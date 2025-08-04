@@ -362,7 +362,7 @@ def read_tp_data(
     # Create the xarray Dataset
     data_vars = {}
     for i, var_name in enumerate(variable_names):
-        if i < nReal:
+        if i < nReal and var_name != "time":
             data_vars[var_name] = xr.DataArray(
                 data[:, :, i],
                 dims=("particle", "time"),
