@@ -1,3 +1,4 @@
+import pandas as pd
 import xarray as xr
 import numpy as np
 import struct
@@ -282,25 +283,17 @@ def read_tp_data(
             data[i, ti, :] = traj[j, :]
 
     # Create the xarray Dataset
+    particle_index = pd.MultiIndex.from_tuples(pids, names=["cpu", "id"])
     data_vars = {}
     for i, var_name in enumerate(variable_names):
         if i < nReal and var_name != "time":
             data_vars[var_name] = xr.DataArray(
                 data[:, :, i],
                 dims=("particle", "time"),
+                coords={"particle": particle_index, "time": time_coord},
             )
 
-    ds = xr.Dataset(
-        data_vars,
-        coords={
-            "time": time_coord,
-            "particle": np.arange(len(pids)),
-            "cpu": ("particle", [pid[0] for pid in pids]),
-            "id": ("particle", [pid[1] for pid in pids]),
-        },
-        attrs={"nReal": nReal, "iSpecies": iSpecies},
-    )
-    ds = ds.set_index(particle=["cpu", "id"])
+    ds = xr.Dataset(data_vars, attrs={"nReal": nReal, "iSpecies": iSpecies})
 
     # Add aliases for backward compatibility without copying data
     aliases = {
