@@ -5,9 +5,10 @@ flekspy Public API.
 from pathlib import Path
 import errno
 from itertools import islice
-from flekspy.idl import IDLDataX
+from flekspy.idl import read_idl, IDLAccessor
 from flekspy.yt import FLEKSData, extract_phase
 from flekspy.tp import FLEKSTP
+import xarray as xr
 
 
 def load(
@@ -28,7 +29,7 @@ def load(
         readFieldData (bool, optional): Whether or not to read field data for test particles. Defaults to False.
 
     Returns:
-        FLEKS data: IDLDataX, FLEKSData, or FLEKSTP
+        FLEKS data: xarray.Dataset, FLEKSData, or FLEKSTP
     """
     p = Path(filename)
     file_generator = p.parent.rglob(p.name)
@@ -52,7 +53,7 @@ def load(
     if basename == "test_particles":
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
     elif filepath.suffix in [".out", ".outs"]:
-        return IDLDataX(filename)
+        return read_idl(filename)
     elif basename.endswith("_amrex"):
         return FLEKSData(filename, readFieldData)
     else:

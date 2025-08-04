@@ -5,7 +5,6 @@ import xarray as xr
 
 import flekspy as fs
 from flekspy.util import download_testfile
-from flekspy.idl.idl import IDLDataX
 
 import matplotlib
 
@@ -37,10 +36,10 @@ class TestIDL:
 
     def test_load(self):
         ds = fs.load(self.files[0])
-        assert isinstance(ds.data, xr.Dataset)
-        assert ds.data.attrs["time"] == 25.6
-        assert ds.data.coords["x"][1] == -126.5
-        assert np.isclose(ds.data["Bx"][2].item(), 0.22360679775)
+        assert isinstance(ds, xr.Dataset)
+        assert ds.attrs["time"] == 25.6
+        assert ds.coords["x"][1] == -126.5
+        assert np.isclose(ds["Bx"][2].item(), 0.22360679775)
 
     def test_load_error(self):
         with pytest.raises(FileNotFoundError):
@@ -48,13 +47,13 @@ class TestIDL:
 
     def test_extract(self):
         ds = fs.load(self.files[1])
-        d = ds.data.interp(x=-28000.0, y =0.0)
+        d = ds.interp(x=-28000.0, y =0.0)
         # The number of variables is 28.
         assert len(d) == 28
 
     def test_slice(self):
         ds = fs.load(self.files[2])
-        slice_data = ds.get_slice("z", 0.0)
+        slice_data = ds.idl.get_slice("z", 0.0)
         assert isinstance(slice_data, xr.Dataset)
         assert len(slice_data) == 14
         assert slice_data.sizes["x"] == 8
@@ -63,14 +62,11 @@ class TestIDL:
 
     def test_plot(self):
         ds = fs.load(self.files[0])
-        ds.data.p.plot()
-        #ds.plot("p") #TODO: should be deprecated
+        ds.p.plot()
         ds = fs.load(self.files[1])
-        ds.data.rhoS0.plot.pcolormesh(x="x", y="y")
-        ds.data["Bx"].plot.pcolormesh(x="x", y="y")
-        ds.data.plot.streamplot(x="x", y="y", u="Bx", v="By", color="w")
-        #ds.pcolormesh("rhoS0") #TODO: should be deprecated
-        #ds.pcolormesh("Bx", "By", "Bz") #TODO: should be deprecated
+        ds.rhoS0.plot.pcolormesh(x="x", y="y")
+        ds["Bx"].plot.pcolormesh(x="x", y="y")
+        ds.plot.streamplot(x="x", y="y", u="Bx", v="By", color="w")
         assert True
 
 
@@ -80,8 +76,8 @@ class TestAMReX:
 
     def test_load(self):
         ds = fs.load(self.files[0])
-        assert ds.data["uxS0"][2, 1] == np.float32(-131.71918)
-        assert ds.data["uxS1"].shape == (601, 2)
+        assert ds["uxS0"][2, 1] == np.float32(-131.71918)
+        assert ds["uxS1"].shape == (601, 2)
 
     def test_pic(self):
         ds = fs.load(self.files[1])
@@ -164,7 +160,7 @@ class TestParticles:
         with pytest.raises(Exception):
             ids, pData = tp.read_particles_at_time(-10.0, doSave=False)
         with pytest.raises(Exception):
-            ids, pData = tp.read_particles_at_time(10.0, doSave=False)
+            ids, pData = tp.read_particles_at_.time(10.0, doSave=False)
 
     def test_particle_select(self):
         from flekspy.tp import Indices
@@ -208,4 +204,4 @@ def test_load(benchmark):
 
     result = benchmark(load, files)
 
-    assert isinstance(result, IDLDataX)
+    assert isinstance(result, xr.Dataset)

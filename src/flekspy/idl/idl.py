@@ -14,349 +14,303 @@ from flekspy.util import (
 )
 
 
-class IDLDataX:
-    r"""
-    A class used to handle the `*.out` format SWMF data.
-    Example:
-    >>> ds = IDLDataX("3d.out")
-    >>> dc2d = ds.get_slice("y", 1)
-    """
+def _read_and_process_data(filename):
+    attrs = {'filename': filename}
+    attrs['isOuts'] = filename.endswith("outs")
+    attrs['npict'] = 1
+    attrs['nInstance'] = None if attrs['isOuts'] else 1
 
-    def __init__(self, filename="none"):
-        self.filename = filename
-        self.isOuts = self.filename.endswith("outs")
-        self.nInstance = None if self.isOuts else 1
-        self.npict = 1
-        self.fileformat = None
-        self.variables = None
-        self.unit = None
-        self.iter = None
-        self.time = None
-        self.ndim = None
-        self.gencoord = None
-        self.grid = None
-        self.end_char = None
-        self.pformat = None
+    with open(filename, "rb") as f:
+        EndChar = "<"  # Endian marker (default: little.)
+        RecLenRaw = f.read(4)
+        RecLen = (struct.unpack(EndChar + "l", RecLenRaw))[0]
+        if RecLen != 79 and RecLen != 500:
+            attrs['fileformat'] = "ascii"
+        else:
+            attrs['fileformat'] = "binary"
 
-        self._read_and_process_data()
+    if attrs['fileformat'] == "ascii":
+        array, new_attrs = _read_ascii(filename, attrs)
+    elif attrs['fileformat'] == "binary":
+        try:
+            array, new_attrs = _read_binary(filename, attrs)
+        except Exception:
+            print(
+                "It seems the lengths of instances are different. Try slow reading..."
+            )
+            array, new_attrs = _read_binary_slow(filename, attrs)
+    else:
+        raise ValueError(f"Unknown format = {attrs['fileformat']}")
 
-        self.data.attrs["time"] = self.time
-        self.data.attrs["iter"] = self.iter
-        self.data.attrs["unit"] = self.unit
-        self.data.attrs["gencoord"] = self.gencoord
+    attrs.update(new_attrs)
 
-    def __post_process_param__(self):
+    nsize = attrs['ndim'] + attrs['nvar']
+    varnames = tuple(attrs['variables'])[0:nsize]
+    attrs['param_name'] = attrs['variables'][nsize:]
 
-        planet_radius = 1.0
+    # Reshape data if ndim < 3
+    shape = list(array.shape) + [1] * (4 - array.ndim)
+    array = np.reshape(array, shape)
 
-        # Not always correct.
-        for var, val in zip(self.param_name, self.para):
+    coords = {}
+    dims = []
+    for i in range(attrs['ndim']):
+        dim_name = attrs['dims'][i]
+        dims.append(dim_name)
+        dim_idx = varnames.index(dim_name)
+        slicer = [0] * 3
+        slicer[i] = slice(None, attrs['grid'][i])
+        coords[dim_name] = np.squeeze(
+            array[dim_idx, slicer[0], slicer[1], slicer[2]]
+        )
+
+    data_vars = {}
+    for i, var_name in enumerate(varnames):
+        if var_name not in attrs['dims']:
+            slicer = [i]
+            for d in range(3):
+                if d < attrs['ndim']:
+                    slicer.append(slice(attrs['grid'][d]))
+                else:
+                    slicer.append(slice(1))
+            data_slice = array[tuple(slicer)]
+            data_vars[var_name] = (dims, np.squeeze(data_slice))
+
+    dataset = xr.Dataset(data_vars, coords=coords)
+    dataset.attrs = attrs
+    _post_process_param(dataset)
+    return dataset
+
+def _read_ascii(filename, attrs):
+    if attrs.get('nInstance') is None:
+        with open(filename, "r") as f:
+            for i, l in enumerate(f):
+                pass
+            nLineFile = i + 1
+
+        with open(filename, "r") as f:
+            nInstanceLength, _, _ = _read_ascii_instance(f, attrs)
+            attrs['nInstanceLength'] = nInstanceLength
+
+        attrs['nInstance'] = round(nLineFile / attrs['nInstanceLength'])
+
+    nLineSkip = (attrs['npict']) * attrs['nInstanceLength'] if attrs['isOuts'] else 0
+    with open(filename, "r") as f:
+        if nLineSkip > 0:
+            for i, line in enumerate(f):
+                if i == nLineSkip - 1:
+                    break
+        _, array, new_attrs = _read_ascii_instance(f, attrs)
+    attrs.update(new_attrs)
+    return array, attrs
+
+def _read_ascii_instance(infile, attrs):
+    new_attrs = _get_file_head(infile, attrs)
+    attrs.update(new_attrs)
+    nrow = attrs['ndim'] + attrs['nvar']
+    ncol = attrs['npoints']
+    array = np.zeros((nrow, ncol))
+
+    for i, line in enumerate(infile.readlines()):
+        parts = line.split()
+
+        if i >= attrs['npoints']:
+            break
+
+        for j, p in enumerate(parts):
+            array[j][i] = float(p)
+
+    shapeNew = np.append([nrow], attrs['grid'])
+    array = np.reshape(array, shapeNew, order="F")
+    nline = 5 + attrs['npoints'] if attrs['nparam'] > 0 else 4 + attrs['npoints']
+
+    return nline, array, attrs
+
+def _read_binary(filename, attrs):
+    if attrs.get('nInstance') is None:
+        with open(filename, "rb") as f:
+            _, n_bytes, new_attrs = _read_binary_instance(f, attrs)
+            attrs.update(new_attrs)
+            attrs['nInstanceLength'] = n_bytes
+            f.seek(0, 2)
+            endPos = f.tell()
+        attrs['nInstance'] = round(endPos / attrs['nInstanceLength'])
+
+    with open(filename, "rb") as f:
+        if attrs['isOuts']:
+            f.seek((attrs['npict']) * attrs['nInstanceLength'], 0)
+        array, _, new_attrs = _read_binary_instance(f, attrs)
+        attrs.update(new_attrs)
+        return array, attrs
+
+def _read_binary_slow(filename, attrs):
+    with open(filename, "rb") as f:
+        if attrs['isOuts']:
+            # Skip previous instances
+            for i in range(attrs['npict']):
+                _read_binary_instance(f, attrs)
+        array, _, new_attrs = _read_binary_instance(f, attrs)
+        attrs.update(new_attrs)
+        return array, attrs
+
+def _get_file_head(infile, attrs):
+    new_attrs = {}
+    if attrs['fileformat'] == "binary":
+        new_attrs['end_char'] = "<"
+        new_attrs['endian'] = "little"
+        record_len_raw = infile.read(4)
+
+        record_len = (struct.unpack(new_attrs['end_char'] + "l", record_len_raw))[0]
+        if (record_len > 10000) or (record_len < 0):
+            new_attrs['end_char'] = ">"
+            new_attrs['endian'] = "big"
+            record_len = (struct.unpack(new_attrs['end_char'] + "l", record_len_raw))[0]
+
+        headline = (
+            (
+                struct.unpack(
+                    "{0}{1}s".format(new_attrs['end_char'], record_len),
+                    infile.read(record_len),
+                )
+            )[0]
+            .strip()
+            .decode()
+        )
+        new_attrs['unit'] = headline.split()[0]
+
+        (old_len, record_len) = struct.unpack(new_attrs['end_char'] + "2l", infile.read(8))
+        new_attrs['pformat'] = "f"
+        if record_len > 20:
+            new_attrs['pformat'] = "d"
+        (new_attrs['iter'], new_attrs['time'], new_attrs['ndim'], new_attrs['nparam'], new_attrs['nvar']) = struct.unpack(
+            "{0}l{1}3l".format(new_attrs['end_char'], new_attrs['pformat']), infile.read(record_len)
+        )
+        new_attrs['gencoord'] = new_attrs['ndim'] < 0
+        new_attrs['ndim'] = abs(new_attrs['ndim'])
+        (old_len, record_len) = struct.unpack(new_attrs['end_char'] + "2l", infile.read(8))
+
+        new_attrs['grid'] = np.array(
+            struct.unpack(
+                "{0}{1}l".format(new_attrs['end_char'], new_attrs['ndim']),
+                infile.read(record_len),
+            )
+        )
+        new_attrs['npoints'] = abs(new_attrs['grid'].prod())
+
+        para_attrs = _read_parameters(infile, new_attrs)
+        new_attrs.update(para_attrs)
+
+        var_attrs = _read_variable_names(infile, new_attrs)
+        new_attrs.update(var_attrs)
+    else:
+        headline = infile.readline().strip()
+        new_attrs['unit'] = headline.split()[0]
+        parts = infile.readline().split()
+        new_attrs['iter'] = int(parts[0])
+        new_attrs['time'] = float(parts[1])
+        new_attrs['ndim'] = int(parts[2])
+        new_attrs['gencoord'] = new_attrs['ndim'] < 0
+        new_attrs['ndim'] = abs(new_attrs['ndim'])
+        new_attrs['nparam'] = int(parts[3])
+        new_attrs['nvar'] = int(parts[4])
+        grid = [int(x) for x in infile.readline().split()]
+        new_attrs['grid'] = np.array(grid)
+        new_attrs['npoints'] = abs(new_attrs['grid'].prod())
+        new_attrs['para'] = np.zeros(new_attrs['nparam'])
+        if new_attrs['nparam'] > 0:
+            new_attrs['para'][:] = infile.readline().split()
+        names = infile.readline().split()
+        new_attrs['dims'] = names[0 : new_attrs['ndim']]
+        new_attrs['variables'] = np.array(names)
+        new_attrs['strtime'] = "%4.4ih%2.2im%06.3fs" % (
+            np.floor(new_attrs['time'] / 3600.0),
+            np.floor(new_attrs['time'] % 3600.0 / 60.0),
+            new_attrs['time'] % 60.0,
+        )
+    return new_attrs
+
+def _read_binary_instance(infile, attrs):
+    n_bytes_start = infile.tell()
+    new_attrs = _get_file_head(infile, attrs)
+    attrs.update(new_attrs)
+
+    nrow = attrs['ndim'] + attrs['nvar']
+
+    if attrs['pformat'] == "f":
+        dtype = np.float32
+    else:
+        dtype = np.float64
+
+    array = np.empty((nrow, attrs['npoints']), dtype=dtype)
+    dtype_str = f"{attrs['end_char']}{attrs['pformat']}"
+
+    (old_len, record_len) = struct.unpack(attrs['end_char'] + "2l", infile.read(8))
+    buffer = infile.read(record_len)
+    grid_data = np.frombuffer(
+        buffer, dtype=dtype_str, count=attrs['npoints'] * attrs['ndim']
+    )
+    array[0 : attrs['ndim'], :] = grid_data.reshape((attrs['ndim'], attrs['npoints']))
+
+    for i in range(attrs['ndim'], attrs['nvar'] + attrs['ndim']):
+        (old_len, record_len) = struct.unpack(attrs['end_char'] + "2l", infile.read(8))
+        buffer = infile.read(record_len)
+        array[i, :] = np.frombuffer(buffer, dtype=dtype_str, count=attrs['npoints'])
+    infile.read(4)
+
+    shape_new = np.append([nrow], attrs['grid'])
+    array = np.reshape(array, shape_new, order="F")
+    n_bytes_end = infile.tell()
+
+    return array, n_bytes_end - n_bytes_start, attrs
+
+def _read_parameters(infile, attrs):
+    new_attrs = {}
+    new_attrs['para'] = np.zeros(attrs['nparam'])
+    if attrs['nparam'] > 0:
+        (old_len, record_len) = struct.unpack(attrs['end_char'] + "2l", infile.read(8))
+        new_attrs['para'][:] = struct.unpack(
+            "{0}{1}{2}".format(attrs['end_char'], attrs['nparam'], attrs['pformat']),
+            infile.read(record_len),
+        )
+    return new_attrs
+
+def _read_variable_names(infile, attrs):
+    new_attrs = {}
+    (old_len, record_len) = struct.unpack(attrs['end_char'] + "2l", infile.read(8))
+    names = (
+        struct.unpack(
+            "{0}{1}s".format(attrs['end_char'], record_len), infile.read(record_len)
+        )
+    )[0]
+    if str is not bytes:
+        names = names.decode()
+
+    names.strip()
+    names = names.split()
+
+    new_attrs['dims'] = names[0 : attrs['ndim']]
+    new_attrs['variables'] = np.array(names)
+    new_attrs['strtime'] = "{0:04d}h{1:02d}m{2:06.3f}s".format(
+        int(attrs['time'] // 3600), int(attrs['time'] % 3600 // 60), attrs['time'] % 60
+    )
+    return new_attrs
+
+def _post_process_param(ds):
+    planet_radius = 1.0
+    # Not always correct.
+    if 'param_name' in ds.attrs and 'para' in ds.attrs:
+        for var, val in zip(ds.attrs['param_name'], ds.attrs['para']):
             if var == "xSI":
                 planet_radius = float(100 * val)
 
-        self.registry = yt.units.unit_registry.UnitRegistry()
-        self.registry.add("Planet_Radius", planet_radius, yt.units.dimensions.length)
+    registry = yt.units.unit_registry.UnitRegistry()
+    registry.add("Planet_Radius", planet_radius, yt.units.dimensions.length)
+    ds.attrs['registry'] = registry
 
-    def __repr__(self):
-        string = (
-            f"filename    : {self.filename}\n"
-            f"variables   : {self.variables}\n"
-            f"unit        : {self.unit}\n"
-            f"nInstance   : {self.nInstance}\n"
-            f"npict       : {self.npict}\n"
-            f"time        : {self.time}\n"
-            f"nIter       : {self.iter}\n"
-            f"ndim        : {self.ndim}\n"
-            f"gencoord    : {self.gencoord}\n"
-            f"grid        : {self.grid}\n"
-        )
-        return string
-
-    def _read_and_process_data(self):
-        if self.fileformat is None:
-            with open(self.filename, "rb") as f:
-                EndChar = "<"  # Endian marker (default: little.)
-                RecLenRaw = f.read(4)
-                RecLen = (struct.unpack(EndChar + "l", RecLenRaw))[0]
-                if RecLen != 79 and RecLen != 500:
-                    self.fileformat = "ascii"
-                else:
-                    self.fileformat = "binary"
-
-        if self.fileformat == "ascii":
-            array = self.read_ascii()
-        elif self.fileformat == "binary":
-            try:
-                array = self.read_binary()
-            except:
-                print(
-                    "It seems the lengths of instances are different. Try slow reading..."
-                )
-                array = self.read_binary_slow()
-        else:
-            raise ValueError(f"Unknown format = {self.fileformat}")
-
-        nsize = self.ndim + self.nvar
-        varnames = tuple(self.variables)[0:nsize]
-        self.param_name = self.variables[nsize:]
-        self.__post_process_param__()
-
-        # Reshape data if ndim < 3
-        shape = list(array.shape) + [1] * (4 - array.ndim)
-        array = np.reshape(array, shape)
-
-        coords = {}
-        dims = []
-        for i in range(self.ndim):
-            dim_name = self.dims[i]
-            dims.append(dim_name)
-            dim_idx = varnames.index(dim_name)
-            slicer = [0] * 3
-            slicer[i] = slice(None, self.grid[i])
-            coords[dim_name] = np.squeeze(
-                array[dim_idx, slicer[0], slicer[1], slicer[2]]
-            )
-
-        data_vars = {}
-        for i, var_name in enumerate(varnames):
-            if var_name not in self.dims:
-                slicer = [i]
-                for d in range(3):
-                    if d < self.ndim:
-                        slicer.append(slice(self.grid[d]))
-                    else:
-                        slicer.append(slice(1))
-                data_slice = array[tuple(slicer)]
-                data_vars[var_name] = (dims, np.squeeze(data_slice))
-
-        self.data = xr.Dataset(data_vars, coords=coords)
-
-    def read_ascii(self):
-        if self.nInstance is None:
-            # Count the number of instances.
-            with open(self.filename, "r") as f:
-                for i, l in enumerate(f):
-                    pass
-                nLineFile = i + 1
-
-            with open(self.filename, "r") as f:
-                self.nInstanceLength, _ = self.read_ascii_instance(f)
-
-            self.nInstance = round(nLineFile / self.nInstanceLength)
-
-        nLineSkip = (self.npict) * self.nInstanceLength if self.isOuts else 0
-        with open(self.filename, "r") as f:
-            if nLineSkip > 0:
-                for i, line in enumerate(f):
-                    if i == nLineSkip - 1:
-                        break
-            _, array = self.read_ascii_instance(f)
-        return array
-
-    def read_ascii_instance(self, infile):
-        self.get_file_head(infile)
-        nrow = self.ndim + self.nvar
-        ncol = self.npoints
-        array = np.zeros((nrow, ncol))
-
-        for i, line in enumerate(infile.readlines()):
-            parts = line.split()
-
-            if i >= self.npoints:
-                break
-
-            for j, p in enumerate(parts):
-                array[j][i] = float(p)
-
-        shapeNew = np.append([nrow], self.grid)
-        array = np.reshape(array, shapeNew, order="F")
-        nline = 5 + self.npoints if self.nparam > 0 else 4 + self.npoints
-
-        return nline, array
-
-    def read_binary(self):
-        if self.nInstance is None:
-            with open(self.filename, "rb") as f:
-                _, n_bytes = self.read_binary_instance(f)
-                self.nInstanceLength = n_bytes
-                f.seek(0, 2)
-                endPos = f.tell()
-            self.nInstance = round(endPos / self.nInstanceLength)
-
-        with open(self.filename, "rb") as f:
-            if self.isOuts:
-                f.seek((self.npict) * self.nInstanceLength, 0)
-            return self.read_binary_instance(f)[0]
-
-    def read_binary_slow(self):
-        with open(self.filename, "rb") as f:
-            if self.isOuts:
-                # Skip previous instances
-                for i in range(self.npict):
-                    self.read_binary_instance(f)
-            return self.read_binary_instance(f)[0]
-
-    def get_file_head(self, infile):
-        if self.fileformat == "binary":
-            # On the first try, we may fail because of wrong-endianess.
-            # If that is the case, swap that endian and try again.
-            self.end_char = "<"  # Endian marker (default: little)
-            self.endian = "little"
-            record_len_raw = infile.read(4)
-
-            record_len = (struct.unpack(self.end_char + "l", record_len_raw))[0]
-            if (record_len > 10000) or (record_len < 0):
-                self.end_char = ">"
-                self.endian = "big"
-                record_len = (struct.unpack(self.end_char + "l", record_len_raw))[0]
-
-            headline = (
-                (
-                    struct.unpack(
-                        "{0}{1}s".format(self.end_char, record_len),
-                        infile.read(record_len),
-                    )
-                )[0]
-                .strip()
-                .decode()
-            )
-            self.unit = headline.split()[0]
-
-            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-            self.pformat = "f"
-            # Parse rest of header; detect double-precision file
-            if record_len > 20:
-                self.pformat = "d"
-            (self.iter, self.time, self.ndim, self.nparam, self.nvar) = struct.unpack(
-                "{0}l{1}3l".format(self.end_char, self.pformat), infile.read(record_len)
-            )
-            self.gencoord = self.ndim < 0
-            self.ndim = abs(self.ndim)
-            # Get gridsize
-            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-
-            self.grid = np.array(
-                struct.unpack(
-                    "{0}{1}l".format(self.end_char, self.ndim),
-                    infile.read(record_len),
-                )
-            )
-            self.npoints = abs(self.grid.prod())
-
-            # Read parameters stored in file
-            self.read_parameters(infile)
-
-            # Read variable names
-            self.read_variable_names(infile)
-        else:
-            # Read the top header line
-            headline = infile.readline().strip()
-            self.unit = headline.split()[0]
-
-            # Read & convert iters, time, etc. from next line
-            parts = infile.readline().split()
-            self.iter = int(parts[0])
-            self.time = float(parts[1])
-            self.ndim = int(parts[2])
-            self.gencoord = self.ndim < 0
-            self.ndim = abs(self.ndim)
-            self.nparam = int(parts[3])
-            self.nvar = int(parts[4])
-
-            # Read & convert grid dimensions
-            grid = [int(x) for x in infile.readline().split()]
-            self.grid = np.array(grid)
-            self.npoints = abs(self.grid.prod())
-
-            # Read parameters stored in file
-            self.para = np.zeros(self.nparam)
-            if self.nparam > 0:
-                self.para[:] = infile.readline().split()
-
-            # Read variable names
-            names = infile.readline().split()
-
-            # Save grid names (e.g. "x" or "r") and save associated params
-            self.dims = names[0 : self.ndim]
-            self.variables = np.array(names)
-
-            # Create string representation of time
-            self.strtime = "%4.4ih%2.2im%06.3fs" % (
-                np.floor(self.time / 3600.0),
-                np.floor(self.time % 3600.0 / 60.0),
-                self.time % 60.0,
-            )
-
-    def read_binary_instance(self, infile):
-        n_bytes_start = infile.tell()
-        self.get_file_head(infile)
-        nrow = self.ndim + self.nvar
-
-        if self.pformat == "f":
-            dtype = np.float32
-        else:
-            dtype = np.float64
-
-        array = np.empty((nrow, self.npoints), dtype=dtype)
-        dtype_str = f"{self.end_char}{self.pformat}"
-
-        # Get the grid points
-        (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-        buffer = infile.read(record_len)
-        grid_data = np.frombuffer(
-            buffer, dtype=dtype_str, count=self.npoints * self.ndim
-        )
-        array[0 : self.ndim, :] = grid_data.reshape((self.ndim, self.npoints))
-
-        # Get the actual data and sort
-        for i in range(self.ndim, self.nvar + self.ndim):
-            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-            buffer = infile.read(record_len)
-            array[i, :] = np.frombuffer(buffer, dtype=dtype_str, count=self.npoints)
-        # Consume the last record length
-        infile.read(4)
-
-        shape_new = np.append([nrow], self.grid)
-        array = np.reshape(array, shape_new, order="F")
-        n_bytes_end = infile.tell()
-
-        return array, n_bytes_end - n_bytes_start
-
-    def read_parameters(self, infile):
-        """Reads parameters from the binary file."""
-        self.para = np.zeros(self.nparam)
-        if self.nparam > 0:
-            (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-            self.para[:] = struct.unpack(
-                "{0}{1}{2}".format(self.end_char, self.nparam, self.pformat),
-                infile.read(record_len),
-            )
-
-    def read_variable_names(self, infile):
-        """Reads variable names from the binary file."""
-        (old_len, record_len) = struct.unpack(self.end_char + "2l", infile.read(8))
-        names = (
-            struct.unpack(
-                "{0}{1}s".format(self.end_char, record_len), infile.read(record_len)
-            )
-        )[0]
-        if str is not bytes:
-            names = names.decode()
-
-        names.strip()
-        names = names.split()
-
-        # Save grid names (e.g. "x" or "r") and save associated params
-        self.dims = names[0 : self.ndim]
-        self.variables = np.array(names)
-
-        self.strtime = "{0:04d}h{1:02d}m{2:06.3f}s".format(
-            int(self.time // 3600), int(self.time % 3600 // 60), self.time % 60
-        )
-
-    def get_domain(self) -> xr.Dataset:
-        """Return data as an xarray.Dataset."""
-        return self.data
+@xr.register_dataset_accessor("idl")
+class IDLAccessor:
+    def __init__(self, xarray_obj):
+        self._obj = xarray_obj
 
     def get_slice(self, norm, cut_loc) -> xr.Dataset:
         """Get a 2D slice from the 3D IDL data.
@@ -367,70 +321,10 @@ class IDLDataX:
                 The position of slicing.
         Return: xarray.Dataset
         """
-        return self.data.sel({norm: cut_loc}, method="nearest")
+        return self._obj.sel({norm: cut_loc}, method="nearest")
 
-    def plot(self, *dvname, **kwargs):
-        """Plot 1D IDL outputs.
-        Args:
-            *dvname (str): variable names
-            **kwargs: keyword argument to be passed to `plot`.
-        """
-        if self.ndim != 1:
-            raise ValueError("plot() is for 1D data only.")
-
-        nvar = len(dvname)
-        if nvar == 0:
-            return
-
-        f, axes = plt.subplots(nvar, 1, constrained_layout=True, sharex=True)
-        if nvar == 1:
-            axes = [axes]
-
-        for i, var in enumerate(dvname):
-            self.data[var].plot(ax=axes[i], **kwargs)
-
-        return axes
-
-    def pcolormesh(self, *dvname, scale: bool = True, **kwargs):
-        """Plot 2D pcolormeshes of variables.
-        Args:
-            *dvname (str): variable names
-            scale (bool): whether to scale the plots according to the axis range.
-                Default True.
-            **kwargs: keyword arguments to be passed to `pcolormesh`.
-        """
-        if self.ndim != 2:
-            raise ValueError("pcolormesh() is for 2D data only.")
-
-        nvar = len(dvname)
-        if nvar == 0:
-            return
-
-        f, axes = plt.subplots(
-            nvar,
-            1,
-            constrained_layout=True,
-            sharex=True,
-            sharey=True,
-            figsize=kwargs.pop("figsize", (6, 4 * nvar)),
-        )
-        if nvar == 1:
-            axes = [axes]
-
-        for i, var in enumerate(dvname):
-            if "cmap" not in kwargs:
-                kwargs["cmap"] = "turbo"
-
-            self.data[var].plot.pcolormesh(ax=axes[i], **kwargs)
-            axes[i].set_title(var)
-
-        if scale:
-            x_coords = self.data.coords[self.dims[0]]
-            y_coords = self.data.coords[self.dims[1]]
-            aspect_ratio = (y_coords.max() - y_coords.min()) / (
-                x_coords.max() - x_coords.min()
-            )
-            for ax in axes:
-                ax.set_aspect(float(aspect_ratio.values))
-
-        return axes
+def read_idl(filename):
+    """
+    Read IDL format file.
+    """
+    return _read_and_process_data(filename)
