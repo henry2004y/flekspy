@@ -366,7 +366,6 @@ def read_tp_data(
             data_vars[var_name] = xr.DataArray(
                 data[:, :, i],
                 dims=("particle", "time"),
-                coords={"time": time_coord},
             )
 
     ds = xr.Dataset(
