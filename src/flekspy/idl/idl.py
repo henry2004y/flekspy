@@ -293,8 +293,8 @@ def _read_variable_names(infile, attrs):
 
     new_attrs["dims"] = names[0 : attrs["ndim"]]
     new_attrs["variables"] = np.array(names)
-    new_attrs["strtime"] = "{0:04d}h{1:02d}m{2:06.3f}s".format(
-        int(attrs["time"] // 3600), int(attrs["time"] % 3600 // 60), attrs["time"] % 60
+    new_attrs["strtime"] = (
+        f"{int(attrs['time'] // 3600):04d}h{int(attrs['time'] % 3600 // 60):02d}m{attrs['time'] % 60:06.3f}s"
     )
     return new_attrs
 
