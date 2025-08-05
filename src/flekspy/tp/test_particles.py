@@ -353,7 +353,9 @@ class FLEKSTP(object):
         # Use the Indices enum to create meaningful column names
         column_names = [i.name.lower() for i in Indices]
 
-        return pd.DataFrame(trajectory_data, columns=column_names)
+        df = pd.DataFrame(trajectory_data, columns=column_names[: self.nReal])
+        df.attrs["pid"] = pID
+        return df
 
     def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
