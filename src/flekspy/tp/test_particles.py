@@ -63,6 +63,7 @@ class FLEKSTP(object):
         iListEnd: int = -1,
         readAllFiles: bool = False,
     ):
+        self._trajectory_cache = {}
         if type(dirs) == str:
             dirs = [dirs]
 
@@ -137,7 +138,12 @@ class FLEKSTP(object):
         return iter(self.IDs)
 
     def __getitem__(self, pID):
-        return self.read_particle_trajectory(pID)
+        if pID in self._trajectory_cache:
+            return self._trajectory_cache[pID]
+        else:
+            trajectory = self.read_particle_trajectory(pID)
+            self._trajectory_cache[pID] = trajectory
+            return trajectory
 
     def getIDs(self):
         return self.IDs
