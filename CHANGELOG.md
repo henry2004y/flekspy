@@ -38,6 +38,10 @@
 
 - `read_initial_location` -> `read_initial_condition` for test particles.
 
-## v0.3.3 (2025/08/03)
+## v0.4.0 (2025/08/03)
 
 - Use XArray for handling IDL format data.
+
+## v0.5.0 (2025/08/05)
+
+- Use Polars for storing test particle data.

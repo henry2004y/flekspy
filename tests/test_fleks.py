@@ -135,25 +135,23 @@ class TestParticles:
     from flekspy import FLEKSTP
 
     tp = FLEKSTP(dirs, iSpecies=1)
-    pIDs = tp.getIDs()
 
     def test_particles(self):
         tp = self.tp
-        pIDs = self.pIDs
+        pIDs = tp.getIDs()
         assert tp.__repr__().startswith("Particles")
         assert pIDs[0] == (0, 5121)
-        pt = tp.read_particle_trajectory(pIDs[10])
-        assert pt.trajectory[0, 1] == -0.031386006623506546
-        assert pt["u"][3] == 5.870406312169507e-05
-        assert pt["v"][5] == 4.103916944586672e-05
-        assert pt["w"].shape == (8,)
-        assert pt["position"][0].shape == (8,)
+        pt = tp[10]
+        assert pt["x"][0] == -0.031386006623506546
+        assert pt["vx"][3] == 5.870406312169507e-05
+        assert pt["vy"][5] == 4.103916944586672e-05
+        assert pt["vz"].shape == (8,)
         with pytest.raises(Exception):
             pt["unknown"]
         x = tp.read_initial_condition(pIDs[10])
-        assert x[1] == pt.trajectory[0, 1]
-        x = tp.read_final_condition(pIDs[10])
-        assert x[1] == pt.trajectory[-1, 1]
+        assert x[1] == pt["x"][0]
+        x = tp.read_final_condition(tp.IDs[10])
+        assert x[1] == pt["x"][-1]
         ids, pData = tp.read_particles_at_time(0.0, doSave=False)
         assert ids[1][1] == 5129
         ax = tp.plot_location(pData[0:2, :])
@@ -176,7 +174,7 @@ class TestParticles:
 
     def test_trajectory(self):
         tp = self.tp
-        pIDs = self.pIDs
+        pIDs = tp.getIDs()
         ax = tp.plot_trajectory(pIDs[0], type="single")
         assert ax.get_xlim()[1] == 2.140599811077118
         ax = tp.plot_trajectory(pIDs[0], type="single", xaxis="y", yaxis="z", ax=ax)
@@ -185,6 +183,26 @@ class TestParticles:
         assert ax[1].get_xlim()[1] == 2.140599811077118
         ax = tp.plot_trajectory(pIDs[0])
         assert ax[1][0].get_xlim()[1] == 2.140599811077118
+
+    def test_read_particle_trajectory_key_error(self):
+        with pytest.raises(KeyError):
+            self.tp.read_particle_trajectory((-1, -1))
+
+    def test_read_particle_trajectory_value_error(self, monkeypatch):
+        import numpy as np
+
+        pID = self.tp.IDs[0]
+        # Ensure the cache is clean for this test
+        if pID in self.tp._trajectory_cache:
+            del self.tp._trajectory_cache[pID]
+
+        monkeypatch.setattr(
+            self.tp,
+            "_get_particle_raw_data",
+            lambda pID: np.array([], dtype=np.float32),
+        )
+        with pytest.raises(ValueError):
+            self.tp.read_particle_trajectory(pID)
 
 
 def load(files):
@@ -196,7 +214,7 @@ def load(files):
     return ds
 
 
-def test_load(benchmark):
+def test_load_idl(benchmark):
     filenames = (
         "1d__raw_2_t25.60000_n00000258.out",
         "z=0_fluid_region0_0_t00001640_n00010142.out",
@@ -208,15 +226,15 @@ def test_load(benchmark):
     assert isinstance(result, xr.Dataset)
 
 
-def load_all_trajectories(tp, pIDs):
+def load_test_particle_trajectories(tp, pIDs):
     """
     Load all particle trajectories.
     """
-    for pID in itertools.islice(pIDs, 10):
+    for pID in itertools.islice(pIDs, 100):
         tp.read_particle_trajectory(pID)
 
 
-def test_load_all_trajectories(benchmark):
+def test_load_tp(benchmark):
     """
     Benchmark loading all particle trajectories.
     """
@@ -226,4 +244,4 @@ def test_load_all_trajectories(benchmark):
     tp = FLEKSTP(dirs, iSpecies=1)
     pIDs = tp.getIDs()
 
-    benchmark(load_all_trajectories, tp, pIDs)
+    benchmark(load_test_particle_trajectories, tp, pIDs)
