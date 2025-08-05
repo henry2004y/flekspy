@@ -3,7 +3,7 @@ from typing import List, Tuple, Dict, Union, Callable
 import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
-import pandas as pd
+import polars as pl
 import glob
 import struct
 from itertools import islice
@@ -253,20 +253,39 @@ class FLEKSTP(object):
         >>> tp.save_trajectory_to_csv((3,15))
         """
         pData = self.read_particle_trajectory(pID)
-        if filename == None:
-            filename = "trajectory_" + str(pID[0]) + "_" + str(pID[1]) + ".csv"
-        header = "time [s], X [R], Y [R], Z [R], U_x [km/s], U_y [km/s], U_z [km/s]"
+        if filename is None:
+            filename = f"trajectory_{pID[0]}_{pID[1]}.csv"
+
+        header_cols = [
+            "time [s]",
+            "X [R]",
+            "Y [R]",
+            "Z [R]",
+            "U_x [km/s]",
+            "U_y [km/s]",
+            "U_z [km/s]",
+        ]
         if self.nReal == 10:
-            header += ", B_x [nT], B_y [nT], B_z [nT]"
+            header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
         if self.nReal == 13:
-            header += (
-                ", B_x [nT], B_y [nT], B_z [nT], E_x [uV/m], E_y [uV/m], E_z [uV/m]"
-            )
+            header_cols += [
+                "B_x [nT]",
+                "B_y [nT]",
+                "B_z [nT]",
+                "E_x [uV/m]",
+                "E_y [uV/m]",
+                "E_z [uV/m]",
+            ]
+
         if shiftTime:
-            pData["time"] -= pData["time"].iloc[0]
+            pData = pData.with_columns((pl.col("time") - pData["time"][0]))
             if scaleTime:
-                pData["time"] /= pData["time"].iloc[-1]
-        pData.to_csv(filename, header=header.split(", "), index=False)
+                pData = pData.with_columns((pl.col("time") / pData["time"][-1]))
+
+        # Create a new DataFrame with the desired header names
+        pData_to_save = pData.clone()
+        pData_to_save.columns = header_cols
+        pData_to_save.write_csv(filename)
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
@@ -336,22 +355,21 @@ class FLEKSTP(object):
                             binaryData = f.read(4 * self.nReal)
                             return list(struct.unpack("f" * self.nReal, binaryData))
 
-    def read_particle_trajectory(self, pID: Tuple[int, int]) -> pd.DataFrame:
+    def read_particle_trajectory(self, pID: Tuple[int, int]) -> pl.DataFrame:
         """
-        Return the trajectory of a test particle as a pandas DataFrame.
+        Return the trajectory of a test particle as a polars DataFrame.
         """
         data_array = self._get_particle_raw_data(pID)
 
         if data_array.size == 0:
-            return pd.DataFrame()  # Return an empty DataFrame if no data
+            return pl.DataFrame()  # Return an empty DataFrame if no data
 
         nRecord = data_array.size // self.nReal
         trajectory_data = data_array.reshape(nRecord, self.nReal)
 
         # Use the Indices enum to create meaningful column names
         column_names = [i.name.lower() for i in islice(Indices, self.nReal)]
-        df = pd.DataFrame(trajectory_data, columns=column_names)
-        df.attrs["pid"] = pID
+        df = pl.DataFrame(data=trajectory_data, schema=column_names)
         return df
 
     def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
@@ -495,8 +513,12 @@ class FLEKSTP(object):
                 plot_data(pt[label], label, irow, i, **kwargs)
 
         pt = self.read_particle_trajectory(pID)
+        if pt.is_empty():
+            print(f"No data for particle ID: {pID}")
+            return
+
         t = pt["time"]
-        tNorm = (t - t.iloc[0]) / (t.iloc[-1] - t.iloc[0])
+        tNorm = (t - t[0]) / (t[-1] - t[0])
 
         if type == "single":
             x = t if xaxis == "t" else pt[xaxis]
@@ -576,7 +598,7 @@ class FLEKSTP(object):
                     4,
                 )
         elif type == "full":
-            print(f"Analyzing particle ID: {pt.attrs['pid']}")
+            print(f"Analyzing particle ID: {pID}")
             # TODO Proper unit handling
             # --- Data Extraction ---
             t = pt["time"]  # [s]
@@ -591,9 +613,9 @@ class FLEKSTP(object):
             ke = self.get_kinetic_energy(vx, vy, vz) * 1e6  # [eV]
 
             # Vectorize B and V fields for easier calculations
-            v_vec = pt[["vx", "vy", "vz"]].values
-            b_vec = pt[["bx", "by", "bz"]].values
-            e_vec = pt[["ex", "ey", "ez"]].values
+            v_vec = pt.select(["vx", "vy", "vz"]).to_numpy()
+            b_vec = pt.select(["bx", "by", "bz"]).to_numpy()
+            e_vec = pt.select(["ex", "ey", "ez"]).to_numpy()
 
             # Calculate magnitudes of vectors
             v_mag = np.linalg.norm(v_vec, axis=1)  # [km/s]

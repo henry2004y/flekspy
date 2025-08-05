@@ -143,16 +143,16 @@ class TestParticles:
         assert tp.__repr__().startswith("Particles")
         assert pIDs[0] == (0, 5121)
         pt = tp.read_particle_trajectory(pIDs[10])
-        assert pt["x"].iloc[0] == -0.031386006623506546
-        assert pt["vx"].iloc[3] == 5.870406312169507e-05
-        assert pt["vy"].iloc[5] == 4.103916944586672e-05
+        assert pt["x"][0] == -0.031386006623506546
+        assert pt["vx"][3] == 5.870406312169507e-05
+        assert pt["vy"][5] == 4.103916944586672e-05
         assert pt["vz"].shape == (8,)
         with pytest.raises(Exception):
             pt["unknown"]
         x = tp.read_initial_condition(pIDs[10])
-        assert x[1] == pt["x"].iloc[0]
+        assert x[1] == pt["x"][0]
         x = tp.read_final_condition(pIDs[10])
-        assert x[1] == pt["x"].iloc[-1]
+        assert x[1] == pt["x"][-1]
         ids, pData = tp.read_particles_at_time(0.0, doSave=False)
         assert ids[1][1] == 5129
         ax = tp.plot_location(pData[0:2, :])
