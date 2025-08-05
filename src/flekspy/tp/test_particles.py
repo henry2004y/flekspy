@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import glob
 import struct
+from itertools import islice
 from enum import IntEnum
 from scipy.constants import proton_mass, elementary_charge, mu_0, epsilon_0
 
@@ -265,11 +266,11 @@ class FLEKSTP(object):
             pData["time"] -= pData["time"].iloc[0]
             if scaleTime:
                 pData["time"] /= pData["time"].iloc[-1]
-        pData.to_csv(filename, header=header.split(', '), index=False)
+        pData.to_csv(filename, header=header.split(", "), index=False)
 
-    def _get_particle_raw_data(self, pID: Tuple[int, int]) -> list:
+    def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
-        dataList = []
+        data_chunks = []
         record_format = "iiif"
         record_size = struct.calcsize(record_format)
         record_struct = struct.Struct(record_format)
@@ -280,19 +281,18 @@ class FLEKSTP(object):
                 with open(filename, "rb") as f:
                     f.seek(ploc)
                     dataChunk = f.read(record_size)
-                    (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
+                    (_cpu, _idtmp, nRecord, _weight) = record_struct.unpack(dataChunk)
                     if nRecord > 0:
                         binaryData = f.read(4 * self.nReal * nRecord)
-                        dataList.extend(
-                            struct.unpack("f" * nRecord * self.nReal, binaryData)
-                        )
-        return dataList
+                        data_chunks.append(np.frombuffer(binaryData, dtype=np.float32))
+        if not data_chunks:
+            return np.array([], dtype=np.float32)
+        return np.concatenate(data_chunks)
 
     def _read_particle_record(
         self, pID: Tuple[int, int], index: int = -1
     ) -> Union[list, None]:
-        """
-        Return a specific record of a test particle given its ID.
+        """Return a specific record of a test particle given its ID.
 
         Args:
             pID: particle ID
@@ -340,18 +340,17 @@ class FLEKSTP(object):
         """
         Return the trajectory of a test particle as a pandas DataFrame.
         """
-        dataList = self._get_particle_raw_data(pID)
+        data_array = self._get_particle_raw_data(pID)
 
-        if not dataList:
+        if data_array.size == 0:
             return pd.DataFrame()  # Return an empty DataFrame if no data
 
-        nRecord = int(len(dataList) / self.nReal)
-        trajectory_data = np.array(dataList).reshape(nRecord, self.nReal)
+        nRecord = data_array.size // self.nReal
+        trajectory_data = data_array.reshape(nRecord, self.nReal)
 
         # Use the Indices enum to create meaningful column names
-        column_names = [i.name.lower() for i in Indices]
-
-        df = pd.DataFrame(trajectory_data, columns=column_names[: self.nReal])
+        column_names = [i.name.lower() for i in islice(Indices, self.nReal)]
+        df = pd.DataFrame(trajectory_data, columns=column_names)
         df.attrs["pid"] = pID
         return df
 
