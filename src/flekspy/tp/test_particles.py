@@ -34,6 +34,7 @@ class FLEKSTP(object):
     A class that is used to read and plot test particles. Each particle ID consists of
     a CPU index, a particle index on each CPU, and a location index.
     By default, 7 real numbers saved for each step: time + position + velocity.
+    Additional field information are also stored if available.
 
     This class is a lazy, iterable container. It avoids loading all data into memory
     at once, making it efficient for large datasets. You can access particle
@@ -46,10 +47,9 @@ class FLEKSTP(object):
     >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
     >>> len(tp)
     10240
-    >>> pIDs = list(tp)
-    >>> trajectory = tp[pIDs[0]]
-    >>> tp.plot_trajectory(pIDs[3])
-    >>> tp.save_trajectory_to_csv(pIDs[5])
+    >>> trajectory = tp[0]
+    >>> tp.plot_trajectory(tp.IDs[3])
+    >>> tp.save_trajectory_to_csv(tp.IDs[5])
     >>> ids, pData = tp.read_particles_at_time(0.0, doSave=False)
     >>> f = tp.plot_location(pData)
     """

@@ -135,14 +135,13 @@ class TestParticles:
     from flekspy import FLEKSTP
 
     tp = FLEKSTP(dirs, iSpecies=1)
-    pIDs = tp.getIDs()
 
     def test_particles(self):
         tp = self.tp
-        pIDs = self.pIDs
+        pIDs = tp.getIDs()
         assert tp.__repr__().startswith("Particles")
         assert pIDs[0] == (0, 5121)
-        pt = tp.read_particle_trajectory(pIDs[10])
+        pt = tp[10]
         assert pt["x"][0] == -0.031386006623506546
         assert pt["vx"][3] == 5.870406312169507e-05
         assert pt["vy"][5] == 4.103916944586672e-05
@@ -151,7 +150,7 @@ class TestParticles:
             pt["unknown"]
         x = tp.read_initial_condition(pIDs[10])
         assert x[1] == pt["x"][0]
-        x = tp.read_final_condition(pIDs[10])
+        x = tp.read_final_condition(tp.IDs[10])
         assert x[1] == pt["x"][-1]
         ids, pData = tp.read_particles_at_time(0.0, doSave=False)
         assert ids[1][1] == 5129
@@ -175,7 +174,7 @@ class TestParticles:
 
     def test_trajectory(self):
         tp = self.tp
-        pIDs = self.pIDs
+        pIDs = tp.getIDs()
         ax = tp.plot_trajectory(pIDs[0], type="single")
         assert ax.get_xlim()[1] == 2.140599811077118
         ax = tp.plot_trajectory(pIDs[0], type="single", xaxis="y", yaxis="z", ax=ax)
@@ -192,22 +191,18 @@ class TestParticles:
     def test_read_particle_trajectory_value_error(self, monkeypatch):
         import numpy as np
 
-        pID = self.pIDs[0]
+        pID = self.tp.IDs[0]
         # Ensure the cache is clean for this test
         if pID in self.tp._trajectory_cache:
             del self.tp._trajectory_cache[pID]
 
         monkeypatch.setattr(
-            self.tp, "_get_particle_raw_data", lambda pID: np.array([], dtype=np.float32)
+            self.tp,
+            "_get_particle_raw_data",
+            lambda pID: np.array([], dtype=np.float32),
         )
         with pytest.raises(ValueError):
             self.tp.read_particle_trajectory(pID)
-
-    def test_getitem_with_int(self):
-        pID = self.pIDs[10]
-        traj_by_id = self.tp[pID]
-        traj_by_index = self.tp[10]
-        assert traj_by_id.equals(traj_by_index)
 
 
 def load(files):
