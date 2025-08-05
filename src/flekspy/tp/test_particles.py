@@ -64,7 +64,7 @@ class FLEKSTP(object):
         readAllFiles: bool = False,
     ):
         self._trajectory_cache = {}
-        if type(dirs) == str:
+        if isinstance(dirs, str):
             dirs = [dirs]
 
         header = Path(dirs[0] + "/Header")
