@@ -211,7 +211,7 @@ def load_test_particle_trajectories(tp, pIDs):
     """
     Load all particle trajectories.
     """
-    for pID in itertools.islice(pIDs, 10):
+    for pID in itertools.islice(pIDs, 100):
         tp.read_particle_trajectory(pID)
 
 
