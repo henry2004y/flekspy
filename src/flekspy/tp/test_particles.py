@@ -109,9 +109,7 @@ class FLEKSTP(object):
         for plist_filename, p_filename in zip(plistfiles, self.pfiles):
             plist = self.read_particle_list(plist_filename)
             for pID, ploc in plist.items():
-                if pID not in self.particle_locations:
-                    self.particle_locations[pID] = []
-                self.particle_locations[pID].append((p_filename, ploc))
+                self.particle_locations.setdefault(pID, []).append((p_filename, ploc))
 
         self.IDs = sorted(self.particle_locations.keys())
 
