@@ -79,12 +79,14 @@ class FLEKSTP(object):
         self.pfiles = list()
 
         for outputDir in dirs:
-            plistfiles = plistfiles + glob.glob(
-                f"{outputDir}/FLEKS{iDomain}_particle_list_species_{iSpecies}_*"
+            plistfiles.extend(
+                glob.glob(
+                    f"{outputDir}/FLEKS{iDomain}_particle_list_species_{iSpecies}_*"
+                )
             )
 
-            self.pfiles = self.pfiles + glob.glob(
-                f"{outputDir}/FLEKS{iDomain}_particle_species_{iSpecies}_*"
+            self.pfiles.extend(
+                glob.glob(f"{outputDir}/FLEKS{iDomain}_particle_species_{iSpecies}_*")
             )
 
         plistfiles.sort()
@@ -94,7 +96,7 @@ class FLEKSTP(object):
         if readAllFiles:
             for filename in self.pfiles:
                 record = self._read_the_first_record(filename)
-                if record == None:
+                if record is None:
                     continue
                 self.indextotime.append(record[Indices.TIME])
 
@@ -103,9 +105,7 @@ class FLEKSTP(object):
         plistfiles = plistfiles[iListStart:iListEnd]
         self.pfiles = self.pfiles[iListStart:iListEnd]
 
-        self.particle_locations: Dict[
-            Tuple[int, int], List[Tuple[str, int]]
-        ] = {}
+        self.particle_locations: Dict[Tuple[int, int], List[Tuple[str, int]]] = {}
         for plist_filename, p_filename in zip(plistfiles, self.pfiles):
             plist = self.read_particle_list(plist_filename)
             for pID, ploc in plist.items():
@@ -116,18 +116,17 @@ class FLEKSTP(object):
         self.filetime = []
         for filename in self.pfiles:
             record = self._read_the_first_record(filename)
-            if record == None:
+            if record is None:
                 continue
             self.filetime.append(record[Indices.TIME])
 
     def __repr__(self):
-        str = (
+        return (
             f"Particles species ID: {self.iSpecies}\n"
             f"Number of particles : {len(self.IDs)}\n"
             f"First time tag      : {self.filetime[0]}\n"
             f"Last  time tag      : {self.filetime[-1]}\n"
         )
-        return str
 
     def __len__(self):
         return len(self.IDs)
@@ -143,7 +142,9 @@ class FLEKSTP(object):
             # Treat as a pID
             pID = key
         else:
-            raise TypeError("Particle ID must be a tuple (cpu, id) or an integer index.")
+            raise TypeError(
+                "Particle ID must be a tuple (cpu, id) or an integer index."
+            )
 
         if pID in self._trajectory_cache:
             return self._trajectory_cache[pID]
@@ -163,7 +164,7 @@ class FLEKSTP(object):
         record_size = struct.calcsize(record_format)
         record_struct = struct.Struct(record_format)
         nByte = Path(filename).stat().st_size
-        nPart = int(nByte / record_size)
+        nPart = nByte // record_size
         plist = {}
 
         with open(filename, "rb") as f:
@@ -285,7 +286,7 @@ class FLEKSTP(object):
         Example:
         >>> tp.save_trajectory_to_csv((3,15))
         """
-        pData = self.read_particle_trajectory(pID)
+        pData = self[pID]
         if filename is None:
             filename = f"trajectory_{pID[0]}_{pID[1]}.csv"
 
@@ -459,7 +460,7 @@ class FLEKSTP(object):
         return ke
 
     def get_pitch_angle(self, pID):
-        pt = self.read_particle_trajectory(pID)
+        pt = self[pID]
         vx, vy, vz = pt["vx"], pt["vy"], pt["vz"]
         bx, by, bz = pt["bx"], pt["by"], pt["bz"]
         # Pitch Angle Calculation
@@ -496,7 +497,7 @@ class FLEKSTP(object):
         return pitch_angle
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
-        pt = self.read_particle_trajectory(pID)
+        pt = self[pID]
         epsilon = 1e-15
 
         # Calculate magnitudes and dot product using polars expressions
@@ -530,6 +531,7 @@ class FLEKSTP(object):
         self,
         pID: Tuple[int, int],
         *,
+        mass=proton_mass,
         type="quick",
         xaxis="t",
         yaxis="x",
@@ -556,7 +558,7 @@ class FLEKSTP(object):
                 plot_data(pt[label], label, irow, i, **kwargs)
 
         try:
-            pt = self.read_particle_trajectory(pID)
+            pt = self[pID]
         except (KeyError, ValueError) as e:
             print(f"Error plotting trajectory for {pID}: {e}")
             return
@@ -657,12 +659,10 @@ class FLEKSTP(object):
             ke = self.get_kinetic_energy(vx, vy, vz) * 1e6  # [eV]
 
             # Vectorize B and V fields for easier calculations
-            v_vec = pt.select(["vx", "vy", "vz"]).to_numpy()
             b_vec = pt.select(["bx", "by", "bz"]).to_numpy()
             e_vec = pt.select(["ex", "ey", "ez"]).to_numpy()
 
             # Calculate magnitudes of vectors
-            v_mag = np.linalg.norm(v_vec, axis=1)  # [km/s]
             b_mag = np.linalg.norm(b_vec, axis=1)  # [nT]
             e_mag = np.linalg.norm(e_vec, axis=1) * 1e-3  # [mV/m]
 
@@ -673,21 +673,11 @@ class FLEKSTP(object):
             U_E = 0.5 * epsilon_0 * (e_mag * 1e-3) ** 2  # [J/m^3]
 
             # Pitch Angle Calculation
-            v_dot_b = np.sum(v_vec * b_vec, axis=1)
-            epsilon = 1e-15
-            cos_alpha = v_dot_b / (v_mag * b_mag + epsilon)
-            cos_alpha = np.clip(cos_alpha, -1.0, 1.0)
-            pitch_angle_rad = np.arccos(cos_alpha)
-            pitch_angle = pitch_angle_rad * 180.0 / np.pi
+            pitch_angle = self.get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
 
             # --- First Adiabatic Invariant (mu) Calculation ---
             # mu = mv_perp^2 / 2B.  v_perp = v * sin(alpha)
-            # Ensure units are SI: v [m/s], B [T]
-            # Calculate perpendicular velocity squared
-            v_perp_sq = (v_mag * 1e3 * np.sin(pitch_angle_rad)) ** 2
-
-            # Calculate mu, handle potential division by zero in B
-            mu = (0.5 * proton_mass * v_perp_sq) / (b_mag * 1e-9)  # [J/T]
+            mu = self.get_first_adiabatic_invariant(pID, mass=mass) * 1e9  # [J/T]
 
             # --- Plotting ---
             # Create 7 subplots, sharing the x-axis
