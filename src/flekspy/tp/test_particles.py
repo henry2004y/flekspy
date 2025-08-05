@@ -112,7 +112,7 @@ class FLEKSTP(object):
                     self.particle_locations[pID] = []
                 self.particle_locations[pID].append((p_filename, ploc))
 
-        self.IDs = self.particle_locations.keys()
+        self.IDs = sorted(self.particle_locations.keys())
 
         self.filetime = []
         for filename in self.pfiles:
@@ -140,7 +140,7 @@ class FLEKSTP(object):
         return self.read_particle_trajectory(pID)
 
     def getIDs(self):
-        return list(sorted(self.IDs))
+        return self.IDs
 
     def read_particle_list(self, filename: str) -> Dict[Tuple[int, int], int]:
         """
@@ -393,7 +393,7 @@ class FLEKSTP(object):
 
         # Use the Indices enum to create meaningful column names
         column_names = [i.name.lower() for i in islice(Indices, self.nReal)]
-        df = pl.DataFrame(data=trajectory_data, schema=column_names)
+        df = pl.from_numpy(data=trajectory_data, schema=column_names)
         return df
 
     def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
