@@ -3,6 +3,8 @@ from typing import List, Tuple, Dict, Union, Callable
 import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
+import pandas as pd
+from pandas import DataFrame
 import glob
 import struct
 from enum import IntEnum
@@ -25,116 +27,6 @@ class Indices(IntEnum):
     EX = 10
     EY = 11
     EZ = 12
-
-
-class ParticleTrajectory:
-    """
-    A class to store particle trajectory data.
-    Data can be accessed directly using dictionary-like keys.
-
-    Examples:
-    >>> pt = tp.read_particle_trajectory((66,888))
-    >>> time = pt["t"]
-    >>> x_position = pt["x"]
-    >>> x_vel, y_vel, z_vel = pt["velocity"]
-    """
-
-    def __init__(self, particle_id: Tuple[int, int], trajectory_data: np.ndarray):
-        """
-        Args:
-            particle_id (Tuple[int, int]): The ID of the particle.
-            trajectory_data (np.ndarray): A 2D numpy array of the trajectory data.
-        """
-        self.pid = particle_id
-        self.trajectory = trajectory_data
-
-    def __getitem__(self, key: str):
-        """
-        Gets trajectory data using dictionary-like keys for components or vectors.
-        """
-        # Mapping for single components (and common aliases)
-        component_map = {
-            "t": Indices.TIME,
-            "x": Indices.X,
-            "y": Indices.Y,
-            "z": Indices.Z,
-            "u": Indices.VX,
-            "v": Indices.VY,
-            "w": Indices.VZ,
-            "vx": Indices.VX,
-            "vy": Indices.VY,
-            "vz": Indices.VZ,
-            "ux": Indices.VX,
-            "uy": Indices.VY,
-            "uz": Indices.VZ,
-            "bx": Indices.BX,
-            "by": Indices.BY,
-            "bz": Indices.BZ,
-            "ex": Indices.EX,
-            "ey": Indices.EY,
-            "ez": Indices.EZ,
-        }
-
-        # Mapping for vector quantities
-        vector_map = {
-            "position": (Indices.X, Indices.Y, Indices.Z),
-            "velocity": (Indices.VX, Indices.VY, Indices.VZ),
-            "b": (Indices.BX, Indices.BY, Indices.BZ),
-            "e": (Indices.EX, Indices.EY, Indices.EZ),
-        }
-
-        if key.lower() in component_map:
-            idx = component_map[key.lower()]
-            if self.trajectory.shape[1] > idx:
-                return self.trajectory[:, idx]
-            else:
-                raise KeyError(
-                    f"Component '{key}' not available in this trajectory data."
-                )
-
-        elif key.lower() in vector_map:
-            indices = vector_map[key.lower()]
-            if self.trajectory.shape[1] > max(indices):
-                return (
-                    self.trajectory[:, indices[0]],
-                    self.trajectory[:, indices[1]],
-                    self.trajectory[:, indices[2]],
-                )
-            else:
-                raise KeyError(f"Vector '{key}' not available in this trajectory data.")
-
-        else:
-            raise KeyError(
-                f"Unknown key: '{key}'. Valid keys include {list(component_map.keys()) + list(vector_map.keys())}"
-            )
-
-    def get_first_adiabatic_invariant(self, mass=proton_mass):
-        vx, vy, vz = self["velocity"]
-        bx, by, bz = self["b"]
-
-        v_vec = np.vstack((vx, vy, vz)).T
-        b_vec = np.vstack((bx, by, bz)).T
-
-        # Calculate magnitudes of velocity and B-field vectors
-        v_mag = np.linalg.norm(v_vec, axis=1)
-        b_mag = np.linalg.norm(b_vec, axis=1)
-
-        # Calculate the dot product between V and B for each time step
-        # Equivalent to (vx*bx + vy*by + vz*bz)
-        v_dot_b = np.sum(v_vec * b_vec, axis=1)
-
-        # To avoid division by zero if either vector magnitude is zero
-        epsilon = 1e-15
-
-        # Calculate the sine square of the pitch angle
-        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
-
-        v_perp_sq = v_mag * v_mag * sin_alpha_sq
-
-        epsilon = 1e-15  # Avoid division by zero
-        mu = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)  # [J/nT]
-
-        return mu
 
 
 class FLEKSTP(object):
@@ -360,7 +252,7 @@ class FLEKSTP(object):
         Example:
         >>> tp.save_trajectory_to_csv((3,15))
         """
-        pData = self.read_particle_trajectory(pID).trajectory
+        pData = self.read_particle_trajectory(pID)
         if filename == None:
             filename = "trajectory_" + str(pID[0]) + "_" + str(pID[1]) + ".csv"
         header = "time [s], X [R], Y [R], Z [R], U_x [km/s], U_y [km/s], U_z [km/s]"
@@ -371,10 +263,10 @@ class FLEKSTP(object):
                 ", B_x [nT], B_y [nT], B_z [nT], E_x [uV/m], E_y [uV/m], E_z [uV/m]"
             )
         if shiftTime:
-            pData[:, 0] -= pData[0, 0]
+            pData["time"] -= pData["time"].iloc[0]
             if scaleTime:
-                pData[:, 0] /= pData[-1, 0]
-        np.savetxt(filename, pData, delimiter=",", header=header, comments="")
+                pData["time"] /= pData["time"].iloc[-1]
+        pData.to_csv(filename, header=header.split(","), index=False)
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> list:
         """Reads all raw trajectory data for a particle across multiple files."""
@@ -443,7 +335,7 @@ class FLEKSTP(object):
                             binaryData = f.read(4 * self.nReal)
                             return list(struct.unpack("f" * self.nReal, binaryData))
 
-    def read_particle_trajectory(self, pID: Tuple[int, int]) -> ParticleTrajectory:
+    def read_particle_trajectory(self, pID: Tuple[int, int]) -> DataFrame:
         """
         Return the trajectory of a test particle.
 
@@ -457,12 +349,20 @@ class FLEKSTP(object):
 
         if not dataList:
             # Return an empty trajectory if no data is found
-            return ParticleTrajectory(pID, np.empty((0, self.nReal)))
+            return pd.DataFrame()
 
         nRecord = int(len(dataList) / self.nReal)
         trajectory_data = np.array(dataList).reshape(nRecord, self.nReal)
 
-        return ParticleTrajectory(pID, trajectory_data)
+        # Create a list of column names from the Indices enum
+        column_names = [
+            name.lower() for name, member in Indices.__members__.items()
+        ]
+
+        # Create a DataFrame
+        df = pd.DataFrame(trajectory_data, columns=column_names[: self.nReal])
+        df.attrs["pid"] = pID
+        return df
 
     def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
@@ -512,8 +412,8 @@ class FLEKSTP(object):
 
     def get_pitch_angle(self, pID):
         pt = self.read_particle_trajectory(pID)
-        vx, vy, vz = pt["velocity"]
-        bx, by, bz = pt["b"]
+        vx, vy, vz = pt["vx"], pt["vy"], pt["vz"]
+        bx, by, bz = pt["bx"], pt["by"], pt["bz"]
         # Pitch Angle Calculation
         pitch_angle = self.get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
 
@@ -549,7 +449,30 @@ class FLEKSTP(object):
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
         pt = self.read_particle_trajectory(pID)
-        mu = pt.get_first_adiabatic_invariant(mass=mass)
+        vx, vy, vz = pt["vx"], pt["vy"], pt["vz"]
+        bx, by, bz = pt["bx"], pt["by"], pt["bz"]
+
+        v_vec = np.vstack((vx, vy, vz)).T
+        b_vec = np.vstack((bx, by, bz)).T
+
+        # Calculate magnitudes of velocity and B-field vectors
+        v_mag = np.linalg.norm(v_vec, axis=1)
+        b_mag = np.linalg.norm(b_vec, axis=1)
+
+        # Calculate the dot product between V and B for each time step
+        # Equivalent to (vx*bx + vy*by + vz*bz)
+        v_dot_b = np.sum(v_vec * b_vec, axis=1)
+
+        # To avoid division by zero if either vector magnitude is zero
+        epsilon = 1e-15
+
+        # Calculate the sine square of the pitch angle
+        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
+
+        v_perp_sq = v_mag * v_mag * sin_alpha_sq
+
+        epsilon = 1e-15  # Avoid division by zero
+        mu = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)  # [J/nT]
 
         return mu
 
@@ -578,19 +501,24 @@ class FLEKSTP(object):
             ax[irow, icol].set_xlabel("time")
             ax[irow, icol].set_ylabel(label)
 
-        def plot_vector(idx, labels, irow):
-            for i, (id, label) in enumerate(zip(idx, labels)):
-                plot_data(pt.trajectory[:, id], label, irow, i, **kwargs)
+        def plot_data(dd, label, irow, icol):
+            ax[irow, icol].plot(t, dd, label=label)
+            ax[irow, icol].scatter(
+                t, dd, c=plt.cm.winter(tNorm), edgecolor="none", marker="o", s=10
+            )
+            ax[irow, icol].set_xlabel("time")
+            ax[irow, icol].set_ylabel(label)
+
+        def plot_vector(labels, irow):
+            for i, label in enumerate(labels):
+                plot_data(pt[label], label, irow, i, **kwargs)
 
         pt = self.read_particle_trajectory(pID)
-        t = pt.trajectory[:, Indices.TIME]
-        tNorm = (t - t[0]) / (t[-1] - t[0])
+        t = pt["time"]
+        tNorm = (t - t.iloc[0]) / (t.iloc[-1] - t.iloc[0])
 
         if type == "single":
-            if xaxis == "t":
-                x = t
-            else:
-                x = pt[xaxis]
+            x = t if xaxis == "t" else pt[xaxis]
             y = pt[yaxis]
 
             if ax == None:
@@ -604,7 +532,7 @@ class FLEKSTP(object):
                 f, ax = plt.subplots(
                     2, 1, figsize=(10, 6), constrained_layout=True, sharex=True
                 )
-            y1, y2, y3 = pt["position"]
+            y1, y2, y3 = pt["x"], pt["y"], pt["z"]
 
             ax[0].set_xlabel("t")
             ax[0].set_ylabel("location")
@@ -613,7 +541,7 @@ class FLEKSTP(object):
             ax[0].plot(t, y2, label="y")
             ax[0].plot(t, y3, label="z")
 
-            y1, y2, y3 = pt["velocity"]
+            y1, y2, y3 = pt["vx"], pt["vy"], pt["vz"]
 
             ax[1].plot(t, y1, label="vx")
             ax[1].plot(t, y2, label="vy")
@@ -635,49 +563,46 @@ class FLEKSTP(object):
 
             # Plot trajectories
             for i, a in enumerate(ax[0, :]):
-                x_id = Indices.X if i < 2 else Indices.Y
-                y_id = Indices.Y if i == 0 else Indices.Z
-                a.plot(pt.trajectory[:, x_id], pt.trajectory[:, y_id], "k")
+                x_label = "x" if i < 2 else "y"
+                y_label = "y" if i == 0 else "z"
+                a.plot(pt[x_label], pt[y_label], "k")
                 a.scatter(
-                    pt.trajectory[:, x_id],
-                    pt.trajectory[:, y_id],
+                    pt[x_label],
+                    pt[y_label],
                     c=plt.cm.winter(tNorm),
                     edgecolor="none",
                     marker="o",
                     s=10,
                 )
-                a.set_xlabel("x" if i < 2 else "y")
-                a.set_ylabel("y" if i == 0 else "z")
+                a.set_xlabel(x_label)
+                a.set_ylabel(y_label)
 
-            plot_vector([Indices.X, Indices.Y, Indices.Z], ["x", "y", "z"], 1)
+            plot_vector(["x", "y", "z"], 1)
             plot_vector(
-                [Indices.VX, Indices.VY, Indices.VZ],
-                ["Vx", "Vy", "Vz"],
+                ["vx", "vy", "vz"],
                 2,
             )
 
             if self.nReal > Indices.BX:
                 plot_vector(
-                    [Indices.BX, Indices.BY, Indices.BZ],
-                    ["Bx", "By", "Bz"],
+                    ["bx", "by", "bz"],
                     3,
                 )
 
             if self.nReal > Indices.EX:
                 plot_vector(
-                    [Indices.EX, Indices.EY, Indices.EZ],
-                    ["Ex", "Ey", "Ez"],
+                    ["ex", "ey", "ez"],
                     4,
                 )
         elif type == "full":
-            print(f"Analyzing particle ID: {pt.pid}")
+            print(f"Analyzing particle ID: {pt.attrs['pid']}")
             # TODO Proper unit handling
             # --- Data Extraction ---
-            t = pt.trajectory[:, Indices.TIME]  # [s]
-            x, y, z = pt["position"]  # [RE]
-            vx, vy, vz = pt["velocity"]  # [km/s]
-            bx, by, bz = pt["b"]  # [nT]
-            ex, ey, ez = pt["e"]  # [muV/m]
+            t = pt["time"]  # [s]
+            x, y, z = pt["x"], pt["y"], pt["z"]  # [RE]
+            vx, vy, vz = pt["vx"], pt["vy"], pt["vz"]  # [km/s]
+            bx, by, bz = pt["bx"], pt["by"], pt["bz"]  # [nT]
+            ex, ey, ez = pt["ex"], pt["ey"], pt["ez"]  # [muV/m]
 
             # --- Derived Quantities Calculation ---
 
@@ -685,9 +610,9 @@ class FLEKSTP(object):
             ke = self.get_kinetic_energy(vx, vy, vz) * 1e6  # [eV]
 
             # Vectorize B and V fields for easier calculations
-            v_vec = np.vstack((vx, vy, vz)).T
-            b_vec = np.vstack((bx, by, bz)).T
-            e_vec = np.vstack((ex, ey, ez)).T
+            v_vec = pt[["vx", "vy", "vz"]].values
+            b_vec = pt[["bx", "by", "bz"]].values
+            e_vec = pt[["ex", "ey", "ez"]].values
 
             # Calculate magnitudes of vectors
             v_mag = np.linalg.norm(v_vec, axis=1)  # [km/s]
@@ -798,7 +723,7 @@ class FLEKSTP(object):
                 a.grid(True, which="both", linestyle="--", linewidth=0.5)
                 a.set_xlim(left=t.min(), right=t.max())
 
-            f.suptitle(f"Test Particle ID: {pt.pid}", fontsize=16)
+            f.suptitle(f"Test Particle ID: {pt.attrs['pid']}", fontsize=16)
 
         return ax
 
