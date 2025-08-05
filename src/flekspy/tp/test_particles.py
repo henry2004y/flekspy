@@ -457,29 +457,32 @@ class FLEKSTP(object):
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
         pt = self.read_particle_trajectory(pID)
-        vx, vy, vz = pt["vx"], pt["vy"], pt["vz"]
-        bx, by, bz = pt["bx"], pt["by"], pt["bz"]
-
-        v_vec = np.vstack((vx, vy, vz)).T
-        b_vec = np.vstack((bx, by, bz)).T
-
-        # Calculate magnitudes of velocity and B-field vectors
-        v_mag = np.linalg.norm(v_vec, axis=1)
-        b_mag = np.linalg.norm(b_vec, axis=1)
-
-        # Calculate the dot product between V and B for each time step
-        # Equivalent to (vx*bx + vy*by + vz*bz)
-        v_dot_b = np.sum(v_vec * b_vec, axis=1)
-
-        # To avoid division by zero if either vector magnitude is zero
         epsilon = 1e-15
 
-        # Calculate the sine square of the pitch angle
-        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
+        # Calculate magnitudes and dot product using polars expressions
+        df = pt.with_columns(
+            v_mag=(pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2).sqrt(),
+            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt(),
+            v_dot_b=(
+                pl.col("vx") * pl.col("bx")
+                + pl.col("vy") * pl.col("by")
+                + pl.col("vz") * pl.col("bz")
+            ),
+        )
 
-        v_perp_sq = v_mag * v_mag * sin_alpha_sq
+        # Calculate sine square of the pitch angle
+        df = df.with_columns(
+            sin_alpha_sq=1
+            - (pl.col("v_dot_b") / (pl.col("v_mag") * pl.col("b_mag") + epsilon)) ** 2
+        )
 
-        mu = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)  # [J/nT]
+        # Calculate perpendicular velocity squared
+        df = df.with_columns(
+            v_perp_sq=pl.col("v_mag") * pl.col("v_mag") * pl.col("sin_alpha_sq")
+        )
+
+        # Calculate mu
+        mu = (0.5 * mass * df["v_perp_sq"]) / (df["b_mag"] + epsilon)  # [J/nT]
 
         return mu
 
