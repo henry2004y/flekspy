@@ -203,6 +203,12 @@ class TestParticles:
         with pytest.raises(ValueError):
             self.tp.read_particle_trajectory(pID)
 
+    def test_getitem_with_int(self):
+        pID = self.pIDs[10]
+        traj_by_id = self.tp[pID]
+        traj_by_index = self.tp[10]
+        assert traj_by_id.equals(traj_by_index)
+
 
 def load(files):
     """

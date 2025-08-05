@@ -137,7 +137,16 @@ class FLEKSTP(object):
     def __iter__(self):
         return iter(self.IDs)
 
-    def __getitem__(self, pID):
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            # Treat as an index
+            pID = self.IDs[key]
+        elif isinstance(key, tuple):
+            # Treat as a pID
+            pID = key
+        else:
+            raise TypeError("Particle ID must be a tuple (cpu, id) or an integer index.")
+
         if pID in self._trajectory_cache:
             return self._trajectory_cache[pID]
         else:
