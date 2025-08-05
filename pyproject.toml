@@ -15,6 +15,7 @@ dependencies = [
     "scipy>=1.14.1,<2",
     "requests>=2.32.3,<3",
     "xarray>=2024.6.0",
+    "pandas>=2.3.0,<3",
 ]
 
 [project.optional-dependencies]

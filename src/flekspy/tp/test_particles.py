@@ -9,7 +9,7 @@ import glob
 import struct
 from enum import IntEnum
 from scipy.constants import proton_mass, elementary_charge, mu_0, epsilon_0
-
+import pandas as pd
 
 class Indices(IntEnum):
     """Defines constant indices for test particles."""
@@ -335,34 +335,22 @@ class FLEKSTP(object):
                             binaryData = f.read(4 * self.nReal)
                             return list(struct.unpack("f" * self.nReal, binaryData))
 
-    def read_particle_trajectory(self, pID: Tuple[int, int]) -> DataFrame:
+    def read_particle_trajectory(self, pID: Tuple[int, int]) -> pd.DataFrame:
         """
-        Return the trajectory of a test particle.
-
-        Args:
-            pID: particle ID
-
-        Examples:
-        >>> trajectory = tp.read_particle_trajectory((66,888))
+        Return the trajectory of a test particle as a pandas DataFrame.
         """
         dataList = self._get_particle_raw_data(pID)
 
         if not dataList:
-            # Return an empty trajectory if no data is found
-            return pd.DataFrame()
+            return pd.DataFrame() # Return an empty DataFrame if no data
 
         nRecord = int(len(dataList) / self.nReal)
         trajectory_data = np.array(dataList).reshape(nRecord, self.nReal)
 
-        # Create a list of column names from the Indices enum
-        column_names = [
-            name.lower() for name, member in Indices.__members__.items()
-        ]
+        # Use the Indices enum to create meaningful column names
+        column_names = [i.name.lower() for i in Indices]
 
-        # Create a DataFrame
-        df = pd.DataFrame(trajectory_data, columns=column_names[: self.nReal])
-        df.attrs["pid"] = pID
-        return df
+        return pd.DataFrame(trajectory_data, columns=column_names)
 
     def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
