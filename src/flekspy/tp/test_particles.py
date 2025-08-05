@@ -726,7 +726,7 @@ class FLEKSTP(object):
                 a.grid(True, which="both", linestyle="--", linewidth=0.5)
                 a.set_xlim(left=t.min(), right=t.max())
 
-            f.suptitle(f"Test Particle ID: {pt.attrs['pid']}", fontsize=16)
+            f.suptitle(f"Test Particle ID: {pID}", fontsize=16)
 
         return ax
 
