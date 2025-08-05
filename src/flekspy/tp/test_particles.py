@@ -4,12 +4,10 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
 import glob
 import struct
 from enum import IntEnum
 from scipy.constants import proton_mass, elementary_charge, mu_0, epsilon_0
-import pandas as pd
 
 
 class Indices(IntEnum):
@@ -267,7 +265,7 @@ class FLEKSTP(object):
             pData["time"] -= pData["time"].iloc[0]
             if scaleTime:
                 pData["time"] /= pData["time"].iloc[-1]
-        pData.to_csv(filename, header=header.split(","), index=False)
+        pData.to_csv(filename, header=header.split(', '), index=False)
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> list:
         """Reads all raw trajectory data for a particle across multiple files."""
@@ -464,7 +462,6 @@ class FLEKSTP(object):
 
         v_perp_sq = v_mag * v_mag * sin_alpha_sq
 
-        epsilon = 1e-15  # Avoid division by zero
         mu = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)  # [J/nT]
 
         return mu
@@ -485,14 +482,6 @@ class FLEKSTP(object):
         Example:
         >>> tp.plot_trajectory((3,15))
         """
-
-        def plot_data(dd, label, irow, icol):
-            ax[irow, icol].plot(t, dd, label=label)
-            ax[irow, icol].scatter(
-                t, dd, c=plt.cm.winter(tNorm), edgecolor="none", marker="o", s=10
-            )
-            ax[irow, icol].set_xlabel("time")
-            ax[irow, icol].set_ylabel(label)
 
         def plot_data(dd, label, irow, icol):
             ax[irow, icol].plot(t, dd, label=label)
