@@ -103,9 +103,7 @@ class FLEKSTP(object):
         self.plistfiles = self.plistfiles[iListStart:iListEnd]
         self.pfiles = self.pfiles[iListStart:iListEnd]
 
-        self.particle_locations: Dict[
-            Tuple[int, int], List[Tuple[str, int]]
-        ] = {}
+        self.particle_locations: Dict[Tuple[int, int], List[Tuple[str, int]]] = {}
         for plist_filename, p_filename in zip(self.plistfiles, self.pfiles):
             plist = self.read_particle_list(plist_filename)
             for pID, ploc in plist.items():
