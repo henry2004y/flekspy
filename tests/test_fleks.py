@@ -185,6 +185,24 @@ class TestParticles:
         ax = tp.plot_trajectory(pIDs[0])
         assert ax[1][0].get_xlim()[1] == 2.140599811077118
 
+    def test_read_particle_trajectory_key_error(self):
+        with pytest.raises(KeyError):
+            self.tp.read_particle_trajectory((-1, -1))
+
+    def test_read_particle_trajectory_value_error(self, monkeypatch):
+        import numpy as np
+
+        pID = self.pIDs[0]
+        # Ensure the cache is clean for this test
+        if pID in self.tp._trajectory_cache:
+            del self.tp._trajectory_cache[pID]
+
+        monkeypatch.setattr(
+            self.tp, "_get_particle_raw_data", lambda pID: np.array([], dtype=np.float32)
+        )
+        with pytest.raises(ValueError):
+            self.tp.read_particle_trajectory(pID)
+
 
 def load(files):
     """

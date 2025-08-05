@@ -75,11 +75,11 @@ class FLEKSTP(object):
             raise FileNotFoundError(f"Header file not found in {dirs[0]}")
 
         self.iSpecies = iSpecies
-        self.plistfiles = list()
+        plistfiles = list()
         self.pfiles = list()
 
         for outputDir in dirs:
-            self.plistfiles = self.plistfiles + glob.glob(
+            plistfiles = plistfiles + glob.glob(
                 f"{outputDir}/FLEKS{iDomain}_particle_list_species_{iSpecies}_*"
             )
 
@@ -87,7 +87,7 @@ class FLEKSTP(object):
                 f"{outputDir}/FLEKS{iDomain}_particle_species_{iSpecies}_*"
             )
 
-        self.plistfiles.sort()
+        plistfiles.sort()
         self.pfiles.sort()
 
         self.indextotime = []
@@ -99,14 +99,14 @@ class FLEKSTP(object):
                 self.indextotime.append(record[Indices.TIME])
 
         if iListEnd == -1:
-            iListEnd = len(self.plistfiles)
-        self.plistfiles = self.plistfiles[iListStart:iListEnd]
+            iListEnd = len(plistfiles)
+        plistfiles = plistfiles[iListStart:iListEnd]
         self.pfiles = self.pfiles[iListStart:iListEnd]
 
         self.particle_locations: Dict[
             Tuple[int, int], List[Tuple[str, int]]
         ] = {}
-        for plist_filename, p_filename in zip(self.plistfiles, self.pfiles):
+        for plist_filename, p_filename in zip(plistfiles, self.pfiles):
             plist = self.read_particle_list(plist_filename)
             for pID, ploc in plist.items():
                 if pID not in self.particle_locations:
@@ -389,10 +389,13 @@ class FLEKSTP(object):
         """
         Return the trajectory of a test particle as a polars DataFrame.
         """
+        if pID not in self.particle_locations:
+            raise KeyError(f"Particle ID {pID} not found.")
+
         data_array = self._get_particle_raw_data(pID)
 
         if data_array.size == 0:
-            return pl.DataFrame()  # Return an empty DataFrame if no data
+            raise ValueError(f"No trajectory data found for particle ID {pID}.")
 
         nRecord = data_array.size // self.nReal
         trajectory_data = data_array.reshape(nRecord, self.nReal)
@@ -545,9 +548,10 @@ class FLEKSTP(object):
             for i, label in enumerate(labels):
                 plot_data(pt[label], label, irow, i, **kwargs)
 
-        pt = self.read_particle_trajectory(pID)
-        if pt.is_empty():
-            print(f"No data for particle ID: {pID}")
+        try:
+            pt = self.read_particle_trajectory(pID)
+        except (KeyError, ValueError) as e:
+            print(f"Error plotting trajectory for {pID}: {e}")
             return
 
         t = pt["time"]
