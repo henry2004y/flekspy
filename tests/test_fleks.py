@@ -1,5 +1,6 @@
 import pytest
 import os
+import itertools
 import numpy as np
 import xarray as xr
 
@@ -205,3 +206,24 @@ def test_load(benchmark):
     result = benchmark(load, files)
 
     assert isinstance(result, xr.Dataset)
+
+
+def load_all_trajectories(tp, pIDs):
+    """
+    Load all particle trajectories.
+    """
+    for pID in itertools.islice(pIDs, 10):
+        tp.read_particle_trajectory(pID)
+
+
+def test_load_all_trajectories(benchmark):
+    """
+    Benchmark loading all particle trajectories.
+    """
+    from flekspy.tp import FLEKSTP
+
+    dirs = (os.path.join(filedir, "data", "test_particles"),)
+    tp = FLEKSTP(dirs, iSpecies=1)
+    pIDs = tp.getIDs()
+
+    benchmark(load_all_trajectories, tp, pIDs)
