@@ -35,15 +35,22 @@ class FLEKSTP(object):
     a CPU index, a particle index on each CPU, and a location index.
     By default, 7 real numbers saved for each step: time + position + velocity.
 
+    This class is a lazy, iterable container. It avoids loading all data into memory
+    at once, making it efficient for large datasets. You can access particle
+    trajectories using standard container operations.
+
     Args:
         dirs (str): the path to the test particle dataset.
 
     Examples:
     >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
-    >>> pIDs = list(tp.IDs())
+    >>> len(tp)
+    10240
+    >>> pIDs = list(tp)
+    >>> trajectory = tp[pIDs[0]]
     >>> tp.plot_trajectory(pIDs[3])
     >>> tp.save_trajectory_to_csv(pIDs[5])
-    >>> ids, pData = tp.read_particles_at_time(6500.8, doSave=True)
+    >>> ids, pData = tp.read_particles_at_time(0.0, doSave=False)
     >>> f = tp.plot_location(pData)
     """
 
@@ -95,13 +102,17 @@ class FLEKSTP(object):
         self.plistfiles = self.plistfiles[iListStart:iListEnd]
         self.pfiles = self.pfiles[iListStart:iListEnd]
 
-        self.plists: List[Dict[Tuple[int, int], int]] = []
-        for filename in self.plistfiles:
-            self.plists.append(self.read_particle_list(filename))
+        self.particle_locations: Dict[
+            Tuple[int, int], List[Tuple[str, int]]
+        ] = {}
+        for plist_filename, p_filename in zip(self.plistfiles, self.pfiles):
+            plist = self.read_particle_list(plist_filename)
+            for pID, ploc in plist.items():
+                if pID not in self.particle_locations:
+                    self.particle_locations[pID] = []
+                self.particle_locations[pID].append((p_filename, ploc))
 
-        self.IDs = set()
-        for plist in self.plists:
-            self.IDs.update(plist.keys())
+        self.IDs = self.particle_locations.keys()
 
         self.filetime = []
         for filename in self.pfiles:
@@ -118,6 +129,15 @@ class FLEKSTP(object):
             f"Last  time tag      : {self.filetime[-1]}\n"
         )
         return str
+
+    def __len__(self):
+        return len(self.IDs)
+
+    def __iter__(self):
+        return iter(self.IDs)
+
+    def __getitem__(self, pID):
+        return self.read_particle_trajectory(pID)
 
     def getIDs(self):
         return list(sorted(self.IDs))
@@ -289,21 +309,22 @@ class FLEKSTP(object):
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
+        if pID not in self.particle_locations:
+            return np.array([], dtype=np.float32)
+
         data_chunks = []
         record_format = "iiif"
         record_size = struct.calcsize(record_format)
         record_struct = struct.Struct(record_format)
 
-        for filename, plist in zip(self.pfiles, self.plists):
-            if pID in plist:
-                ploc = plist[pID]
-                with open(filename, "rb") as f:
-                    f.seek(ploc)
-                    dataChunk = f.read(record_size)
-                    (_cpu, _idtmp, nRecord, _weight) = record_struct.unpack(dataChunk)
-                    if nRecord > 0:
-                        binaryData = f.read(4 * self.nReal * nRecord)
-                        data_chunks.append(np.frombuffer(binaryData, dtype=np.float32))
+        for filename, ploc in self.particle_locations[pID]:
+            with open(filename, "rb") as f:
+                f.seek(ploc)
+                dataChunk = f.read(record_size)
+                (_cpu, _idtmp, nRecord, _weight) = record_struct.unpack(dataChunk)
+                if nRecord > 0:
+                    binaryData = f.read(4 * self.nReal * nRecord)
+                    data_chunks.append(np.frombuffer(binaryData, dtype=np.float32))
         if not data_chunks:
             return np.array([], dtype=np.float32)
         return np.concatenate(data_chunks)
@@ -319,41 +340,44 @@ class FLEKSTP(object):
                    0: first record.
                    -1: last record (default).
         """
+        if pID not in self.particle_locations:
+            return None
+
+        locations = self.particle_locations[pID]
+        if not locations:
+            return None
+
         record_format = "iiif"
         record_size = struct.calcsize(record_format)
         record_struct = struct.Struct(record_format)
 
         # Optimized path for the first record (index=0)
         if index == 0:
-            for filename, plist in zip(self.pfiles, self.plists):
-                if pID in plist:
-                    ploc = plist[pID]
-                    with open(filename, "rb") as f:
-                        f.seek(ploc)
-                        dataChunk = f.read(record_size)
-                        (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
-                        if nRecord > 0:
-                            # Found the first chunk with records, read the first one and return
-                            binaryData = f.read(4 * self.nReal)
-                            return list(struct.unpack("f" * self.nReal, binaryData))
+            filename, ploc = locations[0]
+            with open(filename, "rb") as f:
+                f.seek(ploc)
+                dataChunk = f.read(record_size)
+                (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
+                if nRecord > 0:
+                    # Found the first chunk with records, read the first one and return
+                    binaryData = f.read(4 * self.nReal)
+                    return list(struct.unpack("f" * self.nReal, binaryData))
 
         # Optimized path for the last record (index=-1)
         if index == -1:
-            # Iterate backwards to find the last file with data for this particle
-            for filename, plist in zip(reversed(self.pfiles), reversed(self.plists)):
-                if pID in plist:
-                    ploc = plist[pID]
-                    with open(filename, "rb") as f:
-                        f.seek(ploc)
-                        dataChunk = f.read(record_size)
-                        (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
-                        if nRecord > 0:
-                            # This is the last chunk of data for this particle.
-                            # Seek to the last record within this chunk.
-                            offset = ploc + record_size + (nRecord - 1) * 4 * self.nReal
-                            f.seek(offset)
-                            binaryData = f.read(4 * self.nReal)
-                            return list(struct.unpack("f" * self.nReal, binaryData))
+            filename, ploc = locations[-1]
+            with open(filename, "rb") as f:
+                f.seek(ploc)
+                dataChunk = f.read(record_size)
+                (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
+                if nRecord > 0:
+                    # This is the last chunk of data for this particle.
+                    # Seek to the last record within this chunk.
+                    offset = ploc + record_size + (nRecord - 1) * 4 * self.nReal
+                    f.seek(offset)
+                    binaryData = f.read(4 * self.nReal)
+                    return list(struct.unpack("f" * self.nReal, binaryData))
+        return None  # Only index 0 and -1 are supported
 
     def read_particle_trajectory(self, pID: Tuple[int, int]) -> pl.DataFrame:
         """
