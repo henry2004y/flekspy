@@ -11,6 +11,7 @@ from enum import IntEnum
 from scipy.constants import proton_mass, elementary_charge, mu_0, epsilon_0
 import pandas as pd
 
+
 class Indices(IntEnum):
     """Defines constant indices for test particles."""
 
@@ -289,7 +290,9 @@ class FLEKSTP(object):
                         )
         return dataList
 
-    def _read_particle_record(self, pID: Tuple[int, int], index: int = -1) -> Union[list, None]:
+    def _read_particle_record(
+        self, pID: Tuple[int, int], index: int = -1
+    ) -> Union[list, None]:
         """
         Return a specific record of a test particle given its ID.
 
@@ -342,7 +345,7 @@ class FLEKSTP(object):
         dataList = self._get_particle_raw_data(pID)
 
         if not dataList:
-            return pd.DataFrame() # Return an empty DataFrame if no data
+            return pd.DataFrame()  # Return an empty DataFrame if no data
 
         nRecord = int(len(dataList) / self.nReal)
         trajectory_data = np.array(dataList).reshape(nRecord, self.nReal)
