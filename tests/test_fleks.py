@@ -195,7 +195,7 @@ def load(files):
     return ds
 
 
-def test_load(benchmark):
+def test_load_idl(benchmark):
     filenames = (
         "1d__raw_2_t25.60000_n00000258.out",
         "z=0_fluid_region0_0_t00001640_n00010142.out",
@@ -207,7 +207,7 @@ def test_load(benchmark):
     assert isinstance(result, xr.Dataset)
 
 
-def load_all_trajectories(tp, pIDs):
+def load_test_particle_trajectories(tp, pIDs):
     """
     Load all particle trajectories.
     """
@@ -215,7 +215,7 @@ def load_all_trajectories(tp, pIDs):
         tp.read_particle_trajectory(pID)
 
 
-def test_load_all_trajectories(benchmark):
+def test_load_tp(benchmark):
     """
     Benchmark loading all particle trajectories.
     """
@@ -225,4 +225,4 @@ def test_load_all_trajectories(benchmark):
     tp = FLEKSTP(dirs, iSpecies=1)
     pIDs = tp.getIDs()
 
-    benchmark(load_all_trajectories, tp, pIDs)
+    benchmark(load_test_particle_trajectories, tp, pIDs)
