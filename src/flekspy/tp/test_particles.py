@@ -367,30 +367,30 @@ class FLEKSTP(object):
 
         # Optimized path for the first record (index=0)
         if index == 0:
-            filename, ploc = locations[0]
-            with open(filename, "rb") as f:
-                f.seek(ploc)
-                dataChunk = f.read(record_size)
-                (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
-                if nRecord > 0:
-                    # Found the first chunk with records, read the first one and return
-                    binaryData = f.read(4 * self.nReal)
-                    return list(struct.unpack("f" * self.nReal, binaryData))
+            for filename, ploc in locations:
+                with open(filename, "rb") as f:
+                    f.seek(ploc)
+                    dataChunk = f.read(record_size)
+                    (_cpu, _idtmp, nRecord, _weight) = record_struct.unpack(dataChunk)
+                    if nRecord > 0:
+                        # Found the first chunk with records, read the first one and return
+                        binaryData = f.read(4 * self.nReal)
+                        return list(struct.unpack("f" * self.nReal, binaryData))
 
         # Optimized path for the last record (index=-1)
         if index == -1:
-            filename, ploc = locations[-1]
-            with open(filename, "rb") as f:
-                f.seek(ploc)
-                dataChunk = f.read(record_size)
-                (cpu, idtmp, nRecord, weight) = record_struct.unpack(dataChunk)
-                if nRecord > 0:
-                    # This is the last chunk of data for this particle.
-                    # Seek to the last record within this chunk.
-                    offset = ploc + record_size + (nRecord - 1) * 4 * self.nReal
-                    f.seek(offset)
-                    binaryData = f.read(4 * self.nReal)
-                    return list(struct.unpack("f" * self.nReal, binaryData))
+            for filename, ploc in reversed(locations):
+                with open(filename, "rb") as f:
+                    f.seek(ploc)
+                    dataChunk = f.read(record_size)
+                    (_cpu, _idtmp, nRecord, _weight) = record_struct.unpack(dataChunk)
+                    if nRecord > 0:
+                        # This is the last chunk of data for this particle.
+                        # Seek to the last record within this chunk.
+                        offset = ploc + record_size + (nRecord - 1) * 4 * self.nReal
+                        f.seek(offset)
+                        binaryData = f.read(4 * self.nReal)
+                        return list(struct.unpack("f" * self.nReal, binaryData))
         return None  # Only index 0 and -1 are supported
 
     def read_particle_trajectory(self, pID: Tuple[int, int]) -> pl.DataFrame:
