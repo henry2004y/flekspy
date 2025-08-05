@@ -113,7 +113,7 @@ class FLEKSTP(object):
                     self.particle_locations[pID] = []
                 self.particle_locations[pID].append((p_filename, ploc))
 
-        self.IDs = self.particle_locations.keys()
+        self.IDs = sorted(list(self.particle_locations.keys()))
 
         self.filetime = []
         for filename in self.pfiles:
@@ -137,7 +137,16 @@ class FLEKSTP(object):
     def __iter__(self):
         return iter(self.IDs)
 
-    def __getitem__(self, pID):
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            # Treat as an index
+            pID = self.IDs[key]
+        elif isinstance(key, tuple):
+            # Treat as a pID
+            pID = key
+        else:
+            raise TypeError("Particle ID must be a tuple (cpu, id) or an integer index.")
+
         if pID in self._trajectory_cache:
             return self._trajectory_cache[pID]
         else:
@@ -146,7 +155,7 @@ class FLEKSTP(object):
             return trajectory
 
     def getIDs(self):
-        return list(sorted(self.IDs))
+        return self.IDs
 
     def read_particle_list(self, filename: str) -> Dict[Tuple[int, int], int]:
         """
