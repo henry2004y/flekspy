@@ -821,34 +821,28 @@ def interpolate_at_times(
     # 1. Identify all numeric columns to be interpolated
     cols_to_interpolate = df.select(pl.col(pl.NUMERIC_DTYPES).exclude(time_col)).columns
 
-    # 2. Create a DataFrame of "null rows" for each time point we want to find
+    # 2. Get the dtype of the time column from the input DataFrame
+    time_col_dtype = df[time_col].dtype
+
+    # 3. Create a DataFrame of "null rows" for each time point
     null_rows_df = pl.DataFrame(
         {
             time_col: times_to_interpolate,
             **{col: [None] * len(times_to_interpolate) for col in cols_to_interpolate},
         }
-    ).with_columns(
-        # Explicitly cast the time column to Float32 to match the desired output type.
-        pl.col(time_col).cast(pl.Float32)
+    ).with_columns(pl.col(time_col).cast(time_col_dtype))
+
+    # 4. Combine and sort.
+    df_all = pl.concat([df, null_rows_df]).sort(time_col)
+
+    # 5. Create a Datetime Series to use for interpolation.
+    time_dt_series = pl.from_epoch(
+        (df_all[time_col] * 1_000_000).cast(pl.Int64), time_unit="us"
     )
 
-    # 3. Perform the interpolation
-    interpolated_df = (
-        pl.concat([df, null_rows_df], how="vertical_relaxed")
-        .sort(time_col)
-        .with_columns(
-            # Create a temporary Datetime column required for interpolate_by
-            time_dt=pl.from_epoch(
-                (pl.col(time_col) * 1_000_000).cast(pl.Int64), time_unit="us"
-            )
-        )
-        .with_columns(
-            # Interpolate all specified numeric columns by the new Datetime column
-            pl.col(cols_to_interpolate).interpolate_by("time_dt")
-        )
-        .filter(
-            pl.col(time_col).is_in(times_to_interpolate)
-        )  # Filter for our target rows
-        .drop("time_dt")  # Remove the temporary datetime column
-    )
+    # 6. Perform interpolation using the Series, then filter for the target rows.
+    interpolated_df = df_all.with_columns(
+        pl.col(cols_to_interpolate).interpolate_by(by=time_dt_series)
+    ).filter(pl.col(time_col).is_in(times_to_interpolate))
+
     return interpolated_df
