@@ -802,3 +802,53 @@ class FLEKSTP(object):
         ax[skeys[3]].set_zlabel("z")
 
         return ax
+
+
+def interpolate_at_times(
+    df: pl.DataFrame, time_col: str, times_to_interpolate: list[float]
+) -> pl.DataFrame:
+    """
+    Interpolates multiple numeric columns of a DataFrame at specified time points.
+
+    Args:
+        df: The input Polars DataFrame. Must contain the time_col.
+        time_col: The name of the column that serves as the interpolation index.
+        times_to_interpolate: A list of time points (floats or ints) at which to interpolate.
+
+    Returns:
+        A new DataFrame containing the interpolated rows for each specified time.
+    """
+    # 1. Identify all numeric columns to be interpolated
+    cols_to_interpolate = df.select(pl.col(pl.NUMERIC_DTYPES).exclude(time_col)).columns
+
+    # 2. Create a DataFrame of "null rows" for each time point we want to find
+    null_rows_df = pl.DataFrame(
+        {
+            time_col: times_to_interpolate,
+            **{col: [None] * len(times_to_interpolate) for col in cols_to_interpolate},
+        }
+    ).with_columns(
+        # Explicitly cast the time column to Float32 to match the desired output type.
+        pl.col(time_col).cast(pl.Float32)
+    )
+
+    # 3. Perform the interpolation
+    interpolated_df = (
+        pl.concat([df, null_rows_df], how="vertical_relaxed")
+        .sort(time_col)
+        .with_columns(
+            # Create a temporary Datetime column required for interpolate_by
+            time_dt=pl.from_epoch(
+                (pl.col(time_col) * 1_000_000).cast(pl.Int64), time_unit="us"
+            )
+        )
+        .with_columns(
+            # Interpolate all specified numeric columns by the new Datetime column
+            pl.col(cols_to_interpolate).interpolate_by("time_dt")
+        )
+        .filter(
+            pl.col(time_col).is_in(times_to_interpolate)
+        )  # Filter for our target rows
+        .drop("time_dt")  # Remove the temporary datetime column
+    )
+    return interpolated_df
