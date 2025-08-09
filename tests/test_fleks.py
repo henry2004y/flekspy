@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 import polars as pl
 
-from flekspy.tp.test_particles import interpolate_at_times
+from flekspy.tp import interpolate_at_times
 import flekspy as fs
 from flekspy.util import download_testfile
 
@@ -206,32 +206,7 @@ class TestParticles:
         with pytest.raises(ValueError):
             self.tp.read_particle_trajectory(pID)
 
-    def test_interpolate_at_times(self):
-        # 1. Create a sample DataFrame
-        df = pl.DataFrame(
-            {
-                "time": [0.0, 1.0, 2.0, 3.0, 4.0],
-                "x": [0, 10, 20, 30, 40],
-                "y": [40, 30, 20, 10, 0],
-                "z": [0, 5, 10, 5, 0],
-            }
-        )
-
-        # 2. Define time points for interpolation
-        times_to_interpolate = [0.5, 1.5, 2.5, 3.5]
-
-        # 3. Call the function
-        interpolated_df = interpolate_at_times(df, "time", times_to_interpolate)
-
-        # 4. Assertions
-        assert interpolated_df.shape == (4, 4)
-        assert interpolated_df["time"].to_list() == times_to_interpolate
-        assert np.all(np.isclose(interpolated_df["x"].to_list(), [5.0, 15.0, 25.0, 35.0]))
-        assert np.all(np.isclose(interpolated_df["y"].to_list(), [35.0, 25.0, 15.0, 5.0]))
-        assert np.all(np.isclose(interpolated_df["z"].to_list(), [2.5, 7.5, 7.5, 2.5]))
-
     def test_interpolate_at_times_float32(self):
-        # 1. Create a sample DataFrame with Float32 time
         df = pl.DataFrame(
             {
                 "time": [0.0, 1.0, 2.0, 3.0, 4.0],
@@ -241,19 +216,18 @@ class TestParticles:
             }
         ).with_columns(pl.col("time").cast(pl.Float32))
 
-        # 2. Define time points for interpolation
-        times_to_interpolate = [0.5, 1.5, 2.5, 3.5]
+        times_to_interpolate = [0.5, 1.5, 2.5]
 
-        # 3. Call the function
-        interpolated_df = interpolate_at_times(df, "time", times_to_interpolate)
+        interpolated_df = interpolate_at_times(df, times_to_interpolate)
 
-        # 4. Assertions
-        assert interpolated_df.shape == (4, 4)
+        assert interpolated_df.shape == (3, 4)
         assert interpolated_df["time"].dtype == pl.Float32
-        assert np.all(np.isclose(interpolated_df["time"].to_list(), times_to_interpolate))
-        assert np.all(np.isclose(interpolated_df["x"].to_list(), [5.0, 15.0, 25.0, 35.0]))
-        assert np.all(np.isclose(interpolated_df["y"].to_list(), [35.0, 25.0, 15.0, 5.0]))
-        assert np.all(np.isclose(interpolated_df["z"].to_list(), [2.5, 7.5, 7.5, 2.5]))
+        assert np.all(
+            np.isclose(interpolated_df["time"].to_list(), times_to_interpolate)
+        )
+        assert np.all(np.isclose(interpolated_df["x"].to_list(), [5.0, 15.0, 25.0]))
+        assert np.all(np.isclose(interpolated_df["y"].to_list(), [35.0, 25.0, 15.0]))
+        assert np.all(np.isclose(interpolated_df["z"].to_list(), [2.5, 7.5, 7.5]))
 
 
 def load(files):

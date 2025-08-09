@@ -805,44 +805,39 @@ class FLEKSTP(object):
 
 
 def interpolate_at_times(
-    df: pl.DataFrame, time_col: str, times_to_interpolate: list[float]
+    df: pl.DataFrame, times_to_interpolate: list[float]
 ) -> pl.DataFrame:
     """
     Interpolates multiple numeric columns of a DataFrame at specified time points.
 
     Args:
-        df: The input Polars DataFrame. Must contain the time_col.
-        time_col: The name of the column that serves as the interpolation index.
+        df: The input Polars DataFrame.
         times_to_interpolate: A list of time points (floats or ints) at which to interpolate.
 
     Returns:
         A new DataFrame containing the interpolated rows for each specified time.
     """
-    # 1. Identify all numeric columns to be interpolated
-    cols_to_interpolate = df.select(pl.col(pl.NUMERIC_DTYPES).exclude(time_col)).columns
+    # Identify all numeric columns to be interpolated
+    cols_to_interpolate = df.select(pl.col(pl.NUMERIC_DTYPES).exclude("time")).columns
 
-    # 2. Get the dtype of the time column from the input DataFrame
-    time_col_dtype = df[time_col].dtype
+    time_col_dtype = df["time"].dtype
 
-    # 3. Create a DataFrame of "null rows" for each time point
     null_rows_df = pl.DataFrame(
         {
-            time_col: times_to_interpolate,
+            "time": times_to_interpolate,
             **{col: [None] * len(times_to_interpolate) for col in cols_to_interpolate},
         }
-    ).with_columns(pl.col(time_col).cast(time_col_dtype))
+    ).with_columns(pl.col("time").cast(time_col_dtype))
 
-    # 4. Combine and sort.
-    df_all = pl.concat([df, null_rows_df]).sort(time_col)
+    df_all = pl.concat([df, null_rows_df]).sort("time")
 
-    # 5. Create a Datetime Series to use for interpolation.
+    # Create a Datetime Series to use for interpolation.
     time_dt_series = pl.from_epoch(
-        (df_all[time_col] * 1_000_000).cast(pl.Int64), time_unit="us"
+        (df_all["time"] * 1_000_000).cast(pl.Int64), time_unit="us"
     )
 
-    # 6. Perform interpolation using the Series, then filter for the target rows.
     interpolated_df = df_all.with_columns(
         pl.col(cols_to_interpolate).interpolate_by(by=time_dt_series)
-    ).filter(pl.col(time_col).is_in(times_to_interpolate))
+    ).filter(pl.col("time").is_in(times_to_interpolate))
 
     return interpolated_df
