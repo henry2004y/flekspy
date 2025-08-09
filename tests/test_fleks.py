@@ -51,7 +51,6 @@ class TestIDL:
     def test_extract(self):
         ds = fs.load(self.files[1])
         d = ds.interp(x=-28000.0, y=0.0)
-        # The number of variables is 28.
         assert len(d) == 28
 
     def test_slice(self):
