@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>flekspy.idl.idl &mdash; flekspy  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="flekspy.plot" href="../../plot/index.html" />
+    <link rel="prev" title="flekspy.idl" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            flekspy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial.html">FLEKS Python Visualization Toolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demo_amrex_output.html">Analyzing AMReX Outputs From FLEKS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">flekspy</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../flekspy/index.html">flekspy.flekspy</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">flekspy.idl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../plot/index.html">flekspy.plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tp/index.html">flekspy.tp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../util/index.html">flekspy.util</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../yt/index.html">flekspy.yt</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#classes">Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../BATSRUSReader/index.html">BATSRUSReader</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">flekspy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">flekspy</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">flekspy.idl</a></li>
+      <li class="breadcrumb-item active">flekspy.idl.idl</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/flekspy/idl/idl/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-flekspy.idl.idl">
+<span id="flekspy-idl-idl"></span><h1>flekspy.idl.idl<a class="headerlink" href="#module-flekspy.idl.idl" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.idl.idl.IDLAccessor" title="flekspy.idl.idl.IDLAccessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IDLAccessor</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_and_process_data" title="flekspy.idl.idl._read_and_process_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_and_process_data</span></code></a>(filename)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_ascii" title="flekspy.idl.idl._read_ascii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_ascii</span></code></a>(filename, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_ascii_instance" title="flekspy.idl.idl._read_ascii_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_ascii_instance</span></code></a>(infile, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_binary" title="flekspy.idl.idl._read_binary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_binary</span></code></a>(filename, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_binary_slow" title="flekspy.idl.idl._read_binary_slow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_binary_slow</span></code></a>(filename, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.idl.idl._get_file_head" title="flekspy.idl.idl._get_file_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_file_head</span></code></a>(infile, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_binary_instance" title="flekspy.idl.idl._read_binary_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_binary_instance</span></code></a>(infile, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_parameters" title="flekspy.idl.idl._read_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_parameters</span></code></a>(infile, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.idl.idl._read_variable_names" title="flekspy.idl.idl._read_variable_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_read_variable_names</span></code></a>(infile, attrs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.idl.idl._post_process_param" title="flekspy.idl.idl._post_process_param"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_post_process_param</span></code></a>(ds)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.idl.idl.read_idl" title="flekspy.idl.idl.read_idl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_idl</span></code></a>(filename)</p></td>
+<td><p>Read IDL format file.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_and_process_data">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_and_process_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_and_process_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_and_process_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_ascii">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_ascii" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_ascii_instance">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_ascii_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_ascii_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_ascii_instance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_binary">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_binary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_binary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_binary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_binary_slow">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_binary_slow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_binary_slow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_binary_slow" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._get_file_head">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_get_file_head</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_get_file_head"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._get_file_head" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_binary_instance">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_binary_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_binary_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_binary_instance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_parameters">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._read_variable_names">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_read_variable_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_read_variable_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._read_variable_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl._post_process_param">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">_post_process_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#_post_process_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl._post_process_param" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flekspy.idl.idl.IDLAccessor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">IDLAccessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xarray_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#IDLAccessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl.IDLAccessor" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.idl.idl.IDLAccessor._obj">
+<span class="sig-name descname"><span class="pre">_obj</span></span><a class="headerlink" href="#flekspy.idl.idl.IDLAccessor._obj" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.idl.idl.IDLAccessor.get_slice">
+<span class="sig-name descname"><span class="pre">get_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_loc</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.Dataset</span></span></span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#IDLAccessor.get_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl.IDLAccessor.get_slice" title="Link to this definition"></a></dt>
+<dd><p>Get a 2D slice from the 3D IDL data.
+:param norm: str</p>
+<blockquote>
+<div><p>The normal direction of the slice from “x”, “y” or “z”</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cur_loc</strong> – float
+The position of slicing.</p>
+</dd>
+</dl>
+<p>Return: xarray.Dataset</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.idl.idl.read_idl">
+<span class="sig-prename descclassname"><span class="pre">flekspy.idl.idl.</span></span><span class="sig-name descname"><span class="pre">read_idl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/flekspy/idl/idl.html#read_idl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.idl.idl.read_idl" title="Link to this definition"></a></dt>
+<dd><p>Read IDL format file.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="flekspy.idl" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../plot/index.html" class="btn btn-neutral float-right" title="flekspy.plot" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yuxi Chen, Hongyang Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

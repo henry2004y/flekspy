@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>flekspy.tp &mdash; flekspy  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="flekspy.tp.test_particles" href="test_particles/index.html" />
+    <link rel="prev" title="flekspy.plot.streamplot" href="../plot/streamplot/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            flekspy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">FLEKS Python Visualization Toolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_amrex_output.html">Analyzing AMReX Outputs From FLEKS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">flekspy</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../flekspy/index.html">flekspy.flekspy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../idl/index.html">flekspy.idl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../plot/index.html">flekspy.plot</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">flekspy.tp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../util/index.html">flekspy.util</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../yt/index.html">flekspy.yt</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../BATSRUSReader/index.html">BATSRUSReader</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">flekspy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">flekspy</a></li>
+      <li class="breadcrumb-item active">flekspy.tp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/flekspy/tp/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-flekspy.tp">
+<span id="flekspy-tp"></span><h1>flekspy.tp<a class="headerlink" href="#module-flekspy.tp" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="test_particles/index.html">flekspy.tp.test_particles</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.tp.FLEKSTP" title="flekspy.tp.FLEKSTP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FLEKSTP</span></code></a></p></td>
+<td><p>A class that is used to read and plot test particles. Each particle ID consists of</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.tp.Indices" title="flekspy.tp.Indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Indices</span></code></a></p></td>
+<td><p>Defines constant indices for test particles.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.tp.interpolate_at_times" title="flekspy.tp.interpolate_at_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_at_times</span></code></a>(→ polars.DataFrame)</p></td>
+<td><p>Interpolates multiple numeric columns of a DataFrame at specified time points.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flekspy.tp.</span></span><span class="sig-name descname"><span class="pre">FLEKSTP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iDomain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iSpecies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iListStart</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iListEnd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readAllFiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class that is used to read and plot test particles. Each particle ID consists of
+a CPU index, a particle index on each CPU, and a location index.
+By default, 7 real numbers saved for each step: time + position + velocity.
+Additional field information are also stored if available.</p>
+<p>This class is a lazy, iterable container. It avoids loading all data into memory
+at once, making it efficient for large datasets. You can access particle
+trajectories using standard container operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dirs</strong> (<em>str</em>) – the path to the test particle dataset.</p>
+</dd>
+</dl>
+<p>Examples:
+&gt;&gt;&gt; tp = FLEKSTP(“res/run1/PC/test_particles”, iSpecies=1)
+&gt;&gt;&gt; len(tp)
+10240
+&gt;&gt;&gt; trajectory = tp[0]
+&gt;&gt;&gt; tp.plot_trajectory(tp.IDs[3])
+&gt;&gt;&gt; tp.save_trajectory_to_csv(tp.IDs[5])
+&gt;&gt;&gt; ids, pData = tp.read_particles_at_time(0.0, doSave=False)
+&gt;&gt;&gt; f = tp.plot_location(pData)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._trajectory_cache">
+<span class="sig-name descname"><span class="pre">_trajectory_cache</span></span><a class="headerlink" href="#flekspy.tp.FLEKSTP._trajectory_cache" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.iSpecies">
+<span class="sig-name descname"><span class="pre">iSpecies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.iSpecies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.pfiles">
+<span class="sig-name descname"><span class="pre">pfiles</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.pfiles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.indextotime">
+<span class="sig-name descname"><span class="pre">indextotime</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.indextotime" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.particle_locations">
+<span class="sig-name descname"><span class="pre">particle_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.particle_locations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.IDs">
+<span class="sig-name descname"><span class="pre">IDs</span></span><a class="headerlink" href="#flekspy.tp.FLEKSTP.IDs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.filetime">
+<span class="sig-name descname"><span class="pre">filetime</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.filetime" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__len__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__len__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__iter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__iter__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__getitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__getitem__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.getIDs">
+<span class="sig-name descname"><span class="pre">getIDs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.getIDs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.getIDs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_particle_list">
+<span class="sig-name descname"><span class="pre">read_particle_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_particle_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_particle_list" title="Link to this definition"></a></dt>
+<dd><p>Read and return a list of the particle IDs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._read_the_first_record">
+<span class="sig-name descname"><span class="pre">_read_the_first_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._read_the_first_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._read_the_first_record" title="Link to this definition"></a></dt>
+<dd><p>Get the first record stored in one file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_particles_at_time">
+<span class="sig-name descname"><span class="pre">read_particles_at_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doSave</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_particles_at_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_particles_at_time" title="Link to this definition"></a></dt>
+<dd><p>Get the information of all the particles at a given time.
+If doSave, save to a CSV file with the name “particles_t***.csv”.</p>
+<p>Note that the time tags in filetime do not include the last saved time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a numpy array of tuples contains the particle IDs.
+pData: a numpy real array with the particle weight, location and velocity.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ids</p>
+</dd>
+</dl>
+<p>Examples:
+&gt;&gt;&gt; ids, pData = pt.read_particles_at_time(3700, doSave=True)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.save_trajectory_to_csv">
+<span class="sig-name descname"><span class="pre">save_trajectory_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shiftTime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaleTime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.save_trajectory_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.save_trajectory_to_csv" title="Link to this definition"></a></dt>
+<dd><p>Save the trajectory of a particle to a csv file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> – particle ID.</p></li>
+<li><p><strong>shiftTime</strong> (<em>bool</em>) – If set to True, set the initial time to be 0.</p></li>
+<li><p><strong>scaleTime</strong> (<em>bool</em>) – If set to True, scale the time into [0,1] range.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:
+&gt;&gt;&gt; tp.save_trajectory_to_csv((3,15))</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._get_particle_raw_data">
+<span class="sig-name descname"><span class="pre">_get_particle_raw_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._get_particle_raw_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._get_particle_raw_data" title="Link to this definition"></a></dt>
+<dd><p>Reads all raw trajectory data for a particle across multiple files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._read_particle_record">
+<span class="sig-name descname"><span class="pre">_read_particle_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._read_particle_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._read_particle_record" title="Link to this definition"></a></dt>
+<dd><p>Return a specific record of a test particle given its ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> – particle ID</p></li>
+<li><p><strong>index</strong> – The index of the record to be returned.
+0: first record.
+-1: last record (default).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_particle_trajectory">
+<span class="sig-name descname"><span class="pre">read_particle_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_particle_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_particle_trajectory" title="Link to this definition"></a></dt>
+<dd><p>Return the trajectory of a test particle as a polars DataFrame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_initial_condition">
+<span class="sig-name descname"><span class="pre">read_initial_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_initial_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_initial_condition" title="Link to this definition"></a></dt>
+<dd><p>Return the initial conditions of a test particle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_final_condition">
+<span class="sig-name descname"><span class="pre">read_final_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_final_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_final_condition" title="Link to this definition"></a></dt>
+<dd><p>Return the final conditions of a test particle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.select_particles">
+<span class="sig-name descname"><span class="pre">select_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.select_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.select_particles" title="Link to this definition"></a></dt>
+<dd><p>Return the test particles whose initial conditions satisfy the requirement
+set by the user defined function f_select. The first argument of f_select is the
+particle ID, and the second argument is the ID of a particle.</p>
+<p>Examples:
+&gt;&gt;&gt; from flekspy.tp import Indices
+&gt;&gt;&gt; def f_select(tp, pid):
+&gt;&gt;&gt;     pData = tp.read_initial_condition(pid)
+&gt;&gt;&gt;     inTime = pData[Indices.TIME] &lt; 3601
+&gt;&gt;&gt;     inRegion = pData[Indices.X] &gt; 20
+&gt;&gt;&gt;     return inTime and inRegion
+&gt;&gt;&gt;
+&gt;&gt;&gt; pselected = tp.select_particles(f_select)
+&gt;&gt;&gt; tp.plot_trajectory(list(pselected.keys())[1])</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_kinetic_energy">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_kinetic_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">proton_mass</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_kinetic_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_kinetic_energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_pitch_angle">
+<span class="sig-name descname"><span class="pre">get_pitch_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_pitch_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_pitch_angle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_pitch_angle_from_v_b">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_pitch_angle_from_v_b</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_pitch_angle_from_v_b"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_pitch_angle_from_v_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_first_adiabatic_invariant">
+<span class="sig-name descname"><span class="pre">get_first_adiabatic_invariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">proton_mass</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_first_adiabatic_invariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_first_adiabatic_invariant" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.plot_trajectory">
+<span class="sig-name descname"><span class="pre">plot_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">proton_mass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'quick'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xaxis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaxis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.plot_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.plot_trajectory" title="Link to this definition"></a></dt>
+<dd><p>Plots the trajectory and velocities of the particle pID.</p>
+<p>Example:
+&gt;&gt;&gt; tp.plot_trajectory((3,15))</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.plot_location">
+<span class="sig-name descname"><span class="pre">plot_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.plot_location"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.plot_location" title="Link to this definition"></a></dt>
+<dd><p>Plot the location of particles pData.</p>
+<p>Examples:
+&gt;&gt;&gt; ids, pData = tp.read_particles_at_time(3700, doSave=True)
+&gt;&gt;&gt; f = tp.plot_location(pData)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flekspy.tp.Indices">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flekspy.tp.</span></span><span class="sig-name descname"><span class="pre">Indices</span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#Indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.Indices" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<p>Defines constant indices for test particles.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.TIME">
+<span class="sig-name descname"><span class="pre">TIME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#flekspy.tp.Indices.TIME" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.X">
+<span class="sig-name descname"><span class="pre">X</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#flekspy.tp.Indices.X" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.Y">
+<span class="sig-name descname"><span class="pre">Y</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#flekspy.tp.Indices.Y" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.Z">
+<span class="sig-name descname"><span class="pre">Z</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#flekspy.tp.Indices.Z" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.VX">
+<span class="sig-name descname"><span class="pre">VX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#flekspy.tp.Indices.VX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.VY">
+<span class="sig-name descname"><span class="pre">VY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#flekspy.tp.Indices.VY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.VZ">
+<span class="sig-name descname"><span class="pre">VZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#flekspy.tp.Indices.VZ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.BX">
+<span class="sig-name descname"><span class="pre">BX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#flekspy.tp.Indices.BX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.BY">
+<span class="sig-name descname"><span class="pre">BY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#flekspy.tp.Indices.BY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.BZ">
+<span class="sig-name descname"><span class="pre">BZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></em><a class="headerlink" href="#flekspy.tp.Indices.BZ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.EX">
+<span class="sig-name descname"><span class="pre">EX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#flekspy.tp.Indices.EX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.EY">
+<span class="sig-name descname"><span class="pre">EY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">11</span></em><a class="headerlink" href="#flekspy.tp.Indices.EY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.EZ">
+<span class="sig-name descname"><span class="pre">EZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#flekspy.tp.Indices.EZ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.tp.interpolate_at_times">
+<span class="sig-prename descclassname"><span class="pre">flekspy.tp.</span></span><span class="sig-name descname"><span class="pre">interpolate_at_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times_to_interpolate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#interpolate_at_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.interpolate_at_times" title="Link to this definition"></a></dt>
+<dd><p>Interpolates multiple numeric columns of a DataFrame at specified time points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – The input Polars DataFrame.</p></li>
+<li><p><strong>times_to_interpolate</strong> – A list of time points (floats or ints) at which to interpolate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new DataFrame containing the interpolated rows for each specified time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../plot/streamplot/index.html" class="btn btn-neutral float-left" title="flekspy.plot.streamplot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="test_particles/index.html" class="btn btn-neutral float-right" title="flekspy.tp.test_particles" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yuxi Chen, Hongyang Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
