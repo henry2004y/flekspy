@@ -802,3 +802,42 @@ class FLEKSTP(object):
         ax[skeys[3]].set_zlabel("z")
 
         return ax
+
+
+def interpolate_at_times(
+    df: pl.DataFrame, times_to_interpolate: list[float]
+) -> pl.DataFrame:
+    """
+    Interpolates multiple numeric columns of a DataFrame at specified time points.
+
+    Args:
+        df: The input Polars DataFrame.
+        times_to_interpolate: A list of time points (floats or ints) at which to interpolate.
+
+    Returns:
+        A new DataFrame containing the interpolated rows for each specified time.
+    """
+    # Identify all numeric columns to be interpolated
+    cols_to_interpolate = df.select(pl.col(pl.NUMERIC_DTYPES).exclude("time")).columns
+
+    time_col_dtype = df["time"].dtype
+
+    null_rows_df = pl.DataFrame(
+        {
+            "time": times_to_interpolate,
+            **{col: [None] * len(times_to_interpolate) for col in cols_to_interpolate},
+        }
+    ).with_columns(pl.col("time").cast(time_col_dtype))
+
+    df_all = pl.concat([df, null_rows_df]).sort("time")
+
+    # Create a Datetime Series to use for interpolation.
+    time_dt_series = pl.from_epoch(
+        (df_all["time"] * 1_000_000).cast(pl.Int64), time_unit="us"
+    )
+
+    interpolated_df = df_all.with_columns(
+        pl.col(cols_to_interpolate).interpolate_by(by=time_dt_series)
+    ).filter(pl.col("time").is_in(times_to_interpolate))
+
+    return interpolated_df

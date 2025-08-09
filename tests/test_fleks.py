@@ -3,7 +3,9 @@ import os
 import itertools
 import numpy as np
 import xarray as xr
+import polars as pl
 
+from flekspy.tp import interpolate_at_times
 import flekspy as fs
 from flekspy.util import download_testfile
 
@@ -49,7 +51,6 @@ class TestIDL:
     def test_extract(self):
         ds = fs.load(self.files[1])
         d = ds.interp(x=-28000.0, y=0.0)
-        # The number of variables is 28.
         assert len(d) == 28
 
     def test_slice(self):
@@ -203,6 +204,29 @@ class TestParticles:
         )
         with pytest.raises(ValueError):
             self.tp.read_particle_trajectory(pID)
+
+    def test_interpolate_at_times_float32(self):
+        df = pl.DataFrame(
+            {
+                "time": [0.0, 1.0, 2.0, 3.0, 4.0],
+                "x": [0, 10, 20, 30, 40],
+                "y": [40, 30, 20, 10, 0],
+                "z": [0, 5, 10, 5, 0],
+            }
+        ).with_columns(pl.col("time").cast(pl.Float32))
+
+        times_to_interpolate = [0.5, 1.5, 2.5]
+
+        interpolated_df = interpolate_at_times(df, times_to_interpolate)
+
+        assert interpolated_df.shape == (3, 4)
+        assert interpolated_df["time"].dtype == pl.Float32
+        assert np.all(
+            np.isclose(interpolated_df["time"].to_list(), times_to_interpolate)
+        )
+        assert np.all(np.isclose(interpolated_df["x"].to_list(), [5.0, 15.0, 25.0]))
+        assert np.all(np.isclose(interpolated_df["y"].to_list(), [35.0, 25.0, 15.0]))
+        assert np.all(np.isclose(interpolated_df["z"].to_list(), [2.5, 7.5, 7.5]))
 
 
 def load(files):
