@@ -185,6 +185,22 @@ class TestParticles:
         ax = tp.plot_trajectory(pIDs[0])
         assert ax[1][0].get_xlim()[1] == 2.140599811077118
 
+    def test_particle_cache(self):
+        from flekspy import FLEKSTP
+
+        dirs = ("tests/data/test_particles",)
+        tp = FLEKSTP(dirs, iSpecies=1, use_cache=True)
+        pID = tp.getIDs()[0]
+
+        # First access, should be read from file
+        trajectory1 = tp[pID]
+
+        # Second access, should be from cache
+        trajectory2 = tp[pID]
+
+        # Check if they are the same object
+        assert trajectory1 is trajectory2
+
     def test_read_particle_trajectory_key_error(self):
         with pytest.raises(KeyError):
             self.tp.read_particle_trajectory((-1, -1))
