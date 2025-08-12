@@ -62,8 +62,11 @@ class FLEKSTP(object):
         iListStart: int = 0,
         iListEnd: int = -1,
         readAllFiles: bool = False,
+        use_cache: bool = False,
     ):
+        self.use_cache = use_cache
         self._trajectory_cache = {}
+
         if isinstance(dirs, str):
             dirs = [dirs]
 
@@ -146,6 +149,11 @@ class FLEKSTP(object):
                 "Particle ID must be a tuple (cpu, id) or an integer index."
             )
 
+        # If caching is not used, read directly and return.
+        if not self.use_cache:
+            return self.read_particle_trajectory(pID)
+
+        # Caching is enabled, use the cache.
         if pID in self._trajectory_cache:
             return self._trajectory_cache[pID]
         else:
