@@ -45,3 +45,7 @@
 ## v0.5.0 (2025/08/05)
 
 - Use Polars for storing test particle data.
+
+## v0.5.3 (2025/08/13)
+
+- Support test particle gradient B storage.
