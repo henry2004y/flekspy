@@ -27,6 +27,15 @@ class Indices(IntEnum):
     EX = 10
     EY = 11
     EZ = 12
+    DBXDX = 13
+    DBXDY = 14
+    DBXDZ = 15
+    DBYDX = 16
+    DBYDY = 17
+    DBYDZ = 18
+    DBZDX = 19
+    DBZDY = 20
+    DBZDZ = 21
 
 
 class FLEKSTP(object):
