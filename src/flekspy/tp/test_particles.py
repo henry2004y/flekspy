@@ -275,6 +275,8 @@ class FLEKSTP(object):
                 header += ",bx,by,bz"
             elif self.nReal == 13:
                 header += ",bx,by,bz,ex,ey,ez"
+            elif self.nReal == 22:
+                header += ",dbxdx,dbxdy,dbxdz,dbydx,dbydy,dbydz,dbzdx,dbzdy,dbzdz"
 
             with open(filename, "w") as f:
                 f.write(header + "\n")
@@ -316,16 +318,21 @@ class FLEKSTP(object):
             "U_y [km/s]",
             "U_z [km/s]",
         ]
-        if self.nReal == 10:
+        if self.nReal >= 10:
             header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
-        if self.nReal == 13:
+        if self.nReal >= 13:
+            header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
+        if self.nReal >= 22:
             header_cols += [
-                "B_x [nT]",
-                "B_y [nT]",
-                "B_z [nT]",
-                "E_x [uV/m]",
-                "E_y [uV/m]",
-                "E_z [uV/m]",
+                "dBx_dx",
+                "dBx_dy",
+                "dBx_dz",
+                "dBy_dx",
+                "dBy_dy",
+                "dBy_dz",
+                "dBz_dx",
+                "dBz_dy",
+                "dBz_dz",
             ]
 
         if shiftTime:
