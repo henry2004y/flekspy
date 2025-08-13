@@ -551,6 +551,271 @@ class FLEKSTP(object):
 
         return mu
 
+    @staticmethod
+    def _calculate_curvature(df: pl.DataFrame) -> pl.DataFrame:
+        """
+        Calculates the magnetic field curvature vector and adds it to the DataFrame.
+        κ = (b ⋅ ∇)b
+        """
+        R_E = 6371e3  # Earth radius in meters
+        b_mag_sq = pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2
+        b_mag = b_mag_sq.sqrt()
+
+        # Chain with_columns for better readability and performance
+        df = df.with_columns(
+            b_mag=b_mag,
+            bx_u=pl.col("bx") / b_mag,
+            by_u=pl.col("by") / b_mag,
+            bz_u=pl.col("bz") / b_mag,
+        )
+
+        # Gradient of B magnitude: ∇|B|
+        grad_b_mag_x = (
+            pl.col("bx") * pl.col("dbxdx")
+            + pl.col("by") * pl.col("dbydx")
+            + pl.col("bz") * pl.col("dbzdx")
+        ) / pl.col("b_mag")
+        grad_b_mag_y = (
+            pl.col("bx") * pl.col("dbxdy")
+            + pl.col("by") * pl.col("dbydy")
+            + pl.col("bz") * pl.col("dbzdy")
+        ) / pl.col("b_mag")
+        grad_b_mag_z = (
+            pl.col("bx") * pl.col("dbxdz")
+            + pl.col("by") * pl.col("dbydz")
+            + pl.col("bz") * pl.col("dbzdz")
+        ) / pl.col("b_mag")
+
+        # Derivatives of unit vector b: ∇b
+        dbx_u_dx = (pl.col("dbxdx") - pl.col("bx_u") * grad_b_mag_x) / pl.col(
+            "b_mag"
+        )
+        dbx_u_dy = (pl.col("dbxdy") - pl.col("bx_u") * grad_b_mag_y) / pl.col(
+            "b_mag"
+        )
+        dbx_u_dz = (pl.col("dbxdz") - pl.col("bx_u") * grad_b_mag_z) / pl.col(
+            "b_mag"
+        )
+
+        dby_u_dx = (pl.col("dbydx") - pl.col("by_u") * grad_b_mag_x) / pl.col(
+            "b_mag"
+        )
+        dby_u_dy = (pl.col("dbydy") - pl.col("by_u") * grad_b_mag_y) / pl.col(
+            "b_mag"
+        )
+        dby_u_dz = (pl.col("dbydz") - pl.col("by_u") * grad_b_mag_z) / pl.col(
+            "b_mag"
+        )
+
+        dbz_u_dx = (pl.col("dbzdx") - pl.col("bz_u") * grad_b_mag_x) / pl.col(
+            "b_mag"
+        )
+        dbz_u_dy = (pl.col("dbzdy") - pl.col("bz_u") * grad_b_mag_y) / pl.col(
+            "b_mag"
+        )
+        dbz_u_dz = (pl.col("dbzdz") - pl.col("bz_u") * grad_b_mag_z) / pl.col(
+            "b_mag"
+        )
+
+        # Curvature vector: κ = (b ⋅ ∇)b
+        kappa_x = (
+            pl.col("bx_u") * dbx_u_dx
+            + pl.col("by_u") * dbx_u_dy
+            + pl.col("bz_u") * dbx_u_dz
+        )
+        kappa_y = (
+            pl.col("bx_u") * dby_u_dx
+            + pl.col("by_u") * dby_u_dy
+            + pl.col("bz_u") * dby_u_dz
+        )
+        kappa_z = (
+            pl.col("bx_u") * dbz_u_dx
+            + pl.col("by_u") * dbz_u_dy
+            + pl.col("bz_u") * dbz_u_dz
+        )
+
+        df = df.with_columns(
+            kappa_x=kappa_x / R_E,
+            kappa_y=kappa_y / R_E,
+            kappa_z=kappa_z / R_E,
+        )
+
+        return df
+
+    def get_curvature_drift(
+        self, pID: Tuple[int, int], mass=proton_mass, charge=elementary_charge
+    ):
+        """
+        Calculates the curvature drift velocity for a particle.
+        v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ)
+        """
+        pt = self[pID]
+
+        # Calculate v_parallel
+        df = pt.with_columns(
+            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt(),
+            v_dot_b=(
+                pl.col("vx") * pl.col("bx")
+                + pl.col("vy") * pl.col("by")
+                + pl.col("vz") * pl.col("bz")
+            ),
+        )
+        df = df.with_columns(
+            v_parallel=df["v_dot_b"] / df["b_mag"] * 1e3,  # m/s
+        )
+
+        # Calculate curvature
+        df = self._calculate_curvature(df)  # kappa is in 1/m
+
+        # B in SI units
+        b_mag_si = df["b_mag"] * 1e-9  # T
+        b_mag_sq_si = b_mag_si**2
+
+        # B x κ
+        cross_x = (
+            df["by"] * 1e-9 * df["kappa_z"] - df["bz"] * 1e-9 * df["kappa_y"]
+        )
+        cross_y = (
+            df["bz"] * 1e-9 * df["kappa_x"] - df["bx"] * 1e-9 * df["kappa_z"]
+        )
+        cross_z = (
+            df["bx"] * 1e-9 * df["kappa_y"] - df["by"] * 1e-9 * df["kappa_x"]
+        )
+
+        # factor = m * v_parallel^2 / (q * B^2)
+        factor = (mass * df["v_parallel"] ** 2) / (charge * b_mag_sq_si)
+
+        df = df.with_columns(
+            vcx=factor * cross_x,
+            vcy=factor * cross_y,
+            vcz=factor * cross_z,
+        )
+
+        return df.select(["vcx", "vcy", "vcz"])
+
+    def get_gyroradius_to_curvature_ratio(
+        self, pID: Tuple[int, int], mass=proton_mass, charge=elementary_charge
+    ):
+        """
+        Calculates the ratio of the particle's gyroradius to the magnetic
+        field's radius of curvature.
+        """
+        pt = self[pID]
+        epsilon = 1e-15
+
+        # v_perp
+        df = pt.with_columns(
+            v_mag_sq=(pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2),
+            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt(),
+            v_dot_b=(
+                pl.col("vx") * pl.col("bx")
+                + pl.col("vy") * pl.col("by")
+                + pl.col("vz") * pl.col("bz")
+            ),
+        )
+        df = df.with_columns(
+            sin_alpha_sq=1
+            - (
+                pl.col("v_dot_b")
+                / (df["v_mag_sq"].sqrt() * pl.col("b_mag") + epsilon)
+            )
+            ** 2
+        )
+        df = df.with_columns(
+            v_perp=(df["v_mag_sq"] * df["sin_alpha_sq"]).sqrt() * 1e3  # m/s
+        )
+
+        # gyroradius
+        b_mag_si = df["b_mag"] * 1e-9  # T
+        r_g = (mass * df["v_perp"]) / (abs(charge) * b_mag_si)
+
+        # curvature radius
+        df = self._calculate_curvature(df)  # kappa is in 1/m
+        kappa_mag = (
+            df["kappa_x"] ** 2 + df["kappa_y"] ** 2 + df["kappa_z"] ** 2
+        ).sqrt()
+        R_c = 1 / (kappa_mag + epsilon)
+
+        ratio = r_g / R_c
+
+        return ratio
+
+    def get_gradient_drift(
+        self, pID: Tuple[int, int], mass=proton_mass, charge=elementary_charge
+    ):
+        """
+        Calculates the gradient drift velocity for a particle.
+        v_g = (μ / (q * B^2)) * (B x ∇|B|)
+        """
+        R_E = 6371e3  # Earth radius in meters
+        pt = self[pID]
+        # mu is in J/nT, but v is in km/s, so we need to convert v from km/s to m/s (factor 1e3)
+        # v^2 conversion is (1e3)^2 = 1e6
+        mu = self.get_first_adiabatic_invariant(pID, mass=mass) * 1e6  # J/nT with v in m/s
+        mu_si = mu * 1e9  # J/T
+
+        df = pt.with_columns(
+            b_mag_nT=(
+                (pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+            ),
+        )
+
+        # Gradient of B magnitude: ∇|B| in T/m
+        grad_b_mag_x = (
+            pl.col("bx") * pl.col("dbxdx")
+            + pl.col("by") * pl.col("dbydx")
+            + pl.col("bz") * pl.col("dbzdx")
+        ) / pl.col("b_mag_nT") * (
+            1e-9 / R_E
+        )  # T/m
+        grad_b_mag_y = (
+            pl.col("bx") * pl.col("dbxdy")
+            + pl.col("by") * pl.col("dbydy")
+            + pl.col("bz") * pl.col("dbzdy")
+        ) / pl.col("b_mag_nT") * (
+            1e-9 / R_E
+        )  # T/m
+        grad_b_mag_z = (
+            pl.col("bx") * pl.col("dbxdz")
+            + pl.col("by") * pl.col("dbydz")
+            + pl.col("bz") * pl.col("dbzdz")
+        ) / pl.col("b_mag_nT") * (
+            1e-9 / R_E
+        )  # T/m
+
+        df = df.with_columns(
+            grad_b_mag_x=grad_b_mag_x,
+            grad_b_mag_y=grad_b_mag_y,
+            grad_b_mag_z=grad_b_mag_z,
+        )
+
+        # B x ∇|B| in T^2/m
+        cross_x = (
+            pl.col("by") * 1e-9 * pl.col("grad_b_mag_z")
+            - pl.col("bz") * 1e-9 * pl.col("grad_b_mag_y")
+        )
+        cross_y = (
+            pl.col("bz") * 1e-9 * pl.col("grad_b_mag_x")
+            - pl.col("bx") * 1e-9 * pl.col("grad_b_mag_z")
+        )
+        cross_z = (
+            pl.col("bx") * 1e-9 * pl.col("grad_b_mag_y")
+            - pl.col("by") * 1e-9 * pl.col("grad_b_mag_x")
+        )
+
+        b_mag_sq_si = (df["b_mag_nT"] * 1e-9) ** 2
+
+        # factor = mu / (q * B^2)
+        factor = mu_si / (charge * b_mag_sq_si)
+
+        df = df.with_columns(
+            vgx=factor * cross_x,
+            vgy=factor * cross_y,
+            vgz=factor * cross_z,
+        )
+
+        return df.select(["vgx", "vgy", "vgz"])
+
     def plot_trajectory(
         self,
         pID: Tuple[int, int],
