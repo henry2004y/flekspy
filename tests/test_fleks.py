@@ -24,6 +24,10 @@ if not os.path.isdir(filedir + "/data/test_particles"):
     url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles.tar.gz"
     download_testfile(url, "tests/data")
 
+if not os.path.isdir(filedir + "/data/test_particles_PBEG"):
+    url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles_PBEG.tar.gz"
+    download_testfile(url, "tests/data")
+
 if not os.path.isdir(filedir + "/data/3d_particle_region0_1_t00000002_n00000007_amrex"):
     url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/3d_particle.tar.gz"
     download_testfile(url, "tests/data")
@@ -132,10 +136,13 @@ class TestAMReX:
 
 
 class TestParticles:
-    dirs = ("tests/data/test_particles",)
+    dirs = (
+        "tests/data/test_particles",
+        "tests/data/test_particles_PBEG",
+    )
     from flekspy import FLEKSTP
 
-    tp = FLEKSTP(dirs, iSpecies=1)
+    tp = FLEKSTP(dirs[0], iSpecies=1)
 
     def test_particles(self):
         tp = self.tp
@@ -186,10 +193,7 @@ class TestParticles:
         assert ax[1][0].get_xlim()[1] == 2.140599811077118
 
     def test_particle_cache(self):
-        from flekspy import FLEKSTP
-
-        dirs = ("tests/data/test_particles",)
-        tp = FLEKSTP(dirs, iSpecies=1, use_cache=True)
+        tp = self.FLEKSTP(self.dirs[0], iSpecies=1, use_cache=True)
         pID = tp.getIDs()[0]
 
         # First access, should be read from file
@@ -243,6 +247,24 @@ class TestParticles:
         assert np.all(np.isclose(interpolated_df["x"].to_list(), [5.0, 15.0, 25.0]))
         assert np.all(np.isclose(interpolated_df["y"].to_list(), [35.0, 25.0, 15.0]))
         assert np.all(np.isclose(interpolated_df["z"].to_list(), [2.5, 7.5, 7.5]))
+
+    def test_EBG(self):
+        tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True)
+        assert tp[0][0, 7] == 224199.65625  # bx
+        assert tp[0][0, 16] == 2194893.75  # dbydx
+        pid = tp.getIDs()[0]
+        assert tp.get_pitch_angle(pid)[0] == np.float32(57.661438)
+        # TODO The units are messed up in the test data!
+        vx, vy, vz = tp[0][0, 4], tp[0][0, 5], tp[0][0, 6]
+        ke = tp.get_kinetic_energy(vx, vy, vz)
+        assert np.isclose(ke, 3.361357097373841e-17)
+        pt = tp[pid]
+        # kappa y
+        assert tp._calculate_curvature(pt)[0][0, -1] == -0.47917285561561584
+        assert np.isclose(tp.get_curvature_drift(pid)[0][0, 0], -6.5516e-27)
+        assert np.isclose(tp.get_gradient_drift(pid)[0][0, 1], -9.73609190874673e-21)
+        rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
+        assert rg2rc == 4.833759436842249e-12
 
 
 def load(files):
