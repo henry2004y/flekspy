@@ -570,7 +570,9 @@ class FLEKSTP(object):
         """
         Calculates the magnetic field curvature vector and adds it to the DataFrame.
         κ = (b ⋅ ∇)b
-        Assuming Earth's planetary units, output curvature in [1/RE].
+        Depending on the selected units, output curvature may be
+        - "planetary": [1/RE]
+        - "SI": [1/m]
         """
         df = FLEKSTP._calculate_bmag(df)
 
@@ -651,21 +653,43 @@ class FLEKSTP(object):
             + pl.col("bz_u") * dbz_u_dz
         )
 
-        df = df.with_columns(
-            kappa_x=kappa_x,
-            kappa_y=kappa_y,
-            kappa_z=kappa_z,
-        )
+        df = df.with_columns(kappa_x=kappa_x, kappa_y=kappa_y, kappa_z=kappa_z)
 
         return df
 
+    def get_ExB_drift(self, pID: Tuple[int, int]):
+        """
+        Calculates the convection drift velocity for a particle.
+        v_exb = E x B / (B^2)
+        Assuming Earth's planetary units, output drift velocity in [km/s].
+        """
+        pt = self[pID]
+        df = self._calculate_bmag(pt)
+        # E x B
+        cross_x = df["ey"] * df["bz"] - df["ez"] * df["by"]
+        cross_y = df["ez"] * df["bx"] - df["ex"] * df["bz"]
+        cross_z = df["ex"] * df["by"] - df["ey"] * df["bx"]
+        df = df.with_columns(
+            vex=cross_x / pl.col("b_mag") ** 2,
+            vey=cross_y / pl.col("b_mag") ** 2,
+            vez=cross_z / pl.col("b_mag") ** 2,
+        )
+
+        return df.select(["vex", "vey", "vez"])
+
     def get_curvature_drift(
-        self, pID: Tuple[int, int], mass=proton_mass, charge=elementary_charge
+        self,
+        pID: Tuple[int, int],
+        unit="planetary",
+        mass=proton_mass,
+        charge=elementary_charge,
     ):
         """
         Calculates the curvature drift velocity for a particle.
         v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ)
-        Assuming Earth's planetary units, output drift velocity in [km/s].
+        Depending on the selected units, output drift velocity may be
+        - "planetary": [km/s]
+        - "SI": [m/s]
         """
         pt = self[pID]
         df = self._calculate_bmag(pt)
@@ -690,9 +714,15 @@ class FLEKSTP(object):
         cross_y = df["bz"] * df["kappa_x"] - df["bx"] * df["kappa_z"]
         cross_z = df["bx"] * df["kappa_y"] - df["by"] * df["kappa_x"]
         # conversion factor
-        factor = (
-            (mass * df["v_parallel"] ** 2) / (charge * df["b_mag"] ** 2) * 1e12 / 6378
-        )
+        if unit == "planetary":
+            factor = (
+                (mass * df["v_parallel"] ** 2)
+                / (charge * df["b_mag"] ** 2)
+                * 1e12
+                / 6378
+            )
+        elif unit == "SI":
+            factor = (mass * df["v_parallel"] ** 2) / (charge * df["b_mag"] ** 2)
 
         df = df.with_columns(
             vcx=factor * cross_x,
@@ -703,7 +733,11 @@ class FLEKSTP(object):
         return df.select(["vcx", "vcy", "vcz"])
 
     def get_gyroradius_to_curvature_ratio(
-        self, pID: Tuple[int, int], mass=proton_mass, charge=elementary_charge
+        self,
+        pID: Tuple[int, int],
+        unit="planetary",
+        mass=proton_mass,
+        charge=elementary_charge,
     ):
         """
         Calculates the ratio of the particle's gyroradius to the magnetic
@@ -735,11 +769,14 @@ class FLEKSTP(object):
         r_g = (mass * df["v_perp"]) / (abs(charge) * df["b_mag"]) * 1e9  # [km]
 
         # curvature radius
-        df = self._calculate_curvature(df)  # [1/RE]
+        df = self._calculate_curvature(df)
         kappa_mag = (
             df["kappa_x"] ** 2 + df["kappa_y"] ** 2 + df["kappa_z"] ** 2
         ).sqrt()
-        factor = 6378  # conversion factor
+        if unit == "planetary":
+            factor = 6378  # conversion factor
+        elif unit == "SI":
+            factor = 1e-3  # conversion factor
         r_c = 1 / (kappa_mag + epsilon) * factor  # [km]
         ratio = r_g / r_c
         ratio = ratio.alias("ratio")
@@ -747,12 +784,18 @@ class FLEKSTP(object):
         return ratio
 
     def get_gradient_drift(
-        self, pID: Tuple[int, int], mass=proton_mass, charge=elementary_charge
+        self,
+        pID: Tuple[int, int],
+        unit="planetary",
+        mass=proton_mass,
+        charge=elementary_charge,
     ):
         """
         Calculates the gradient drift velocity for a particle.
         v_g = (μ / (q * B^2)) * (B x ∇|B|)
-        Assuming Earth's planetary units, output drift velocity in [km/s].
+        Depending on the selected units, output drift velocity may be
+        - "planetary": [km/s]
+        - "SI": [m/s]
         """
         pt = self[pID]
 
@@ -790,7 +833,10 @@ class FLEKSTP(object):
 
         b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
-        factor = mu / (charge * b_mag_sq) * 1e12 / 6378
+        if unit == "planetary":
+            factor = mu / (charge * b_mag_sq) * 1e12 / 6378
+        elif unit == "SI":
+            factor = mu / (charge * b_mag_sq)
 
         df = df.with_columns(
             vgx=factor * cross_x,
@@ -878,7 +924,7 @@ class FLEKSTP(object):
             nrow = 3  # Default for X, V
             if self.nReal == 10:  # additional B field
                 nrow = 4
-            elif self.nReal == 13:  # additional B and E field
+            elif self.nReal >= 13:  # additional B and E field
                 nrow = 5
 
             f, ax = plt.subplots(nrow, ncol, figsize=(12, 6), constrained_layout=True)
