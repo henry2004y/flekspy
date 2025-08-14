@@ -567,6 +567,7 @@ class FLEKSTP(object):
         """
         Calculates the magnetic field curvature vector and adds it to the DataFrame.
         κ = (b ⋅ ∇)b
+        Assuming Earth's planetary units, output curvature in [1/RE].
         """
         df = FLEKSTP._calculate_bmag(df)
 
@@ -661,12 +662,13 @@ class FLEKSTP(object):
         """
         Calculates the curvature drift velocity for a particle.
         v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ)
+        Assuming Earth's planetary units, output drift velocity in [km/s].
         """
         pt = self[pID]
         df = self._calculate_bmag(pt)
 
         # Calculate v_parallel
-        df = pt.with_columns(
+        df = df.with_columns(
             v_dot_b=(
                 pl.col("vx") * pl.col("bx")
                 + pl.col("vy") * pl.col("by")
@@ -689,10 +691,12 @@ class FLEKSTP(object):
 
         factor = (mass * df["v_parallel"] ** 2) / (charge * b_mag_sq)
 
+        RE = 6371 # conversion factor
+
         df = df.with_columns(
-            vcx=factor * cross_x,
-            vcy=factor * cross_y,
-            vcz=factor * cross_z,
+            vcx=factor * cross_x / RE,
+            vcy=factor * cross_y / RE,
+            vcz=factor * cross_z / RE,
         )
 
         return df.select(["vcx", "vcy", "vcz"])
@@ -723,21 +727,21 @@ class FLEKSTP(object):
             ** 2
         )
         df = df.with_columns(
-            v_perp=(df["v_mag_sq"] * df["sin_alpha_sq"]).sqrt() * 1e3  # m/s
+            v_perp=(pl.col("v_mag_sq") * pl.col("sin_alpha_sq")).sqrt()
         )
 
         # gyroradius
-        b_mag_si = df["b_mag"] * 1e-9  # T
-        r_g = (mass * df["v_perp"]) / (abs(charge) * b_mag_si)
+        r_g = (mass * df["v_perp"]) / (abs(charge) * df["b_mag"]) * 1e9 # [km]
 
         # curvature radius
-        df = self._calculate_curvature(df)  # kappa is in 1/m
+        df = self._calculate_curvature(df)  # [1/RE]
         kappa_mag = (
             df["kappa_x"] ** 2 + df["kappa_y"] ** 2 + df["kappa_z"] ** 2
         ).sqrt()
-        R_c = 1 / (kappa_mag + epsilon)
-
-        ratio = r_g / R_c
+        factor = 6378 # conversion factor
+        r_c = 1 / (kappa_mag + epsilon) * factor # [km]
+        ratio = r_g / r_c
+        ratio = ratio.alias("ratio")
 
         return ratio
 
@@ -747,6 +751,7 @@ class FLEKSTP(object):
         """
         Calculates the gradient drift velocity for a particle.
         v_g = (μ / (q * B^2)) * (B x ∇|B|)
+        Assuming Earth's planetary units, output drift velocity in [km/s].
         """
         pt = self[pID]
 
@@ -783,8 +788,8 @@ class FLEKSTP(object):
         cross_z = pl.col("bx") * grad_b_mag_y - pl.col("by") * grad_b_mag_x
 
         b_mag_sq = df["b_mag"] ** 2
-
-        factor = mu / (charge * b_mag_sq)
+        # conversion factor
+        factor = mu / (charge * b_mag_sq) * 1e9 / 6378
 
         df = df.with_columns(
             vgx=factor * cross_x,
