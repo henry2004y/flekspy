@@ -756,7 +756,7 @@ class FLEKSTP(object):
         """
         pt = self[pID]
 
-        mu = self.get_first_adiabatic_invariant(pID, mass=mass)  # unit?
+        mu = self.get_first_adiabatic_invariant(pID, mass=mass)
 
         df = self._calculate_bmag(pt)
 
