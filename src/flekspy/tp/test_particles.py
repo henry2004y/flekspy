@@ -521,6 +521,9 @@ class FLEKSTP(object):
         return pitch_angle
 
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
+        """
+        Calculates the 1st adiabatic invariant of a particle.
+        """
         pt = self[pID]
         epsilon = 1e-15
 
@@ -547,7 +550,7 @@ class FLEKSTP(object):
         )
 
         # Calculate mu
-        mu = (0.5 * mass * df["v_perp_sq"]) / (df["b_mag"] + epsilon)  # [J/nT]
+        mu = (0.5 * mass * df["v_perp_sq"]) / (df["b_mag"] + epsilon)
 
         return mu
 
@@ -682,21 +685,19 @@ class FLEKSTP(object):
         # Calculate curvature
         df = self._calculate_curvature(df)
 
-        b_mag_sq = df["b_mag"] ** 2
-
         # B x κ
         cross_x = df["by"] * df["kappa_z"] - df["bz"] * df["kappa_y"]
         cross_y = df["bz"] * df["kappa_x"] - df["bx"] * df["kappa_z"]
         cross_z = df["bx"] * df["kappa_y"] - df["by"] * df["kappa_x"]
-
-        factor = (mass * df["v_parallel"] ** 2) / (charge * b_mag_sq)
-
-        RE = 6371 # conversion factor
+        # conversion factor
+        factor = (
+            (mass * df["v_parallel"] ** 2) / (charge * df["b_mag"] ** 2) * 1e12 / 6378
+        )
 
         df = df.with_columns(
-            vcx=factor * cross_x / RE,
-            vcy=factor * cross_y / RE,
-            vcz=factor * cross_z / RE,
+            vcx=factor * cross_x,
+            vcy=factor * cross_y,
+            vcz=factor * cross_z,
         )
 
         return df.select(["vcx", "vcy", "vcz"])
@@ -731,15 +732,15 @@ class FLEKSTP(object):
         )
 
         # gyroradius
-        r_g = (mass * df["v_perp"]) / (abs(charge) * df["b_mag"]) * 1e9 # [km]
+        r_g = (mass * df["v_perp"]) / (abs(charge) * df["b_mag"]) * 1e9  # [km]
 
         # curvature radius
         df = self._calculate_curvature(df)  # [1/RE]
         kappa_mag = (
             df["kappa_x"] ** 2 + df["kappa_y"] ** 2 + df["kappa_z"] ** 2
         ).sqrt()
-        factor = 6378 # conversion factor
-        r_c = 1 / (kappa_mag + epsilon) * factor # [km]
+        factor = 6378  # conversion factor
+        r_c = 1 / (kappa_mag + epsilon) * factor  # [km]
         ratio = r_g / r_c
         ratio = ratio.alias("ratio")
 
@@ -787,9 +788,9 @@ class FLEKSTP(object):
         cross_y = pl.col("bz") * grad_b_mag_x - pl.col("bx") * grad_b_mag_z
         cross_z = pl.col("bx") * grad_b_mag_y - pl.col("by") * grad_b_mag_x
 
-        b_mag_sq = df["b_mag"] ** 2
+        b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
-        factor = mu / (charge * b_mag_sq) * 1e9 / 6378
+        factor = mu / (charge * b_mag_sq) * 1e12 / 6378
 
         df = df.with_columns(
             vgx=factor * cross_x,

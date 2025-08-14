@@ -261,8 +261,8 @@ class TestParticles:
         pt = tp[pid]
         # kappa y
         assert tp._calculate_curvature(pt)[0][0, -1] == -0.47917285561561584
-        assert np.isclose(tp.get_curvature_drift(pid)[0][0, 0], -6.5516e-27)
-        assert np.isclose(tp.get_gradient_drift(pid)[0][0, 1], -9.73609190874673e-21)
+        assert tp.get_curvature_drift(pid)[0][0, 0] == -6.5444069434483776e-15
+        assert tp.get_gradient_drift(pid)[0][0, 1] == -9.73609199921961e-18
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
         assert rg2rc == 4.833759436842249e-12
 
