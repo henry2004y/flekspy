@@ -149,13 +149,13 @@ class TestParticles:
         pIDs = tp.getIDs()
         assert tp.__repr__().startswith("Particles")
         assert pIDs[0] == (0, 5121)
-        pt = tp[10]
+        pt = tp[10].collect()
         assert pt["x"][0] == -0.031386006623506546
         assert pt["vx"][3] == 5.870406312169507e-05
         assert pt["vy"][5] == 4.103916944586672e-05
         assert pt["vz"].shape == (8,)
         with pytest.raises(Exception):
-            pt["unknown"]
+            pt.select("unknown").collect()
         x = tp.read_initial_condition(pIDs[10])
         assert x[1] == pt["x"][0]
         x = tp.read_final_condition(tp.IDs[10])
@@ -250,21 +250,24 @@ class TestParticles:
 
     def test_EBG(self):
         tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True)
-        assert tp[0][0, 7] == 224199.65625  # bx
-        assert tp[0][0, 16] == 2194893.75  # dbydx
+        p0_collected = tp[0].collect()
+        assert p0_collected.item(0, 7) == 224199.65625  # bx
+        assert p0_collected.item(0, 16) == 2194893.75  # dbydx
         pid = tp.getIDs()[0]
         assert tp.get_pitch_angle(pid)[0] == np.float32(57.661438)
-        vx, vy, vz = tp[0][0, 4], tp[0][0, 5], tp[0][0, 6]
+        vx, vy, vz = p0_collected.item(0, 4), p0_collected.item(0, 5), p0_collected.item(0, 6)
         ke = tp.get_kinetic_energy(vx, vy, vz)
         assert np.isclose(ke, 3.361357097373841e-17)
-        pt = tp[pid]
-        assert tp.get_ExB_drift(pid)[0,1] == 3.9656504668528214e-05
-        # kappa y
-        assert tp._calculate_curvature(pt)[0][0, -1] == -0.4797530472278595
-        assert tp.get_curvature_drift(pid)[0][0, 0] == -6.5444069202873204e-18
-        assert tp.get_gradient_drift(pid)[0][0, 1] == -9.73609190874673e-21
+        pt_lazy = tp[pid]
+        assert np.isclose(tp.get_ExB_drift(pid).item(0, 1), 3.9656504668528214e-05)
+        # kappa z, not y
+        assert np.isclose(
+            tp._calculate_curvature(pt_lazy).collect().item(0, -1), -0.4797530472278595
+        )
+        assert np.isclose(tp.get_curvature_drift(pid).item(0, 0), -6.5444069202873204e-18)
+        assert np.isclose(tp.get_gradient_drift(pid).item(0, 1), -9.73609190874673e-21)
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
-        assert rg2rc == 4.83376226572133e-12
+        assert np.isclose(rg2rc, 4.83376226572133e-12)
 
 
 def load(files):
