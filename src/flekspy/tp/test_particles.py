@@ -355,7 +355,7 @@ class FLEKSTP(object):
 
         try:
             pData_to_save.sink_csv(filename)
-        except Exception as e:
+        except (IOError, pl.exceptions.PolarsError) as e:
             print(f"Error saving trajectory to CSV: {e}")
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
