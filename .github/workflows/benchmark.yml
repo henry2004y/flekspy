@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'src/flekspy/idl/**'
+      - 'src/flekspy/tp/**'
 
 jobs:
   ci:

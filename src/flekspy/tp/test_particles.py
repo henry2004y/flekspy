@@ -290,6 +290,7 @@ class FLEKSTP(object):
     def save_trajectory_to_csv(
         self,
         pID: Tuple[int, int],
+        unit: str = "planetary",
         filename: str = None,
         shiftTime: bool = False,
         scaleTime: bool = False,
@@ -305,23 +306,39 @@ class FLEKSTP(object):
         Example:
         >>> tp.save_trajectory_to_csv((3,15))
         """
-        pData = self[pID]
+        pData_lazy = self[pID]
         if filename is None:
             filename = f"trajectory_{pID[0]}_{pID[1]}.csv"
 
-        header_cols = [
-            "time [s]",
-            "X [R]",
-            "Y [R]",
-            "Z [R]",
-            "U_x [km/s]",
-            "U_y [km/s]",
-            "U_z [km/s]",
-        ]
-        if self.nReal >= 10:
-            header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
-        if self.nReal >= 13:
-            header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
+        if unit == "planetary":
+            header_cols = [
+                "time [s]",
+                "X [R]",
+                "Y [R]",
+                "Z [R]",
+                "U_x [km/s]",
+                "U_y [km/s]",
+                "U_z [km/s]",
+            ]
+            if self.nReal >= 10:
+                header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
+            if self.nReal >= 13:
+                header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
+        elif unit == "SI":
+            header_cols = [
+                "time [s]",
+                "X [m]",
+                "Y [m]",
+                "Z [m]",
+                "U_x [m/s]",
+                "U_y [m/s]",
+                "U_z [m/s]",
+            ]
+            if self.nReal >= 10:
+                header_cols += ["B_x [T]", "B_y [T]", "B_z [T]"]
+            if self.nReal >= 13:
+                header_cols += ["E_x [V/m]", "E_y [V/m]", "E_z [V/m]"]
+
         if self.nReal >= 22:
             header_cols += [
                 "dBx_dx",
@@ -336,14 +353,30 @@ class FLEKSTP(object):
             ]
 
         if shiftTime:
-            pData = pData.with_columns((pl.col("time") - pData["time"][0]))
-            if scaleTime:
-                pData = pData.with_columns((pl.col("time") / pData["time"][-1]))
+            first_time = pData_lazy.select(pl.col("time").first()).collect().item()
+            if first_time is not None:
+                pData_lazy = pData_lazy.with_columns((pl.col("time") - first_time))
+                if scaleTime:
+                    last_time = (
+                        pData_lazy.select(pl.col("time").last()).collect().item()
+                    )
+                    if last_time > 0:
+                        pData_lazy = pData_lazy.with_columns(
+                            (pl.col("time") / last_time)
+                        )
 
-        # Create a new DataFrame with the desired header names
-        pData_to_save = pData.clone()
-        pData_to_save.columns = header_cols
-        pData_to_save.write_csv(filename)
+        # Create a new LazyFrame with the desired header names
+        pData_to_save = pData_lazy.select(
+            [
+                pl.col(original_name).alias(new_name)
+                for original_name, new_name in zip(pData_lazy.columns, header_cols)
+            ]
+        )
+
+        try:
+            pData_to_save.sink_csv(filename)
+        except (IOError, pl.exceptions.PolarsError) as e:
+            print(f"Error saving trajectory to CSV: {e}")
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
@@ -417,9 +450,9 @@ class FLEKSTP(object):
                         return list(struct.unpack("f" * self.nReal, binaryData))
         return None  # Only index 0 and -1 are supported
 
-    def read_particle_trajectory(self, pID: Tuple[int, int]) -> pl.DataFrame:
+    def read_particle_trajectory(self, pID: Tuple[int, int]) -> pl.LazyFrame:
         """
-        Return the trajectory of a test particle as a polars DataFrame.
+        Return the trajectory of a test particle as a polars LazyFrame.
         """
         if pID not in self.particle_locations:
             raise KeyError(f"Particle ID {pID} not found.")
@@ -434,8 +467,8 @@ class FLEKSTP(object):
 
         # Use the Indices enum to create meaningful column names
         column_names = [i.name.lower() for i in islice(Indices, self.nReal)]
-        df = pl.from_numpy(data=trajectory_data, schema=column_names)
-        return df
+        lf = pl.from_numpy(data=trajectory_data, schema=column_names).lazy()
+        return lf
 
     def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
@@ -484,13 +517,32 @@ class FLEKSTP(object):
         return ke
 
     def get_pitch_angle(self, pID):
-        pt = self[pID]
-        vx, vy, vz = pt["vx"], pt["vy"], pt["vz"]
-        bx, by, bz = pt["bx"], pt["by"], pt["bz"]
+        pt_lazy = self[pID]
         # Pitch Angle Calculation
-        pitch_angle = self.get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
+        pitch_angle = self._get_pitch_angle_lazy(pt_lazy)
 
         return pitch_angle
+
+    @staticmethod
+    def _get_pitch_angle_lazy(lf: pl.LazyFrame) -> pl.Series:
+        """
+        Calculates the pitch angle from a LazyFrame.
+        """
+        # Pitch Angle Calculation
+        v_dot_b = (
+            pl.col("vx") * pl.col("bx")
+            + pl.col("vy") * pl.col("by")
+            + pl.col("vz") * pl.col("bz")
+        )
+        v_mag = (pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2).sqrt()
+        b_mag = (pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+
+        epsilon = 1e-15
+        cos_alpha = v_dot_b / (v_mag * b_mag + epsilon)
+        cos_alpha = cos_alpha.clip(-1.0, 1.0)
+        pitch_angle_expr = (cos_alpha.arccos() * 180.0 / np.pi).alias("pitch_angle")
+
+        return lf.select(pitch_angle_expr).collect().to_series()
 
     @staticmethod
     def get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz):
@@ -524,38 +576,30 @@ class FLEKSTP(object):
         """
         Calculates the 1st adiabatic invariant of a particle.
         """
-        pt = self[pID]
+        pt_lazy = self[pID]
         epsilon = 1e-15
 
-        # Calculate magnitudes and dot product using polars expressions
-        df = pt.with_columns(
-            v_mag=(pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2).sqrt(),
-            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt(),
-            v_dot_b=(
-                pl.col("vx") * pl.col("bx")
-                + pl.col("vy") * pl.col("by")
-                + pl.col("vz") * pl.col("bz")
-            ),
+        # Build the expression tree for the calculation
+        v_mag_sq = pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2
+        v_mag = v_mag_sq.sqrt()
+        b_mag_expr = (pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+        v_dot_b = (
+            pl.col("vx") * pl.col("bx")
+            + pl.col("vy") * pl.col("by")
+            + pl.col("vz") * pl.col("bz")
         )
 
-        # Calculate sine square of the pitch angle
-        df = df.with_columns(
-            sin_alpha_sq=1
-            - (pl.col("v_dot_b") / (pl.col("v_mag") * pl.col("b_mag") + epsilon)) ** 2
-        )
+        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag_expr + epsilon)) ** 2
+        v_perp_sq = v_mag_sq * sin_alpha_sq
+        mu_expr = ((0.5 * mass * v_perp_sq) / (b_mag_expr + epsilon)).alias("mu")
 
-        # Calculate perpendicular velocity squared
-        df = df.with_columns(
-            v_perp_sq=pl.col("v_mag") * pl.col("v_mag") * pl.col("sin_alpha_sq")
-        )
-
-        # Calculate mu
-        mu = (0.5 * mass * df["v_perp_sq"]) / (df["b_mag"] + epsilon)
-
-        return mu
+        # Execute the expression and return the result
+        return pt_lazy.select(mu_expr).collect()["mu"]
 
     @staticmethod
-    def _calculate_bmag(df: pl.DataFrame) -> pl.DataFrame:
+    def _calculate_bmag(
+        df: Union[pl.DataFrame, pl.LazyFrame],
+    ) -> Union[pl.DataFrame, pl.LazyFrame]:
         """
         Calculates the magnetic field magnitude.
         """
@@ -566,7 +610,9 @@ class FLEKSTP(object):
         return df
 
     @staticmethod
-    def _calculate_curvature(df: pl.DataFrame) -> pl.DataFrame:
+    def _calculate_curvature(
+        df: Union[pl.DataFrame, pl.LazyFrame],
+    ) -> Union[pl.DataFrame, pl.LazyFrame]:
         """
         Calculates the magnetic field curvature vector and adds it to the DataFrame.
         κ = (b ⋅ ∇)b
@@ -613,25 +659,28 @@ class FLEKSTP(object):
 
         return df
 
-    def get_ExB_drift(self, pID: Tuple[int, int]):
+    def get_ExB_drift(self, pID: Tuple[int, int]) -> pl.DataFrame:
         """
         Calculates the convection drift velocity for a particle.
         v_exb = E x B / (B^2)
         Assuming Earth's planetary units, output drift velocity in [km/s].
         """
-        pt = self[pID]
-        df = self._calculate_bmag(pt)
-        # E x B
-        cross_x = df["ey"] * df["bz"] - df["ez"] * df["by"]
-        cross_y = df["ez"] * df["bx"] - df["ex"] * df["bz"]
-        cross_z = df["ex"] * df["by"] - df["ey"] * df["bx"]
-        df = df.with_columns(
-            vex=cross_x / pl.col("b_mag") ** 2,
-            vey=cross_y / pl.col("b_mag") ** 2,
-            vez=cross_z / pl.col("b_mag") ** 2,
+        pt_lazy = self[pID]
+        lf = self._calculate_bmag(pt_lazy)
+
+        # E x B expressions
+        cross_x = pl.col("ey") * pl.col("bz") - pl.col("ez") * pl.col("by")
+        cross_y = pl.col("ez") * pl.col("bx") - pl.col("ex") * pl.col("bz")
+        cross_z = pl.col("ex") * pl.col("by") - pl.col("ey") * pl.col("bx")
+
+        b_mag_sq = pl.col("b_mag") ** 2
+        lf = lf.with_columns(
+            vex=cross_x / b_mag_sq,
+            vey=cross_y / b_mag_sq,
+            vez=cross_z / b_mag_sq,
         )
 
-        return df.select(["vex", "vey", "vez"])
+        return lf.select(["vex", "vey", "vez"]).collect()
 
     def get_curvature_drift(
         self,
@@ -639,7 +688,7 @@ class FLEKSTP(object):
         unit="planetary",
         mass=proton_mass,
         charge=elementary_charge,
-    ):
+    ) -> pl.DataFrame:
         """
         Calculates the curvature drift velocity for a particle.
         v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ)
@@ -647,46 +696,41 @@ class FLEKSTP(object):
         - "planetary": [km/s]
         - "SI": [m/s]
         """
-        pt = self[pID]
-        df = self._calculate_bmag(pt)
+        pt_lazy = self[pID]
+        lf = self._calculate_bmag(pt_lazy)
 
-        # Calculate v_parallel
-        df = df.with_columns(
-            v_dot_b=(
-                pl.col("vx") * pl.col("bx")
-                + pl.col("vy") * pl.col("by")
-                + pl.col("vz") * pl.col("bz")
-            ),
+        # Calculate v_parallel using expressions
+        v_dot_b = (
+            pl.col("vx") * pl.col("bx")
+            + pl.col("vy") * pl.col("by")
+            + pl.col("vz") * pl.col("bz")
         )
-        df = df.with_columns(
-            v_parallel=df["v_dot_b"] / df["b_mag"],
-        )
+        v_parallel = v_dot_b / pl.col("b_mag")
+        lf = lf.with_columns(v_parallel=v_parallel)
 
         # Calculate curvature
-        df = self._calculate_curvature(df)
+        lf = self._calculate_curvature(lf)
 
-        # B x κ
-        cross_x = df["by"] * df["kappa_z"] - df["bz"] * df["kappa_y"]
-        cross_y = df["bz"] * df["kappa_x"] - df["bx"] * df["kappa_z"]
-        cross_z = df["bx"] * df["kappa_y"] - df["by"] * df["kappa_x"]
-        # conversion factor
+        # B x κ using expressions
+        cross_x = pl.col("by") * pl.col("kappa_z") - pl.col("bz") * pl.col("kappa_y")
+        cross_y = pl.col("bz") * pl.col("kappa_x") - pl.col("bx") * pl.col("kappa_z")
+        cross_z = pl.col("bx") * pl.col("kappa_y") - pl.col("by") * pl.col("kappa_x")
+
+        # Conversion factor expression
+        v_parallel_sq = pl.col("v_parallel") ** 2
+        b_mag_sq = pl.col("b_mag") ** 2
         if unit == "planetary":
-            factor = (
-                (mass * df["v_parallel"] ** 2)
-                / (charge * df["b_mag"] ** 2)
-                * 1e9
-                / 6378
-            )
+            factor = (mass * v_parallel_sq) / (charge * b_mag_sq) * 1e9 / 6378
         elif unit == "SI":
-            factor = (mass * df["v_parallel"] ** 2) / (charge * df["b_mag"] ** 2)
+            factor = (mass * v_parallel_sq) / (charge * b_mag_sq)
+        else:
+            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
 
-        df = df.with_columns(
-            vcx=factor * cross_x,
-            vcy=factor * cross_y,
-            vcz=factor * cross_z,
+        lf = lf.with_columns(
+            vcx=factor * cross_x, vcy=factor * cross_y, vcz=factor * cross_z
         )
 
-        return df.select(["vcx", "vcy", "vcz"])
+        return lf.select(["vcx", "vcy", "vcz"]).collect()
 
     def get_gyroradius_to_curvature_ratio(
         self,
@@ -694,50 +738,45 @@ class FLEKSTP(object):
         unit="planetary",
         mass=proton_mass,
         charge=elementary_charge,
-    ):
+    ) -> pl.Series:
         """
         Calculates the ratio of the particle's gyroradius to the magnetic
         field's radius of curvature.
         """
-        pt = self[pID]
+        pt_lazy = self[pID]
         epsilon = 1e-15
 
-        # v_perp
-        df = pt.with_columns(
-            v_mag_sq=(pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2),
-            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt(),
-            v_dot_b=(
-                pl.col("vx") * pl.col("bx")
-                + pl.col("vy") * pl.col("by")
-                + pl.col("vz") * pl.col("bz")
-            ),
+        # Expression for v_perp
+        v_mag_sq = pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2
+        b_mag = (pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+        v_dot_b = (
+            pl.col("vx") * pl.col("bx")
+            + pl.col("vy") * pl.col("by")
+            + pl.col("vz") * pl.col("bz")
         )
-        df = df.with_columns(
-            sin_alpha_sq=1
-            - (pl.col("v_dot_b") / (df["v_mag_sq"].sqrt() * pl.col("b_mag") + epsilon))
-            ** 2
-        )
-        df = df.with_columns(
-            v_perp=(pl.col("v_mag_sq") * pl.col("sin_alpha_sq")).sqrt()
-        )
+        sin_alpha_sq = 1 - (v_dot_b / (v_mag_sq.sqrt() * b_mag + epsilon)) ** 2
+        v_perp = (v_mag_sq * sin_alpha_sq).sqrt()
 
-        # gyroradius
-        r_g = (mass * df["v_perp"]) / (abs(charge) * df["b_mag"]) * 1e9  # [km]
+        # Expression for gyroradius
+        r_g = (mass * v_perp) / (abs(charge) * b_mag) * 1e9  # [km]
 
-        # curvature radius
-        df = self._calculate_curvature(df)
+        # Expression for curvature radius
+        lf_curv = self._calculate_curvature(pt_lazy)
         kappa_mag = (
-            df["kappa_x"] ** 2 + df["kappa_y"] ** 2 + df["kappa_z"] ** 2
+            pl.col("kappa_x") ** 2 + pl.col("kappa_y") ** 2 + pl.col("kappa_z") ** 2
         ).sqrt()
+
         if unit == "planetary":
             factor = 6378  # conversion factor
         elif unit == "SI":
             factor = 1e-3  # conversion factor
-        r_c = 1 / (kappa_mag + epsilon) * factor  # [km]
-        ratio = r_g / r_c
-        ratio = ratio.alias("ratio")
+        else:
+            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
+        r_c = (1 / (kappa_mag + epsilon)) * factor  # [km]
 
-        return ratio
+        ratio_expr = (r_g / r_c).alias("ratio")
+
+        return lf_curv.select(ratio_expr).collect().to_series()
 
     def get_gradient_drift(
         self,
@@ -745,7 +784,7 @@ class FLEKSTP(object):
         unit="planetary",
         mass=proton_mass,
         charge=elementary_charge,
-    ):
+    ) -> pl.DataFrame:
         """
         Calculates the gradient drift velocity for a particle.
         v_g = (μ / (q * B^2)) * (B x ∇|B|)
@@ -753,11 +792,23 @@ class FLEKSTP(object):
         - "planetary": [km/s]
         - "SI": [m/s]
         """
-        pt = self[pID]
+        pt_lazy = self[pID]
+        epsilon = 1e-15
 
-        mu = self.get_first_adiabatic_invariant(pID, mass=mass)
+        # Inlined expression for mu
+        v_mag_sq = pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2
+        v_mag = v_mag_sq.sqrt()
+        b_mag = (pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+        v_dot_b = (
+            pl.col("vx") * pl.col("bx")
+            + pl.col("vy") * pl.col("by")
+            + pl.col("vz") * pl.col("bz")
+        )
+        sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
+        v_perp_sq = v_mag_sq * sin_alpha_sq
+        mu_expr = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)
 
-        df = self._calculate_bmag(pt)
+        lf = self._calculate_bmag(pt_lazy)
 
         # Gradient of B magnitude: ∇|B|
         grad_b_mag_x = (
@@ -776,31 +827,37 @@ class FLEKSTP(object):
             + pl.col("bz") * pl.col("dbzdz")
         ) / pl.col("b_mag")
 
-        df = df.with_columns(
+        lf = lf.with_columns(
             grad_b_mag_x=grad_b_mag_x,
             grad_b_mag_y=grad_b_mag_y,
             grad_b_mag_z=grad_b_mag_z,
         )
 
         # B x ∇|B|
-        cross_x = pl.col("by") * grad_b_mag_z - pl.col("bz") * grad_b_mag_y
-        cross_y = pl.col("bz") * grad_b_mag_x - pl.col("bx") * grad_b_mag_z
-        cross_z = pl.col("bx") * grad_b_mag_y - pl.col("by") * grad_b_mag_x
+        cross_x = pl.col("by") * pl.col("grad_b_mag_z") - pl.col("bz") * pl.col(
+            "grad_b_mag_y"
+        )
+        cross_y = pl.col("bz") * pl.col("grad_b_mag_x") - pl.col("bx") * pl.col(
+            "grad_b_mag_z"
+        )
+        cross_z = pl.col("bx") * pl.col("grad_b_mag_y") - pl.col("by") * pl.col(
+            "grad_b_mag_x"
+        )
 
         b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
         if unit == "planetary":
-            factor = mu / (charge * b_mag_sq) * 1e9 / 6378
+            factor = mu_expr / (charge * b_mag_sq) * 1e9 / 6378
         elif unit == "SI":
-            factor = mu / (charge * b_mag_sq)
+            factor = mu_expr / (charge * b_mag_sq)
+        else:
+            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
 
-        df = df.with_columns(
-            vgx=factor * cross_x,
-            vgy=factor * cross_y,
-            vgz=factor * cross_z,
+        lf = lf.with_columns(
+            vgx=factor * cross_x, vgy=factor * cross_y, vgz=factor * cross_z
         )
 
-        return df.select(["vgx", "vgy", "vgz"])
+        return lf.select(["vgx", "vgy", "vgz"]).collect()
 
     def plot_trajectory(
         self,
@@ -833,7 +890,7 @@ class FLEKSTP(object):
                 plot_data(pt[label], label, irow, i, **kwargs)
 
         try:
-            pt = self[pID]
+            pt = self[pID].collect()
         except (KeyError, ValueError) as e:
             print(f"Error plotting trajectory for {pID}: {e}")
             return
@@ -1080,22 +1137,25 @@ class FLEKSTP(object):
 
 
 def interpolate_at_times(
-    df: pl.DataFrame, times_to_interpolate: list[float]
+    df: Union[pl.DataFrame, pl.LazyFrame], times_to_interpolate: list[float]
 ) -> pl.DataFrame:
     """
     Interpolates multiple numeric columns of a DataFrame at specified time points.
 
     Args:
-        df: The input Polars DataFrame.
+        df: The input Polars DataFrame or LazyFrame.
         times_to_interpolate: A list of time points (floats or ints) at which to interpolate.
 
     Returns:
         A new DataFrame containing the interpolated rows for each specified time.
     """
+    if isinstance(df, pl.LazyFrame):
+        df = df.collect()
+
     # Identify all numeric columns to be interpolated
     cols_to_interpolate = df.select(pl.col(pl.NUMERIC_DTYPES).exclude("time")).columns
 
-    time_col_dtype = df["time"].dtype
+    time_col_dtype = df.get_column("time").dtype
 
     null_rows_df = pl.DataFrame(
         {
@@ -1108,11 +1168,11 @@ def interpolate_at_times(
 
     # Create a Datetime Series to use for interpolation.
     time_dt_series = pl.from_epoch(
-        (df_all["time"] * 1_000_000).cast(pl.Int64), time_unit="us"
+        (df_all.get_column("time") * 1_000_000).cast(pl.Int64), time_unit="us"
     )
 
     interpolated_df = df_all.with_columns(
-        pl.col(cols_to_interpolate).interpolate_by(by=time_dt_series)
+        pl.col(cols_to_interpolate).interpolate_by(time_dt_series)
     ).filter(pl.col("time").is_in(times_to_interpolate))
 
     return interpolated_df
