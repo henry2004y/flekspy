@@ -310,3 +310,20 @@ def test_load_tp(benchmark):
     pIDs = tp.getIDs()
 
     benchmark(load_test_particle_trajectories, tp, pIDs)
+
+def get_drifts(tp, pid):
+    tp.get_curvature_drift(pid)
+    tp.get_gradient_drift(pid)
+    tp.get_ExB_drift(pid)
+
+def test_drift_tp(benchmark):
+    """
+    Benchmark particle drift calculations.
+    """
+    from flekspy.tp import FLEKSTP
+
+    dirs = (os.path.join(filedir, "data", "test_particles_PBEG"),)
+    tp = FLEKSTP(dirs, iSpecies=1)
+    pid = tp.getIDs()[0]
+
+    benchmark(get_drifts, tp, pid)
