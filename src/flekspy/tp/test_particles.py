@@ -581,76 +581,32 @@ class FLEKSTP(object):
             bx_u=pl.col("bx") / pl.col("b_mag"),
             by_u=pl.col("by") / pl.col("b_mag"),
             bz_u=pl.col("bz") / pl.col("b_mag"),
-        )
-
-        # Gradient of B magnitude: ∇|B|
-        df = df.with_columns(
-            grad_b_mag_x=(
-                pl.col("bx") * pl.col("dbxdx")
-                + pl.col("by") * pl.col("dbydx")
-                + pl.col("bz") * pl.col("dbzdx")
-            )
-            / pl.col("b_mag"),
-            grad_b_mag_y=(
-                pl.col("bx") * pl.col("dbxdy")
-                + pl.col("by") * pl.col("dbydy")
-                + pl.col("bz") * pl.col("dbzdy")
-            )
-            / pl.col("b_mag"),
-            grad_b_mag_z=(
-                pl.col("bx") * pl.col("dbxdz")
-                + pl.col("by") * pl.col("dbydz")
-                + pl.col("bz") * pl.col("dbzdz")
-            )
-            / pl.col("b_mag"),
-        )
-
-        # Derivatives of unit vector b: ∇b
-        dbx_u_dx = (pl.col("dbxdx") - pl.col("bx_u") * pl.col("grad_b_mag_x")) / pl.col(
-            "b_mag"
-        )
-        dbx_u_dy = (pl.col("dbxdy") - pl.col("bx_u") * pl.col("grad_b_mag_y")) / pl.col(
-            "b_mag"
-        )
-        dbx_u_dz = (pl.col("dbxdz") - pl.col("bx_u") * pl.col("grad_b_mag_z")) / pl.col(
-            "b_mag"
-        )
-
-        dby_u_dx = (pl.col("dbydx") - pl.col("by_u") * pl.col("grad_b_mag_x")) / pl.col(
-            "b_mag"
-        )
-        dby_u_dy = (pl.col("dbydy") - pl.col("by_u") * pl.col("grad_b_mag_y")) / pl.col(
-            "b_mag"
-        )
-        dby_u_dz = (pl.col("dbydz") - pl.col("by_u") * pl.col("grad_b_mag_z")) / pl.col(
-            "b_mag"
-        )
-
-        dbz_u_dx = (pl.col("dbzdx") - pl.col("bz_u") * pl.col("grad_b_mag_x")) / pl.col(
-            "b_mag"
-        )
-        dbz_u_dy = (pl.col("dbzdy") - pl.col("bz_u") * pl.col("grad_b_mag_y")) / pl.col(
-            "b_mag"
-        )
-        dbz_u_dz = (pl.col("dbzdz") - pl.col("bz_u") * pl.col("grad_b_mag_z")) / pl.col(
-            "b_mag"
+            dbx_u_dx=pl.col("dbxdx") / pl.col("b_mag"),
+            dbx_u_dy=pl.col("dbxdy") / pl.col("b_mag"),
+            dbx_u_dz=pl.col("dbxdz") / pl.col("b_mag"),
+            dby_u_dx=pl.col("dbydx") / pl.col("b_mag"),
+            dby_u_dy=pl.col("dbydy") / pl.col("b_mag"),
+            dby_u_dz=pl.col("dbydz") / pl.col("b_mag"),
+            dbz_u_dx=pl.col("dbzdx") / pl.col("b_mag"),
+            dbz_u_dy=pl.col("dbzdy") / pl.col("b_mag"),
+            dbz_u_dz=pl.col("dbzdz") / pl.col("b_mag"),
         )
 
         # Curvature vector: κ = (b ⋅ ∇)b
         kappa_x = (
-            pl.col("bx_u") * dbx_u_dx
-            + pl.col("by_u") * dbx_u_dy
-            + pl.col("bz_u") * dbx_u_dz
+            pl.col("bx_u") * pl.col("dbx_u_dx")
+            + pl.col("by_u") * pl.col("dbx_u_dy")
+            + pl.col("bz_u") * pl.col("dbx_u_dz")
         )
         kappa_y = (
-            pl.col("bx_u") * dby_u_dx
-            + pl.col("by_u") * dby_u_dy
-            + pl.col("bz_u") * dby_u_dz
+            pl.col("bx_u") * pl.col("dby_u_dx")
+            + pl.col("by_u") * pl.col("dby_u_dy")
+            + pl.col("bz_u") * pl.col("dby_u_dz")
         )
         kappa_z = (
-            pl.col("bx_u") * dbz_u_dx
-            + pl.col("by_u") * dbz_u_dy
-            + pl.col("bz_u") * dbz_u_dz
+            pl.col("bx_u") * pl.col("dbz_u_dx")
+            + pl.col("by_u") * pl.col("dbz_u_dy")
+            + pl.col("bz_u") * pl.col("dbz_u_dz")
         )
 
         df = df.with_columns(kappa_x=kappa_x, kappa_y=kappa_y, kappa_z=kappa_z)
@@ -718,7 +674,7 @@ class FLEKSTP(object):
             factor = (
                 (mass * df["v_parallel"] ** 2)
                 / (charge * df["b_mag"] ** 2)
-                * 1e12
+                * 1e9
                 / 6378
             )
         elif unit == "SI":
@@ -834,7 +790,7 @@ class FLEKSTP(object):
         b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
         if unit == "planetary":
-            factor = mu / (charge * b_mag_sq) * 1e12 / 6378
+            factor = mu / (charge * b_mag_sq) * 1e9 / 6378
         elif unit == "SI":
             factor = mu / (charge * b_mag_sq)
 

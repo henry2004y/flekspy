@@ -254,17 +254,17 @@ class TestParticles:
         assert tp[0][0, 16] == 2194893.75  # dbydx
         pid = tp.getIDs()[0]
         assert tp.get_pitch_angle(pid)[0] == np.float32(57.661438)
-        # TODO The units are messed up in the test data!
         vx, vy, vz = tp[0][0, 4], tp[0][0, 5], tp[0][0, 6]
         ke = tp.get_kinetic_energy(vx, vy, vz)
         assert np.isclose(ke, 3.361357097373841e-17)
         pt = tp[pid]
+        assert tp.get_ExB_drift(pid)[0,1] == 3.9656504668528214e-05
         # kappa y
-        assert tp._calculate_curvature(pt)[0][0, -1] == -0.47917285561561584
-        assert tp.get_curvature_drift(pid)[0][0, 0] == -6.5444069434483776e-15
-        assert tp.get_gradient_drift(pid)[0][0, 1] == -9.73609199921961e-18
+        assert tp._calculate_curvature(pt)[0][0, -1] == -0.4797530472278595
+        assert tp.get_curvature_drift(pid)[0][0, 0] == -6.5444069202873204e-18
+        assert tp.get_gradient_drift(pid)[0][0, 1] == -9.73609190874673e-21
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
-        assert rg2rc == 4.833759436842249e-12
+        assert rg2rc == 4.83376226572133e-12
 
 
 def load(files):
