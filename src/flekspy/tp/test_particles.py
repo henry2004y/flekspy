@@ -290,6 +290,7 @@ class FLEKSTP(object):
     def save_trajectory_to_csv(
         self,
         pID: Tuple[int, int],
+        unit: str = "planetary",
         filename: str = None,
         shiftTime: bool = False,
         scaleTime: bool = False,
@@ -309,19 +310,35 @@ class FLEKSTP(object):
         if filename is None:
             filename = f"trajectory_{pID[0]}_{pID[1]}.csv"
 
-        header_cols = [
-            "time [s]",
-            "X [R]",
-            "Y [R]",
-            "Z [R]",
-            "U_x [km/s]",
-            "U_y [km/s]",
-            "U_z [km/s]",
-        ]
-        if self.nReal >= 10:
-            header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
-        if self.nReal >= 13:
-            header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
+        if unit == "planetary":
+            header_cols = [
+                "time [s]",
+                "X [R]",
+                "Y [R]",
+                "Z [R]",
+                "U_x [km/s]",
+                "U_y [km/s]",
+                "U_z [km/s]",
+            ]
+            if self.nReal >= 10:
+                header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
+            if self.nReal >= 13:
+                header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
+        elif unit == "SI":
+            header_cols = [
+                "time [s]",
+                "X [m]",
+                "Y [m]",
+                "Z [m]",
+                "U_x [m/s]",
+                "U_y [m/s]",
+                "U_z [m/s]",
+            ]
+            if self.nReal >= 10:
+                header_cols += ["B_x [T]", "B_y [T]", "B_z [T]"]
+            if self.nReal >= 13:
+                header_cols += ["E_x [V/m]", "E_y [V/m]", "E_z [V/m]"]
+
         if self.nReal >= 22:
             header_cols += [
                 "dBx_dx",
@@ -337,13 +354,16 @@ class FLEKSTP(object):
 
         if shiftTime:
             first_time = pData_lazy.select(pl.col("time").first()).collect().item()
-            pData_lazy = pData_lazy.with_columns((pl.col("time") - first_time))
-            if scaleTime:
-                last_time = pData_lazy.select(pl.col("time").last()).collect().item()
-                if last_time > 0:
-                    pData_lazy = pData_lazy.with_columns(
-                        (pl.col("time") / last_time)
+            if first_time is not None:
+                pData_lazy = pData_lazy.with_columns((pl.col("time") - first_time))
+                if scaleTime:
+                    last_time = (
+                        pData_lazy.select(pl.col("time").last()).collect().item()
                     )
+                    if last_time > 0:
+                        pData_lazy = pData_lazy.with_columns(
+                            (pl.col("time") / last_time)
+                        )
 
         # Create a new LazyFrame with the desired header names
         pData_to_save = pData_lazy.select(
@@ -578,7 +598,7 @@ class FLEKSTP(object):
 
     @staticmethod
     def _calculate_bmag(
-        df: Union[pl.DataFrame, pl.LazyFrame]
+        df: Union[pl.DataFrame, pl.LazyFrame],
     ) -> Union[pl.DataFrame, pl.LazyFrame]:
         """
         Calculates the magnetic field magnitude.
@@ -591,7 +611,7 @@ class FLEKSTP(object):
 
     @staticmethod
     def _calculate_curvature(
-        df: Union[pl.DataFrame, pl.LazyFrame]
+        df: Union[pl.DataFrame, pl.LazyFrame],
     ) -> Union[pl.DataFrame, pl.LazyFrame]:
         """
         Calculates the magnetic field curvature vector and adds it to the DataFrame.
@@ -704,7 +724,7 @@ class FLEKSTP(object):
         elif unit == "SI":
             factor = (mass * v_parallel_sq) / (charge * b_mag_sq)
         else:
-            factor = 1.0  # Default or error
+            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
 
         lf = lf.with_columns(
             vcx=factor * cross_x, vcy=factor * cross_y, vcz=factor * cross_z
@@ -751,7 +771,7 @@ class FLEKSTP(object):
         elif unit == "SI":
             factor = 1e-3  # conversion factor
         else:
-            factor = 1.0  # Default or error
+            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
         r_c = (1 / (kappa_mag + epsilon)) * factor  # [km]
 
         ratio_expr = (r_g / r_c).alias("ratio")
@@ -831,7 +851,7 @@ class FLEKSTP(object):
         elif unit == "SI":
             factor = mu_expr / (charge * b_mag_sq)
         else:
-            factor = 1.0  # Default or error
+            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
 
         lf = lf.with_columns(
             vgx=factor * cross_x, vgy=factor * cross_y, vgz=factor * cross_z
