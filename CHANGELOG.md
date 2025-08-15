@@ -49,3 +49,7 @@
 ## v0.5.3 (2025/08/13)
 
 - Support test particle gradient B storage.
+
+## v0.5.4 (2025/08/14)
+
+- Add ExB, gradient, and curvature drift calculation for test particles.
