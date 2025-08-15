@@ -154,8 +154,8 @@ class TestParticles:
         assert pt["vx"][3] == 5.870406312169507e-05
         assert pt["vy"][5] == 4.103916944586672e-05
         assert pt["vz"].shape == (8,)
-        with pytest.raises(Exception):
-            pt.select("unknown").collect()
+        with pytest.raises(pl.exceptions.ColumnNotFoundError):
+            pt.select("unknown")
         x = tp.read_initial_condition(pIDs[10])
         assert x[1] == pt["x"][0]
         x = tp.read_final_condition(tp.IDs[10])
