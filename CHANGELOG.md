@@ -53,3 +53,7 @@
 ## v0.5.4 (2025/08/14)
 
 - Add ExB, gradient, and curvature drift calculation for test particles.
+
+## v0.5.5 (2025/08/15)
+
+- Use lazy Polars expression for test particle analysis if possible.
