@@ -16,6 +16,10 @@
   <a href="https://app.codecov.io/gh/henry2004y/flekspy/">
     <img src="https://img.shields.io/codecov/c/github/henry2004y/flekspy">
   </a>
+  <a href="https://doi.org/10.5281/zenodo.16912301">
+    <img src="https://zenodo.org/badge/307380211.svg">
+  </a>
+  
 </p>
 
 Python package for processing [FLEKS](https://github.com/SWMFsoftware/FLEKS) (FLexible Exascale Kinetic Simulator) data.
