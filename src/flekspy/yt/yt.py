@@ -9,8 +9,8 @@ from yt.data_objects.selection_objects.data_selection_objects import (
     YTSelectionContainer,
 )
 from yt.visualization.profile_plotter import PhasePlot
+import xarray as xr
 
-from flekspy.util import DataContainer2D, DataContainer3D
 from flekspy.util import get_unit
 
 
@@ -203,7 +203,7 @@ class FLEKSData(BoxlibDataset):
     def pvar(self, var):
         return (self.particle_types[0], var)
 
-    def get_slice(self, norm, cut_loc) -> DataContainer2D:
+    def get_slice(self, norm, cut_loc) -> xr.Dataset:
         r"""
         Returns a DataContainer2D object that contains a slice along the normal direction.
 
@@ -231,35 +231,26 @@ class FLEKSData(BoxlibDataset):
 
         abArr = self.arbitrary_grid(left_edge, right_edge, slice_dim)
 
-        dataSets = {}
-        for var in self.field_list:
-            if abArr[var].size != 0:  # remove empty sliced particle output
-                dataSets[var[1]] = np.squeeze(abArr[var])
-
         axLabes = {0: ("Y", "Z"), 1: ("X", "Z"), 2: ("X", "Y")}
+        data_vars = {}
+        for var in self.field_list:
+            data = np.squeeze(abArr[var])
+            if data.ndim == 2:
+                data_vars[var[1]] = (axLabes[idir], data)
 
-        axes = []
+
+        coords = {}
         for axis_label in axLabes[idir]:
             ax_dir = axDir[axis_label]
-            axes.append(
-                np.linspace(
-                    self.domain_left_edge[ax_dir],
-                    self.domain_right_edge[ax_dir],
-                    self.domain_dimensions[ax_dir],
-                )
+            coords[axis_label] = np.linspace(
+                self.domain_left_edge[ax_dir],
+                self.domain_right_edge[ax_dir],
+                self.domain_dimensions[ax_dir],
             )
 
-        return DataContainer2D(
-            dataSets,
-            axes[0],
-            axes[1],
-            axLabes[idir][0],
-            axLabes[idir][1],
-            norm,
-            cut_loc,
-        )
+        return xr.Dataset(data_vars, coords=coords)
 
-    def get_domain(self) -> DataContainer3D:
+    def get_domain(self) -> xr.Dataset:
         """
         Read all the simulation data into a 3D box.
         """
@@ -267,21 +258,22 @@ class FLEKSData(BoxlibDataset):
             level=0, left_edge=self.domain_left_edge, dims=self.domain_dimensions
         )
 
-        dataSets = {}
+        data_vars = {}
+        ax_labels = ["X", "Y", "Z"]
         for var in self.field_list:
-            dataSets[var[1]] = domain[var]
+            data = domain[var]
+            if data.ndim == 3:
+                data_vars[var[1]] = (ax_labels, data)
 
-        axes = []
+        coords = {}
         for idim in range(self.dimensionality):
-            axes.append(
-                np.linspace(
-                    self.domain_left_edge[idim],
-                    self.domain_right_edge[idim],
-                    self.domain_dimensions[idim],
-                )
+            coords[ax_labels[idim]] = np.linspace(
+                self.domain_left_edge[idim],
+                self.domain_right_edge[idim],
+                self.domain_dimensions[idim],
             )
 
-        return DataContainer3D(dataSets, axes[0], axes[1], axes[2])
+        return xr.Dataset(data_vars, coords=coords)
 
     def plot_slice(self, norm, cut_loc, vars, unit_type="planet", *args, **kwargs):
         """Plot 2D slice
