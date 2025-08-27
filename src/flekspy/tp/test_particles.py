@@ -575,6 +575,9 @@ class FLEKSTP(object):
     def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
         """
         Calculates the 1st adiabatic invariant of a particle.
+        The output units depend on the input data's units:
+        - "planetary" (e.g., velocity in km/s, B-field in nT): result is in 1e15 J/T.
+        - "SI" (e.g., velocity in m/s, B-field in T): result is in J/T.
         """
         pt_lazy = self[pID]
         epsilon = 1e-15
@@ -593,7 +596,7 @@ class FLEKSTP(object):
         v_perp_sq = v_mag_sq * sin_alpha_sq
         mu_expr = ((0.5 * mass * v_perp_sq) / (b_mag_expr + epsilon)).alias("mu")
 
-        # Execute the expression and return the result
+        # Execute the expression and return
         return pt_lazy.select(mu_expr).collect()["mu"]
 
     @staticmethod
