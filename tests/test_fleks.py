@@ -210,8 +210,6 @@ class TestParticles:
             self.tp.read_particle_trajectory((-1, -1))
 
     def test_read_particle_trajectory_value_error(self, monkeypatch):
-        import numpy as np
-
         pID = self.tp.IDs[0]
         # Ensure the cache is clean for this test
         if pID in self.tp._trajectory_cache:
@@ -268,6 +266,7 @@ class TestParticles:
         assert np.isclose(tp.get_gradient_drift(pid).item(0, 1), -9.73609190874673e-21)
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
         assert np.isclose(rg2rc, 4.83376226572133e-12)
+        tp.analyze_drifts(pid)
 
 
 def load(files):
