@@ -10,6 +10,8 @@ from itertools import islice
 from enum import IntEnum
 from scipy.constants import proton_mass, elementary_charge, mu_0, epsilon_0
 
+EARTH_RADIUS_KM = 6378
+
 
 class Indices(IntEnum):
     """Defines constant indices for test particles."""
@@ -723,7 +725,9 @@ class FLEKSTP(object):
         v_parallel_sq = pl.col("v_parallel") ** 2
         b_mag_sq = pl.col("b_mag") ** 2
         if unit == "planetary":
-            factor = (mass * v_parallel_sq) / (charge * b_mag_sq) * 1e9 / 6378
+            factor = (
+                (mass * v_parallel_sq) / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
+            )
         elif unit == "SI":
             factor = (mass * v_parallel_sq) / (charge * b_mag_sq)
         else:
@@ -770,7 +774,7 @@ class FLEKSTP(object):
         ).sqrt()
 
         if unit == "planetary":
-            factor = 6378  # conversion factor
+            factor = EARTH_RADIUS_KM  # conversion factor
         elif unit == "SI":
             factor = 1e-3  # conversion factor
         else:
@@ -850,7 +854,7 @@ class FLEKSTP(object):
         b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
         if unit == "planetary":
-            factor = mu_expr / (charge * b_mag_sq) * 1e9 / 6378
+            factor = mu_expr / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
         elif unit == "SI":
             factor = mu_expr / (charge * b_mag_sq)
         else:
@@ -888,8 +892,9 @@ class FLEKSTP(object):
             b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
         ).lazy()
 
-        B_mag = pt.select("b_mag").collect().to_numpy().flatten()
-        time_steps = pt.select("time").collect().to_numpy().flatten()
+        collected = pt.select("b_mag", "time").collect()
+        B_mag = collected["b_mag"].to_numpy().flatten()
+        time_steps = collected["time"].to_numpy().flatten()
         dB_dt = np.gradient(B_mag, time_steps)  # [nT/s]
 
         # --- Step 2: Define the rest of the calculations lazily ---
@@ -918,7 +923,7 @@ class FLEKSTP(object):
                 pl.col("vx") * grad_b_mag_x
                 + pl.col("vy") * grad_b_mag_y
                 + pl.col("vz") * grad_b_mag_z
-            ) / 6378
+            ) / EARTH_RADIUS_KM
         elif unit == "SI":
             v_dot_gradB = (
                 pl.col("vx") * grad_b_mag_x
@@ -946,7 +951,11 @@ class FLEKSTP(object):
         return result
 
     def analyze_drifts(
-        self, pid: list[tuple[int, int]], unit="planetary", savename=None
+        self,
+        pid: tuple[int, int],
+        unit="planetary",
+        savename=None,
+        switchYZ=False,
     ):
         """
         Compute plasma drift velocities and the associated rate of energy change.
@@ -1012,47 +1021,57 @@ class FLEKSTP(object):
         )
 
         # --- 1. Plasma Convection Drift (vex, vey, vez) ---
-        ax1 = axes[0]
-        ax1.plot(pt["time"], ve["vex"], label="vex")
-        ax1.plot(pt["time"], ve["vez"], label="vey")
-        ax1.plot(pt["time"], ve["vey"], label="vez")
-        ax1.set_ylabel(r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", fontsize=14)
-        ax1.legend(ncol=3, fontsize="medium")
-        ax1.grid(True, linestyle="--", alpha=0.6)
+        axes[0].plot(pt["time"], ve["vex"], label="vex")
+        if switchYZ:
+            axes[0].plot(pt["time"], ve["vez"], label="vey")
+            axes[0].plot(pt["time"], ve["vey"], label="vez")
+        else:
+            axes[0].plot(pt["time"], ve["vey"], label="vey")
+            axes[0].plot(pt["time"], ve["vez"], label="vez")
+        axes[0].set_ylabel(r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", fontsize=14)
+        axes[0].legend(ncol=3, fontsize="medium")
+        axes[0].grid(True, linestyle="--", alpha=0.6)
 
         # --- 2. Plasma Gradient Drift (vgx, vgy, vgz) ---
-        ax2 = axes[1]
-        ax2.plot(pt["time"], vg["vgx"], label="vgx")
-        ax2.plot(pt["time"], vg["vgz"], label="vgy")
-        ax2.plot(pt["time"], vg["vgy"], label="vgz")
-        ax2.set_ylabel(r"$V_{\nabla B}$ [km/s]", fontsize=14)
-        ax2.legend(ncol=3, fontsize="medium")
-        ax2.grid(True, linestyle="--", alpha=0.6)
+        axes[1].plot(pt["time"], vg["vgx"], label="vgx")
+        if switchYZ:
+            axes[1].plot(pt["time"], vg["vgz"], label="vgy")
+            axes[1].plot(pt["time"], vg["vgy"], label="vgz")
+        else:
+            axes[1].plot(pt["time"], vg["vgy"], label="vgy")
+            axes[1].plot(pt["time"], vg["vgz"], label="vgz")
+        axes[1].set_ylabel(r"$V_{\nabla B}$ [km/s]", fontsize=14)
+        axes[1].legend(ncol=3, fontsize="medium")
+        axes[1].grid(True, linestyle="--", alpha=0.6)
 
         # --- 3. Plasma Curvature Drift (vcx, vcy, vcz) ---
-        ax3 = axes[2]
-        ax3.plot(pt["time"], vc["vcx"], label="vcx")
-        ax3.plot(pt["time"], vc["vcz"], label="vcy")
-        ax3.plot(pt["time"], vc["vcy"], label="vcz")
-        ax3.set_ylabel(r"$V_c$ [km/s]", fontsize=14)
-        ax3.legend(ncol=3, fontsize="medium")
-        ax3.grid(True, linestyle="--", alpha=0.6)
+        axes[2].plot(pt["time"], vc["vcx"], label="vcx")
+        if switchYZ:
+            axes[2].plot(pt["time"], vc["vcz"], label="vcy")
+            axes[2].plot(pt["time"], vc["vcy"], label="vcz")
+        else:
+            axes[2].plot(pt["time"], vc["vcy"], label="vcy")
+            axes[2].plot(pt["time"], vc["vcz"], label="vcz")
+        axes[2].set_ylabel(r"$V_c$ [km/s]", fontsize=14)
+        axes[2].legend(ncol=3, fontsize="medium")
+        axes[2].grid(True, linestyle="--", alpha=0.6)
 
         # --- 4. Rate of Energy Change (E dot V) ---
-        ax4 = axes[3]
-        ax4.plot(
+        axes[3].plot(
             pt["time"], pt["dWg"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{\nabla B}$"
         )
-        ax4.plot(pt["time"], pt["dWc"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{c}$")
-        ax4.plot(
+        axes[3].plot(
+            pt["time"], pt["dWc"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{c}$"
+        )
+        axes[3].plot(
             pt["time"], pt["dW_parallel"], label=r"$q E_{\|} v_{\|}$", linestyle="--"
         )
-        ax4.plot(
+        axes[3].plot(
             pt["time"], pt["betatron"], label="Betatron", linestyle="--", alpha=0.8
         )
-        ax4.set_ylabel("Energy change rate\n [Watts]", fontsize=14)
-        ax4.legend(ncol=4, fontsize="medium")
-        ax4.grid(True, linestyle="--", alpha=0.6)
+        axes[3].set_ylabel("Energy change rate\n [Watts]", fontsize=14)
+        axes[3].legend(ncol=4, fontsize="medium")
+        axes[3].grid(True, linestyle="--", alpha=0.6)
 
         axes[-1].semilogy(pt["time"], rl2rc)
         axes[-1].axhline(y=0.2, linestyle="--", color="tab:red")
