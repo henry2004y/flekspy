@@ -10,6 +10,8 @@ from itertools import islice
 from enum import IntEnum
 from scipy.constants import proton_mass, elementary_charge, mu_0, epsilon_0
 
+EARTH_RADIUS_KM = 6378
+
 
 class Indices(IntEnum):
     """Defines constant indices for test particles."""
@@ -723,7 +725,9 @@ class FLEKSTP(object):
         v_parallel_sq = pl.col("v_parallel") ** 2
         b_mag_sq = pl.col("b_mag") ** 2
         if unit == "planetary":
-            factor = (mass * v_parallel_sq) / (charge * b_mag_sq) * 1e9 / 6378
+            factor = (
+                (mass * v_parallel_sq) / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
+            )
         elif unit == "SI":
             factor = (mass * v_parallel_sq) / (charge * b_mag_sq)
         else:
@@ -770,7 +774,7 @@ class FLEKSTP(object):
         ).sqrt()
 
         if unit == "planetary":
-            factor = 6378  # conversion factor
+            factor = EARTH_RADIUS_KM  # conversion factor
         elif unit == "SI":
             factor = 1e-3  # conversion factor
         else:
@@ -850,7 +854,7 @@ class FLEKSTP(object):
         b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
         if unit == "planetary":
-            factor = mu_expr / (charge * b_mag_sq) * 1e9 / 6378
+            factor = mu_expr / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
         elif unit == "SI":
             factor = mu_expr / (charge * b_mag_sq)
         else:
@@ -861,6 +865,229 @@ class FLEKSTP(object):
         )
 
         return lf.select(["vgx", "vgy", "vgz"]).collect()
+
+    @staticmethod
+    def get_betatron_acceleration(pt, mu, unit="planetary"):
+        """
+        Calculates the Betatron acceleration term from particle trajectory data.
+
+        The calculation follows the formula: dW/dt = μ * (∂B/∂t)
+        where the partial derivative is found using: ∂B/∂t = dB/dt - v ⋅ ∇B
+
+        Args:
+            pt: A Polars LazyFrame containing the particle trajectory.
+                     It must include columns for time, velocity (vx, vy, vz),
+                     magnetic field (bx, by, bz), and the magnetic field
+                     gradient tensor (e.g., 'dbxdx', 'dbydx', etc.).
+            mu: The magnetic moment (first adiabatic invariant) of the particle,
+                assumed to be constant.
+
+        Returns:
+            A new Polars LazyFrame with added intermediate columns and the
+            final 'betatron' column representing the rate of energy change in fW.
+        """
+
+        # --- Step 1: Calculate the total derivative dB/dt ---
+        pt = pt.with_columns(
+            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+        ).lazy()
+
+        collected = pt.select("b_mag", "time").collect()
+        B_mag = collected["b_mag"].to_numpy().flatten()
+        time_steps = collected["time"].to_numpy().flatten()
+        dB_dt = np.gradient(B_mag, time_steps)  # [nT/s]
+
+        # --- Step 2: Define the rest of the calculations lazily ---
+        pt_with_dbdt = pt.with_columns(pl.Series(name="dB_dt", values=dB_dt))
+
+        # Gradient of B magnitude: ∇|B|
+        grad_b_mag_x = (
+            pl.col("bx") * pl.col("dbxdx")
+            + pl.col("by") * pl.col("dbydx")
+            + pl.col("bz") * pl.col("dbzdx")
+        ) / pl.col("b_mag")
+        grad_b_mag_y = (
+            pl.col("bx") * pl.col("dbxdy")
+            + pl.col("by") * pl.col("dbydy")
+            + pl.col("bz") * pl.col("dbzdy")
+        ) / pl.col("b_mag")
+        grad_b_mag_z = (
+            pl.col("bx") * pl.col("dbxdz")
+            + pl.col("by") * pl.col("dbydz")
+            + pl.col("bz") * pl.col("dbzdz")
+        ) / pl.col("b_mag")
+
+        # Convective derivative: v ⋅ ∇|B| [nT/s]
+        if unit == "planetary":
+            v_dot_gradB = (
+                pl.col("vx") * grad_b_mag_x
+                + pl.col("vy") * grad_b_mag_y
+                + pl.col("vz") * grad_b_mag_z
+            ) / EARTH_RADIUS_KM
+        elif unit == "SI":
+            v_dot_gradB = (
+                pl.col("vx") * grad_b_mag_x
+                + pl.col("vy") * grad_b_mag_y
+                + pl.col("vz") * grad_b_mag_z
+            )
+
+        # --- Step 3: Calculate the partial derivative ∂B/∂t ---
+        partial_B_partial_t = pl.col("dB_dt") - v_dot_gradB
+
+        # --- Step 4: Chain all calculations and compute the final Betatron term ---
+        result = pt_with_dbdt.with_columns(
+            grad_b_mag_x=grad_b_mag_x,
+            grad_b_mag_y=grad_b_mag_y,
+            grad_b_mag_z=grad_b_mag_z,
+            v_dot_gradB=v_dot_gradB,
+            partial_B_partial_t=partial_B_partial_t,
+        )
+        # Unit conversion to watts.
+        if unit == "planetary":
+            result = result.with_columns(betatron=mu * partial_B_partial_t * 1e6)
+        elif unit == "SI":
+            result = result.with_columns(betatron=mu * partial_B_partial_t)
+
+        return result
+
+    def analyze_drifts(
+        self,
+        pid: tuple[int, int],
+        unit="planetary",
+        savename=None,
+        switchYZ=False,
+    ):
+        """
+        Compute plasma drift velocities and the associated rate of energy change.
+        """
+        ve = self.get_ExB_drift(pid)
+        vc = self.get_curvature_drift(pid)
+        vg = self.get_gradient_drift(pid)
+        rl2rc = self.get_gyroradius_to_curvature_ratio(pid)
+        pt = self[pid]
+        mu = self.get_first_adiabatic_invariant(pid)
+        pt = self.get_betatron_acceleration(pt, mu, unit=unit)
+        # Calculate the dot product of E with each drift velocity [Watts]
+        if unit == "planetary":
+            UNIT_FACTOR = elementary_charge * 1e-3
+        elif unit == "SI":
+            UNIT_FACTOR = elementary_charge
+
+        pt = (
+            pt.with_columns(
+                b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+            )
+            .with_columns(
+                bx_u=pl.col("bx") / pl.col("b_mag"),
+                by_u=pl.col("by") / pl.col("b_mag"),
+                bz_u=pl.col("bz") / pl.col("b_mag"),
+            )
+            .with_columns(
+                E_parallel=(
+                    pl.col("ex") * pl.col("bx_u")
+                    + pl.col("ey") * pl.col("by_u")
+                    + pl.col("ez") * pl.col("bz_u")
+                ),
+                v_parallel=(
+                    pl.col("vx") * pl.col("bx_u")
+                    + pl.col("vy") * pl.col("by_u")
+                    + pl.col("vz") * pl.col("bz_u")
+                ),
+            )
+        )
+
+        # Calculate the dot product of E with each drift velocity [Watts]
+        pt = pt.with_columns(
+            # Energy change from gradient drift
+            dWg=(
+                pl.col("ex") * vg["vgx"]
+                + pl.col("ey") * vg["vgy"]
+                + pl.col("ez") * vg["vgz"]
+            )
+            * UNIT_FACTOR,
+            # Energy change from curvature drift
+            dWc=(
+                pl.col("ex") * vc["vcx"]
+                + pl.col("ey") * vc["vcy"]
+                + pl.col("ez") * vc["vcz"]
+            )
+            * UNIT_FACTOR,
+            # Energy change from parallel acceleration
+            dW_parallel=(pl.col("E_parallel") * pl.col("v_parallel")) * UNIT_FACTOR,
+        ).collect()
+
+        fig, axes = plt.subplots(
+            nrows=5, ncols=1, figsize=(12, 8), sharex=True, constrained_layout=True
+        )
+
+        # --- 1. Plasma Convection Drift (vex, vey, vez) ---
+        axes[0].plot(pt["time"], ve["vex"], label="vex")
+        if switchYZ:
+            axes[0].plot(pt["time"], ve["vez"], label="vey")
+            axes[0].plot(pt["time"], ve["vey"], label="vez")
+        else:
+            axes[0].plot(pt["time"], ve["vey"], label="vey")
+            axes[0].plot(pt["time"], ve["vez"], label="vez")
+        axes[0].set_ylabel(r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", fontsize=14)
+        axes[0].legend(ncol=3, fontsize="medium")
+        axes[0].grid(True, linestyle="--", alpha=0.6)
+
+        # --- 2. Plasma Gradient Drift (vgx, vgy, vgz) ---
+        axes[1].plot(pt["time"], vg["vgx"], label="vgx")
+        if switchYZ:
+            axes[1].plot(pt["time"], vg["vgz"], label="vgy")
+            axes[1].plot(pt["time"], vg["vgy"], label="vgz")
+        else:
+            axes[1].plot(pt["time"], vg["vgy"], label="vgy")
+            axes[1].plot(pt["time"], vg["vgz"], label="vgz")
+        axes[1].set_ylabel(r"$V_{\nabla B}$ [km/s]", fontsize=14)
+        axes[1].legend(ncol=3, fontsize="medium")
+        axes[1].grid(True, linestyle="--", alpha=0.6)
+
+        # --- 3. Plasma Curvature Drift (vcx, vcy, vcz) ---
+        axes[2].plot(pt["time"], vc["vcx"], label="vcx")
+        if switchYZ:
+            axes[2].plot(pt["time"], vc["vcz"], label="vcy")
+            axes[2].plot(pt["time"], vc["vcy"], label="vcz")
+        else:
+            axes[2].plot(pt["time"], vc["vcy"], label="vcy")
+            axes[2].plot(pt["time"], vc["vcz"], label="vcz")
+        axes[2].set_ylabel(r"$V_c$ [km/s]", fontsize=14)
+        axes[2].legend(ncol=3, fontsize="medium")
+        axes[2].grid(True, linestyle="--", alpha=0.6)
+
+        # --- 4. Rate of Energy Change (E dot V) ---
+        axes[3].plot(
+            pt["time"], pt["dWg"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{\nabla B}$"
+        )
+        axes[3].plot(
+            pt["time"], pt["dWc"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{c}$"
+        )
+        axes[3].plot(
+            pt["time"], pt["dW_parallel"], label=r"$q E_{\|} v_{\|}$", linestyle="--"
+        )
+        axes[3].plot(
+            pt["time"], pt["betatron"], label="Betatron", linestyle="--", alpha=0.8
+        )
+        axes[3].set_ylabel("Energy change rate\n [Watts]", fontsize=14)
+        axes[3].legend(ncol=4, fontsize="medium")
+        axes[3].grid(True, linestyle="--", alpha=0.6)
+
+        axes[-1].semilogy(pt["time"], rl2rc)
+        axes[-1].axhline(y=0.2, linestyle="--", color="tab:red")
+        axes[-1].set_ylim(rl2rc.quantile(0.001), rl2rc.max())
+        axes[-1].set_ylabel(r"$r_L / r_c$", fontsize=14)
+        axes[-1].grid(True, linestyle="--", alpha=0.6)
+
+        for ax in axes:
+            ax.set_xlim(left=0, right=pt["time"][-1])
+
+        axes[-1].set_xlabel("Time [s]", fontsize=14)
+
+        if savename is not None:
+            plt.savefig(savename, bbox_inches="tight")
+        else:
+            plt.show()
 
     def plot_trajectory(
         self,
