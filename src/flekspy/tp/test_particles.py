@@ -1217,6 +1217,193 @@ class FLEKSTP(object):
         else:
             plt.show()
 
+    def find_shock_crossing_time(self, pid, b_threshold_factor=2.5, verbose=False):
+        """
+        Finds the shock crossing time for a single particle.
+
+        The shock is identified by finding the first rate of change in the
+        magnetic field magnitude that exceeds a threshold, which signifies a
+        rapid transition between the upstream and downstream regions.
+
+        Args:
+            pid: particle index.
+            b_threshold_factor (float): A multiplier for the standard deviation of
+                                        the B-field derivative. A larger value makes
+                                        the detection less sensitive to minor
+                                        fluctuations. Defaults to 2.5.
+            verbose (bool): If True, prints diagnostic information. Defaults to False.
+
+        Returns:
+            float or None: The time of the shock crossing in seconds. Returns None if
+                        no significant crossing is detected based on the criteria.
+        """
+        # --- 1. Data Preparation ---
+        pt = self[pid]
+        t_and_b_mag = pt.with_columns(
+            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+        ).select("time", "b_mag").collect()
+        t = t_and_b_mag["time"].to_numpy()
+        b_mag = t_and_b_mag["b_mag"].to_numpy()
+
+        # Ensure there are enough data points for a derivative calculation
+        if len(t) < 3:
+            if verbose:
+                print("Warning: Not enough data points to reliably find a shock.")
+            return None
+
+        # --- 2. Calculate the Rate of Change ---
+        # Use np.gradient to find the time derivative of the B-field magnitude.
+        # This correctly handles potentially uneven time steps.
+        db_dt = np.gradient(b_mag, t)
+        abs_db_dt = np.abs(db_dt)
+
+        # --- 3. Dynamic Thresholding for Spike Detection ---
+        # Set a threshold to distinguish significant spikes from noise.
+        mean_db_dt = np.mean(abs_db_dt)
+        std_db_dt = np.std(abs_db_dt)
+        threshold = mean_db_dt + b_threshold_factor * std_db_dt
+
+        # Find all time indices where the derivative exceeds this threshold
+        candidate_indices = np.where(abs_db_dt > threshold)[0]
+
+        # --- 4. Identify the Most Likely Crossing Time ---
+        # If no points are above the threshold, no shock was detected.
+        if candidate_indices.size == 0:
+            if verbose:
+                print(
+                    f"No B-field change above the threshold ({threshold:.2f} nT/s) was found."
+                )
+            return None
+
+        shock_idx = int(candidate_indices[0])
+        shock_time = t[shock_idx]
+
+        if verbose:
+            print(f"Shock crossing detected at t = {shock_time:.2f} s")
+
+        return shock_time
+
+    def get_shock_up_down_states(
+        self,
+        pids,
+        delta_t_up=20.0,
+        delta_t_down=40.0,
+        b_threshold_factor=2.5,
+        verbose=False,
+    ):
+        """
+        Analyzes particles to find their state upstream and downstream of a shock.
+
+        This function iterates through a list of particle IDs. For each particle, it
+        first identifies the shock crossing time. It then calculates specific upstream
+        and downstream time points based on this crossing. Finally, it interpolates
+        the particle's full state (position, velocity, fields) at these two points
+        and collects the results.
+
+        Args:
+            pids (list): A list of particle IDs (e.g., [(0, 1), (0, 2), ...]) to process.
+            delta_t_up (float): The time in seconds *before* the shock crossing to define
+                                the upstream point. Defaults to 20.0.
+            delta_t_down (float): The time in seconds *after* the shock crossing to define
+                                  the downstream point. Defaults to 40.0.
+            b_threshold_factor (float): The sensitivity factor for shock detection, passed to
+                                        `find_shock_crossing_time`. Defaults to 2.5.
+            verbose (bool): If True, prints progress and individual shock detection times.
+                            Defaults to False.
+
+        Returns:
+            tuple[pl.DataFrame, pl.DataFrame]: A tuple containing two Polars DataFrames:
+                - The first DataFrame contains the states of all valid particles at their
+                  respective upstream times.
+                - The second DataFrame contains the states of all valid particles at their
+                  respective downstream times.
+            Each DataFrame includes the original particle ID (`pid_rank`, `pid_idx`), the
+            shock crossing time (`t_cross`), and the interpolated physical quantities.
+            Returns (None, None) if no particles with a valid shock crossing are found.
+        """
+        if verbose:
+            print(f"Starting upstream/downstream analysis for {len(pids)} particles...")
+        upstream_states = []
+        downstream_states = []
+        num_particles = len(pids)
+
+        for i, pid in enumerate(pids):
+            if verbose and ((i + 1) % 500 == 0 or i == num_particles - 1):
+                print(f"  ...processing particle {i+1}/{num_particles} (ID: {pid})")
+
+            # 1. Find the shock crossing time for the current particle
+            t_cross = self.find_shock_crossing_time(
+                pid, b_threshold_factor=b_threshold_factor, verbose=False
+            )
+
+            # 2. Skip particle if no shock crossing is found
+            if t_cross is None:
+                if verbose:
+                    print(f"  -> No shock crossing found for particle {pid}. Skipping.")
+                continue
+
+            if verbose:
+                print(f"  -> Shock found for {pid} at t={t_cross:.2f}s.")
+
+            # 3. Define the upstream and downstream time points
+            t_upstream = t_cross - delta_t_up
+            t_downstream = t_cross + delta_t_down
+
+            try:
+                # 4. Interpolate the particle's state at the specified times
+                # The result is a 2-row Polars DataFrame
+                interpolated_states = interpolate_at_times(
+                    self[pid], times_to_interpolate=[t_upstream, t_downstream]
+                )
+
+                # Ensure we got two valid rows back
+                if interpolated_states.height != 2:
+                    if verbose:
+                        print(f"  -> Interpolation failed for {pid}. Skipping.")
+                    continue
+
+                # 5. Separate and enrich the data for collection
+                up_state = interpolated_states.slice(0, 1)
+                down_state = interpolated_states.slice(1, 1)
+
+                # Add metadata (pid and shock time) to each state DataFrame
+                # This makes later analysis much easier
+                up_state = up_state.with_columns(
+                    pl.lit(pid[0]).alias("pid_rank"),
+                    pl.lit(pid[1]).alias("pid_idx"),
+                    pl.lit(t_cross).alias("t_cross"),
+                )
+                down_state = down_state.with_columns(
+                    pl.lit(pid[0]).alias("pid_rank"),
+                    pl.lit(pid[1]).alias("pid_idx"),
+                    pl.lit(t_cross).alias("t_cross"),
+                )
+
+                upstream_states.append(up_state)
+                downstream_states.append(down_state)
+
+            except Exception as e:
+                # Catch any other errors during interpolation (e.g., times out of bounds)
+                if verbose:
+                    print(f"  -> An error occurred for particle {pid}: {e}. Skipping.")
+                continue
+
+        # 6. Finalize the results
+        if not upstream_states:
+            if verbose:
+                print("\nFinished processing. No valid shock-crossing particles found.")
+            return None, None
+
+        # Concatenate all the individual DataFrames into two final ones
+        final_upstream_df = pl.concat(upstream_states)
+        final_downstream_df = pl.concat(downstream_states)
+
+        if verbose:
+            print(
+                f"\nFinished processing. Found {final_upstream_df.height} valid particles."
+            )
+        return final_upstream_df, final_downstream_df
+
     def plot_trajectory(
         self,
         pID: Tuple[int, int],
@@ -1352,7 +1539,7 @@ class FLEKSTP(object):
                     start=pt["time"].min(),
                     stop=pt["time"].max(),
                     step=dt,
-                    dtype=np.float32
+                    dtype=np.float32,
                 )
                 pt = interpolate_at_times(pt, t)
 
@@ -1364,61 +1551,63 @@ class FLEKSTP(object):
 
                 # Build a filter expression for the given time range
                 if t_start is not None and t_end is not None:
-                    pt = pt.filter((pl.col("time") >= t_start) & (pl.col("time") <= t_end))
+                    pt = pt.filter(
+                        (pl.col("time") >= t_start) & (pl.col("time") <= t_end)
+                    )
                 elif t_start is not None:
                     pt = pt.filter(pl.col("time") >= t_start)
                 else:  # t_end must be not None here
                     pt = pt.filter(pl.col("time") <= t_end)
 
-            # --- Data Extraction ---           
+            # --- Data Extraction ---
             if unit == "planetary":
-                t = pt["time"].to_numpy() # [s]
-                x = pt["x"].to_numpy() # [RE]
-                vx = pt["vx"].to_numpy() # [km/s]
-                bx = pt["bx"].to_numpy() # [nT]
-                ex = pt["ex"].to_numpy() * 1e-3  # [mV/m]                
+                t = pt["time"].to_numpy()  # [s]
+                x = pt["x"].to_numpy()  # [RE]
+                vx = pt["vx"].to_numpy()  # [km/s]
+                bx = pt["bx"].to_numpy()  # [nT]
+                ex = pt["ex"].to_numpy() * 1e-3  # [mV/m]
                 if switchYZ:
-                    y = pt["z"].to_numpy() # [RE]
-                    z = pt["y"].to_numpy() # [RE]
-                    vy = pt["vz"].to_numpy() # [km/s]
-                    vz = pt["vy"].to_numpy() # [km/s]
-                    by = pt["bz"].to_numpy() # [nT]
-                    bz = pt["by"].to_numpy() # [nT]
+                    y = pt["z"].to_numpy()  # [RE]
+                    z = pt["y"].to_numpy()  # [RE]
+                    vy = pt["vz"].to_numpy()  # [km/s]
+                    vz = pt["vy"].to_numpy()  # [km/s]
+                    by = pt["bz"].to_numpy()  # [nT]
+                    bz = pt["by"].to_numpy()  # [nT]
                     ey = pt["ez"].to_numpy() * 1e-3  # [mV/m]
                     ez = pt["ey"].to_numpy() * 1e-3  # [mV/m]
                 else:
-                    y = pt["y"].to_numpy() # [RE]
-                    z = pt["z"].to_numpy() # [RE]
-                    vy = pt["vy"].to_numpy() # [km/s]
-                    vz = pt["vz"].to_numpy() # [km/s]
-                    by = pt["by"].to_numpy() # [nT]
-                    bz = pt["bz"].to_numpy() # [nT]
+                    y = pt["y"].to_numpy()  # [RE]
+                    z = pt["z"].to_numpy()  # [RE]
+                    vy = pt["vy"].to_numpy()  # [km/s]
+                    vz = pt["vz"].to_numpy()  # [km/s]
+                    by = pt["by"].to_numpy()  # [nT]
+                    bz = pt["bz"].to_numpy()  # [nT]
                     ey = pt["ey"].to_numpy() * 1e-3  # [mV/m]
                     ez = pt["ez"].to_numpy() * 1e-3  # [mV/m]
             elif unit == "SI":
-                t = pt["time"].to_numpy() # [s]
-                x = pt["x"].to_numpy() # [m]
-                vx = pt["vx"].to_numpy() # [m/s]
-                bx = pt["bx"].to_numpy() # [T]
-                ex = pt["ex"].to_numpy() # [V/m]
+                t = pt["time"].to_numpy()  # [s]
+                x = pt["x"].to_numpy()  # [m]
+                vx = pt["vx"].to_numpy()  # [m/s]
+                bx = pt["bx"].to_numpy()  # [T]
+                ex = pt["ex"].to_numpy()  # [V/m]
                 if switchYZ:
-                    y = pt["z"].to_numpy() # [m]
-                    z = pt["y"].to_numpy() # [m]
-                    vy = pt["vz"].to_numpy() # [m/s]
-                    vz = pt["vy"].to_numpy() # [m/s]
-                    by = pt["bz"].to_numpy() # [T]
-                    bz = pt["by"].to_numpy() # [T]
-                    ey = pt["ez"].to_numpy() # [V/m]
-                    ez = pt["ey"].to_numpy() # [V/m]
+                    y = pt["z"].to_numpy()  # [m]
+                    z = pt["y"].to_numpy()  # [m]
+                    vy = pt["vz"].to_numpy()  # [m/s]
+                    vz = pt["vy"].to_numpy()  # [m/s]
+                    by = pt["bz"].to_numpy()  # [T]
+                    bz = pt["by"].to_numpy()  # [T]
+                    ey = pt["ez"].to_numpy()  # [V/m]
+                    ez = pt["ey"].to_numpy()  # [V/m]
                 else:
-                    y = pt["y"].to_numpy() # [m]
-                    z = pt["z"].to_numpy() # [m]
-                    vy = pt["vy"].to_numpy() # [m/s]
-                    vz = pt["vz"].to_numpy() # [m/s]
-                    by = pt["by"].to_numpy() # [T]
-                    bz = pt["bz"].to_numpy() # [T]
-                    ey = pt["ey"].to_numpy() # [V/m]
-                    ez = pt["ez"].to_numpy() # [V/m]                
+                    y = pt["y"].to_numpy()  # [m]
+                    z = pt["z"].to_numpy()  # [m]
+                    vy = pt["vy"].to_numpy()  # [m/s]
+                    vz = pt["vz"].to_numpy()  # [m/s]
+                    by = pt["by"].to_numpy()  # [T]
+                    bz = pt["bz"].to_numpy()  # [T]
+                    ey = pt["ey"].to_numpy()  # [V/m]
+                    ez = pt["ez"].to_numpy()  # [V/m]
 
             # --- Derived Quantities Calculation ---
 
@@ -1426,28 +1615,58 @@ class FLEKSTP(object):
             ke = self.get_kinetic_energy(vx, vy, vz, mass=mass, unit=unit)  # [eV]
 
             # --- Velocity Smoothing and Envelope Calculation ---
-            if smoothing_window and isinstance(smoothing_window, int) and smoothing_window > 0:
+            if (
+                smoothing_window
+                and isinstance(smoothing_window, int)
+                and smoothing_window > 0
+            ):
                 if verbose:
-                    print(f"Applying moving average with window size: {smoothing_window}")
+                    print(
+                        f"Applying moving average with window size: {smoothing_window}"
+                    )
                 # Convert numpy arrays to polars Series for easy rolling calculations
                 vx_s, vy_s, vz_s = pl.Series(vx), pl.Series(vy), pl.Series(vz)
                 ke_s = pl.Series(ke)
 
                 # Calculate moving average (the smoothed line)
-                vx_smooth = vx_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
-                vy_smooth = vy_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
-                vz_smooth = vz_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
-                ke_smooth = ke_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
+                vx_smooth = vx_s.rolling_mean(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                vy_smooth = vy_s.rolling_mean(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                vz_smooth = vz_s.rolling_mean(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                ke_smooth = ke_s.rolling_mean(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
                 # Calculate min/max envelopes
-                vx_min_env = vx_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
-                vx_max_env = vx_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
-                vy_min_env = vy_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
-                vy_max_env = vy_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
-                vz_min_env = vz_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
-                vz_max_env = vz_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
+                vx_min_env = vx_s.rolling_min(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                vx_max_env = vx_s.rolling_max(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                vy_min_env = vy_s.rolling_min(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                vy_max_env = vy_s.rolling_max(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                vz_min_env = vz_s.rolling_min(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                vz_max_env = vz_s.rolling_max(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
 
-                ke_min_env = ke_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
-                ke_max_env = ke_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
+                ke_min_env = ke_s.rolling_min(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
+                ke_max_env = ke_s.rolling_max(
+                    window_size=smoothing_window, center=True, min_periods=1
+                )
 
             v_vec = np.vstack((vx, vy, vz)).T
             b_vec = np.vstack((bx, by, bz)).T
@@ -1469,7 +1688,9 @@ class FLEKSTP(object):
                 # Magnetic Field Energy Density Calculation
                 U_B = (b_mag * 1e-9) ** 2 / (2 * mu_0 * elementary_charge)  # [eV/m^3]
                 # Electric Field Energy Density Calculation
-                U_E = 0.5 * epsilon_0 * (e_mag * 1e-3) ** 2 / elementary_charge  # [eV/m^3]
+                U_E = (
+                    0.5 * epsilon_0 * (e_mag * 1e-3) ** 2 / elementary_charge
+                )  # [eV/m^3]
                 # First Adiabatic Invariant (mu) Calculation
                 # mu = mv_perp^2 / 2B.  v_perp = v * sin(alpha)
                 # Ensure units are SI: v [m/s], B [T]
@@ -1478,9 +1699,13 @@ class FLEKSTP(object):
                 # Calculate mu, handle potential division by zero in B
                 mu = (0.5 * mass * v_perp**2) / (b_mag * 1e-9)  # [J/T]
                 # Gyrofrequency in Hz
-                gyro_freq = (elementary_charge * b_mag) / (2 * np.pi * mass) * 1e-9 / fscaling
+                gyro_freq = (
+                    (elementary_charge * b_mag) / (2 * np.pi * mass) * 1e-9 / fscaling
+                )
                 # Gyroradius in km
-                gyro_radius = (mass * v_perp) / (elementary_charge * b_mag) * 1e6 * fscaling
+                gyro_radius = (
+                    (mass * v_perp) / (elementary_charge * b_mag) * 1e6 * fscaling
+                )
             elif unit == "SI":
                 # Magnetic Field Energy Density Calculation
                 U_B = b_mag**2 / (2 * mu_0 * elementary_charge)  # [eV/m^3]
@@ -1493,10 +1718,14 @@ class FLEKSTP(object):
                 # Gyrofrequency in Hz
                 gyro_freq = (elementary_charge * b_mag) / (2 * np.pi * mass) / fscaling
                 # Gyroradius in km
-                gyro_radius = (mass * v_perp) / (elementary_charge * b_mag) * 1e3 * fscaling
+                gyro_radius = (
+                    (mass * v_perp) / (elementary_charge * b_mag) * 1e3 * fscaling
+                )
 
             # --- Plotting ---
-            f, ax = plt.subplots(8, 1, figsize=(10, 12), constrained_layout=True, sharex=True)
+            f, ax = plt.subplots(
+                8, 1, figsize=(10, 12), constrained_layout=True, sharex=True
+            )
 
             # Panel 0: Particle Location
             ax[0].plot(t, x, label="x")
@@ -1509,7 +1738,7 @@ class FLEKSTP(object):
                     ax0_twin.set_ylabel(r"Z [$R_E$]", fontsize=14, color="tab:orange")
                 elif unit == "SI":
                     ax[0].set_ylabel("X [m]", fontsize=14)
-                    ax0_twin.set_ylabel("Z [m]", fontsize=14, color="tab:orange")                    
+                    ax0_twin.set_ylabel("Z [m]", fontsize=14, color="tab:orange")
             else:
                 if unit == "planetary":
                     ax[0].set_ylabel(r"Location [$R_E$]", fontsize=14)
@@ -1525,16 +1754,30 @@ class FLEKSTP(object):
                 ax[1].set_ylabel("V [m/s]", fontsize=14)
 
             # If smoothing is enabled, plot the smoothed lines and envelopes
-            if smoothing_window and isinstance(smoothing_window, int) and smoothing_window > 0:
+            if (
+                smoothing_window
+                and isinstance(smoothing_window, int)
+                and smoothing_window > 0
+            ):
                 # Plot smoothed lines with a thicker, more prominent style
                 ax[1].plot(t, vx_smooth, color="tab:blue", linewidth=1.5, label="$V_x$")
-                ax[1].plot(t, vy_smooth, color="tab:orange", linewidth=1.5, label="$V_y$")
-                ax[1].plot(t, vz_smooth, color="tab:green", linewidth=1.5, label="$V_z$")
+                ax[1].plot(
+                    t, vy_smooth, color="tab:orange", linewidth=1.5, label="$V_y$"
+                )
+                ax[1].plot(
+                    t, vz_smooth, color="tab:green", linewidth=1.5, label="$V_z$"
+                )
 
                 # Shade the area between the min and max envelopes
-                ax[1].fill_between(t, vx_min_env, vx_max_env, color="tab:blue", alpha=0.2)
-                ax[1].fill_between(t, vy_min_env, vy_max_env, color="tab:orange", alpha=0.2)
-                ax[1].fill_between(t, vz_min_env, vz_max_env, color="tab:green", alpha=0.2)
+                ax[1].fill_between(
+                    t, vx_min_env, vx_max_env, color="tab:blue", alpha=0.2
+                )
+                ax[1].fill_between(
+                    t, vy_min_env, vy_max_env, color="tab:orange", alpha=0.2
+                )
+                ax[1].fill_between(
+                    t, vz_min_env, vz_max_env, color="tab:green", alpha=0.2
+                )
             else:
                 ax[1].plot(t, vx, label="$V_x$", color="tab:blue", alpha=0.9)
                 ax[1].plot(t, vy, label="$V_y$", color="tab:orange", alpha=0.9)
@@ -1543,9 +1786,17 @@ class FLEKSTP(object):
             # Panel 2: Kinetic Energy
             ax[2].set_ylabel("KE [eV]", fontsize=14)
             ax[2].set_yscale("log")
-            if smoothing_window and isinstance(smoothing_window, int) and smoothing_window > 0:
-                ax[2].plot(t, ke_smooth, color="tab:brown", linewidth=1.5, label="KE (smooth)")
-                ax[2].fill_between(t, ke_min_env, ke_max_env, color="tab:red", alpha=0.2)
+            if (
+                smoothing_window
+                and isinstance(smoothing_window, int)
+                and smoothing_window > 0
+            ):
+                ax[2].plot(
+                    t, ke_smooth, color="tab:brown", linewidth=1.5, label="KE (smooth)"
+                )
+                ax[2].fill_between(
+                    t, ke_min_env, ke_max_env, color="tab:red", alpha=0.2
+                )
             else:
                 ax[2].plot(t, ke, label="KE", color="tab:brown")
 
@@ -1576,7 +1827,7 @@ class FLEKSTP(object):
             if unit == "planetary":
                 ax[5].set_ylabel("E [mV/m]", fontsize=14)
             elif unit == "SI":
-                ax[5].set_ylabel("E [V/m]", fontsize=14)  
+                ax[5].set_ylabel("E [V/m]", fontsize=14)
 
             # Panel 6: Pitch Angle
             ax[6].plot(t, pitch_angle, color="tab:brown")

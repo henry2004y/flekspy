@@ -280,6 +280,17 @@ class TestParticles:
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
         assert np.isclose(rg2rc, 4.83376226572133e-12)
 
+        tcross = tp.find_shock_crossing_time(tp.getIDs()[0], b_threshold_factor=1)
+        assert tcross == 0.0
+        s_up_dn = tp.get_shock_up_down_states(
+            tp.getIDs(),
+            delta_t_up=0.1,
+            delta_t_down=0.1,
+            b_threshold_factor=1,
+            verbose=False
+        )
+        assert s_up_dn[1]["time"][1] == 1.2570836544036865
+
 def load(files):
     """
     Benchmarking flekspy loading.
