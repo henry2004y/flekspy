@@ -1,6 +1,8 @@
 from typing import List, Tuple, Dict, Union, Callable
 
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib.colors import Normalize, LogNorm
 from pathlib import Path
 import numpy as np
 import polars as pl
@@ -1220,11 +1222,21 @@ class FLEKSTP(object):
         pID: Tuple[int, int],
         *,
         mass=proton_mass,
+        fscaling=1,
+        smoothing_window=None,
+        t_start=None,
+        t_end=None,
+        dt=None,
+        outname=None,
+        shock_time=None,
         unit="planetary",
         type="quick",
         xaxis="t",
         yaxis="x",
+        switchYZ=False,
+        splitYZ=False,
         ax=None,
+        verbose=True,
         **kwargs,
     ):
         r"""
@@ -1333,125 +1345,307 @@ class FLEKSTP(object):
                     4,
                 )
         elif type == "full":
-            print(f"Analyzing particle ID: {pID}")
-            # TODO Proper unit handling
-            # --- Data Extraction ---
-            t = pt["time"]  # [s]
-            x, y, z = pt["x"], pt["y"], pt["z"]  # [RE]
-            vx, vy, vz = pt["vx"], pt["vy"], pt["vz"]  # [km/s]
-            bx, by, bz = pt["bx"], pt["by"], pt["bz"]  # [nT]
-            ex, ey, ez = pt["ex"], pt["ey"], pt["ez"]  # [muV/m]
+            if verbose:
+                print(f"Analyzing particle ID: {pID}")
+            if dt is not None:
+                t = np.arange(
+                    start=pt["time"].min(),
+                    stop=pt["time"].max(),
+                    step=dt,
+                    dtype=np.float32
+                )
+                pt = interpolate_at_times(pt, t)
+
+            # --- Time Interval Selection using Polars ---
+            if t_start is not None or t_end is not None:
+                start_str = f"{t_start:.2f}" if t_start is not None else "beginning"
+                end_str = f"{t_end:.2f}" if t_end is not None else "end"
+                print(f"Slicing data from t={start_str} s to t={end_str} s")
+
+                # Build a filter expression for the given time range
+                if t_start is not None and t_end is not None:
+                    pt = pt.filter((pl.col("time") >= t_start) & (pl.col("time") <= t_end))
+                elif t_start is not None:
+                    pt = pt.filter(pl.col("time") >= t_start)
+                else:  # t_end must be not None here
+                    pt = pt.filter(pl.col("time") <= t_end)
+
+            # --- Data Extraction ---           
+            if unit == "planetary":
+                t = pt["time"].to_numpy() # [s]
+                x = pt["x"].to_numpy() # [RE]
+                vx = pt["vx"].to_numpy() # [km/s]
+                bx = pt["bx"].to_numpy() # [nT]
+                ex = pt["ex"].to_numpy() * 1e-3  # [mV/m]                
+                if switchYZ:
+                    y = pt["z"].to_numpy() # [RE]
+                    z = pt["y"].to_numpy() # [RE]
+                    vy = pt["vz"].to_numpy() # [km/s]
+                    vz = pt["vy"].to_numpy() # [km/s]
+                    by = pt["bz"].to_numpy() # [nT]
+                    bz = pt["by"].to_numpy() # [nT]
+                    ey = pt["ez"].to_numpy() * 1e-3  # [mV/m]
+                    ez = pt["ey"].to_numpy() * 1e-3  # [mV/m]
+                else:
+                    y = pt["y"].to_numpy() # [RE]
+                    z = pt["z"].to_numpy() # [RE]
+                    vy = pt["vy"].to_numpy() # [km/s]
+                    vz = pt["vz"].to_numpy() # [km/s]
+                    by = pt["by"].to_numpy() # [nT]
+                    bz = pt["bz"].to_numpy() # [nT]
+                    ey = pt["ey"].to_numpy() * 1e-3  # [mV/m]
+                    ez = pt["ez"].to_numpy() * 1e-3  # [mV/m]
+            elif unit == "SI":
+                t = pt["time"].to_numpy() # [s]
+                x = pt["x"].to_numpy() # [m]
+                vx = pt["vx"].to_numpy() # [m/s]
+                bx = pt["bx"].to_numpy() # [T]
+                ex = pt["ex"].to_numpy() # [V/m]
+                if switchYZ:
+                    y = pt["z"].to_numpy() # [m]
+                    z = pt["y"].to_numpy() # [m]
+                    vy = pt["vz"].to_numpy() # [m/s]
+                    vz = pt["vy"].to_numpy() # [m/s]
+                    by = pt["bz"].to_numpy() # [T]
+                    bz = pt["by"].to_numpy() # [T]
+                    ey = pt["ez"].to_numpy() # [V/m]
+                    ez = pt["ey"].to_numpy() # [V/m]
+                else:
+                    y = pt["y"].to_numpy() # [m]
+                    z = pt["z"].to_numpy() # [m]
+                    vy = pt["vy"].to_numpy() # [m/s]
+                    vz = pt["vz"].to_numpy() # [m/s]
+                    by = pt["by"].to_numpy() # [T]
+                    bz = pt["bz"].to_numpy() # [T]
+                    ey = pt["ey"].to_numpy() # [V/m]
+                    ez = pt["ez"].to_numpy() # [V/m]                
 
             # --- Derived Quantities Calculation ---
 
             # Kinetic Energy
-            ke = self.get_kinetic_energy(vx, vy, vz, unit=unit)  # [eV]
+            ke = self.get_kinetic_energy(vx, vy, vz, mass=mass, unit=unit)  # [eV]
 
-            # Vectorize B and V fields for easier calculations
-            b_vec = pt.select(["bx", "by", "bz"]).to_numpy()
-            e_vec = pt.select(["ex", "ey", "ez"]).to_numpy()
+            # --- Velocity Smoothing and Envelope Calculation ---
+            if smoothing_window and isinstance(smoothing_window, int) and smoothing_window > 0:
+                if verbose:
+                    print(f"Applying moving average with window size: {smoothing_window}")
+                # Convert numpy arrays to polars Series for easy rolling calculations
+                vx_s, vy_s, vz_s = pl.Series(vx), pl.Series(vy), pl.Series(vz)
+                ke_s = pl.Series(ke)
 
+                # Calculate moving average (the smoothed line)
+                vx_smooth = vx_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
+                vy_smooth = vy_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
+                vz_smooth = vz_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
+                ke_smooth = ke_s.rolling_mean(window_size=smoothing_window, center=True, min_periods=1)
+                # Calculate min/max envelopes
+                vx_min_env = vx_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
+                vx_max_env = vx_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
+                vy_min_env = vy_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
+                vy_max_env = vy_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
+                vz_min_env = vz_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
+                vz_max_env = vz_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
+
+                ke_min_env = ke_s.rolling_min(window_size=smoothing_window, center=True, min_periods=1)
+                ke_max_env = ke_s.rolling_max(window_size=smoothing_window, center=True, min_periods=1)
+
+            v_vec = np.vstack((vx, vy, vz)).T
+            b_vec = np.vstack((bx, by, bz)).T
+            e_vec = np.vstack((ex, ey, ez)).T
             # Calculate magnitudes of vectors
-            b_mag = np.linalg.norm(b_vec, axis=1)  # [nT]
-            e_mag = np.linalg.norm(e_vec, axis=1) * 1e-3  # [mV/m]
-
-            # Magnetic Field Energy Density Calculation
-            U_B = (b_mag * 1e-9) ** 2 / (2 * mu_0)  # [J/m^3]
-
-            # Electric Field Energy Density Calculation
-            U_E = 0.5 * epsilon_0 * (e_mag * 1e-3) ** 2  # [J/m^3]
+            v_mag = np.linalg.norm(v_vec, axis=1)
+            b_mag = np.linalg.norm(b_vec, axis=1)
+            e_mag = np.linalg.norm(e_vec, axis=1)
 
             # Pitch Angle Calculation
-            pitch_angle = self.get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
+            v_dot_b = np.sum(v_vec * b_vec, axis=1)
+            epsilon = 1e-15
+            cos_alpha = v_dot_b / (v_mag * b_mag + epsilon)
+            cos_alpha = np.clip(cos_alpha, -1.0, 1.0)
+            pitch_angle_rad = np.arccos(cos_alpha)
+            pitch_angle = pitch_angle_rad * 180.0 / np.pi
 
-            # --- First Adiabatic Invariant (mu) Calculation ---
-            # mu = mv_perp^2 / 2B.  v_perp = v * sin(alpha)
-            mu = self.get_first_adiabatic_invariant(pID, mass=mass) * 1e9  # [J/T]
+            if unit == "planetary":
+                # Magnetic Field Energy Density Calculation
+                U_B = (b_mag * 1e-9) ** 2 / (2 * mu_0 * elementary_charge)  # [eV/m^3]
+                # Electric Field Energy Density Calculation
+                U_E = 0.5 * epsilon_0 * (e_mag * 1e-3) ** 2 / elementary_charge  # [eV/m^3]
+                # First Adiabatic Invariant (mu) Calculation
+                # mu = mv_perp^2 / 2B.  v_perp = v * sin(alpha)
+                # Ensure units are SI: v [m/s], B [T]
+                # Perpendicular velocity in SI units [m/s]
+                v_perp = v_mag * 1e3 * np.sin(pitch_angle_rad)
+                # Calculate mu, handle potential division by zero in B
+                mu = (0.5 * mass * v_perp**2) / (b_mag * 1e-9)  # [J/T]
+                # Gyrofrequency in Hz
+                gyro_freq = (elementary_charge * b_mag) / (2 * np.pi * mass) * 1e-9 / fscaling
+                # Gyroradius in km
+                gyro_radius = (mass * v_perp) / (elementary_charge * b_mag) * 1e6 * fscaling
+            elif unit == "SI":
+                # Magnetic Field Energy Density Calculation
+                U_B = b_mag**2 / (2 * mu_0 * elementary_charge)  # [eV/m^3]
+                # Electric Field Energy Density Calculation
+                U_E = 0.5 * epsilon_0 * e_mag**2 / elementary_charge  # [eV/m^3]
+                # First Adiabatic Invariant (mu) Calculation
+                v_perp = v_mag * np.sin(pitch_angle_rad)
+                # Calculate mu, handle potential division by zero in B
+                mu = (0.5 * mass * v_perp**2) / b_mag  # [J/T]
+                # Gyrofrequency in Hz
+                gyro_freq = (elementary_charge * b_mag) / (2 * np.pi * mass) / fscaling
+                # Gyroradius in km
+                gyro_radius = (mass * v_perp) / (elementary_charge * b_mag) * 1e3 * fscaling
 
             # --- Plotting ---
-            # Create 7 subplots, sharing the x-axis
-            f, ax = plt.subplots(
-                8, 1, figsize=(10, 12), constrained_layout=True, sharex=True
-            )
+            f, ax = plt.subplots(8, 1, figsize=(10, 12), constrained_layout=True, sharex=True)
 
             # Panel 0: Particle Location
-            ax[0].set_ylabel(r"Location [$R_E$]", fontsize=14)
             ax[0].plot(t, x, label="x")
-            ax[0].plot(t, y, label="y")
-            ax[0].plot(t, z, label="z")
+            if splitYZ:
+                ax0_twin = ax[0].twinx()
+                ax0_twin.plot(t, z, label="z", color="tab:orange")
+                ax0_twin.tick_params(axis="y", labelcolor="tab:orange")
+                if unit == "planetary":
+                    ax[0].set_ylabel(r"X [$R_E$]", fontsize=14)
+                    ax0_twin.set_ylabel(r"Z [$R_E$]", fontsize=14, color="tab:orange")
+                elif unit == "SI":
+                    ax[0].set_ylabel("X [m]", fontsize=14)
+                    ax0_twin.set_ylabel("Z [m]", fontsize=14, color="tab:orange")                    
+            else:
+                if unit == "planetary":
+                    ax[0].set_ylabel(r"Location [$R_E$]", fontsize=14)
+                elif unit == "SI":
+                    ax[0].set_ylabel("Location [m]", fontsize=14)
+                ax[0].plot(t, y, label="y")
+                ax[0].plot(t, z, label="z")
 
             # Panel 1: Particle Velocity
-            ax[1].set_ylabel("V [km/s]", fontsize=14)
-            ax[1].plot(t, vx, label="$v_x$")
-            ax[1].plot(t, vy, label="$v_y$")
-            ax[1].plot(t, vz, label="$v_z$")
+            if unit == "planetary":
+                ax[1].set_ylabel("V [km/s]", fontsize=14)
+            elif unit == "SI":
+                ax[1].set_ylabel("V [m/s]", fontsize=14)
+
+            # If smoothing is enabled, plot the smoothed lines and envelopes
+            if smoothing_window and isinstance(smoothing_window, int) and smoothing_window > 0:
+                # Plot smoothed lines with a thicker, more prominent style
+                ax[1].plot(t, vx_smooth, color="tab:blue", linewidth=1.5, label="$V_x$")
+                ax[1].plot(t, vy_smooth, color="tab:orange", linewidth=1.5, label="$V_y$")
+                ax[1].plot(t, vz_smooth, color="tab:green", linewidth=1.5, label="$V_z$")
+
+                # Shade the area between the min and max envelopes
+                ax[1].fill_between(t, vx_min_env, vx_max_env, color="tab:blue", alpha=0.2)
+                ax[1].fill_between(t, vy_min_env, vy_max_env, color="tab:orange", alpha=0.2)
+                ax[1].fill_between(t, vz_min_env, vz_max_env, color="tab:green", alpha=0.2)
+            else:
+                ax[1].plot(t, vx, label="$V_x$", color="tab:blue", alpha=0.9)
+                ax[1].plot(t, vy, label="$V_y$", color="tab:orange", alpha=0.9)
+                ax[1].plot(t, vz, label="$V_z$", color="tab:green", alpha=0.9)
 
             # Panel 2: Kinetic Energy
-            ax[2].plot(t, ke, label="KE", color="tab:brown")
             ax[2].set_ylabel("KE [eV]", fontsize=14)
             ax[2].set_yscale("log")
+            if smoothing_window and isinstance(smoothing_window, int) and smoothing_window > 0:
+                ax[2].plot(t, ke_smooth, color="tab:brown", linewidth=1.5, label="KE (smooth)")
+                ax[2].fill_between(t, ke_min_env, ke_max_env, color="tab:red", alpha=0.2)
+            else:
+                ax[2].plot(t, ke, label="KE", color="tab:brown")
 
             # Panel 3: Field Energy Densities (on twin axes)
             ax[3].plot(t, U_B, label=r"$U_B$", color="tab:red")
-            ax[3].set_ylabel(r"$U_B$ [J/m$^3$]", fontsize=14, color="tab:red")
-            # ax[3].set_yscale("log")
+            ax[3].set_ylabel(r"$U_B$ [eV/m$^3$]", fontsize=14, color="tab:red")
             ax[3].tick_params(axis="y", labelcolor="tab:red")
 
             ax3_twin = ax[3].twinx()
             ax3_twin.plot(t, U_E, label=r"$U_E$", color="tab:purple")
-            ax3_twin.set_ylabel(r"$U_E$ [J/m$^3$]", fontsize=14, color="tab:purple")
-            # ax3_twin.set_yscale("log")
+            ax3_twin.set_ylabel(r"$U_E$ [eV/m$^3$]", fontsize=14, color="tab:purple")
             ax3_twin.tick_params(axis="y", labelcolor="tab:purple")
 
             # Panel 4: Magnetic Field
             ax[4].plot(t, bx, label="$B_x$")
             ax[4].plot(t, by, label="$B_y$")
             ax[4].plot(t, bz, label="$B_z$")
-            ax[4].set_ylabel("B [nT]", fontsize=14)
+            ax[4].plot(t, b_mag, "k--", label="$B$")
+            if unit == "planetary":
+                ax[4].set_ylabel("B [nT]", fontsize=14)
+            elif unit == "SI":
+                ax[4].set_ylabel("B [T]", fontsize=14)
 
             # Panel 5: Electric Field
             ax[5].plot(t, ex, label="$E_x$")
             ax[5].plot(t, ey, label="$E_y$")
             ax[5].plot(t, ez, label="$E_z$")
-            ax[5].set_ylabel("E [mV/m]", fontsize=14)
+            if unit == "planetary":
+                ax[5].set_ylabel("E [mV/m]", fontsize=14)
+            elif unit == "SI":
+                ax[5].set_ylabel("E [V/m]", fontsize=14)  
 
             # Panel 6: Pitch Angle
             ax[6].plot(t, pitch_angle, color="tab:brown")
-            ax[6].set_ylabel(r"Pitch Angle [$^\circ$]", fontsize=14)
+            ax[6].set_ylabel(r"$\alpha$ [$^\circ$]", fontsize=14)
             ax[6].set_ylim(0, 180)
             ax[6].set_yticks([0, 45, 90, 135, 180])
+
+            # Create segments for the line
+            points = np.array([t, pitch_angle]).T.reshape(-1, 1, 2)
+            segments = np.concatenate([points[:-1], points[1:]], axis=1)
+            # Create a LineCollection, coloring by gyroradius
+            norm_rg = Normalize(gyro_radius.min(), gyro_radius.max())
+            lc_rg = LineCollection(segments, cmap="cividis", norm=norm_rg)
+            lc_rg.set_array(gyro_radius)
+            lc_rg.set_linewidth(2)
+            line_rg = ax[6].add_collection(lc_rg)
+            # Add a color bar
+            cbar_rg = f.colorbar(line_rg, ax=ax[6], pad=-0.051)
+            cbar_rg.set_label(r"$r_L$ [km]", fontsize=12)
 
             # Panel 7: First Adiabatic Invariant
             ax[7].plot(t, mu, color="tab:brown")
             ax[7].set_ylabel(r"$\mu$ [J/T]", fontsize=14)
             ax[7].set_yscale("log")  # mu can vary, log scale is often useful
+            # Create segments for the line
+            points = np.array([t, mu]).T.reshape(-1, 1, 2)
+            segments = np.concatenate([points[:-1], points[1:]], axis=1)
+            # Create a LineCollection, coloring by gyrofrequency
+            norm_gf = Normalize(gyro_freq.min(), gyro_freq.max())
+            lc_gf = LineCollection(segments, cmap="plasma", norm=norm_gf)
+            lc_gf.set_array(gyro_freq)
+            lc_gf.set_linewidth(2)
+            line_gf = ax[7].add_collection(lc_gf)
+            # Add a color bar
+            cbar_gf = f.colorbar(line_gf, ax=ax[7], pad=-0.051)
+            cbar_gf.set_label(r"$f_{ci}$ [Hz]", fontsize=12)
+
+            # --- Add Shock Crossing Line if Provided ---
+            if shock_time is not None:
+                for a in ax:
+                    a.axvline(
+                        x=shock_time,
+                        color="tab:cyan",
+                        linestyle="--",
+                        linewidth=1.5,
+                    )
 
             # --- Decorations ---
             ax[-1].set_xlabel("t [s]", fontsize=14)
-
-            # Add legends and grid to all plots
             for i, a in enumerate(ax):
-                # Set tick label size for all axes
                 a.tick_params(axis="both", which="major", labelsize="medium")
-
-                # Skip legend for the last panel (pitch angle) as it only has one line
-                if i == 6:
-                    a.grid(True, which="both", linestyle="--", linewidth=0.5)
-                    a.set_xlim(left=t.min(), right=t.max())
-                    continue
-
-                # For panels with 3 items, arrange legend in 3 columns
-                if i in [0, 1, 4, 5]:
-                    a.legend(ncols=3, loc="best", fontsize="large")
-                else:
-                    pass
-
                 a.grid(True, which="both", linestyle="--", linewidth=0.5)
                 a.set_xlim(left=t.min(), right=t.max())
+                # Adjust legends
+                if i in [0, 1, 5]:
+                    a.legend(ncols=3, loc="best", framealpha=0.5, fontsize="large")
+                elif i == 4:
+                    a.legend(ncols=4, loc="best", framealpha=0.5, fontsize="large")
 
             f.suptitle(f"Test Particle ID: {pID}", fontsize=16)
 
-        return ax
+        if outname:
+            plt.savefig(outname, dpi=200, bbox_inches="tight")
+            plt.close(f)
+            if verbose:
+                print(f"✅ Saved figure to {outname}...")
+        else:
+            plt.show()
+            return ax
 
     def plot_location(self, pData: np.ndarray):
         """
