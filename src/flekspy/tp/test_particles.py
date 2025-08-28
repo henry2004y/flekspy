@@ -1226,7 +1226,6 @@ class FLEKSTP(object):
         rapid transition between the upstream and downstream regions.
 
         Args:
-            tp: FLEKSTP object.
             pid: particle index.
             b_threshold_factor (float): A multiplier for the standard deviation of
                                         the B-field derivative. A larger value makes
@@ -1240,14 +1239,11 @@ class FLEKSTP(object):
         """
         # --- 1. Data Preparation ---
         pt = self[pid]
-        t = pt.select("time").collect().to_numpy().flatten()
-
-        result_lazy = pt.with_columns(
-            (pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2)
-            .sqrt()
-            .alias("b_mag")
-        )
-        b_mag = result_lazy.select("b_mag").collect().to_numpy().flatten()
+        t_and_b_mag = pt.with_columns(
+            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+        ).select("time", "b_mag").collect()
+        t = t_and_b_mag["time"].to_numpy()
+        b_mag = t_and_b_mag["b_mag"].to_numpy()
 
         # Ensure there are enough data points for a derivative calculation
         if len(t) < 3:
@@ -1333,7 +1329,7 @@ class FLEKSTP(object):
         num_particles = len(pids)
 
         for i, pid in enumerate(pids):
-            if verbose and (i + 1) % 500 == 0 or i == num_particles - 1:
+            if verbose and ((i + 1) % 500 == 0 or i == num_particles - 1):
                 print(f"  ...processing particle {i+1}/{num_particles} (ID: {pid})")
 
             # 1. Find the shock crossing time for the current particle
@@ -1358,7 +1354,7 @@ class FLEKSTP(object):
                 # 4. Interpolate the particle's state at the specified times
                 # The result is a 2-row Polars DataFrame
                 interpolated_states = interpolate_at_times(
-                    tp[pid], times_to_interpolate=[t_upstream, t_downstream]
+                    self[pid], times_to_interpolate=[t_upstream, t_downstream]
                 )
 
                 # Ensure we got two valid rows back

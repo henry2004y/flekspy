@@ -289,7 +289,7 @@ class TestParticles:
             b_threshold_factor=1,
             verbose=False
         )
-        assert s_up_dn == (None, None)
+        assert s_up_dn[1]["time"][1] == 1.2570836544036865
 
 def load(files):
     """
