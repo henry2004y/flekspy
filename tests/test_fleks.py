@@ -280,7 +280,6 @@ class TestParticles:
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
         assert np.isclose(rg2rc, 4.83376226572133e-12)
 
-
 def load(files):
     """
     Benchmarking flekspy loading.
@@ -288,7 +287,6 @@ def load(files):
     ds = fs.load(files[0])
     ds = fs.load(files[1])
     return ds
-
 
 def test_load_idl(benchmark):
     filenames = (
@@ -301,14 +299,12 @@ def test_load_idl(benchmark):
 
     assert isinstance(result, xr.Dataset)
 
-
 def load_test_particle_trajectories(tp, pIDs):
     """
     Load all particle trajectories.
     """
     for pID in itertools.islice(pIDs, 100):
         tp.read_particle_trajectory(pID)
-
 
 def test_load_tp(benchmark):
     """
@@ -322,12 +318,10 @@ def test_load_tp(benchmark):
 
     benchmark(load_test_particle_trajectories, tp, pIDs)
 
-
 def get_drifts(tp, pid):
     tp.get_curvature_drift(pid)
     tp.get_gradient_drift(pid)
     tp.get_ExB_drift(pid)
-
 
 def test_drift_tp(benchmark):
     """
