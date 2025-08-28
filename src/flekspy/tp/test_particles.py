@@ -1301,7 +1301,6 @@ class FLEKSTP(object):
         and collects the results.
 
         Args:
-            tp (flekspy.FLEKSTP): The initialized flekspy data object.
             pids (list): A list of particle IDs (e.g., [(0, 1), (0, 2), ...]) to process.
             delta_t_up (float): The time in seconds *before* the shock crossing to define
                                 the upstream point. Defaults to 20.0.
