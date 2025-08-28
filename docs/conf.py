@@ -20,7 +20,7 @@ extensions = [
     "autoapi.extension",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "sphinx_jupyterbook_latex",
+    "sphinx.ext.mathjax",
 ]
 autoapi_dirs = ["../src"]
 
