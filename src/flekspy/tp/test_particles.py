@@ -512,9 +512,11 @@ class FLEKSTP(object):
         return pSelected
 
     @staticmethod
-    def get_kinetic_energy(vx, vy, vz, mass=proton_mass):
-        # Assume velocity in units of [m/s]
-        ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
+    def get_kinetic_energy(vx, vy, vz, mass=proton_mass, unit="planetary"):
+        if unit == "planetary":
+            ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge  # [eV]
+        elif unit == "SI":
+            ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
 
         return ke
 
@@ -942,13 +944,137 @@ class FLEKSTP(object):
             v_dot_gradB=v_dot_gradB,
             partial_B_partial_t=partial_B_partial_t,
         )
-        # Unit conversion to watts.
+        # Unit conversion to [eV/s].
         if unit == "planetary":
-            result = result.with_columns(betatron=mu * partial_B_partial_t * 1e6)
+            result = result.with_columns(
+                dW_betatron=mu * partial_B_partial_t * 1e6 / elementary_charge
+            )
         elif unit == "SI":
-            result = result.with_columns(betatron=mu * partial_B_partial_t)
+            result = result.with_columns(
+                dW_betatron=mu * partial_B_partial_t / elementary_charge
+            )
 
         return result
+
+    def integrate_drift_accelerations(
+        self,
+        pid: tuple[int, int],
+        unit="planetary",
+    ):
+        """
+        Compute plasma drift velocities and the associated rate of energy change in [eV/s].
+        """
+        vc = self.get_curvature_drift(pid)
+        vg = self.get_gradient_drift(pid)
+        pt = self[pid]
+        mu = self.get_first_adiabatic_invariant(pid)
+        pt = self.get_betatron_acceleration(pt, mu)
+
+        if unit == "planetary":
+            UNIT_FACTOR = 1e-3
+        elif unit == "SI":
+            UNIT_FACTOR = 1.0
+
+        vx = pt.select("vx").collect().to_numpy().flatten()
+        vy = pt.select("vy").collect().to_numpy().flatten()
+        vz = pt.select("vz").collect().to_numpy().flatten()
+        ke = self.get_kinetic_energy(vx, vy, vz, unit=unit)  # [eV]
+
+        pt = (
+            pt.with_columns(
+                ke=ke,
+                b_mag=(
+                    pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2
+                ).sqrt(),
+            )
+            .with_columns(
+                bx_u=pl.col("bx") / pl.col("b_mag"),
+                by_u=pl.col("by") / pl.col("b_mag"),
+                bz_u=pl.col("bz") / pl.col("b_mag"),
+            )
+            .with_columns(
+                E_parallel=(
+                    pl.col("ex") * pl.col("bx_u")
+                    + pl.col("ey") * pl.col("by_u")
+                    + pl.col("ez") * pl.col("bz_u")
+                ),
+                v_parallel=(
+                    pl.col("vx") * pl.col("bx_u")
+                    + pl.col("vy") * pl.col("by_u")
+                    + pl.col("vz") * pl.col("bz_u")
+                ),
+            )
+        )
+
+        # Calculate the dot product of E with each drift velocity [eV/s]
+        pt = pt.with_columns(
+            # Energy change from gradient drift
+            dWg=(
+                pl.col("ex") * vg["vgx"]
+                + pl.col("ey") * vg["vgy"]
+                + pl.col("ez") * vg["vgz"]
+            )
+            * UNIT_FACTOR,
+            # Energy change from curvature drift
+            dWc=(
+                pl.col("ex") * vc["vcx"]
+                + pl.col("ey") * vc["vcy"]
+                + pl.col("ez") * vc["vcz"]
+            )
+            * UNIT_FACTOR,
+            # Energy change from parallel acceleration
+            dW_parallel=(pl.col("E_parallel") * pl.col("v_parallel")) * UNIT_FACTOR,
+        ).collect()
+
+        # 1. Calculate the time step 'dt' between each measurement
+        dt = pl.col("time").diff().fill_null(0)
+
+        # 2. Integrate each term using the trapezoidal rule and a cumulative sum
+        pt = pt.with_columns(
+            # Integrated energy from gradient drift
+            Wg_integrated=((pl.col("dWg") + pl.col("dWg").shift(1)) / 2 * dt)
+            .cum_sum()
+            .fill_null(0),
+            # Integrated energy from curvature drift
+            Wc_integrated=((pl.col("dWc") + pl.col("dWc").shift(1)) / 2 * dt)
+            .cum_sum()
+            .fill_null(0),
+            # Integrated energy from parallel acceleration
+            W_parallel_integrated=(
+                (pl.col("dW_parallel") + pl.col("dW_parallel").shift(1)) / 2 * dt
+            )
+            .cum_sum()
+            .fill_null(0),
+            # Also integrate the betatron term if it exists
+            W_betatron_integrated=(
+                (pl.col("dW_betatron") + pl.col("dW_betatron").shift(1)) / 2 * dt
+            )
+            .cum_sum()
+            .fill_null(0),
+        )
+
+        # Let's also create a column for the total integrated energy change
+        pt = pt.with_columns(
+            W_total_integrated=(
+                pl.col("Wg_integrated")
+                + pl.col("Wc_integrated")
+                + pl.col("W_parallel_integrated")
+                + pl.col("W_betatron_integrated")
+            )
+        )
+
+        df = pt.select(
+            [
+                "time",
+                "ke",
+                "Wg_integrated",
+                "Wc_integrated",
+                "W_parallel_integrated",
+                "W_betatron_integrated",
+            ]
+        )
+
+        return df
 
     def analyze_drifts(
         self,
@@ -958,7 +1084,7 @@ class FLEKSTP(object):
         switchYZ=False,
     ):
         """
-        Compute plasma drift velocities and the associated rate of energy change.
+        Compute plasma drift velocities and the associated rate of energy change in [eV/s].
         """
         ve = self.get_ExB_drift(pid)
         vc = self.get_curvature_drift(pid)
@@ -967,11 +1093,11 @@ class FLEKSTP(object):
         pt = self[pid]
         mu = self.get_first_adiabatic_invariant(pid)
         pt = self.get_betatron_acceleration(pt, mu, unit=unit)
-        # Calculate the dot product of E with each drift velocity [Watts]
+        # Calculate the dot product of E with each drift velocity [eV/s]
         if unit == "planetary":
-            UNIT_FACTOR = elementary_charge * 1e-3
+            UNIT_FACTOR = 1e-3
         elif unit == "SI":
-            UNIT_FACTOR = elementary_charge
+            UNIT_FACTOR = 1.0
 
         pt = (
             pt.with_columns(
@@ -996,7 +1122,7 @@ class FLEKSTP(object):
             )
         )
 
-        # Calculate the dot product of E with each drift velocity [Watts]
+        # Calculate the dot product of E with each drift velocity [eV/s]
         pt = pt.with_columns(
             # Energy change from gradient drift
             dWg=(
@@ -1067,9 +1193,9 @@ class FLEKSTP(object):
             pt["time"], pt["dW_parallel"], label=r"$q E_{\|} v_{\|}$", linestyle="--"
         )
         axes[3].plot(
-            pt["time"], pt["betatron"], label="Betatron", linestyle="--", alpha=0.8
+            pt["time"], pt["dW_betatron"], label="Betatron", linestyle="--", alpha=0.8
         )
-        axes[3].set_ylabel("Energy change rate\n [Watts]", fontsize=14)
+        axes[3].set_ylabel("Energy change rate\n [eV/s]", fontsize=14)
         axes[3].legend(ncol=4, fontsize="medium")
         axes[3].grid(True, linestyle="--", alpha=0.6)
 
@@ -1094,6 +1220,7 @@ class FLEKSTP(object):
         pID: Tuple[int, int],
         *,
         mass=proton_mass,
+        unit="planetary",
         type="quick",
         xaxis="t",
         yaxis="x",
@@ -1218,7 +1345,7 @@ class FLEKSTP(object):
             # --- Derived Quantities Calculation ---
 
             # Kinetic Energy
-            ke = self.get_kinetic_energy(vx, vy, vz) * 1e6  # [eV]
+            ke = self.get_kinetic_energy(vx, vy, vz, unit=unit)  # [eV]
 
             # Vectorize B and V fields for easier calculations
             b_vec = pt.select(["bx", "by", "bz"]).to_numpy()
@@ -1406,3 +1533,46 @@ def interpolate_at_times(
     ).filter(pl.col("time").is_in(times_to_interpolate))
 
     return interpolated_df
+
+
+def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
+    """
+    Plots integrated energy quantities as a function of time.
+
+    Args:
+        df (pl.DataFrame): A Polars DataFrame containing a time column and
+                           one or more integrated energy columns.
+        outname (str): If not None, save the plot to file.
+    """
+    fig, ax = plt.subplots(figsize=(12, 5), constrained_layout=True)
+
+    # 2. Get the list of columns to plot (all except the time column)
+    energy_columns = [col for col in df.columns if col != "time"]
+
+    # 3. Convert Polars columns to NumPy arrays for plotting
+    time_data = df["time"].to_numpy()
+
+    # 4. Loop through each energy column and plot it
+    for column_name in energy_columns:
+        energy_data = df[column_name].to_numpy()
+        # Create a clean label for the legend (e.g., "Wg_integrated" -> "Wg")
+        if column_name == "W_parallel":
+            label = r"$\text{W}_\parallel$"
+        elif column_name == "W_betatron":
+            label = r"$\text{W}_\text{betatron}$"
+        else:
+            label = column_name.replace("_integrated", "")
+        ax.plot(time_data, energy_data, label=label, linewidth=2.5)
+
+    # 5. Customize the plot with labels, title, and legend
+    ax.grid(True)
+    ax.set_xlabel("Time (s)", fontsize=14)
+    ax.set_ylabel("Integrated Energy (eV)", fontsize=14)
+    ax.set_title("Cumulative Energy Change Over Time", fontsize=16, fontweight="bold")
+    ax.legend(title="Energy Source", fontsize=12)
+    ax.tick_params(axis="both", which="major", labelsize=12)
+
+    if outname is not None:
+        plt.savefig(outname, bbox_inches="tight")
+    else:
+        plt.show()

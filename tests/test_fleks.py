@@ -247,14 +247,20 @@ class TestParticles:
         assert np.all(np.isclose(interpolated_df["z"].to_list(), [2.5, 7.5, 7.5]))
 
     def test_EBG(self):
+        from flekspy.tp import plot_integrated_energy
+
         tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True)
         p0_collected = tp[0].collect()
         assert p0_collected.item(0, 7) == 224199.65625  # bx
         assert p0_collected.item(0, 16) == 2194893.75  # dbydx
         pid = tp.getIDs()[0]
         assert tp.get_pitch_angle(pid)[0] == np.float32(57.661438)
-        vx, vy, vz = p0_collected.item(0, 4), p0_collected.item(0, 5), p0_collected.item(0, 6)
-        ke = tp.get_kinetic_energy(vx, vy, vz)
+        vx, vy, vz = (
+            p0_collected.item(0, 4),
+            p0_collected.item(0, 5),
+            p0_collected.item(0, 6),
+        )
+        ke = tp.get_kinetic_energy(vx, vy, vz, unit="SI")
         assert np.isclose(ke, 3.361357097373841e-17)
         pt_lazy = tp[pid]
         assert np.isclose(tp.get_ExB_drift(pid).item(0, 1), 3.9656504668528214e-05)
@@ -262,11 +268,17 @@ class TestParticles:
         assert np.isclose(
             tp._calculate_curvature(pt_lazy).collect().item(0, -1), -0.4797530472278595
         )
-        assert np.isclose(tp.get_curvature_drift(pid).item(0, 0), -6.5444069202873204e-18)
+        assert np.isclose(
+            tp.get_curvature_drift(pid).item(0, 0), -6.5444069202873204e-18
+        )
         assert np.isclose(tp.get_gradient_drift(pid).item(0, 1), -9.73609190874673e-21)
+
+        df_drifts = tp.integrate_drift_accelerations(pid)
+        plot_integrated_energy(df_drifts)
+        tp.analyze_drifts(pid)
+
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
         assert np.isclose(rg2rc, 4.83376226572133e-12)
-        tp.analyze_drifts(pid)
 
 
 def load(files):
@@ -310,10 +322,12 @@ def test_load_tp(benchmark):
 
     benchmark(load_test_particle_trajectories, tp, pIDs)
 
+
 def get_drifts(tp, pid):
     tp.get_curvature_drift(pid)
     tp.get_gradient_drift(pid)
     tp.get_ExB_drift(pid)
+
 
 def test_drift_tp(benchmark):
     """
