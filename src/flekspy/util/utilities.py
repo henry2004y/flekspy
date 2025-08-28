@@ -143,7 +143,7 @@ def download_testfile(url: str, target_path="."):
 
     try:
         response = requests.get(url, stream=True)
-        response.raise_for_status() # Raise an exception for bad status codes
+        response.raise_for_status()  # Raise an exception for bad status codes
 
         with open(temp_file, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
@@ -160,4 +160,4 @@ def download_testfile(url: str, target_path="."):
         print(f"Error extracting tar file: {e}")
     finally:
         if temp_file.exists():
-            temp_file.unlink(missing_ok=True) # Clean up temporary file
+            temp_file.unlink(missing_ok=True)  # Clean up temporary file
