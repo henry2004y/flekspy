@@ -1,6 +1,9 @@
 import math
 import numpy as np
 import tarfile
+from flekspy.util.logger import get_logger
+
+logger = get_logger(name=__name__)
 
 plot_unit_planet = {
     "time": "s",
@@ -155,9 +158,9 @@ def download_testfile(url: str, target_path="."):
             tar.extractall(target_dir, filter="data")
 
     except requests.exceptions.RequestException as e:
-        print(f"Error downloading file: {e}")
+        logger.error(f"Error downloading file: {e}")
     except tarfile.TarError as e:
-        print(f"Error extracting tar file: {e}")
+        logger.error(f"Error extracting tar file: {e}")
     finally:
         if temp_file.exists():
             temp_file.unlink(missing_ok=True)  # Clean up temporary file

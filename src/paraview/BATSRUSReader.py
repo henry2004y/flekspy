@@ -10,6 +10,9 @@ from vtkmodules.numpy_interface import dataset_adapter as dsa
 import numpy as np
 import struct
 import flekspy
+from flekspy.util.logger import get_logger
+
+logger = get_logger(name=__name__)
 
 
 @smproxy.reader(
@@ -59,10 +62,10 @@ class BATSReader(VTKPythonAlgorithmBase):
     # --- RequestInformation: Provide metadata about the data ---
     def RequestInformation(self, request, inInfoVec, outInfoVec):
         if not self._filename:
-            print("BATSReader: No filename set.")
+            logger.warning("BATSReader: No filename set.")
             return 0  # Indicate failure
 
-        print(f"BATSReader: RequestInformation for {self._filename}")
+        logger.info(f"BATSReader: RequestInformation for {self._filename}")
 
         # (1) Use flekspy to get metadata (e.g., dimensions) from your file
         with open(self._filename, "rb") as f:
@@ -96,7 +99,7 @@ class BATSReader(VTKPythonAlgorithmBase):
             nx = grid
             ny, nz = 1, 1
         self._data_extents = [0, nx - 1, 0, ny - 1, 0, nz - 1]
-        print(f"BATSReader: Determined extents: {self._data_extents}")
+        logger.info(f"BATSReader: Determined extents: {self._data_extents}")
 
         # (2) Set the WHOLE_EXTENT for vtkImageData
         # This tells ParaView the overall dimensions of the structured grid.
@@ -125,10 +128,10 @@ class BATSReader(VTKPythonAlgorithmBase):
     # --- RequestData: Load the actual data ---
     def RequestData(self, request, inInfoVec, outInfoVec):
         if not self._filename:
-            print("BATSReader: No filename set for RequestData.")
+            logger.warning("BATSReader: No filename set for RequestData.")
             return 0
 
-        print(f"BATSReader: RequestData for {self._filename}")
+        logger.info(f"BATSReader: RequestData for {self._filename}")
         output_port_info = outInfoVec.GetInformationObject(0)
         output_data = vtkImageData.GetData(output_port_info)
 
@@ -204,5 +207,5 @@ class BATSReader(VTKPythonAlgorithmBase):
             vtkDataObject.DATA_TIME_STEP(), self._timesteps
         )
 
-        print(f"BATSReader: Successfully prepared vtkImageData for {self._filename}")
+        logger.info(f"BATSReader: Successfully prepared vtkImageData for {self._filename}")
         return 1  # Indicate success

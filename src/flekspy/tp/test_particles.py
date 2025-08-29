@@ -1,7 +1,10 @@
 from typing import List, Tuple, Dict, Union, Callable
 
+from flekspy.util.logger import get_logger
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+
+logger = get_logger(name=__name__)
 from matplotlib.colors import Normalize, LogNorm
 from pathlib import Path
 import numpy as np
@@ -380,7 +383,7 @@ class FLEKSTP(object):
         try:
             pData_to_save.sink_csv(filename)
         except (IOError, pl.exceptions.PolarsError) as e:
-            print(f"Error saving trajectory to CSV: {e}")
+            logger.error(f"Error saving trajectory to CSV: {e}")
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
@@ -1248,7 +1251,7 @@ class FLEKSTP(object):
         # Ensure there are enough data points for a derivative calculation
         if len(t) < 3:
             if verbose:
-                print("Warning: Not enough data points to reliably find a shock.")
+                logger.warning("Not enough data points to reliably find a shock.")
             return None
 
         # --- 2. Calculate the Rate of Change ---
@@ -1270,7 +1273,7 @@ class FLEKSTP(object):
         # If no points are above the threshold, no shock was detected.
         if candidate_indices.size == 0:
             if verbose:
-                print(
+                logger.info(
                     f"No B-field change above the threshold ({threshold:.2f} nT/s) was found."
                 )
             return None
@@ -1279,7 +1282,7 @@ class FLEKSTP(object):
         shock_time = t[shock_idx]
 
         if verbose:
-            print(f"Shock crossing detected at t = {shock_time:.2f} s")
+            logger.info(f"Shock crossing detected at t = {shock_time:.2f} s")
 
         return shock_time
 
@@ -1322,14 +1325,14 @@ class FLEKSTP(object):
             Returns (None, None) if no particles with a valid shock crossing are found.
         """
         if verbose:
-            print(f"Starting upstream/downstream analysis for {len(pids)} particles...")
+            logger.info(f"Starting upstream/downstream analysis for {len(pids)} particles...")
         upstream_states = []
         downstream_states = []
         num_particles = len(pids)
 
         for i, pid in enumerate(pids):
             if verbose and ((i + 1) % 500 == 0 or i == num_particles - 1):
-                print(f"  ...processing particle {i+1}/{num_particles} (ID: {pid})")
+                logger.info(f"  ...processing particle {i+1}/{num_particles} (ID: {pid})")
 
             # 1. Find the shock crossing time for the current particle
             t_cross = self.find_shock_crossing_time(
@@ -1339,11 +1342,11 @@ class FLEKSTP(object):
             # 2. Skip particle if no shock crossing is found
             if t_cross is None:
                 if verbose:
-                    print(f"  -> No shock crossing found for particle {pid}. Skipping.")
+                    logger.info(f"  -> No shock crossing found for particle {pid}. Skipping.")
                 continue
 
             if verbose:
-                print(f"  -> Shock found for {pid} at t={t_cross:.2f}s.")
+                logger.info(f"  -> Shock found for {pid} at t={t_cross:.2f}s.")
 
             # 3. Define the upstream and downstream time points
             t_upstream = t_cross - delta_t_up
@@ -1359,7 +1362,7 @@ class FLEKSTP(object):
                 # Ensure we got two valid rows back
                 if interpolated_states.height != 2:
                     if verbose:
-                        print(f"  -> Interpolation failed for {pid}. Skipping.")
+                        logger.warning(f"  -> Interpolation failed for {pid}. Skipping.")
                     continue
 
                 # 5. Separate and enrich the data for collection
@@ -1385,13 +1388,13 @@ class FLEKSTP(object):
             except Exception as e:
                 # Catch any other errors during interpolation (e.g., times out of bounds)
                 if verbose:
-                    print(f"  -> An error occurred for particle {pid}: {e}. Skipping.")
+                    logger.error(f"  -> An error occurred for particle {pid}: {e}. Skipping.")
                 continue
 
         # 6. Finalize the results
         if not upstream_states:
             if verbose:
-                print("\nFinished processing. No valid shock-crossing particles found.")
+                logger.info("\nFinished processing. No valid shock-crossing particles found.")
             return None, None
 
         # Concatenate all the individual DataFrames into two final ones
@@ -1399,7 +1402,7 @@ class FLEKSTP(object):
         final_downstream_df = pl.concat(downstream_states)
 
         if verbose:
-            print(
+            logger.info(
                 f"\nFinished processing. Found {final_upstream_df.height} valid particles."
             )
         return final_upstream_df, final_downstream_df
@@ -1448,7 +1451,7 @@ class FLEKSTP(object):
         try:
             pt = self[pID].collect()
         except (KeyError, ValueError) as e:
-            print(f"Error plotting trajectory for {pID}: {e}")
+            logger.error(f"Error plotting trajectory for {pID}: {e}")
             return
 
         t = pt["time"]
@@ -1533,7 +1536,7 @@ class FLEKSTP(object):
                 )
         elif type == "full":
             if verbose:
-                print(f"Analyzing particle ID: {pID}")
+                logger.info(f"Analyzing particle ID: {pID}")
             if dt is not None:
                 t = np.arange(
                     start=pt["time"].min(),
@@ -1547,7 +1550,7 @@ class FLEKSTP(object):
             if t_start is not None or t_end is not None:
                 start_str = f"{t_start:.2f}" if t_start is not None else "beginning"
                 end_str = f"{t_end:.2f}" if t_end is not None else "end"
-                print(f"Slicing data from t={start_str} s to t={end_str} s")
+                logger.info(f"Slicing data from t={start_str} s to t={end_str} s")
 
                 # Build a filter expression for the given time range
                 if t_start is not None and t_end is not None:
@@ -1621,7 +1624,7 @@ class FLEKSTP(object):
                 and smoothing_window > 0
             ):
                 if verbose:
-                    print(
+                    logger.info(
                         f"Applying moving average with window size: {smoothing_window}"
                     )
                 # Convert numpy arrays to polars Series for easy rolling calculations
@@ -1893,7 +1896,7 @@ class FLEKSTP(object):
             plt.savefig(outname, dpi=200, bbox_inches="tight")
             plt.close(f)
             if verbose:
-                print(f"✅ Saved figure to {outname}...")
+                logger.info(f"✅ Saved figure to {outname}...")
         else:
             plt.show()
             return ax

@@ -3,6 +3,10 @@ import struct
 import yt
 import xarray as xr
 
+from flekspy.util.logger import get_logger
+
+logger = get_logger(name=__name__)
+
 
 def _read_and_process_data(filename):
     attrs = {"filename": filename}
@@ -25,7 +29,7 @@ def _read_and_process_data(filename):
         try:
             array, new_attrs = _read_binary(filename, attrs)
         except Exception:
-            print(
+            logger.warning(
                 "It seems the lengths of instances are different. Try slow reading..."
             )
             array, new_attrs = _read_binary_slow(filename, attrs)
