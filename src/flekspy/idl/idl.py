@@ -30,7 +30,8 @@ def _read_and_process_data(filename):
             array, new_attrs = _read_binary(filename, attrs)
         except Exception:
             logger.warning(
-                "It seems the lengths of instances are different. Try slow reading..."
+                "It seems the lengths of instances are different. Try slow reading...",
+                exc_info=True,
             )
             array, new_attrs = _read_binary_slow(filename, attrs)
     else:
