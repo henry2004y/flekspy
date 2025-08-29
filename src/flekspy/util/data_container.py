@@ -9,12 +9,15 @@ from scipy.interpolate import griddata
 from flekspy.util.utilities import get_unit
 from flekspy.plot.streamplot import streamplot
 from flekspy.util.safe_eval import safe_eval
+from flekspy.util.logger import get_logger
+
+logger = get_logger(name=__name__)
 
 
 def compare(d1, d2):
     header = ("var", "min|d1-d2|", "max|d1-d2|", "mean|d1-d2|", "mean|d1|", "mean|d2|")
     s = "{:8}   " + "{:18}" * 5
-    print(s.format(*header))
+    logger.info(s.format(*header))
     for var in d1.vars:
         dif = abs(d1.data[var] - d2.data[var])
         l = (
@@ -26,7 +29,7 @@ def compare(d1, d2):
             float(d2.data[var].mean()),
         )
         s = "{:10}" + "{:+.6e},   " * 5
-        print(s.format(*l))
+        logger.info(s.format(*l))
 
 
 class DataContainer(object):
@@ -460,7 +463,7 @@ class DataContainer2D(DataContainer):
             ax.set_title(title)
 
         if self.cut_norm != None and self.cut_loc != None:
-            print("Plots at " + self.cut_norm + " = ", self.cut_loc)
+            logger.info("Plots at %s = %s", self.cut_norm, self.cut_loc)
 
         self.add_bottom_line(f, bottomline)
 

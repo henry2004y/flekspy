@@ -1,2 +1,5 @@
+from flekspy.util.logger import get_logger
+
 if __name__ == "__main__":
-    print("Running from CLI...")
+    logger = get_logger()
+    logger.info("Running from CLI...")
