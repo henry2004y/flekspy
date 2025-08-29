@@ -463,7 +463,7 @@ class DataContainer2D(DataContainer):
             ax.set_title(title)
 
         if self.cut_norm != None and self.cut_loc != None:
-            logger.info("Plots at " + self.cut_norm + " = ", self.cut_loc)
+            logger.info("Plots at %s = %s", self.cut_norm, self.cut_loc)
 
         self.add_bottom_line(f, bottomline)
 
