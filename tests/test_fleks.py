@@ -223,6 +223,10 @@ class TestParticles:
         with pytest.raises(ValueError):
             self.tp.read_particle_trajectory(pID)
 
+    def test_invalid_unit(self):
+        with pytest.raises(ValueError):
+            self.FLEKSTP(self.dirs[0], iSpecies=1, unit="invalid_unit")
+
     def test_interpolate_at_times_float32(self):
         df = pl.DataFrame(
             {

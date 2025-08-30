@@ -83,6 +83,8 @@ class FLEKSTP(object):
     ):
         self.use_cache = use_cache
         self.unit = unit
+        if self.unit not in {"planetary", "SI"}:
+            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
         self._trajectory_cache = {}
 
         if isinstance(dirs, str):
