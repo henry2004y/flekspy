@@ -75,12 +75,14 @@ class FLEKSTP(object):
         dirs: Union[str, List[str]],
         iDomain: int = 0,
         iSpecies: int = 0,
+        unit: str = "planetary",
         iListStart: int = 0,
         iListEnd: int = -1,
         readAllFiles: bool = False,
         use_cache: bool = False,
     ):
         self.use_cache = use_cache
+        self.unit = unit
         self._trajectory_cache = {}
 
         if isinstance(dirs, str):
@@ -297,7 +299,6 @@ class FLEKSTP(object):
     def save_trajectory_to_csv(
         self,
         pID: Tuple[int, int],
-        unit: str = "planetary",
         filename: str = None,
         shiftTime: bool = False,
         scaleTime: bool = False,
@@ -317,7 +318,7 @@ class FLEKSTP(object):
         if filename is None:
             filename = f"trajectory_{pID[0]}_{pID[1]}.csv"
 
-        if unit == "planetary":
+        if self.unit == "planetary":
             header_cols = [
                 "time [s]",
                 "X [R]",
@@ -331,7 +332,7 @@ class FLEKSTP(object):
                 header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
             if self.nReal >= 13:
                 header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
-        elif unit == "SI":
+        elif self.unit == "SI":
             header_cols = [
                 "time [s]",
                 "X [m]",
@@ -516,11 +517,10 @@ class FLEKSTP(object):
 
         return pSelected
 
-    @staticmethod
-    def get_kinetic_energy(vx, vy, vz, mass=proton_mass, unit="planetary"):
-        if unit == "planetary":
+    def get_kinetic_energy(self, vx, vy, vz, mass=proton_mass):
+        if self.unit == "planetary":
             ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge  # [eV]
-        elif unit == "SI":
+        elif self.unit == "SI":
             ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
 
         return ke
@@ -697,7 +697,6 @@ class FLEKSTP(object):
     def get_curvature_drift(
         self,
         pID: Tuple[int, int],
-        unit="planetary",
         mass=proton_mass,
         charge=elementary_charge,
     ) -> pl.DataFrame:
@@ -731,14 +730,14 @@ class FLEKSTP(object):
         # Conversion factor expression
         v_parallel_sq = pl.col("v_parallel") ** 2
         b_mag_sq = pl.col("b_mag") ** 2
-        if unit == "planetary":
+        if self.unit == "planetary":
             factor = (
                 (mass * v_parallel_sq) / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
             )
-        elif unit == "SI":
+        elif self.unit == "SI":
             factor = (mass * v_parallel_sq) / (charge * b_mag_sq)
         else:
-            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
+            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
 
         lf = lf.with_columns(
             vcx=factor * cross_x, vcy=factor * cross_y, vcz=factor * cross_z
@@ -749,7 +748,6 @@ class FLEKSTP(object):
     def get_gyroradius_to_curvature_ratio(
         self,
         pID: Tuple[int, int],
-        unit="planetary",
         mass=proton_mass,
         charge=elementary_charge,
     ) -> pl.Series:
@@ -780,12 +778,12 @@ class FLEKSTP(object):
             pl.col("kappa_x") ** 2 + pl.col("kappa_y") ** 2 + pl.col("kappa_z") ** 2
         ).sqrt()
 
-        if unit == "planetary":
+        if self.unit == "planetary":
             factor = EARTH_RADIUS_KM  # conversion factor
-        elif unit == "SI":
+        elif self.unit == "SI":
             factor = 1e-3  # conversion factor
         else:
-            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
+            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
         r_c = (1 / (kappa_mag + epsilon)) * factor  # [km]
 
         ratio_expr = (r_g / r_c).alias("ratio")
@@ -795,7 +793,6 @@ class FLEKSTP(object):
     def get_gradient_drift(
         self,
         pID: Tuple[int, int],
-        unit="planetary",
         mass=proton_mass,
         charge=elementary_charge,
     ) -> pl.DataFrame:
@@ -860,12 +857,12 @@ class FLEKSTP(object):
 
         b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
-        if unit == "planetary":
+        if self.unit == "planetary":
             factor = mu_expr / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
-        elif unit == "SI":
+        elif self.unit == "SI":
             factor = mu_expr / (charge * b_mag_sq)
         else:
-            raise ValueError(f"Unknown unit: '{unit}'. Must be 'planetary' or 'SI'.")
+            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
 
         lf = lf.with_columns(
             vgx=factor * cross_x, vgy=factor * cross_y, vgz=factor * cross_z
@@ -873,8 +870,7 @@ class FLEKSTP(object):
 
         return lf.select(["vgx", "vgy", "vgz"]).collect()
 
-    @staticmethod
-    def get_betatron_acceleration(pt, mu, unit="planetary"):
+    def get_betatron_acceleration(self, pt, mu):
         """
         Calculates the Betatron acceleration term from particle trajectory data.
 
@@ -925,13 +921,13 @@ class FLEKSTP(object):
         ) / pl.col("b_mag")
 
         # Convective derivative: v ⋅ ∇|B| [nT/s]
-        if unit == "planetary":
+        if self.unit == "planetary":
             v_dot_gradB = (
                 pl.col("vx") * grad_b_mag_x
                 + pl.col("vy") * grad_b_mag_y
                 + pl.col("vz") * grad_b_mag_z
             ) / EARTH_RADIUS_KM
-        elif unit == "SI":
+        elif self.unit == "SI":
             v_dot_gradB = (
                 pl.col("vx") * grad_b_mag_x
                 + pl.col("vy") * grad_b_mag_y
@@ -950,11 +946,11 @@ class FLEKSTP(object):
             partial_B_partial_t=partial_B_partial_t,
         )
         # Unit conversion to [eV/s].
-        if unit == "planetary":
+        if self.unit == "planetary":
             result = result.with_columns(
                 dW_betatron=mu * partial_B_partial_t * 1e6 / elementary_charge
             )
-        elif unit == "SI":
+        elif self.unit == "SI":
             result = result.with_columns(
                 dW_betatron=mu * partial_B_partial_t / elementary_charge
             )
@@ -964,7 +960,6 @@ class FLEKSTP(object):
     def integrate_drift_accelerations(
         self,
         pid: tuple[int, int],
-        unit="planetary",
     ):
         """
         Compute plasma drift velocities and the associated rate of energy change in [eV/s].
@@ -975,15 +970,15 @@ class FLEKSTP(object):
         mu = self.get_first_adiabatic_invariant(pid)
         pt = self.get_betatron_acceleration(pt, mu)
 
-        if unit == "planetary":
+        if self.unit == "planetary":
             UNIT_FACTOR = 1e-3
-        elif unit == "SI":
+        elif self.unit == "SI":
             UNIT_FACTOR = 1.0
 
         vx = pt.select("vx").collect().to_numpy().flatten()
         vy = pt.select("vy").collect().to_numpy().flatten()
         vz = pt.select("vz").collect().to_numpy().flatten()
-        ke = self.get_kinetic_energy(vx, vy, vz, unit=unit)  # [eV]
+        ke = self.get_kinetic_energy(vx, vy, vz)  # [eV]
 
         pt = (
             pt.with_columns(
@@ -1084,7 +1079,6 @@ class FLEKSTP(object):
     def analyze_drifts(
         self,
         pid: tuple[int, int],
-        unit="planetary",
         savename=None,
         switchYZ=False,
     ):
@@ -1097,11 +1091,11 @@ class FLEKSTP(object):
         rl2rc = self.get_gyroradius_to_curvature_ratio(pid)
         pt = self[pid]
         mu = self.get_first_adiabatic_invariant(pid)
-        pt = self.get_betatron_acceleration(pt, mu, unit=unit)
+        pt = self.get_betatron_acceleration(pt, mu)
         # Calculate the dot product of E with each drift velocity [eV/s]
-        if unit == "planetary":
+        if self.unit == "planetary":
             UNIT_FACTOR = 1e-3
-        elif unit == "SI":
+        elif self.unit == "SI":
             UNIT_FACTOR = 1.0
 
         pt = (
@@ -1419,7 +1413,6 @@ class FLEKSTP(object):
         dt=None,
         outname=None,
         shock_time=None,
-        unit="planetary",
         type="quick",
         xaxis="t",
         yaxis="x",
@@ -1563,7 +1556,7 @@ class FLEKSTP(object):
                     pt = pt.filter(pl.col("time") <= t_end)
 
             # --- Data Extraction ---
-            if unit == "planetary":
+            if self.unit == "planetary":
                 t = pt["time"].to_numpy()  # [s]
                 x = pt["x"].to_numpy()  # [RE]
                 vx = pt["vx"].to_numpy()  # [km/s]
@@ -1587,7 +1580,7 @@ class FLEKSTP(object):
                     bz = pt["bz"].to_numpy()  # [nT]
                     ey = pt["ey"].to_numpy() * 1e-3  # [mV/m]
                     ez = pt["ez"].to_numpy() * 1e-3  # [mV/m]
-            elif unit == "SI":
+            elif self.unit == "SI":
                 t = pt["time"].to_numpy()  # [s]
                 x = pt["x"].to_numpy()  # [m]
                 vx = pt["vx"].to_numpy()  # [m/s]
@@ -1615,7 +1608,7 @@ class FLEKSTP(object):
             # --- Derived Quantities Calculation ---
 
             # Kinetic Energy
-            ke = self.get_kinetic_energy(vx, vy, vz, mass=mass, unit=unit)  # [eV]
+            ke = self.get_kinetic_energy(vx, vy, vz, mass=mass)  # [eV]
 
             # --- Velocity Smoothing and Envelope Calculation ---
             if (
@@ -1687,7 +1680,7 @@ class FLEKSTP(object):
             pitch_angle_rad = np.arccos(cos_alpha)
             pitch_angle = pitch_angle_rad * 180.0 / np.pi
 
-            if unit == "planetary":
+            if self.unit == "planetary":
                 # Magnetic Field Energy Density Calculation
                 U_B = (b_mag * 1e-9) ** 2 / (2 * mu_0 * elementary_charge)  # [eV/m^3]
                 # Electric Field Energy Density Calculation
@@ -1709,7 +1702,7 @@ class FLEKSTP(object):
                 gyro_radius = (
                     (mass * v_perp) / (elementary_charge * b_mag) * 1e6 * fscaling
                 )
-            elif unit == "SI":
+            elif self.unit == "SI":
                 # Magnetic Field Energy Density Calculation
                 U_B = b_mag**2 / (2 * mu_0 * elementary_charge)  # [eV/m^3]
                 # Electric Field Energy Density Calculation
@@ -1736,24 +1729,24 @@ class FLEKSTP(object):
                 ax0_twin = ax[0].twinx()
                 ax0_twin.plot(t, z, label="z", color="tab:orange")
                 ax0_twin.tick_params(axis="y", labelcolor="tab:orange")
-                if unit == "planetary":
+                if self.unit == "planetary":
                     ax[0].set_ylabel(r"X [$R_E$]", fontsize=14)
                     ax0_twin.set_ylabel(r"Z [$R_E$]", fontsize=14, color="tab:orange")
-                elif unit == "SI":
+                elif self.unit == "SI":
                     ax[0].set_ylabel("X [m]", fontsize=14)
                     ax0_twin.set_ylabel("Z [m]", fontsize=14, color="tab:orange")
             else:
-                if unit == "planetary":
+                if self.unit == "planetary":
                     ax[0].set_ylabel(r"Location [$R_E$]", fontsize=14)
-                elif unit == "SI":
+                elif self.unit == "SI":
                     ax[0].set_ylabel("Location [m]", fontsize=14)
                 ax[0].plot(t, y, label="y")
                 ax[0].plot(t, z, label="z")
 
             # Panel 1: Particle Velocity
-            if unit == "planetary":
+            if self.unit == "planetary":
                 ax[1].set_ylabel("V [km/s]", fontsize=14)
-            elif unit == "SI":
+            elif self.unit == "SI":
                 ax[1].set_ylabel("V [m/s]", fontsize=14)
 
             # If smoothing is enabled, plot the smoothed lines and envelopes
@@ -1818,18 +1811,18 @@ class FLEKSTP(object):
             ax[4].plot(t, by, label="$B_y$")
             ax[4].plot(t, bz, label="$B_z$")
             ax[4].plot(t, b_mag, "k--", label="$B$")
-            if unit == "planetary":
+            if self.unit == "planetary":
                 ax[4].set_ylabel("B [nT]", fontsize=14)
-            elif unit == "SI":
+            elif self.unit == "SI":
                 ax[4].set_ylabel("B [T]", fontsize=14)
 
             # Panel 5: Electric Field
             ax[5].plot(t, ex, label="$E_x$")
             ax[5].plot(t, ey, label="$E_y$")
             ax[5].plot(t, ez, label="$E_z$")
-            if unit == "planetary":
+            if self.unit == "planetary":
                 ax[5].set_ylabel("E [mV/m]", fontsize=14)
-            elif unit == "SI":
+            elif self.unit == "SI":
                 ax[5].set_ylabel("E [V/m]", fontsize=14)
 
             # Panel 6: Pitch Angle

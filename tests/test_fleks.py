@@ -142,7 +142,7 @@ class TestParticles:
     )
     from flekspy import FLEKSTP
 
-    tp = FLEKSTP(dirs[0], iSpecies=1)
+    tp = FLEKSTP(dirs[0], iSpecies=1, unit="planetary")
 
     def test_particles(self):
         tp = self.tp
@@ -193,7 +193,7 @@ class TestParticles:
         assert ax[1][0].get_xlim()[1] == 2.140599811077118
 
     def test_particle_cache(self):
-        tp = self.FLEKSTP(self.dirs[0], iSpecies=1, use_cache=True)
+        tp = self.FLEKSTP(self.dirs[0], iSpecies=1, use_cache=True, unit="planetary")
         pID = tp.getIDs()[0]
 
         # First access, should be read from file
@@ -249,7 +249,7 @@ class TestParticles:
     def test_EBG(self):
         from flekspy.tp import plot_integrated_energy
 
-        tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True)
+        tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True, unit="SI")
         p0_collected = tp[0].collect()
         assert p0_collected.item(0, 7) == 224199.65625  # bx
         assert p0_collected.item(0, 16) == 2194893.75  # dbydx
@@ -260,7 +260,7 @@ class TestParticles:
             p0_collected.item(0, 5),
             p0_collected.item(0, 6),
         )
-        ke = tp.get_kinetic_energy(vx, vy, vz, unit="SI")
+        ke = tp.get_kinetic_energy(vx, vy, vz)
         assert np.isclose(ke, 3.361357097373841e-17)
         pt_lazy = tp[pid]
         assert np.isclose(tp.get_ExB_drift(pid).item(0, 1), 3.9656504668528214e-05)
@@ -269,16 +269,16 @@ class TestParticles:
             tp._calculate_curvature(pt_lazy).collect().item(0, -1), -0.4797530472278595
         )
         assert np.isclose(
-            tp.get_curvature_drift(pid).item(0, 0), -6.5444069202873204e-18
+            tp.get_curvature_drift(pid).item(0, 0), -4.17402271497159e-23
         )
-        assert np.isclose(tp.get_gradient_drift(pid).item(0, 1), -9.73609190874673e-21)
+        assert np.isclose(tp.get_gradient_drift(pid).item(0, 1), -6.209680085413732e-26)
 
         df_drifts = tp.integrate_drift_accelerations(pid)
         plot_integrated_energy(df_drifts)
         tp.analyze_drifts(pid)
 
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
-        assert np.isclose(rg2rc, 4.83376226572133e-12)
+        assert np.isclose(rg2rc, 3.082973481811359e-05)
 
         tcross = tp.find_shock_crossing_time(tp.getIDs()[0], b_threshold_factor=1)
         assert tcross == 0.0
@@ -324,7 +324,7 @@ def test_load_tp(benchmark):
     from flekspy.tp import FLEKSTP
 
     dirs = (os.path.join(filedir, "data", "test_particles"),)
-    tp = FLEKSTP(dirs, iSpecies=1)
+    tp = FLEKSTP(dirs, iSpecies=1, unit="planetary")
     pIDs = tp.getIDs()
 
     benchmark(load_test_particle_trajectories, tp, pIDs)
@@ -341,7 +341,7 @@ def test_drift_tp(benchmark):
     from flekspy.tp import FLEKSTP
 
     dirs = (os.path.join(filedir, "data", "test_particles_PBEG"),)
-    tp = FLEKSTP(dirs, iSpecies=1)
+    tp = FLEKSTP(dirs, iSpecies=1, unit="planetary")
     pid = tp.getIDs()[0]
 
     benchmark(get_drifts, tp, pid)
