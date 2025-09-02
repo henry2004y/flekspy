@@ -276,8 +276,10 @@ class TestParticles:
             tp.get_curvature_drift(pid).item(0, 0), -4.17402271497159e-23
         )
         assert np.isclose(tp.get_gradient_drift(pid).item(0, 1), -6.209680085413732e-26)
+        assert np.isclose(tp.get_polarization_drift(pid).item(0, 2), 1.1582171530455036e-19)
 
         df_drifts = tp.integrate_drift_accelerations(pid)
+        assert "Wp_integrated" in df_drifts.columns
         plot_integrated_energy(df_drifts)
         tp.analyze_drifts(pid)
 
