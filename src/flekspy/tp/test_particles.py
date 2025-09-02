@@ -1989,25 +1989,53 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
     """
     fig, ax = plt.subplots(figsize=(12, 5), constrained_layout=True)
 
-    # 2. Get the list of columns to plot (all except the time column)
+    time_data = df["time"].to_numpy()
     energy_columns = [col for col in df.columns if col != "time"]
 
-    # 3. Convert Polars columns to NumPy arrays for plotting
-    time_data = df["time"].to_numpy()
-
-    # 4. Loop through each energy column and plot it
     for column_name in energy_columns:
         energy_data = df[column_name].to_numpy()
-        # Create a clean label for the legend (e.g., "Wg_integrated" -> "Wg")
-        if column_name == "W_parallel":
+
+        if column_name == "W_parallel_integrated":
             label = r"$\text{W}_\parallel$"
-        elif column_name == "W_betatron":
+        elif column_name == "W_betatron_integrated":
             label = r"$\text{W}_\text{betatron}$"
+        elif column_name == "ke":
+            energy_data = energy_data - energy_data[0]
+            label = r"$\Delta$KE"
         else:
             label = column_name.replace("_integrated", "")
+
         ax.plot(time_data, energy_data, label=label, linewidth=2.5)
 
-    # 5. Customize the plot with labels, title, and legend
+    # Check if all required columns for the sum are present
+    required_cols = [
+        "Wg_integrated",
+        "Wc_integrated",
+        "W_parallel_integrated",
+        "W_betatron_integrated",
+        "ke",
+    ]
+    if all(col in df.columns for col in required_cols):
+        w_sum = (
+            df["Wg_integrated"]
+            + df["Wc_integrated"]
+            + df["W_parallel_integrated"]
+            + df["W_betatron_integrated"]
+        ).to_numpy()
+        ax.plot(time_data, w_sum, label="W_sum", linewidth=2.5, linestyle=":")
+
+        ke_data = df["ke"].to_numpy()
+        delta_ke = ke_data - ke_data[0]
+        non_adiabatic_heating = delta_ke - w_sum
+        ax.plot(
+            time_data,
+            non_adiabatic_heating,
+            label="Non-adiabatic",
+            linewidth=2.5,
+            linestyle="--",
+        )
+
+    # Customize the plot
     ax.grid(True)
     ax.set_xlabel("Time (s)", fontsize=14)
     ax.set_ylabel("Integrated Energy (eV)", fontsize=14)
