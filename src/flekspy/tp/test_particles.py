@@ -792,6 +792,37 @@ class FLEKSTP(object):
 
         return lf_curv.select(ratio_expr).collect().to_series()
 
+    @staticmethod
+    def _calculate_gradient_b_magnitude(
+        df: Union[pl.DataFrame, pl.LazyFrame],
+    ) -> Union[pl.DataFrame, pl.LazyFrame]:
+        """
+        Calculates the gradient of the magnetic field magnitude.
+        """
+        # Gradient of B magnitude: ∇|B|
+        grad_b_mag_x = (
+            pl.col("bx") * pl.col("dbxdx")
+            + pl.col("by") * pl.col("dbydx")
+            + pl.col("bz") * pl.col("dbzdx")
+        ) / pl.col("b_mag")
+        grad_b_mag_y = (
+            pl.col("bx") * pl.col("dbxdy")
+            + pl.col("by") * pl.col("dbydy")
+            + pl.col("bz") * pl.col("dbzdy")
+        ) / pl.col("b_mag")
+        grad_b_mag_z = (
+            pl.col("bx") * pl.col("dbxdz")
+            + pl.col("by") * pl.col("dbydz")
+            + pl.col("bz") * pl.col("dbzdz")
+        ) / pl.col("b_mag")
+
+        df = df.with_columns(
+            grad_b_mag_x=grad_b_mag_x,
+            grad_b_mag_y=grad_b_mag_y,
+            grad_b_mag_z=grad_b_mag_z,
+        )
+        return df
+
     def get_gradient_drift(
         self,
         pID: Tuple[int, int],
@@ -824,27 +855,7 @@ class FLEKSTP(object):
         lf = self._calculate_bmag(pt_lazy)
 
         # Gradient of B magnitude: ∇|B|
-        grad_b_mag_x = (
-            pl.col("bx") * pl.col("dbxdx")
-            + pl.col("by") * pl.col("dbydx")
-            + pl.col("bz") * pl.col("dbzdx")
-        ) / pl.col("b_mag")
-        grad_b_mag_y = (
-            pl.col("bx") * pl.col("dbxdy")
-            + pl.col("by") * pl.col("dbydy")
-            + pl.col("bz") * pl.col("dbzdy")
-        ) / pl.col("b_mag")
-        grad_b_mag_z = (
-            pl.col("bx") * pl.col("dbxdz")
-            + pl.col("by") * pl.col("dbydz")
-            + pl.col("bz") * pl.col("dbzdz")
-        ) / pl.col("b_mag")
-
-        lf = lf.with_columns(
-            grad_b_mag_x=grad_b_mag_x,
-            grad_b_mag_y=grad_b_mag_y,
-            grad_b_mag_z=grad_b_mag_z,
-        )
+        lf = self._calculate_gradient_b_magnitude(lf)
 
         # B x ∇|B|
         cross_x = pl.col("by") * pl.col("grad_b_mag_z") - pl.col("bz") * pl.col(
@@ -906,34 +917,20 @@ class FLEKSTP(object):
         pt_with_dbdt = pt.with_columns(pl.Series(name="dB_dt", values=dB_dt))
 
         # Gradient of B magnitude: ∇|B|
-        grad_b_mag_x = (
-            pl.col("bx") * pl.col("dbxdx")
-            + pl.col("by") * pl.col("dbydx")
-            + pl.col("bz") * pl.col("dbzdx")
-        ) / pl.col("b_mag")
-        grad_b_mag_y = (
-            pl.col("bx") * pl.col("dbxdy")
-            + pl.col("by") * pl.col("dbydy")
-            + pl.col("bz") * pl.col("dbzdy")
-        ) / pl.col("b_mag")
-        grad_b_mag_z = (
-            pl.col("bx") * pl.col("dbxdz")
-            + pl.col("by") * pl.col("dbydz")
-            + pl.col("bz") * pl.col("dbzdz")
-        ) / pl.col("b_mag")
+        pt_with_dbdt = self._calculate_gradient_b_magnitude(pt_with_dbdt)
 
         # Convective derivative: v ⋅ ∇|B| [nT/s]
         if self.unit == "planetary":
             v_dot_gradB = (
-                pl.col("vx") * grad_b_mag_x
-                + pl.col("vy") * grad_b_mag_y
-                + pl.col("vz") * grad_b_mag_z
+                pl.col("vx") * pl.col("grad_b_mag_x")
+                + pl.col("vy") * pl.col("grad_b_mag_y")
+                + pl.col("vz") * pl.col("grad_b_mag_z")
             ) / EARTH_RADIUS_KM
         elif self.unit == "SI":
             v_dot_gradB = (
-                pl.col("vx") * grad_b_mag_x
-                + pl.col("vy") * grad_b_mag_y
-                + pl.col("vz") * grad_b_mag_z
+                pl.col("vx") * pl.col("grad_b_mag_x")
+                + pl.col("vy") * pl.col("grad_b_mag_y")
+                + pl.col("vz") * pl.col("grad_b_mag_z")
             )
 
         # --- Step 3: Calculate the partial derivative ∂B/∂t ---
@@ -941,9 +938,6 @@ class FLEKSTP(object):
 
         # --- Step 4: Chain all calculations and compute the final Betatron term ---
         result = pt_with_dbdt.with_columns(
-            grad_b_mag_x=grad_b_mag_x,
-            grad_b_mag_y=grad_b_mag_y,
-            grad_b_mag_z=grad_b_mag_z,
             v_dot_gradB=v_dot_gradB,
             partial_B_partial_t=partial_B_partial_t,
         )
