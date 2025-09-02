@@ -587,8 +587,8 @@ class FLEKSTP(object):
         """
         Calculates the 1st adiabatic invariant of a particle.
         The output units depend on the input data's units:
-        - "planetary" (e.g., velocity in km/s, B-field in nT): result is in 1e15 J/T.
-        - "SI" (e.g., velocity in m/s, B-field in T): result is in J/T.
+        - "planetary" (e.g., velocity in km/s, B-field in nT): result is in [1e9 J/T].
+        - "SI" (e.g., velocity in m/s, B-field in T): result is in [J/T].
         """
         pt_lazy = self[pID]
         epsilon = 1e-15
@@ -605,6 +605,9 @@ class FLEKSTP(object):
 
         sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag_expr + epsilon)) ** 2
         v_perp_sq = v_mag_sq * sin_alpha_sq
+        if self.unit == "planetary":
+            # Convert v_perp_sq from (km/s)^2 to (m/s)^2
+            v_perp_sq = v_perp_sq * 1e6
         mu_expr = ((0.5 * mass * v_perp_sq) / (b_mag_expr + epsilon)).alias("mu")
 
         # Execute the expression and return
@@ -895,12 +898,12 @@ class FLEKSTP(object):
                      It must include columns for time, velocity (vx, vy, vz),
                      magnetic field (bx, by, bz), and the magnetic field
                      gradient tensor (e.g., 'dbxdx', 'dbydx', etc.).
-            mu: The magnetic moment (first adiabatic invariant) of the particle,
-                assumed to be constant.
+            mu: A Polars Series containing the magnetic moment (first adiabatic invariant)
+                of the particle.
 
         Returns:
             A new Polars LazyFrame with added intermediate columns and the
-            final 'betatron' column representing the rate of energy change in fW.
+            final 'dW_betatron' column representing the rate of energy change in [eV/s].
         """
 
         # --- Step 1: Calculate the total derivative dB/dt ---
@@ -943,10 +946,15 @@ class FLEKSTP(object):
         )
         # Unit conversion to [eV/s].
         if self.unit == "planetary":
+            # mu is in [1e9 J/T], partial_B_partial_t is in [nT/s].
+            # The product mu * partial_B_partial_t is in [J/s] because
+            # the nT -> T conversion (1e-9) and the mu unit (1e9) cancel out.
             result = result.with_columns(
-                dW_betatron=mu * partial_B_partial_t * 1e6 / elementary_charge
+                dW_betatron=mu * partial_B_partial_t / elementary_charge
             )
         elif self.unit == "SI":
+            # mu is in [J/T], partial_B_partial_t is in [T/s].
+            # The product is directly in [J/s].
             result = result.with_columns(
                 dW_betatron=mu * partial_B_partial_t / elementary_charge
             )
