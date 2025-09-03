@@ -1154,7 +1154,7 @@ class FLEKSTP(object):
     def analyze_drifts(
         self,
         pid: tuple[int, int],
-        savename=None,
+        outname=None,
         switchYZ=False,
     ):
         """
@@ -1307,8 +1307,9 @@ class FLEKSTP(object):
 
         axes[-1].set_xlabel("Time [s]", fontsize=14)
 
-        if savename is not None:
-            plt.savefig(savename, bbox_inches="tight")
+        if outname is not None:
+            plt.savefig(outname, bbox_inches="tight")
+            plt.close(fig)
         else:
             plt.show()
 
@@ -1316,8 +1317,7 @@ class FLEKSTP(object):
         self,
         pID: tuple[int, int],
         drift_type: str,
-        savename=None,
-        **kwargs,
+        outname=None,
     ):
         """
         Analyzes a specific drift for a particle, plotting its velocity, the
@@ -1327,7 +1327,7 @@ class FLEKSTP(object):
             pID (tuple[int, int]): The particle ID (cpu, id).
             drift_type (str): The type of drift to analyze. Supported options are:
                               'ExB', 'gradient', 'curvature', 'polarization'.
-            savename (str, optional): If provided, the plot is saved to this
+            outname (str, optional): If provided, the plot is saved to this
                                       filename instead of being shown. Defaults to None.
         """
         drift_getters = {
@@ -1349,14 +1349,7 @@ class FLEKSTP(object):
         time = pt_df["time"]
 
         # Rename columns of v_drift_df to be generic for plotting
-        v_drift_df = v_drift_df.rename(
-            {
-                old_col: new_col
-                for old_col, new_col in zip(
-                    v_drift_df.columns, ["v_drift_x", "v_drift_y", "v_drift_z"]
-                )
-            }
-        )
+        v_drift_df.columns = ["v_drift_x", "v_drift_y", "v_drift_z"]
 
         # 2. Calculate energy change rate
         if self.unit == "planetary":
@@ -1383,14 +1376,18 @@ class FLEKSTP(object):
             nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
         )
 
+        if self.unit == "planetary":
+            v_unit_label = "km/s"
+            e_unit_label = "μV/m"
+        else:  # self.unit == "SI"
+            v_unit_label = "m/s"
+            e_unit_label = "V/m"
+
         # Plot 1: Drift velocity
         axes[0].plot(time, v_drift_df["v_drift_x"], label="$V_x$")
         axes[0].plot(time, v_drift_df["v_drift_y"], label="$V_y$")
         axes[0].plot(time, v_drift_df["v_drift_z"], label="$V_z$")
-        if self.unit == "planetary":
-            axes[0].set_ylabel(f"$V_{{{drift_type}}}$ [km/s]", fontsize=14)
-        elif self.unit == "SI":
-            axes[0].set_ylabel(f"$V_{{{drift_type}}}$ [m/s]", fontsize=14)
+        axes[0].set_ylabel(f"$V_{{{drift_type}}}$ [{v_unit_label}]", fontsize=14)
         axes[0].legend(ncol=3, fontsize="medium")
         axes[0].grid(True, linestyle="--", alpha=0.6)
 
@@ -1398,10 +1395,7 @@ class FLEKSTP(object):
         axes[1].plot(time, pt_df["ex"], label="$E_x$")
         axes[1].plot(time, pt_df["ey"], label="$E_y$")
         axes[1].plot(time, pt_df["ez"], label="$E_z$")
-        if self.unit == "planetary":
-            axes[1].set_ylabel("E [μV/m]", fontsize=14)
-        else:
-            axes[1].set_ylabel("E [V/m]", fontsize=14)
+        axes[1].set_ylabel(f"E [{e_unit_label}]", fontsize=14)
         axes[1].legend(ncol=3, fontsize="medium")
         axes[1].grid(True, linestyle="--", alpha=0.6)
 
@@ -1421,8 +1415,8 @@ class FLEKSTP(object):
         for ax in axes:
             ax.set_xlim(left=time.min(), right=time.max())
 
-        if savename is not None:
-            plt.savefig(savename, bbox_inches="tight")
+        if outname is not None:
+            plt.savefig(outname, bbox_inches="tight")
             plt.close(fig)
         else:
             plt.show()
