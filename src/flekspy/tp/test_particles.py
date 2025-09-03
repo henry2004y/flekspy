@@ -886,6 +886,63 @@ class FLEKSTP(object):
 
         return lf.select(["vgx", "vgy", "vgz"]).collect()
 
+    def get_polarization_drift(
+        self,
+        pID: Tuple[int, int],
+        mass=proton_mass,
+        charge=elementary_charge,
+    ) -> pl.DataFrame:
+        """
+        Calculates the polarization drift velocity for a particle.
+        v_p = (m / (q * B^2)) * (dE_perp / dt)
+        Depending on the selected units, output drift velocity may be
+        - "planetary": [km/s]
+        - "SI": [m/s]
+        """
+        pt_lazy = self[pID]
+        pt = pt_lazy.collect()
+        time = pt["time"].to_numpy()
+
+        # Calculate B magnitude and unit vector
+        b_mag = (pt["bx"] ** 2 + pt["by"] ** 2 + pt["bz"] ** 2).sqrt()
+        bx_u = pt["bx"] / b_mag
+        by_u = pt["by"] / b_mag
+        bz_u = pt["bz"] / b_mag
+
+        # Calculate E_parallel = (E.b)b
+        E_dot_b = pt["ex"] * bx_u + pt["ey"] * by_u + pt["ez"] * bz_u
+        E_parallel_x = E_dot_b * bx_u
+        E_parallel_y = E_dot_b * by_u
+        E_parallel_z = E_dot_b * bz_u
+
+        # Calculate E_perp = E - E_parallel
+        E_perp_x = pt["ex"] - E_parallel_x
+        E_perp_y = pt["ey"] - E_parallel_y
+        E_perp_z = pt["ez"] - E_parallel_z
+
+        # Calculate dE_perp/dt
+        dE_perp_dt_x = pl.Series(np.gradient(E_perp_x, time))
+        dE_perp_dt_y = pl.Series(np.gradient(E_perp_y, time))
+        dE_perp_dt_z = pl.Series(np.gradient(E_perp_z, time))
+
+        b_mag_sq = b_mag**2
+
+        if self.unit == "planetary":
+            # E is in [uV/m], B is in [nT]
+            # Convert to SI: E[V/m] = E[uV/m]*1e-6, B[T] = B[nT]*1e-9
+            # v_p [m/s] = (m[kg] / (q[C] * (B[nT]*1e-9)^2)) * (dE_perp/dt[uV/m/s] * 1e-6)
+            # v_p [m/s] = (m/(q*B^2)) * (dE_perp/dt) * 1e12
+            # To get km/s, we divide by 1e3
+            factor = mass / (charge * b_mag_sq) * 1e9
+        elif self.unit == "SI":
+            factor = mass / (charge * b_mag_sq)
+
+        vpx = factor * dE_perp_dt_x
+        vpy = factor * dE_perp_dt_y
+        vpz = factor * dE_perp_dt_z
+
+        return pl.DataFrame({"vpx": vpx, "vpy": vpy, "vpz": vpz})
+
     def get_betatron_acceleration(self, pt, mu):
         """
         Calculates the Betatron acceleration term from particle trajectory data.
@@ -970,6 +1027,7 @@ class FLEKSTP(object):
         """
         vc = self.get_curvature_drift(pid)
         vg = self.get_gradient_drift(pid)
+        vp = self.get_polarization_drift(pid)
         pt = self[pid]
         mu = self.get_first_adiabatic_invariant(pid)
         pt = self.get_betatron_acceleration(pt, mu)
@@ -1026,6 +1084,13 @@ class FLEKSTP(object):
                 + pl.col("ez") * vc["vcz"]
             )
             * UNIT_FACTOR,
+            # Energy change from polarization drift
+            dWp=(
+                pl.col("ex") * vp["vpx"]
+                + pl.col("ey") * vp["vpy"]
+                + pl.col("ez") * vp["vpz"]
+            )
+            * UNIT_FACTOR,
             # Energy change from parallel acceleration
             dW_parallel=(pl.col("E_parallel") * pl.col("v_parallel")) * UNIT_FACTOR,
         ).collect()
@@ -1041,6 +1106,10 @@ class FLEKSTP(object):
             .fill_null(0),
             # Integrated energy from curvature drift
             Wc_integrated=((pl.col("dWc") + pl.col("dWc").shift(1)) / 2 * dt)
+            .cum_sum()
+            .fill_null(0),
+            # Integrated energy from polarization drift
+            Wp_integrated=((pl.col("dWp") + pl.col("dWp").shift(1)) / 2 * dt)
             .cum_sum()
             .fill_null(0),
             # Integrated energy from parallel acceleration
@@ -1062,6 +1131,7 @@ class FLEKSTP(object):
             W_total_integrated=(
                 pl.col("Wg_integrated")
                 + pl.col("Wc_integrated")
+                + pl.col("Wp_integrated")
                 + pl.col("W_parallel_integrated")
                 + pl.col("W_betatron_integrated")
             )
@@ -1073,6 +1143,7 @@ class FLEKSTP(object):
                 "ke",
                 "Wg_integrated",
                 "Wc_integrated",
+                "Wp_integrated",
                 "W_parallel_integrated",
                 "W_betatron_integrated",
             ]
@@ -1092,6 +1163,7 @@ class FLEKSTP(object):
         ve = self.get_ExB_drift(pid)
         vc = self.get_curvature_drift(pid)
         vg = self.get_gradient_drift(pid)
+        vp = self.get_polarization_drift(pid)
         rl2rc = self.get_gyroradius_to_curvature_ratio(pid)
         pt = self[pid]
         mu = self.get_first_adiabatic_invariant(pid)
@@ -1141,12 +1213,19 @@ class FLEKSTP(object):
                 + pl.col("ez") * vc["vcz"]
             )
             * UNIT_FACTOR,
+            # Energy change from polarization drift
+            dWp=(
+                pl.col("ex") * vp["vpx"]
+                + pl.col("ey") * vp["vpy"]
+                + pl.col("ez") * vp["vpz"]
+            )
+            * UNIT_FACTOR,
             # Energy change from parallel acceleration
             dW_parallel=(pl.col("E_parallel") * pl.col("v_parallel")) * UNIT_FACTOR,
         ).collect()
 
         fig, axes = plt.subplots(
-            nrows=5, ncols=1, figsize=(12, 8), sharex=True, constrained_layout=True
+            nrows=6, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
         )
 
         # --- 1. Plasma Convection Drift (vex, vey, vez) ---
@@ -1185,22 +1264,37 @@ class FLEKSTP(object):
         axes[2].legend(ncol=3, fontsize="medium")
         axes[2].grid(True, linestyle="--", alpha=0.6)
 
-        # --- 4. Rate of Energy Change (E dot V) ---
-        axes[3].plot(
+        # --- 4. Plasma Polarization Drift (vpx, vpy, vpz) ---
+        axes[3].plot(pt["time"], vp["vpx"], label="vpx")
+        if switchYZ:
+            axes[3].plot(pt["time"], vp["vpy"], label="vpz")
+            axes[3].plot(pt["time"], vp["vpz"], label="vpy")
+        else:
+            axes[3].plot(pt["time"], vp["vpy"], label="vpy")
+            axes[3].plot(pt["time"], vp["vpz"], label="vpz")
+        axes[3].set_ylabel(r"$V_p$ [km/s]", fontsize=14)
+        axes[3].legend(ncol=3, fontsize="medium")
+        axes[3].grid(True, linestyle="--", alpha=0.6)
+
+        # --- 5. Rate of Energy Change (E dot V) ---
+        axes[4].plot(
             pt["time"], pt["dWg"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{\nabla B}$"
         )
-        axes[3].plot(
+        axes[4].plot(
             pt["time"], pt["dWc"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{c}$"
         )
-        axes[3].plot(
+        axes[4].plot(
+            pt["time"], pt["dWp"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{p}$"
+        )
+        axes[4].plot(
             pt["time"], pt["dW_parallel"], label=r"$q E_{\|} v_{\|}$", linestyle="--"
         )
-        axes[3].plot(
+        axes[4].plot(
             pt["time"], pt["dW_betatron"], label="Betatron", linestyle="--", alpha=0.8
         )
-        axes[3].set_ylabel("Energy change rate\n [eV/s]", fontsize=14)
-        axes[3].legend(ncol=4, fontsize="medium")
-        axes[3].grid(True, linestyle="--", alpha=0.6)
+        axes[4].set_ylabel("Energy change rate\n [eV/s]", fontsize=14)
+        axes[4].legend(ncol=5, fontsize="medium")
+        axes[4].grid(True, linestyle="--", alpha=0.6)
 
         axes[-1].semilogy(pt["time"], rl2rc)
         axes[-1].axhline(y=0.2, linestyle="--", color="tab:red")
@@ -2001,6 +2095,8 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
             label = r"$\text{W}_\parallel$"
         elif column_name == "W_betatron_integrated":
             label = r"$\text{W}_\text{betatron}$"
+        elif column_name == "Wp_integrated":
+            label = r"$\text{W}_p$"
         elif column_name == "ke":
             energy_data = energy_data - energy_data[0]
             label = r"$\Delta$KE"
@@ -2013,6 +2109,7 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
     required_cols = [
         "Wg_integrated",
         "Wc_integrated",
+        "Wp_integrated",
         "W_parallel_integrated",
         "W_betatron_integrated",
         "ke",
@@ -2021,10 +2118,11 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
         w_sum = (
             df["Wg_integrated"]
             + df["Wc_integrated"]
+            + df["Wp_integrated"]
             + df["W_parallel_integrated"]
             + df["W_betatron_integrated"]
         ).to_numpy()
-        ax.plot(time_data, w_sum, label="W_sum", linewidth=2.5, linestyle=":")
+        ax.plot(time_data, w_sum, label=r"$\text{W}_\text{sum}$", linewidth=2.5, linestyle="--")
 
         ke_data = df["ke"].to_numpy()
         delta_ke = ke_data - ke_data[0]
@@ -2033,8 +2131,8 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
             time_data,
             non_adiabatic_heating,
             label="Non-adiabatic",
-            linewidth=2.5,
-            linestyle="--",
+            linewidth=0.7,
+            linestyle=":",
         )
 
     # Customize the plot
