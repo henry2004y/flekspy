@@ -15,6 +15,7 @@ tests/data/
 cut_particle*
 FLEKS*
 Header
+.venv/
 
 # MacOS
 .DS_Store
