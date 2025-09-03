@@ -1293,7 +1293,7 @@ class FLEKSTP(object):
             pt["time"], pt["dW_betatron"], label="Betatron", linestyle="--", alpha=0.8
         )
         axes[4].set_ylabel("Energy change rate\n [eV/s]", fontsize=14)
-        axes[4].legend(ncol=3, fontsize="medium")
+        axes[4].legend(ncol=5, fontsize="medium")
         axes[4].grid(True, linestyle="--", alpha=0.6)
 
         axes[-1].semilogy(pt["time"], rl2rc)
@@ -2122,7 +2122,7 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
             + df["W_parallel_integrated"]
             + df["W_betatron_integrated"]
         ).to_numpy()
-        ax.plot(time_data, w_sum, label="W_sum", linewidth=2.5, linestyle=":")
+        ax.plot(time_data, w_sum, label=r"$\text{W}_\text{sum}$", linewidth=2.5, linestyle="--")
 
         ke_data = df["ke"].to_numpy()
         delta_ke = ke_data - ke_data[0]
@@ -2131,8 +2131,8 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
             time_data,
             non_adiabatic_heating,
             label="Non-adiabatic",
-            linewidth=2.5,
-            linestyle="--",
+            linewidth=0.7,
+            linestyle=":",
         )
 
     # Customize the plot
