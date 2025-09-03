@@ -1312,6 +1312,121 @@ class FLEKSTP(object):
         else:
             plt.show()
 
+    def analyze_drift(
+        self,
+        pID: tuple[int, int],
+        drift_type: str,
+        savename=None,
+        **kwargs,
+    ):
+        """
+        Analyzes a specific drift for a particle, plotting its velocity, the
+        electric field, the energy change rate, and the integrated energy change.
+
+        Args:
+            pID (tuple[int, int]): The particle ID (cpu, id).
+            drift_type (str): The type of drift to analyze. Supported options are:
+                              'ExB', 'gradient', 'curvature', 'polarization'.
+            savename (str, optional): If provided, the plot is saved to this
+                                      filename instead of being shown. Defaults to None.
+        """
+        drift_getters = {
+            "ExB": self.get_ExB_drift,
+            "gradient": self.get_gradient_drift,
+            "curvature": self.get_curvature_drift,
+            "polarization": self.get_polarization_drift,
+        }
+
+        if drift_type not in drift_getters:
+            raise ValueError(
+                f"Unknown drift_type: '{drift_type}'. "
+                f"Available options are {list(drift_getters.keys())}"
+            )
+
+        # 1. Get data
+        v_drift_df = drift_getters[drift_type](pID)
+        pt_df = self[pID].collect()
+        time = pt_df["time"]
+
+        # Rename columns of v_drift_df to be generic for plotting
+        v_drift_df = v_drift_df.rename(
+            {
+                old_col: new_col
+                for old_col, new_col in zip(
+                    v_drift_df.columns, ["v_drift_x", "v_drift_y", "v_drift_z"]
+                )
+            }
+        )
+
+        # 2. Calculate energy change rate
+        if self.unit == "planetary":
+            # E[uV/m] * v[km/s] -> (1e-6 V/m) * (1e3 m/s) = 1e-3 J/C/s
+            # This is the rate of energy change in eV/s
+            UNIT_FACTOR = 1e-3
+        elif self.unit == "SI":
+            UNIT_FACTOR = 1.0
+
+        d_W = (
+            pt_df["ex"] * v_drift_df["v_drift_x"]
+            + pt_df["ey"] * v_drift_df["v_drift_y"]
+            + pt_df["ez"] * v_drift_df["v_drift_z"]
+        ) * UNIT_FACTOR
+        d_W = d_W.rename("d_W")
+
+        # 3. Integrate energy change using cumulative trapezoidal rule
+        dt = time.diff().fill_null(0)
+        W_integrated = ((d_W + d_W.shift(1)) / 2 * dt).cum_sum().fill_null(0)
+        W_integrated = W_integrated.rename("W_integrated")
+
+        # 4. Plotting
+        fig, axes = plt.subplots(
+            nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
+        )
+
+        # Plot 1: Drift velocity
+        axes[0].plot(time, v_drift_df["v_drift_x"], label="$V_x$")
+        axes[0].plot(time, v_drift_df["v_drift_y"], label="$V_y$")
+        axes[0].plot(time, v_drift_df["v_drift_z"], label="$V_z$")
+        if self.unit == "planetary":
+            axes[0].set_ylabel(f"$V_{{{drift_type}}}$ [km/s]", fontsize=14)
+        elif self.unit == "SI":
+            axes[0].set_ylabel(f"$V_{{{drift_type}}}$ [m/s]", fontsize=14)
+        axes[0].legend(ncol=3, fontsize="medium")
+        axes[0].grid(True, linestyle="--", alpha=0.6)
+
+        # Plot 2: Electric field
+        axes[1].plot(time, pt_df["ex"], label="$E_x$")
+        axes[1].plot(time, pt_df["ey"], label="$E_y$")
+        axes[1].plot(time, pt_df["ez"], label="$E_z$")
+        if self.unit == "planetary":
+            axes[1].set_ylabel("E [μV/m]", fontsize=14)
+        else:
+            axes[1].set_ylabel("E [V/m]", fontsize=14)
+        axes[1].legend(ncol=3, fontsize="medium")
+        axes[1].grid(True, linestyle="--", alpha=0.6)
+
+        # Plot 3: Energy change rate
+        axes[2].plot(time, d_W)
+        axes[2].set_ylabel("Energy Change Rate\n[eV/s]", fontsize=14)
+        axes[2].grid(True, linestyle="--", alpha=0.6)
+
+        # Plot 4: Integrated energy change
+        axes[3].plot(time, W_integrated)
+        axes[3].set_ylabel("Integrated Energy [eV]", fontsize=14)
+        axes[3].set_xlabel("Time [s]", fontsize=14)
+        axes[3].grid(True, linestyle="--", alpha=0.6)
+
+        fig.suptitle(f"Analysis of {drift_type} Drift for Particle {pID}", fontsize=16)
+
+        for ax in axes:
+            ax.set_xlim(left=time.min(), right=time.max())
+
+        if savename is not None:
+            plt.savefig(savename, bbox_inches="tight")
+            plt.close(fig)
+        else:
+            plt.show()
+
     def find_shock_crossing_time(self, pid, b_threshold_factor=2.5, verbose=False):
         """
         Finds the shock crossing time for a single particle.
