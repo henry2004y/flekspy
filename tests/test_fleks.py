@@ -282,6 +282,7 @@ class TestParticles:
         assert "Wp_integrated" in df_drifts.columns
         plot_integrated_energy(df_drifts)
         tp.analyze_drifts(pid)
+        tp.analyze_drift(pid, "ExB")
 
         rg2rc = tp.get_gyroradius_to_curvature_ratio(pid)[0]
         assert np.isclose(rg2rc, 3.082973481811359e-05)
