@@ -298,6 +298,34 @@ class TestParticles:
         )
         assert s_up_dn[1]["time"][1] == 1.2570836544036865
 
+    def test_energy_change_guiding_center(self):
+        tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True, unit="SI")
+        pid = tp.getIDs()[0]
+
+        df = tp.get_energy_change_guiding_center(pid)
+
+        # Check if the output is a Polars DataFrame
+        assert isinstance(df, pl.DataFrame)
+
+        # Check for expected columns
+        expected_columns = {
+            "time",
+            "dW_parallel",
+            "dW_betatron",
+            "dW_fermi",
+            "dW_total",
+        }
+        assert expected_columns.issubset(df.columns)
+
+        # Check that dW_total is the sum of the components
+        total_sum = df["dW_parallel"] + df["dW_betatron"] + df["dW_fermi"]
+        assert np.allclose(df["dW_total"].to_numpy(), total_sum.to_numpy())
+
+        # Check that the number of rows is correct
+        pt_len = len(tp[pid].collect())
+        assert len(df) == pt_len
+
+
 def load(files):
     """
     Benchmarking flekspy loading.
