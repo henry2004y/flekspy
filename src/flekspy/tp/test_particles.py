@@ -533,11 +533,12 @@ class FLEKSTP(object):
         """
         Calculates the rate of change of kinetic energy in [eV/s].
         """
-        pt = pt_lazy.collect()
-        time = pt["time"].to_numpy()
-        vx = pt["vx"].to_numpy()
-        vy = pt["vy"].to_numpy()
-        vz = pt["vz"].to_numpy()
+        # Select only necessary columns before collecting to improve performance.
+        collected = pt_lazy.select(["time", "vx", "vy", "vz"]).collect()
+        time = collected["time"].to_numpy()
+        vx = collected["vx"].to_numpy()
+        vy = collected["vy"].to_numpy()
+        vz = collected["vz"].to_numpy()
 
         ke = self.get_kinetic_energy(vx, vy, vz, mass=mass)
         dke_dt = np.gradient(ke, time)
@@ -1392,65 +1393,35 @@ class FLEKSTP(object):
             nrows=7, ncols=1, figsize=(12, 12), sharex=True, constrained_layout=True
         )
 
+        def _plot_velocity_subplot(ax, time, vel_df, ylabel, switchYZ, x_col, y_col, z_col):
+            """Helper to plot a velocity subplot."""
+            ax.plot(time, vel_df[x_col], label=x_col)
+            if switchYZ:
+                # Swap y and z data for plotting
+                ax.plot(time, vel_df[z_col], label=y_col)
+                ax.plot(time, vel_df[y_col], label=z_col)
+            else:
+                ax.plot(time, vel_df[y_col], label=y_col)
+                ax.plot(time, vel_df[z_col], label=z_col)
+            ax.set_ylabel(ylabel, fontsize=14)
+            ax.legend(ncol=3, fontsize="medium")
+            ax.grid(True, linestyle="--", alpha=0.6)
+
         # --- 1. Raw Velocities ---
-        axes[0].plot(pt["time"], pt["vx"], label="vx")
-        if switchYZ:
-            axes[0].plot(pt["time"], pt["vz"], label="vy")
-            axes[0].plot(pt["time"], pt["vy"], label="vz")
-        else:
-            axes[0].plot(pt["time"], pt["vy"], label="vy")
-            axes[0].plot(pt["time"], pt["vz"], label="vz")
-        axes[0].set_ylabel("V [km/s]", fontsize=14)
-        axes[0].legend(ncol=3, fontsize="medium")
-        axes[0].grid(True, linestyle="--", alpha=0.6)
+        _plot_velocity_subplot(axes[0], pt["time"], pt, "V [km/s]", switchYZ, "vx", "vy", "vz")
 
         # --- 2. Plasma Convection Drift (vex, vey, vez) ---
-        axes[1].plot(pt["time"], ve["vex"], label="vex")
-        if switchYZ:
-            axes[1].plot(pt["time"], ve["vez"], label="vey")
-            axes[1].plot(pt["time"], ve["vey"], label="vez")
-        else:
-            axes[1].plot(pt["time"], ve["vey"], label="vey")
-            axes[1].plot(pt["time"], ve["vez"], label="vez")
-        axes[1].set_ylabel(r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", fontsize=14)
-        axes[1].legend(ncol=3, fontsize="medium")
-        axes[1].grid(True, linestyle="--", alpha=0.6)
+        _plot_velocity_subplot(axes[1], pt["time"], ve, r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", switchYZ, "vex", "vey", "vez")
 
         # --- 3. Plasma Gradient Drift (vgx, vgy, vgz) ---
-        axes[2].plot(pt["time"], vg["vgx"], label="vgx")
-        if switchYZ:
-            axes[2].plot(pt["time"], vg["vgz"], label="vgy")
-            axes[2].plot(pt["time"], vg["vgy"], label="vgz")
-        else:
-            axes[2].plot(pt["time"], vg["vgy"], label="vgy")
-            axes[2].plot(pt["time"], vg["vgz"], label="vgz")
-        axes[2].set_ylabel(r"$V_{\nabla B}$ [km/s]", fontsize=14)
-        axes[2].legend(ncol=3, fontsize="medium")
-        axes[2].grid(True, linestyle="--", alpha=0.6)
+        _plot_velocity_subplot(axes[2], pt["time"], vg, r"$V_{\nabla B}$ [km/s]", switchYZ, "vgx", "vgy", "vgz")
 
         # --- 4. Plasma Curvature Drift (vcx, vcy, vcz) ---
-        axes[3].plot(pt["time"], vc["vcx"], label="vcx")
-        if switchYZ:
-            axes[3].plot(pt["time"], vc["vcz"], label="vcy")
-            axes[3].plot(pt["time"], vc["vcy"], label="vcz")
-        else:
-            axes[3].plot(pt["time"], vc["vcy"], label="vcy")
-            axes[3].plot(pt["time"], vc["vcz"], label="vcz")
-        axes[3].set_ylabel(r"$V_c$ [km/s]", fontsize=14)
-        axes[3].legend(ncol=3, fontsize="medium")
-        axes[3].grid(True, linestyle="--", alpha=0.6)
+        _plot_velocity_subplot(axes[3], pt["time"], vc, r"$V_c$ [km/s]", switchYZ, "vcx", "vcy", "vcz")
 
         # --- 5. Plasma Polarization Drift (vpx, vpy, vpz) ---
-        axes[4].plot(pt["time"], vp["vpx"], label="vpx")
-        if switchYZ:
-            axes[4].plot(pt["time"], vp["vpy"], label="vpz")
-            axes[4].plot(pt["time"], vp["vpz"], label="vpy")
-        else:
-            axes[4].plot(pt["time"], vp["vpy"], label="vpy")
-            axes[4].plot(pt["time"], vp["vpz"], label="vpz")
-        axes[4].set_ylabel(r"$V_p$ [km/s]", fontsize=14)
-        axes[4].legend(ncol=3, fontsize="medium")
-        axes[4].grid(True, linestyle="--", alpha=0.6)
+        _plot_velocity_subplot(axes[4], pt["time"], vp, r"$V_p$ [km/s]", switchYZ, "vpx", "vpy", "vpz")
+
 
         # --- 6. Rate of Energy Change (E dot V) ---
         axes[5].plot(
