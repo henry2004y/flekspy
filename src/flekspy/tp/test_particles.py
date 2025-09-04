@@ -583,14 +583,15 @@ class FLEKSTP(object):
 
         return pitch_angle
 
-    def get_first_adiabatic_invariant(self, pID, mass=proton_mass):
+    def get_first_adiabatic_invariant(
+        self, pt_lazy: pl.LazyFrame, mass=proton_mass
+    ) -> pl.Series:
         """
         Calculates the 1st adiabatic invariant of a particle.
         The output units depend on the input data's units:
         - "planetary" (e.g., velocity in km/s, B-field in nT): result is in [1e9 J/T].
         - "SI" (e.g., velocity in m/s, B-field in T): result is in [J/T].
         """
-        pt_lazy = self[pID]
         epsilon = 1e-15
 
         # Build the expression tree for the calculation
@@ -676,13 +677,12 @@ class FLEKSTP(object):
 
         return df
 
-    def get_ExB_drift(self, pID: Tuple[int, int]) -> pl.DataFrame:
+    def get_ExB_drift(self, pt_lazy: pl.LazyFrame) -> pl.DataFrame:
         """
         Calculates the convection drift velocity for a particle.
         v_exb = E x B / (B^2)
         Assuming Earth's planetary units, output drift velocity in [km/s].
         """
-        pt_lazy = self[pID]
         lf = self._calculate_bmag(pt_lazy)
 
         # E x B expressions
@@ -701,7 +701,7 @@ class FLEKSTP(object):
 
     def get_curvature_drift(
         self,
-        pID: Tuple[int, int],
+        pt_lazy: pl.LazyFrame,
         mass=proton_mass,
         charge=elementary_charge,
     ) -> pl.DataFrame:
@@ -712,7 +712,6 @@ class FLEKSTP(object):
         - "planetary": [km/s]
         - "SI": [m/s]
         """
-        pt_lazy = self[pID]
         lf = self._calculate_bmag(pt_lazy)
 
         # Calculate v_parallel using expressions
@@ -828,7 +827,7 @@ class FLEKSTP(object):
 
     def get_gradient_drift(
         self,
-        pID: Tuple[int, int],
+        pt_lazy: pl.LazyFrame,
         mass=proton_mass,
         charge=elementary_charge,
     ) -> pl.DataFrame:
@@ -839,7 +838,6 @@ class FLEKSTP(object):
         - "planetary": [km/s]
         - "SI": [m/s]
         """
-        pt_lazy = self[pID]
         epsilon = 1e-15
 
         # Inlined expression for mu
@@ -888,7 +886,7 @@ class FLEKSTP(object):
 
     def get_polarization_drift(
         self,
-        pID: Tuple[int, int],
+        pt_lazy: pl.LazyFrame,
         mass=proton_mass,
         charge=elementary_charge,
     ) -> pl.DataFrame:
@@ -899,7 +897,6 @@ class FLEKSTP(object):
         - "planetary": [km/s]
         - "SI": [m/s]
         """
-        pt_lazy = self[pID]
         pt = pt_lazy.collect()
         time = pt["time"].to_numpy()
 
@@ -1018,6 +1015,155 @@ class FLEKSTP(object):
 
         return result
 
+    def get_energy_change_guiding_center(
+        self,
+        pID: Tuple[int, int],
+        mass=proton_mass,
+        charge=elementary_charge,
+    ) -> pl.DataFrame:
+        """
+        Computes the change of energy of a single particle based on the guiding center theory.
+
+        The formula is given by:
+        dW/dt = q*E_parallel*v_parallel + mu*(∂B/∂t + u_E.∇B) + m*v_parallel^2*(u_E.κ)
+
+        where W is the particle energy, B is the magnetic field magnitude,
+        u_E is the E cross B drift, and κ is the magnetic field curvature.
+        The first term on the right hand side is the parallel acceleration,
+        the second term is the Betatron acceleration, and the third term
+        is one type of Fermi acceleration.
+
+        Args:
+            pID (Tuple[int, int]): The particle ID (cpu, id).
+            mass (float): The mass of the particle in kg. Defaults to proton_mass.
+            charge (float): The charge of the particle in Coulombs. Defaults to elementary_charge.
+
+        Returns:
+            A Polars DataFrame with the time, the three energy change components,
+            and the total, in [eV/s].
+        """
+        pt_lazy = self[pID]
+
+        # It's easier to work with collected data for this kind of calculation
+        pt = pt_lazy.collect()
+        time = pt["time"]
+
+        # --- Common quantities ---
+        mu = self.get_first_adiabatic_invariant(pt_lazy, mass=mass)  # returns Series
+        u_E = self.get_ExB_drift(pt_lazy)  # returns DataFrame
+
+        # B magnitude and unit vectors
+        b_mag = (pt["bx"] ** 2 + pt["by"] ** 2 + pt["bz"] ** 2).sqrt()
+        b_mag = b_mag.rename("b_mag")
+        bx_u = (pt["bx"] / b_mag).rename("bx_u")
+        by_u = (pt["by"] / b_mag).rename("by_u")
+        bz_u = (pt["bz"] / b_mag).rename("bz_u")
+
+        # Parallel E and v
+        E_parallel = (pt["ex"] * bx_u + pt["ey"] * by_u + pt["ez"] * bz_u).rename(
+            "E_parallel"
+        )
+        v_parallel = (pt["vx"] * bx_u + pt["vy"] * by_u + pt["vz"] * bz_u).rename(
+            "v_parallel"
+        )
+
+        # --- 1. Parallel Acceleration Term ---
+        if self.unit == "planetary":
+            unit_factor_parallel = 1e-3  # (uV/m)*(km/s) -> 1e-3 J/C/s
+        else:  # SI
+            unit_factor_parallel = 1.0
+
+        dW_parallel = (
+            (charge / elementary_charge)
+            * E_parallel
+            * v_parallel
+            * unit_factor_parallel
+        )
+        dW_parallel = dW_parallel.rename("dW_parallel")
+
+        # --- 2. Betatron Acceleration Term ---
+        # ∂B/∂t = dB/dt - v ⋅ ∇B
+        dB_dt = pl.Series(np.gradient(b_mag, time.to_numpy())).rename("dB_dt")
+
+        # Need nabla B
+        pt_with_b_mag = pt.with_columns(b_mag)
+        nabla_b_df = self._calculate_gradient_b_magnitude(
+            pt_with_b_mag.lazy()
+        ).collect()
+
+        v_dot_gradB = (
+            pt["vx"] * nabla_b_df["grad_b_mag_x"]
+            + pt["vy"] * nabla_b_df["grad_b_mag_y"]
+            + pt["vz"] * nabla_b_df["grad_b_mag_z"]
+        )
+
+        if self.unit == "planetary":
+            v_dot_gradB = v_dot_gradB / EARTH_RADIUS_KM  # nT/s
+
+        partial_B_partial_t = (dB_dt - v_dot_gradB).rename("partial_B_partial_t")
+
+        # u_E . nabla B
+        u_E_dot_nabla_B = (
+            u_E["vex"] * nabla_b_df["grad_b_mag_x"]
+            + u_E["vey"] * nabla_b_df["grad_b_mag_y"]
+            + u_E["vez"] * nabla_b_df["grad_b_mag_z"]
+        )
+        if self.unit == "planetary":
+            u_E_dot_nabla_B = u_E_dot_nabla_B / EARTH_RADIUS_KM  # nT/s
+
+        betatron_term_in_paren = partial_B_partial_t + u_E_dot_nabla_B
+
+        if self.unit == "planetary":
+            # mu is in [J/nT], term is in [nT/s] -> J/s
+            dW_betatron_J_s = mu * betatron_term_in_paren
+        else:  # SI
+            # mu is in [J/T], term is in [T/s] -> J/s
+            dW_betatron_J_s = mu * betatron_term_in_paren
+
+        dW_betatron = (dW_betatron_J_s / elementary_charge).rename("dW_betatron")
+
+        # --- 3. Fermi Acceleration Term ---
+        # m * v_parallel^2 * (u_E . kappa)
+        kappa_df = self._calculate_curvature(pt_with_b_mag.lazy()).collect()
+
+        u_E_dot_kappa = (
+            u_E["vex"] * kappa_df["kappa_x"]
+            + u_E["vey"] * kappa_df["kappa_y"]
+            + u_E["vez"] * kappa_df["kappa_z"]
+        )
+
+        v_parallel_sq = v_parallel**2
+
+        if self.unit == "planetary":
+            # v_parallel is km/s -> m/s, so v^2 -> v^2*1e6
+            v_parallel_sq_si = v_parallel_sq * 1e6  # (m/s)^2
+            # u_E_dot_kappa is km/s/RE. To get 1/s, divide by RE_km
+            u_E_dot_kappa_inv_s = u_E_dot_kappa / EARTH_RADIUS_KM  # 1/s
+            dW_fermi_J_s = mass * v_parallel_sq_si * u_E_dot_kappa_inv_s
+        else:  # SI
+            # v_parallel is m/s, u_E_dot_kappa is 1/s
+            dW_fermi_J_s = mass * v_parallel_sq * u_E_dot_kappa
+
+        dW_fermi = (dW_fermi_J_s / elementary_charge).rename("dW_fermi")
+
+        # --- Combine results ---
+        df = pl.DataFrame(
+            {
+                "time": time,
+                "dW_parallel": dW_parallel,
+                "dW_betatron": dW_betatron,
+                "dW_fermi": dW_fermi,
+            }
+        )
+
+        df = df.with_columns(
+            dW_total=pl.col("dW_parallel")
+            + pl.col("dW_betatron")
+            + pl.col("dW_fermi")
+        )
+
+        return df
+
     def integrate_drift_accelerations(
         self,
         pid: tuple[int, int],
@@ -1025,11 +1171,11 @@ class FLEKSTP(object):
         """
         Compute plasma drift velocities and the associated rate of energy change in [eV/s].
         """
-        vc = self.get_curvature_drift(pid)
-        vg = self.get_gradient_drift(pid)
-        vp = self.get_polarization_drift(pid)
         pt = self[pid]
-        mu = self.get_first_adiabatic_invariant(pid)
+        vc = self.get_curvature_drift(pt)
+        vg = self.get_gradient_drift(pt)
+        vp = self.get_polarization_drift(pt)
+        mu = self.get_first_adiabatic_invariant(pt)
         pt = self.get_betatron_acceleration(pt, mu)
 
         if self.unit == "planetary":
@@ -1160,13 +1306,13 @@ class FLEKSTP(object):
         """
         Compute plasma drift velocities and the associated rate of energy change in [eV/s].
         """
-        ve = self.get_ExB_drift(pid)
-        vc = self.get_curvature_drift(pid)
-        vg = self.get_gradient_drift(pid)
-        vp = self.get_polarization_drift(pid)
-        rl2rc = self.get_gyroradius_to_curvature_ratio(pid)
         pt = self[pid]
-        mu = self.get_first_adiabatic_invariant(pid)
+        ve = self.get_ExB_drift(pt)
+        vc = self.get_curvature_drift(pt)
+        vg = self.get_gradient_drift(pt)
+        vp = self.get_polarization_drift(pt)
+        rl2rc = self.get_gyroradius_to_curvature_ratio(pid)
+        mu = self.get_first_adiabatic_invariant(pt)
         pt = self.get_betatron_acceleration(pt, mu)
         # Calculate the dot product of E with each drift velocity [eV/s]
         if self.unit == "planetary":
@@ -1344,8 +1490,9 @@ class FLEKSTP(object):
             )
 
         # 1. Get data
-        v_drift_df = drift_getters[drift_type](pID)
-        pt_df = self[pID].collect()
+        pt_lazy = self[pID]
+        v_drift_df = drift_getters[drift_type](pt_lazy)
+        pt_df = pt_lazy.collect()
         time = pt_df["time"]
 
         # Rename columns of v_drift_df to be generic for plotting
@@ -2212,10 +2359,11 @@ class FLEKSTP(object):
         charge: float,
     ) -> Tuple[pl.Series, pl.Series, pl.Series]:
         """Calculates the predicted guiding center trajectory from theory."""
-        ve = self.get_ExB_drift(pID)
-        vg = self.get_gradient_drift(pID, mass=mass, charge=charge)
-        vc = self.get_curvature_drift(pID, mass=mass, charge=charge)
-        vp = self.get_polarization_drift(pID, mass=mass, charge=charge)
+        pt_lazy = pt.lazy()
+        ve = self.get_ExB_drift(pt_lazy)
+        vg = self.get_gradient_drift(pt_lazy, mass=mass, charge=charge)
+        vc = self.get_curvature_drift(pt_lazy, mass=mass, charge=charge)
+        vp = self.get_polarization_drift(pt_lazy, mass=mass, charge=charge)
 
         epsilon = 1e-20
         b_mag = (pt["bx"] ** 2 + pt["by"] ** 2 + pt["bz"] ** 2).sqrt()
