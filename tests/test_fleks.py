@@ -267,16 +267,16 @@ class TestParticles:
         ke = tp.get_kinetic_energy(vx, vy, vz)
         assert np.isclose(ke, 3.361357097373841e-17)
         pt_lazy = tp[pid]
-        assert np.isclose(tp.get_ExB_drift(pid).item(0, 1), 3.9656504668528214e-05)
+        assert np.isclose(tp.get_ExB_drift(pt_lazy).item(0, 1), 3.9656504668528214e-05)
         # kappa z, not y
         assert np.isclose(
             tp._calculate_curvature(pt_lazy).collect().item(0, -1), -0.4797530472278595
         )
         assert np.isclose(
-            tp.get_curvature_drift(pid).item(0, 0), -4.17402271497159e-23
+            tp.get_curvature_drift(pt_lazy).item(0, 0), -4.17402271497159e-23
         )
-        assert np.isclose(tp.get_gradient_drift(pid).item(0, 1), -6.209680085413732e-26)
-        assert np.isclose(tp.get_polarization_drift(pid).item(0, 2), 1.1582171530455036e-19)
+        assert np.isclose(tp.get_gradient_drift(pt_lazy).item(0, 1), -6.209680085413732e-26)
+        assert np.isclose(tp.get_polarization_drift(pt_lazy).item(0, 2), 1.1582171530455036e-19)
 
         df_drifts = tp.integrate_drift_accelerations(pid)
         assert "Wp_integrated" in df_drifts.columns
@@ -365,9 +365,10 @@ def test_load_tp(benchmark):
     benchmark(load_test_particle_trajectories, tp, pIDs)
 
 def get_drifts(tp, pid):
-    tp.get_curvature_drift(pid)
-    tp.get_gradient_drift(pid)
-    tp.get_ExB_drift(pid)
+    pt_lazy = tp[pid]
+    tp.get_curvature_drift(pt_lazy)
+    tp.get_gradient_drift(pt_lazy)
+    tp.get_ExB_drift(pt_lazy)
 
 def test_drift_tp(benchmark):
     """
