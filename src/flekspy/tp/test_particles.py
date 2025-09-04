@@ -527,6 +527,24 @@ class FLEKSTP(object):
 
         return ke
 
+    def get_kinetic_energy_change_rate(
+        self, pt_lazy: pl.LazyFrame, mass=proton_mass
+    ) -> pl.Series:
+        """
+        Calculates the rate of change of kinetic energy in [eV/s].
+        """
+        # Select only necessary columns before collecting to improve performance.
+        collected = pt_lazy.select(["time", "vx", "vy", "vz"]).collect()
+        time = collected["time"].to_numpy()
+        vx = collected["vx"].to_numpy()
+        vy = collected["vy"].to_numpy()
+        vz = collected["vz"].to_numpy()
+
+        ke = self.get_kinetic_energy(vx, vy, vz, mass=mass)
+        dke_dt = np.gradient(ke, time)
+
+        return pl.Series("dke_dt", dke_dt)
+
     def get_pitch_angle(self, pID):
         pt_lazy = self[pID]
         # Pitch Angle Calculation
@@ -1314,6 +1332,7 @@ class FLEKSTP(object):
         rl2rc = self.get_gyroradius_to_curvature_ratio(pid)
         mu = self.get_first_adiabatic_invariant(pt)
         pt = self.get_betatron_acceleration(pt, mu)
+        dke_dt = self.get_kinetic_energy_change_rate(pt)
         # Calculate the dot product of E with each drift velocity [eV/s]
         if self.unit == "planetary":
             UNIT_FACTOR = 1e-3
@@ -1371,76 +1390,59 @@ class FLEKSTP(object):
         ).collect()
 
         fig, axes = plt.subplots(
-            nrows=6, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
+            nrows=7, ncols=1, figsize=(12, 12), sharex=True, constrained_layout=True
         )
 
-        # --- 1. Plasma Convection Drift (vex, vey, vez) ---
-        axes[0].plot(pt["time"], ve["vex"], label="vex")
-        if switchYZ:
-            axes[0].plot(pt["time"], ve["vez"], label="vey")
-            axes[0].plot(pt["time"], ve["vey"], label="vez")
-        else:
-            axes[0].plot(pt["time"], ve["vey"], label="vey")
-            axes[0].plot(pt["time"], ve["vez"], label="vez")
-        axes[0].set_ylabel(r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", fontsize=14)
-        axes[0].legend(ncol=3, fontsize="medium")
-        axes[0].grid(True, linestyle="--", alpha=0.6)
+        def _plot_velocity_subplot(ax, time, vel_df, ylabel, switchYZ, x_col, y_col, z_col):
+            """Helper to plot a velocity subplot."""
+            ax.plot(time, vel_df[x_col], label=x_col)
+            if switchYZ:
+                # Swap y and z data for plotting
+                ax.plot(time, vel_df[z_col], label=y_col)
+                ax.plot(time, vel_df[y_col], label=z_col)
+            else:
+                ax.plot(time, vel_df[y_col], label=y_col)
+                ax.plot(time, vel_df[z_col], label=z_col)
+            ax.set_ylabel(ylabel, fontsize=14)
+            ax.legend(ncol=3, fontsize="medium")
+            ax.grid(True, linestyle="--", alpha=0.6)
 
-        # --- 2. Plasma Gradient Drift (vgx, vgy, vgz) ---
-        axes[1].plot(pt["time"], vg["vgx"], label="vgx")
-        if switchYZ:
-            axes[1].plot(pt["time"], vg["vgz"], label="vgy")
-            axes[1].plot(pt["time"], vg["vgy"], label="vgz")
-        else:
-            axes[1].plot(pt["time"], vg["vgy"], label="vgy")
-            axes[1].plot(pt["time"], vg["vgz"], label="vgz")
-        axes[1].set_ylabel(r"$V_{\nabla B}$ [km/s]", fontsize=14)
-        axes[1].legend(ncol=3, fontsize="medium")
-        axes[1].grid(True, linestyle="--", alpha=0.6)
+        # --- 1. Raw Velocities ---
+        _plot_velocity_subplot(axes[0], pt["time"], pt, "V [km/s]", switchYZ, "vx", "vy", "vz")
 
-        # --- 3. Plasma Curvature Drift (vcx, vcy, vcz) ---
-        axes[2].plot(pt["time"], vc["vcx"], label="vcx")
-        if switchYZ:
-            axes[2].plot(pt["time"], vc["vcz"], label="vcy")
-            axes[2].plot(pt["time"], vc["vcy"], label="vcz")
-        else:
-            axes[2].plot(pt["time"], vc["vcy"], label="vcy")
-            axes[2].plot(pt["time"], vc["vcz"], label="vcz")
-        axes[2].set_ylabel(r"$V_c$ [km/s]", fontsize=14)
-        axes[2].legend(ncol=3, fontsize="medium")
-        axes[2].grid(True, linestyle="--", alpha=0.6)
+        # --- 2. Plasma Convection Drift (vex, vey, vez) ---
+        _plot_velocity_subplot(axes[1], pt["time"], ve, r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", switchYZ, "vex", "vey", "vez")
 
-        # --- 4. Plasma Polarization Drift (vpx, vpy, vpz) ---
-        axes[3].plot(pt["time"], vp["vpx"], label="vpx")
-        if switchYZ:
-            axes[3].plot(pt["time"], vp["vpy"], label="vpz")
-            axes[3].plot(pt["time"], vp["vpz"], label="vpy")
-        else:
-            axes[3].plot(pt["time"], vp["vpy"], label="vpy")
-            axes[3].plot(pt["time"], vp["vpz"], label="vpz")
-        axes[3].set_ylabel(r"$V_p$ [km/s]", fontsize=14)
-        axes[3].legend(ncol=3, fontsize="medium")
-        axes[3].grid(True, linestyle="--", alpha=0.6)
+        # --- 3. Plasma Gradient Drift (vgx, vgy, vgz) ---
+        _plot_velocity_subplot(axes[2], pt["time"], vg, r"$V_{\nabla B}$ [km/s]", switchYZ, "vgx", "vgy", "vgz")
 
-        # --- 5. Rate of Energy Change (E dot V) ---
-        axes[4].plot(
+        # --- 4. Plasma Curvature Drift (vcx, vcy, vcz) ---
+        _plot_velocity_subplot(axes[3], pt["time"], vc, r"$V_c$ [km/s]", switchYZ, "vcx", "vcy", "vcz")
+
+        # --- 5. Plasma Polarization Drift (vpx, vpy, vpz) ---
+        _plot_velocity_subplot(axes[4], pt["time"], vp, r"$V_p$ [km/s]", switchYZ, "vpx", "vpy", "vpz")
+
+
+        # --- 6. Rate of Energy Change (E dot V) ---
+        axes[5].plot(
             pt["time"], pt["dWg"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{\nabla B}$"
         )
-        axes[4].plot(
+        axes[5].plot(
             pt["time"], pt["dWc"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{c}$"
         )
-        axes[4].plot(
+        axes[5].plot(
             pt["time"], pt["dWp"], label=r"$q \mathbf{E} \cdot \mathbf{V}_{p}$"
         )
-        axes[4].plot(
+        axes[5].plot(
             pt["time"], pt["dW_parallel"], label=r"$q E_{\|} v_{\|}$", linestyle="--"
         )
-        axes[4].plot(
+        axes[5].plot(
             pt["time"], pt["dW_betatron"], label="Betatron", linestyle="--", alpha=0.8
         )
-        axes[4].set_ylabel("Energy change rate\n [eV/s]", fontsize=14)
-        axes[4].legend(ncol=5, fontsize="medium")
-        axes[4].grid(True, linestyle="--", alpha=0.6)
+        axes[5].plot(pt["time"], dke_dt, label="dKE/dt", linestyle="-.", alpha=0.8)
+        axes[5].set_ylabel("Energy change rate\n [eV/s]", fontsize=14)
+        axes[5].legend(ncol=3, fontsize="medium")
+        axes[5].grid(True, linestyle="--", alpha=0.6)
 
         axes[-1].semilogy(pt["time"], rl2rc)
         axes[-1].axhline(y=0.2, linestyle="--", color="tab:red")
