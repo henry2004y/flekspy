@@ -2031,6 +2031,198 @@ class FLEKSTP(object):
 
         return ax
 
+    def verify_guiding_center_model(
+        self,
+        pID: Tuple[int, int],
+        mass=proton_mass,
+        charge=elementary_charge,
+        smoothing_gyro_periods=1.0,
+    ):
+        """
+        Verifies the guiding center model by comparing it against the full
+        particle trajectory.
+
+        This method performs the following steps:
+        1. Calculates a "true" guiding center trajectory by applying a low-pass
+           filter (moving average) to the full particle trajectory, smoothing
+           out the gyromotion.
+        2. Calculates a "predicted" guiding center trajectory by numerically
+           integrating the guiding center velocity, which is the sum of the
+           parallel velocity and all perpendicular drift velocities (E x B,
+           gradient, curvature, and polarization).
+        3. Generates a plot comparing the full trajectory, the "true" GC
+           trajectory, and the "predicted" GC trajectory for each coordinate (X, Y, Z).
+
+        A close overlap between the "true" and "predicted" trajectories
+        validates the guiding center approximation and the drift calculations.
+
+        Args:
+            pID (Tuple[int, int]): The ID of the particle to analyze.
+            mass (float): The mass of the particle in kg. Defaults to proton_mass.
+            charge (float): The charge of the particle in Coulombs.
+                            Defaults to elementary_charge.
+            smoothing_gyro_periods (float): The size of the moving average window
+                                            in units of gyro-periods. Defaults to 1.0.
+        """
+        try:
+            pt_lazy = self[pID]
+            pt = pt_lazy.collect()
+        except (KeyError, ValueError) as e:
+            logger.error(f"Error getting trajectory for {pID}: {e}")
+            return
+
+        logger.info(f"Verifying guiding center model for particle ID: {pID}")
+
+        # --- 1. Calculate "True" Guiding Center Trajectory (Smoothed) ---
+        # Calculate B magnitude to find gyrofrequency
+        b_mag = (pt["bx"] ** 2 + pt["by"] ** 2 + pt["bz"] ** 2).sqrt()
+
+        if self.unit == "planetary":
+            b_mag_si = b_mag * 1e-9  # convert nT to T
+        else:  # SI
+            b_mag_si = b_mag
+
+        # Gyrofrequency (rad/s) and Gyroperiod (s)
+        # Avoid division by zero if B is zero
+        epsilon = 1e-20
+        omega_c = (abs(charge) * b_mag_si) / (mass + epsilon)
+        gyro_period = (2 * np.pi) / (omega_c + epsilon)
+
+        # Determine moving average window size
+        time_steps = pt["time"].diff().mean()
+        if time_steps is None or time_steps == 0:
+            logger.warning(
+                "Could not determine a valid time step. Cannot apply smoothing."
+            )
+            # Don't smooth if we can't determine window size
+            pos_gc_true = pt.select(
+                pl.col("x").alias("x_true"),
+                pl.col("y").alias("y_true"),
+                pl.col("z").alias("z_true"),
+            )
+        else:
+            avg_gyro_period = gyro_period.mean()
+            window_size = int(
+                np.ceil((avg_gyro_period * smoothing_gyro_periods) / time_steps)
+            )
+            # Ensure window size is at least 1 and odd for centering
+            window_size = max(1, window_size if window_size % 2 != 0 else window_size + 1)
+
+            logger.info(f"Average gyro-period: {avg_gyro_period:.4f} s")
+            logger.info(f"Time step: {time_steps:.4f} s")
+            logger.info(f"Using moving average window size: {window_size}")
+
+            pos_gc_true = pt.select(
+                pl.col("x")
+                .rolling_mean(window_size=window_size, center=True)
+                .alias("x_true"),
+                pl.col("y")
+                .rolling_mean(window_size=window_size, center=True)
+                .alias("y_true"),
+                pl.col("z")
+                .rolling_mean(window_size=window_size, center=True)
+                .alias("z_true"),
+            )
+
+        # --- 2. Calculate Predicted Guiding Center Trajectory (from Theory) ---
+        # Get all drift velocities
+        ve = self.get_ExB_drift(pID)
+        vg = self.get_gradient_drift(pID, mass=mass, charge=charge)
+        vc = self.get_curvature_drift(pID, mass=mass, charge=charge)
+        vp = self.get_polarization_drift(pID, mass=mass, charge=charge)
+
+        # Calculate parallel velocity: v_parallel = (v . b) * b
+        b_mag_with_fallback = b_mag.fill_null(1.0).clip(lower_bound=epsilon)
+        b_unit_x = pt["bx"] / b_mag_with_fallback
+        b_unit_y = pt["by"] / b_mag_with_fallback
+        b_unit_z = pt["bz"] / b_mag_with_fallback
+
+        v_dot_b = pt["vx"] * b_unit_x + pt["vy"] * b_unit_y + pt["vz"] * b_unit_z
+
+        v_parallel_x = v_dot_b * b_unit_x
+        v_parallel_y = v_dot_b * b_unit_y
+        v_parallel_z = v_dot_b * b_unit_z
+
+        # Sum all velocities to get the total guiding center velocity
+        v_gc_x = v_parallel_x + ve["vex"] + vg["vgx"] + vc["vcx"] + vp["vpx"]
+        v_gc_y = v_parallel_y + ve["vey"] + vg["vgy"] + vc["vcy"] + vp["vpy"]
+        v_gc_z = v_parallel_z + ve["vez"] + vg["vgz"] + vc["vcz"] + vp["vpz"]
+
+        # Integrate velocity to get predicted position
+        dt = pt["time"].diff().fill_null(0)
+
+        # Use trapezoidal rule for integration: integral(v dt) ~= cumsum( (v_i + v_{i-1})/2 * dt_i )
+        pos_gc_pred_x = (
+            pt["x"][0] + (((v_gc_x + v_gc_x.shift(1)) / 2) * dt).cum_sum()
+        ).fill_null(pt["x"][0])
+        pos_gc_pred_y = (
+            pt["y"][0] + (((v_gc_y + v_gc_y.shift(1)) / 2) * dt).cum_sum()
+        ).fill_null(pt["y"][0])
+        pos_gc_pred_z = (
+            pt["z"][0] + (((v_gc_z + v_gc_z.shift(1)) / 2) * dt).cum_sum()
+        ).fill_null(pt["z"][0])
+
+        # --- 3. Plotting ---
+        fig, axes = plt.subplots(
+            nrows=3, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
+        )
+        fig.suptitle(
+            f"Guiding Center Model Verification for Particle ID: {pID}", fontsize=16
+        )
+        time = pt["time"]
+
+        coord_map = {
+            0: ("x", "X"),
+            1: ("y", "Y"),
+            2: ("z", "Z"),
+        }
+
+        pos_preds = [pos_gc_pred_x, pos_gc_pred_y, pos_gc_pred_z]
+
+        for i, ax in enumerate(axes):
+            coord, label = coord_map[i]
+
+            # Plot full particle trajectory
+            ax.plot(
+                time,
+                pt[coord],
+                label=f"Full Trajectory ({label})",
+                color="gray",
+                alpha=0.7,
+            )
+
+            # Plot "true" guiding center (smoothed)
+            ax.plot(
+                time,
+                pos_gc_true[f"{coord}_true"],
+                label="'True' GC (Smoothed)",
+                color="black",
+                linestyle="--",
+                linewidth=2,
+            )
+
+            # Plot "predicted" guiding center (integrated)
+            ax.plot(
+                time,
+                pos_preds[i],
+                label="Predicted GC (Integrated)",
+                color="red",
+                linestyle=":",
+                linewidth=2,
+            )
+
+            if self.unit == "planetary":
+                ax.set_ylabel("Position [$R_E$]")
+            else:
+                ax.set_ylabel("Position [m]")
+
+            ax.set_title(f"{label}-Component")
+            ax.legend()
+            ax.grid(True, linestyle="--", alpha=0.6)
+
+        axes[-1].set_xlabel("Time [s]")
+        plt.show()
+
 
 def interpolate_at_times(
     df: Union[pl.DataFrame, pl.LazyFrame], times_to_interpolate: list[float]
