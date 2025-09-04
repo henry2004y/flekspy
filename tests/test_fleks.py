@@ -324,6 +324,7 @@ class TestParticles:
         # Check that the number of rows is correct
         pt_len = len(tp[pid].collect())
         assert len(df) == pt_len
+        #TODO Check numerical values!
 
 
 def load(files):
