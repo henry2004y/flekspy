@@ -2047,7 +2047,7 @@ class FLEKSTP(object):
             b_mag_si = b_mag
 
         epsilon = 1e-20
-        omega_c = (abs(charge) * b_mag_si) / (mass + epsilon)
+        omega_c = (abs(charge) * b_mag_si) / mass
         gyro_period = (2 * np.pi) / (omega_c + epsilon)
 
         time_steps = pt["time"].diff().mean()
@@ -2083,6 +2083,18 @@ class FLEKSTP(object):
             .alias("z_true"),
         )
 
+    @staticmethod
+    def _integrate_velocity(
+        v_series: pl.Series, initial_pos_series: pl.Series, dt_series: pl.Series
+    ) -> pl.Series:
+        """Integrates a velocity series using the trapezoidal rule."""
+        initial_pos = initial_pos_series[0]
+        integrated_pos = (
+            initial_pos
+            + (((v_series + v_series.shift(1)) / 2) * dt_series).cum_sum()
+        )
+        return integrated_pos.fill_null(initial_pos)
+
     def _calculate_predicted_gc_trajectory(
         self,
         pt: pl.DataFrame,
@@ -2115,15 +2127,9 @@ class FLEKSTP(object):
 
         dt = pt["time"].diff().fill_null(0)
 
-        pos_gc_pred_x = (
-            pt["x"][0] + (((v_gc_x + v_gc_x.shift(1)) / 2) * dt).cum_sum()
-        ).fill_null(pt["x"][0])
-        pos_gc_pred_y = (
-            pt["y"][0] + (((v_gc_y + v_gc_y.shift(1)) / 2) * dt).cum_sum()
-        ).fill_null(pt["y"][0])
-        pos_gc_pred_z = (
-            pt["z"][0] + (((v_gc_z + v_gc_z.shift(1)) / 2) * dt).cum_sum()
-        ).fill_null(pt["z"][0])
+        pos_gc_pred_x = self._integrate_velocity(v_gc_x, pt["x"], dt)
+        pos_gc_pred_y = self._integrate_velocity(v_gc_y, pt["y"], dt)
+        pos_gc_pred_z = self._integrate_velocity(v_gc_z, pt["z"], dt)
 
         return pos_gc_pred_x, pos_gc_pred_y, pos_gc_pred_z
 
