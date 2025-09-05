@@ -1461,6 +1461,113 @@ class FLEKSTP(object):
         else:
             plt.show()
 
+    def analyze_drifts_energy_change(
+        self,
+        pID: Tuple[int, int],
+        mass=proton_mass,
+        charge=elementary_charge,
+        outname=None,
+    ):
+        """
+        Analyzes and plots the energy changes for each term in the guiding center
+        approximation.
+
+        This method computes the parallel, Betatron, and Fermi accelerations using
+        `get_energy_change_guiding_center`. It also calculates the total kinetic
+        energy change and treats the difference between the kinetic energy change
+        and the sum of the guiding center terms (dW_total) as the non-adiabatic term.
+
+        The method generates a plot with four subplots:
+        1. dW_parallel: Energy change due to parallel electric fields.
+        2. dW_betatron: Energy change due to the Betatron effect.
+        3. dW_fermi: Energy change due to Fermi acceleration.
+        4. dW_total and Non-adiabatic term: The sum of the above terms compared
+           with the non-adiabatic heating component.
+
+        Args:
+            pID (Tuple[int, int]): The particle ID (cpu, id).
+            mass (float): The mass of the particle in kg. Defaults to proton_mass.
+            charge (float): The charge of the particle in Coulombs.
+                            Defaults to elementary_charge.
+            outname (str, optional): If provided, the plot is saved to this
+                                     filename instead of being shown. Defaults to None.
+        """
+        # --- 1. Get Guiding Center Energy Changes ---
+        df_gc = self.get_energy_change_guiding_center(
+            pID, mass=mass, charge=charge
+        )
+        time = df_gc["time"]
+        dW_parallel = df_gc["dW_parallel"]
+        dW_betatron = df_gc["dW_betatron"]
+        dW_fermi = df_gc["dW_fermi"]
+        dW_total = df_gc["dW_total"]
+
+        # --- 2. Get Kinetic Energy Change Rate ---
+        pt_lazy = self[pID]
+        dke_dt = self.get_kinetic_energy_change_rate(pt_lazy, mass=mass)
+
+        # --- 3. Calculate Non-adiabatic Term ---
+        # Ensure dke_dt is aligned with the time from df_gc if lengths differ
+        # (though they should be the same)
+        if len(dke_dt) != len(dW_total):
+            # This case should not happen if the underlying data is consistent.
+            # Raise an error to prevent crashing later.
+            msg = (
+                f"Mismatch in length between kinetic energy and guiding center calculations: "
+                f"len(dke_dt)={len(dke_dt)}, len(dW_total)={len(dW_total)}"
+            )
+            logger.error(msg)
+            raise ValueError(msg)
+
+        non_adiabatic_term = dke_dt - dW_total
+
+        # --- 4. Plotting ---
+        fig, axes = plt.subplots(
+            nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
+        )
+        fig.suptitle(f"Energy Change Analysis for Particle {pID}", fontsize=16)
+
+        # Subplots for individual energy change terms
+        plot_configs = [
+            {"data": dW_parallel, "label": r"$dW_{\parallel}/dt$", "title": "Parallel Acceleration"},
+            {"data": dW_betatron, "label": "$dW_{betatron}/dt$", "title": "Betatron Acceleration", "color": "tab:orange"},
+            {"data": dW_fermi, "label": "$dW_{fermi}/dt$", "title": "Fermi Acceleration", "color": "tab:green"},
+        ]
+
+        for i, config in enumerate(plot_configs):
+            ax = axes[i]
+            ax.plot(time, config["data"], label=config["label"], color=config.get("color"))
+            ax.set_ylabel("Rate [eV/s]")
+            ax.set_title(config["title"])
+            ax.grid(True, linestyle="--", alpha=0.6)
+
+        # Subplot 4: dW_total and Non-adiabatic term
+        axes[3].plot(time, dW_total, label="$dW_{total}/dt$ (GC)", color="tab:red")
+        axes[3].plot(
+            time,
+            non_adiabatic_term,
+            label="Non-adiabatic",
+            color="tab:purple",
+            linestyle="--",
+        )
+        axes[3].plot(
+            time, dke_dt, label="d(KE)/dt", color="black", linestyle=":", alpha=0.7
+        )
+        axes[3].set_ylabel("Rate [eV/s]")
+        axes[3].set_title("Total and Non-Adiabatic Energy Change")
+        axes[3].grid(True, linestyle="--", alpha=0.6)
+        axes[3].legend(fontsize="medium")
+
+        axes[-1].set_xlabel("Time [s]", fontsize=14)
+        for ax in axes:
+            ax.set_xlim(left=time.min(), right=time.max())
+
+        if outname is not None:
+            plt.savefig(outname, bbox_inches="tight")
+            plt.close(fig)
+        else:
+            plt.show()
+
     def analyze_drift(
         self,
         pID: tuple[int, int],
