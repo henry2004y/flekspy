@@ -1456,8 +1456,6 @@ class FLEKSTP(object):
     def analyze_drifts_energy_change(
         self,
         pID: Tuple[int, int],
-        mass=proton_mass,
-        charge=elementary_charge,
         outname=None,
     ):
         """
@@ -1478,16 +1476,11 @@ class FLEKSTP(object):
 
         Args:
             pID (Tuple[int, int]): The particle ID (cpu, id).
-            mass (float): The mass of the particle in kg. Defaults to proton_mass.
-            charge (float): The charge of the particle in Coulombs.
-                            Defaults to elementary_charge.
             outname (str, optional): If provided, the plot is saved to this
                                      filename instead of being shown. Defaults to None.
         """
         # --- 1. Get Guiding Center Energy Changes ---
-        df_gc = self.get_energy_change_guiding_center(
-            pID, mass=mass, charge=charge
-        )
+        df_gc = self.get_energy_change_guiding_center(pID)
         time = df_gc["time"]
         dW_parallel = df_gc["dW_parallel"]
         dW_betatron = df_gc["dW_betatron"]
@@ -1496,7 +1489,7 @@ class FLEKSTP(object):
 
         # --- 2. Get Kinetic Energy Change Rate ---
         pt_lazy = self[pID]
-        dke_dt = self.get_kinetic_energy_change_rate(pt_lazy, mass=mass)
+        dke_dt = self.get_kinetic_energy_change_rate(pt_lazy)
 
         # --- 3. Calculate Non-adiabatic Term ---
         # Ensure dke_dt is aligned with the time from df_gc if lengths differ
