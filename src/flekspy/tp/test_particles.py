@@ -1510,13 +1510,14 @@ class FLEKSTP(object):
         # Ensure dke_dt is aligned with the time from df_gc if lengths differ
         # (though they should be the same)
         if len(dke_dt) != len(dW_total):
-            # This case should be handled based on expected behavior,
-            # for now, we assume they align.
-            logger.warning(
-                "Mismatch in length between kinetic energy and guiding center calculations."
+            # This case should not happen if the underlying data is consistent.
+            # Raise an error to prevent crashing later.
+            msg = (
+                f"Mismatch in length between kinetic energy and guiding center calculations: "
+                f"len(dke_dt)={len(dke_dt)}, len(dW_total)={len(dW_total)}"
             )
-            # A more robust solution might involve interpolation if time arrays differ
-            pass
+            logger.error(msg)
+            raise ValueError(msg)
 
         non_adiabatic_term = dke_dt - dW_total
 
