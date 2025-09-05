@@ -1527,23 +1527,19 @@ class FLEKSTP(object):
         )
         fig.suptitle(f"Energy Change Analysis for Particle {pID}", fontsize=16)
 
-        # Subplot 1: dW_parallel
-        axes[0].plot(time, dW_parallel, label=r"$dW_{\parallel}/dt$")
-        axes[0].set_ylabel("Rate [eV/s]")
-        axes[0].set_title("Parallel Acceleration")
-        axes[0].grid(True, linestyle="--", alpha=0.6)
+        # Subplots for individual energy change terms
+        plot_configs = [
+            {"data": dW_parallel, "label": r"$dW_{\parallel}/dt$", "title": "Parallel Acceleration"},
+            {"data": dW_betatron, "label": "$dW_{betatron}/dt$", "title": "Betatron Acceleration", "color": "tab:orange"},
+            {"data": dW_fermi, "label": "$dW_{fermi}/dt$", "title": "Fermi Acceleration", "color": "tab:green"},
+        ]
 
-        # Subplot 2: dW_betatron
-        axes[1].plot(time, dW_betatron, label="$dW_{betatron}/dt$", color="tab:orange")
-        axes[1].set_ylabel("Rate [eV/s]")
-        axes[1].set_title("Betatron Acceleration")
-        axes[1].grid(True, linestyle="--", alpha=0.6)
-
-        # Subplot 3: dW_fermi
-        axes[2].plot(time, dW_fermi, label="$dW_{fermi}/dt$", color="tab:green")
-        axes[2].set_ylabel("Rate [eV/s]")
-        axes[2].set_title("Fermi Acceleration")
-        axes[2].grid(True, linestyle="--", alpha=0.6)
+        for i, config in enumerate(plot_configs):
+            ax = axes[i]
+            ax.plot(time, config["data"], label=config["label"], color=config.get("color"))
+            ax.set_ylabel("Rate [eV/s]")
+            ax.set_title(config["title"])
+            ax.grid(True, linestyle="--", alpha=0.6)
 
         # Subplot 4: dW_total and Non-adiabatic term
         axes[3].plot(time, dW_total, label="$dW_{total}/dt$ (GC)", color="tab:red")
