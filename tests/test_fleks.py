@@ -326,6 +326,14 @@ class TestParticles:
         assert len(df) == pt_len
         #TODO Check numerical values!
 
+    def test_analyze_drifts_energy_change(self):
+        tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True, unit="SI")
+        pid = tp.getIDs()[0]
+        outname = "test_energy_change.png"
+        tp.analyze_drifts_energy_change(pid, outname=outname)
+        assert os.path.exists(outname)
+        os.remove(outname)
+
 
 def load(files):
     """
