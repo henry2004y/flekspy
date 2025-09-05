@@ -76,6 +76,8 @@ class FLEKSTP(object):
         iDomain: int = 0,
         iSpecies: int = 0,
         unit: str = "planetary",
+        mass: float = proton_mass,
+        charge: float = elementary_charge,
         iListStart: int = 0,
         iListEnd: int = -1,
         readAllFiles: bool = False,
@@ -86,6 +88,8 @@ class FLEKSTP(object):
         if self.unit not in {"planetary", "SI"}:
             raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
         self._trajectory_cache = {}
+        self.mass = mass
+        self.charge = charge
 
         if isinstance(dirs, str):
             dirs = [dirs]
@@ -519,16 +523,16 @@ class FLEKSTP(object):
 
         return pSelected
 
-    def get_kinetic_energy(self, vx, vy, vz, mass=proton_mass):
+    def get_kinetic_energy(self, vx, vy, vz):
         if self.unit == "planetary":
-            ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge  # [eV]
+            ke = 0.5 * self.mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge  # [eV]
         elif self.unit == "SI":
-            ke = 0.5 * mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
+            ke = 0.5 * self.mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
 
         return ke
 
     def get_kinetic_energy_change_rate(
-        self, pt_lazy: pl.LazyFrame, mass=proton_mass
+        self, pt_lazy: pl.LazyFrame
     ) -> pl.Series:
         """
         Calculates the rate of change of kinetic energy in [eV/s].
@@ -540,7 +544,7 @@ class FLEKSTP(object):
         vy = collected["vy"].to_numpy()
         vz = collected["vz"].to_numpy()
 
-        ke = self.get_kinetic_energy(vx, vy, vz, mass=mass)
+        ke = self.get_kinetic_energy(vx, vy, vz)
         dke_dt = np.gradient(ke, time)
 
         return pl.Series("dke_dt", dke_dt)
@@ -602,7 +606,7 @@ class FLEKSTP(object):
         return pitch_angle
 
     def get_first_adiabatic_invariant(
-        self, pt_lazy: pl.LazyFrame, mass=proton_mass
+        self, pt_lazy: pl.LazyFrame
     ) -> pl.Series:
         """
         Calculates the 1st adiabatic invariant of a particle.
@@ -627,7 +631,7 @@ class FLEKSTP(object):
         if self.unit == "planetary":
             # Convert v_perp_sq from (km/s)^2 to (m/s)^2
             v_perp_sq = v_perp_sq * 1e6
-        mu_expr = ((0.5 * mass * v_perp_sq) / (b_mag_expr + epsilon)).alias("mu")
+        mu_expr = ((0.5 * self.mass * v_perp_sq) / (b_mag_expr + epsilon)).alias("mu")
 
         # Execute the expression and return
         return pt_lazy.select(mu_expr).collect()["mu"]
@@ -720,8 +724,6 @@ class FLEKSTP(object):
     def get_curvature_drift(
         self,
         pt_lazy: pl.LazyFrame,
-        mass=proton_mass,
-        charge=elementary_charge,
     ) -> pl.DataFrame:
         """
         Calculates the curvature drift velocity for a particle.
@@ -754,10 +756,10 @@ class FLEKSTP(object):
         b_mag_sq = pl.col("b_mag") ** 2
         if self.unit == "planetary":
             factor = (
-                (mass * v_parallel_sq) / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
+                (self.mass * v_parallel_sq) / (self.charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
             )
         elif self.unit == "SI":
-            factor = (mass * v_parallel_sq) / (charge * b_mag_sq)
+            factor = (self.mass * v_parallel_sq) / (self.charge * b_mag_sq)
         else:
             raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
 
@@ -770,8 +772,6 @@ class FLEKSTP(object):
     def get_gyroradius_to_curvature_ratio(
         self,
         pID: Tuple[int, int],
-        mass=proton_mass,
-        charge=elementary_charge,
     ) -> pl.Series:
         """
         Calculates the ratio of the particle's gyroradius to the magnetic
@@ -792,7 +792,7 @@ class FLEKSTP(object):
         v_perp = (v_mag_sq * sin_alpha_sq).sqrt()
 
         # Expression for gyroradius
-        r_g = (mass * v_perp) / (abs(charge) * b_mag) * 1e9  # [km]
+        r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag) * 1e9  # [km]
 
         # Expression for curvature radius
         lf_curv = self._calculate_curvature(pt_lazy)
@@ -846,8 +846,6 @@ class FLEKSTP(object):
     def get_gradient_drift(
         self,
         pt_lazy: pl.LazyFrame,
-        mass=proton_mass,
-        charge=elementary_charge,
     ) -> pl.DataFrame:
         """
         Calculates the gradient drift velocity for a particle.
@@ -869,7 +867,7 @@ class FLEKSTP(object):
         )
         sin_alpha_sq = 1 - (v_dot_b / (v_mag * b_mag + epsilon)) ** 2
         v_perp_sq = v_mag_sq * sin_alpha_sq
-        mu_expr = (0.5 * mass * v_perp_sq) / (b_mag + epsilon)
+        mu_expr = (0.5 * self.mass * v_perp_sq) / (b_mag + epsilon)
 
         lf = self._calculate_bmag(pt_lazy)
 
@@ -890,9 +888,9 @@ class FLEKSTP(object):
         b_mag_sq = pl.col("b_mag") ** 2
         # conversion factor
         if self.unit == "planetary":
-            factor = mu_expr / (charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
+            factor = mu_expr / (self.charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
         elif self.unit == "SI":
-            factor = mu_expr / (charge * b_mag_sq)
+            factor = mu_expr / (self.charge * b_mag_sq)
         else:
             raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
 
@@ -905,8 +903,6 @@ class FLEKSTP(object):
     def get_polarization_drift(
         self,
         pt_lazy: pl.LazyFrame,
-        mass=proton_mass,
-        charge=elementary_charge,
     ) -> pl.DataFrame:
         """
         Calculates the polarization drift velocity for a particle.
@@ -948,9 +944,9 @@ class FLEKSTP(object):
             # v_p [m/s] = (m[kg] / (q[C] * (B[nT]*1e-9)^2)) * (dE_perp/dt[uV/m/s] * 1e-6)
             # v_p [m/s] = (m/(q*B^2)) * (dE_perp/dt) * 1e12
             # To get km/s, we divide by 1e3
-            factor = mass / (charge * b_mag_sq) * 1e9
+            factor = self.mass / (self.charge * b_mag_sq) * 1e9
         elif self.unit == "SI":
-            factor = mass / (charge * b_mag_sq)
+            factor = self.mass / (self.charge * b_mag_sq)
 
         vpx = factor * dE_perp_dt_x
         vpy = factor * dE_perp_dt_y
@@ -1036,8 +1032,6 @@ class FLEKSTP(object):
     def get_energy_change_guiding_center(
         self,
         pID: Tuple[int, int],
-        mass=proton_mass,
-        charge=elementary_charge,
     ) -> pl.DataFrame:
         """
         Computes the change of energy of a single particle based on the guiding center theory.
@@ -1053,8 +1047,6 @@ class FLEKSTP(object):
 
         Args:
             pID (Tuple[int, int]): The particle ID (cpu, id).
-            mass (float): The mass of the particle in kg. Defaults to proton_mass.
-            charge (float): The charge of the particle in Coulombs. Defaults to elementary_charge.
 
         Returns:
             A Polars DataFrame with the time, the three energy change components,
@@ -1067,7 +1059,7 @@ class FLEKSTP(object):
         time = pt["time"]
 
         # --- Common quantities ---
-        mu = self.get_first_adiabatic_invariant(pt_lazy, mass=mass)  # returns Series
+        mu = self.get_first_adiabatic_invariant(pt_lazy)  # returns Series
         u_E = self.get_ExB_drift(pt_lazy)  # returns DataFrame
 
         # B magnitude and unit vectors
@@ -1092,7 +1084,7 @@ class FLEKSTP(object):
             unit_factor_parallel = 1.0
 
         dW_parallel = (
-            (charge / elementary_charge)
+            (self.charge / elementary_charge)
             * E_parallel
             * v_parallel
             * unit_factor_parallel
@@ -1157,10 +1149,10 @@ class FLEKSTP(object):
             v_parallel_sq_si = v_parallel_sq * 1e6  # (m/s)^2
             # u_E_dot_kappa is km/s/RE. To get 1/s, divide by RE_km
             u_E_dot_kappa_inv_s = u_E_dot_kappa / EARTH_RADIUS_KM  # 1/s
-            dW_fermi_J_s = mass * v_parallel_sq_si * u_E_dot_kappa_inv_s
+            dW_fermi_J_s = self.mass * v_parallel_sq_si * u_E_dot_kappa_inv_s
         else:  # SI
             # v_parallel is m/s, u_E_dot_kappa is 1/s
-            dW_fermi_J_s = mass * v_parallel_sq * u_E_dot_kappa
+            dW_fermi_J_s = self.mass * v_parallel_sq * u_E_dot_kappa
 
         dW_fermi = (dW_fermi_J_s / elementary_charge).rename("dW_fermi")
 
@@ -1761,7 +1753,6 @@ class FLEKSTP(object):
         self,
         pID: Tuple[int, int],
         *,
-        mass=proton_mass,
         fscaling=1,
         smoothing_window=None,
         t_start=None,
@@ -1964,7 +1955,7 @@ class FLEKSTP(object):
             # --- Derived Quantities Calculation ---
 
             # Kinetic Energy
-            ke = self.get_kinetic_energy(vx, vy, vz, mass=mass)  # [eV]
+            ke = self.get_kinetic_energy(vx, vy, vz)  # [eV]
 
             # --- Velocity Smoothing and Envelope Calculation ---
             if (
@@ -2049,14 +2040,14 @@ class FLEKSTP(object):
                 # Perpendicular velocity in SI units [m/s]
                 v_perp = v_mag * 1e3 * np.sin(pitch_angle_rad)
                 # Calculate mu, handle potential division by zero in B
-                mu = (0.5 * mass * v_perp**2) / (b_mag * 1e-9)  # [J/T]
+                mu = (0.5 * self.mass * v_perp**2) / (b_mag * 1e-9)  # [J/T]
                 # Gyrofrequency in Hz
                 gyro_freq = (
-                    (elementary_charge * b_mag) / (2 * np.pi * mass) * 1e-9 / fscaling
+                    (elementary_charge * b_mag) / (2 * np.pi * self.mass) * 1e-9 / fscaling
                 )
                 # Gyroradius in km
                 gyro_radius = (
-                    (mass * v_perp) / (elementary_charge * b_mag) * 1e6 * fscaling
+                    (self.mass * v_perp) / (elementary_charge * b_mag) * 1e6 * fscaling
                 )
             elif self.unit == "SI":
                 # Magnetic Field Energy Density Calculation
@@ -2066,12 +2057,12 @@ class FLEKSTP(object):
                 # First Adiabatic Invariant (mu) Calculation
                 v_perp = v_mag * np.sin(pitch_angle_rad)
                 # Calculate mu, handle potential division by zero in B
-                mu = (0.5 * mass * v_perp**2) / b_mag  # [J/T]
+                mu = (0.5 * self.mass * v_perp**2) / b_mag  # [J/T]
                 # Gyrofrequency in Hz
-                gyro_freq = (elementary_charge * b_mag) / (2 * np.pi * mass) / fscaling
+                gyro_freq = (elementary_charge * b_mag) / (2 * np.pi * self.mass) / fscaling
                 # Gyroradius in km
                 gyro_radius = (
-                    (mass * v_perp) / (elementary_charge * b_mag) * 1e3 * fscaling
+                    (self.mass * v_perp) / (elementary_charge * b_mag) * 1e3 * fscaling
                 )
 
             # --- Plotting ---
@@ -2292,8 +2283,6 @@ class FLEKSTP(object):
     def _calculate_true_gc_trajectory(
         self,
         pt: pl.DataFrame,
-        charge: float,
-        mass: float,
         smoothing_gyro_periods: float,
     ) -> pl.DataFrame:
         """Calculates the 'true' guiding center trajectory by smoothing."""
@@ -2305,7 +2294,7 @@ class FLEKSTP(object):
             b_mag_si = b_mag
 
         epsilon = 1e-20
-        omega_c = (abs(charge) * b_mag_si) / mass
+        omega_c = (abs(self.charge) * b_mag_si) / self.mass
         gyro_period = (2 * np.pi) / (omega_c + epsilon)
 
         time_steps = pt["time"].diff().mean()
@@ -2357,15 +2346,13 @@ class FLEKSTP(object):
         self,
         pt: pl.DataFrame,
         pID: Tuple[int, int],
-        mass: float,
-        charge: float,
     ) -> Tuple[pl.Series, pl.Series, pl.Series]:
         """Calculates the predicted guiding center trajectory from theory."""
         pt_lazy = pt.lazy()
         ve = self.get_ExB_drift(pt_lazy)
-        vg = self.get_gradient_drift(pt_lazy, mass=mass, charge=charge)
-        vc = self.get_curvature_drift(pt_lazy, mass=mass, charge=charge)
-        vp = self.get_polarization_drift(pt_lazy, mass=mass, charge=charge)
+        vg = self.get_gradient_drift(pt_lazy)
+        vc = self.get_curvature_drift(pt_lazy)
+        vp = self.get_polarization_drift(pt_lazy)
 
         epsilon = 1e-20
         b_mag = (pt["bx"] ** 2 + pt["by"] ** 2 + pt["bz"] ** 2).sqrt()
@@ -2452,8 +2439,6 @@ class FLEKSTP(object):
     def verify_guiding_center_model(
         self,
         pID: Tuple[int, int],
-        mass=proton_mass,
-        charge=elementary_charge,
         smoothing_gyro_periods=1.0,
     ):
         """
@@ -2476,9 +2461,6 @@ class FLEKSTP(object):
 
         Args:
             pID (Tuple[int, int]): The ID of the particle to analyze.
-            mass (float): The mass of the particle in kg. Defaults to proton_mass.
-            charge (float): The charge of the particle in Coulombs.
-                            Defaults to elementary_charge.
             smoothing_gyro_periods (float): The size of the moving average window
                                             in units of gyro-periods. Defaults to 1.0.
         """
@@ -2492,11 +2474,11 @@ class FLEKSTP(object):
 
         # 1. Calculate "true" guiding center trajectory
         pos_gc_true = self._calculate_true_gc_trajectory(
-            pt, charge, mass, smoothing_gyro_periods
+            pt, smoothing_gyro_periods
         )
 
         # 2. Calculate predicted guiding center trajectory
-        pos_gc_pred = self._calculate_predicted_gc_trajectory(pt, pID, mass, charge)
+        pos_gc_pred = self._calculate_predicted_gc_trajectory(pt, pID)
 
         # 3. Plot the comparison
         self._plot_gc_verification(pt, pos_gc_true, pos_gc_pred, pID)
