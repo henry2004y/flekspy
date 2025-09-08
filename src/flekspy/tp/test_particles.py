@@ -1880,10 +1880,7 @@ class FLEKSTP(object):
 
         # --- Calculate V_HT by solving M * V_HT = C ---
         # M_ij = sum(B^2 * delta_ij - B_i * B_j)
-        M = np.zeros((3, 3))
-        for i in range(len(all_states)):
-            b_vec = B[i, :]
-            M += np.dot(b_vec, b_vec) * np.identity(3) - np.outer(b_vec, b_vec)
+        M = np.sum(B**2) * np.identity(3) - (B.T @ B)
 
         # C = sum(E x B)
         C = np.sum(np.cross(E, B), axis=0)
