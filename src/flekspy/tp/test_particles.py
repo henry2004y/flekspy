@@ -792,9 +792,6 @@ class FLEKSTP(object):
         sin_alpha_sq = 1 - (v_dot_b / (v_mag_sq.sqrt() * b_mag + epsilon)) ** 2
         v_perp = (v_mag_sq * sin_alpha_sq).sqrt()
 
-        # Expression for gyroradius
-        r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag) * 1e9  # [km]
-
         # Expression for curvature radius
         lf_curv = self._calculate_curvature(pt_lazy)
         kappa_mag = (
@@ -802,12 +799,19 @@ class FLEKSTP(object):
         ).sqrt()
 
         if self.unit == "planetary":
-            factor = EARTH_RADIUS_KM  # conversion factor
+            # v_perp [km/s], b_mag [nT] -> r_g [km]
+            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag + epsilon) * 1e9
+            # kappa_mag [1/RE] -> r_c [km]
+            r_c_factor = EARTH_RADIUS_KM
         elif self.unit == "SI":
-            factor = 1e-3  # conversion factor
+            # v_perp [m/s], b_mag [T] -> r_g [m]
+            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag + epsilon)
+            # kappa_mag [1/m] -> r_c [m]
+            r_c_factor = 1.0
         else:
             raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
-        r_c = (1 / (kappa_mag + epsilon)) * factor  # [km]
+
+        r_c = (1 / (kappa_mag + epsilon)) * r_c_factor
 
         ratio_expr = (r_c / r_g).alias("adiabaticity")
 
