@@ -1851,7 +1851,7 @@ class FLEKSTP(object):
 
     def _get_HT_frame(
         self, upstream_df: pl.DataFrame, downstream_df: pl.DataFrame
-    ) -> Tuple[Union[np.ndarray, None], Union[np.ndarray, None]]:
+    ) -> tuple[np.ndarray | None, np.ndarray | None]:
         """
         Finds the de Hoffmann-Teller frame velocity and the shock normal vector
         using the method from Sonnerup et al. [2006], which minimizes the
