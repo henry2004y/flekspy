@@ -769,13 +769,14 @@ class FLEKSTP(object):
 
         return lf.select(["vcx", "vcy", "vcz"]).collect()
 
-    def get_gyroradius_to_curvature_ratio(
+    def get_adiabaticity_parameter(
         self,
         pID: Tuple[int, int],
     ) -> pl.Series:
         """
-        Calculates the ratio of the particle's gyroradius to the magnetic
-        field's radius of curvature.
+        Calculates the adiabaticity parameter, defined as the ratio of the
+        magnetic field's radius of curvature to the particle's gyroradius.
+        When this parameter is >> 1, the motion is adiabatic.
         """
         pt_lazy = self[pID]
         epsilon = 1e-15
@@ -791,9 +792,6 @@ class FLEKSTP(object):
         sin_alpha_sq = 1 - (v_dot_b / (v_mag_sq.sqrt() * b_mag + epsilon)) ** 2
         v_perp = (v_mag_sq * sin_alpha_sq).sqrt()
 
-        # Expression for gyroradius
-        r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag) * 1e9  # [km]
-
         # Expression for curvature radius
         lf_curv = self._calculate_curvature(pt_lazy)
         kappa_mag = (
@@ -801,14 +799,21 @@ class FLEKSTP(object):
         ).sqrt()
 
         if self.unit == "planetary":
-            factor = EARTH_RADIUS_KM  # conversion factor
+            # v_perp [km/s], b_mag [nT] -> r_g [km]
+            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag + epsilon) * 1e9
+            # kappa_mag [1/RE] -> r_c [km]
+            r_c_factor = EARTH_RADIUS_KM
         elif self.unit == "SI":
-            factor = 1e-3  # conversion factor
+            # v_perp [m/s], b_mag [T] -> r_g [m]
+            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag + epsilon)
+            # kappa_mag [1/m] -> r_c [m]
+            r_c_factor = 1.0
         else:
             raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
-        r_c = (1 / (kappa_mag + epsilon)) * factor  # [km]
 
-        ratio_expr = (r_g / r_c).alias("ratio")
+        r_c = (1 / (kappa_mag + epsilon)) * r_c_factor
+
+        ratio_expr = (r_c / r_g).alias("adiabaticity")
 
         return lf_curv.select(ratio_expr).collect().to_series()
 
@@ -1321,7 +1326,7 @@ class FLEKSTP(object):
         vc = self.get_curvature_drift(pt)
         vg = self.get_gradient_drift(pt)
         vp = self.get_polarization_drift(pt)
-        rl2rc = self.get_gyroradius_to_curvature_ratio(pid)
+        adiabaticity_param = self.get_adiabaticity_parameter(pid)
         mu = self.get_first_adiabatic_invariant(pt)
         pt = self.get_betatron_acceleration(pt, mu)
         dke_dt = self.get_kinetic_energy_change_rate(pt)
@@ -1436,10 +1441,10 @@ class FLEKSTP(object):
         axes[5].legend(ncol=3, fontsize="medium")
         axes[5].grid(True, linestyle="--", alpha=0.6)
 
-        axes[-1].semilogy(pt["time"], rl2rc)
-        axes[-1].axhline(y=0.2, linestyle="--", color="tab:red")
-        axes[-1].set_ylim(rl2rc.quantile(0.001), rl2rc.max())
-        axes[-1].set_ylabel(r"$r_L / r_c$", fontsize=14)
+        axes[-1].semilogy(pt["time"], adiabaticity_param)
+        axes[-1].axhline(y=1.0, linestyle="--", color="tab:red")
+        axes[-1].set_ylim(adiabaticity_param.quantile(0.001), adiabaticity_param.max())
+        axes[-1].set_ylabel(r"$r_c / r_L$", fontsize=14)
         axes[-1].grid(True, linestyle="--", alpha=0.6)
 
         for ax in axes:
