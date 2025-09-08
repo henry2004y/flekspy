@@ -1849,6 +1849,228 @@ class FLEKSTP(object):
             )
         return final_upstream_df, final_downstream_df
 
+    def _get_HT_frame(
+        self, upstream_df: pl.DataFrame, downstream_df: pl.DataFrame
+    ) -> tuple[np.ndarray | None, np.ndarray | None]:
+        """
+        Finds the de Hoffmann-Teller frame velocity and the shock normal vector
+        using the method from Sonnerup et al. [2006], which minimizes the
+        residual electric field.
+
+        Args:
+            upstream_df (pl.DataFrame): DataFrame with upstream particle states.
+            downstream_df (pl.DataFrame): DataFrame with downstream particle states.
+
+        Returns:
+            tuple[np.ndarray | None, np.ndarray | None]: A tuple containing:
+                - V_HT (np.ndarray | None): The de Hoffmann-Teller velocity vector
+                  in [km/s] if successful, otherwise None.
+                - shock_normal (np.ndarray | None): The estimated shock normal
+                  vector if successful, otherwise None.
+        """
+        all_states = pl.concat([upstream_df, downstream_df])
+
+        # Extract E and B fields, converting to SI units if necessary
+        E = all_states.select(["ex", "ey", "ez"]).to_numpy()
+        B = all_states.select(["bx", "by", "bz"]).to_numpy()
+
+        if self.unit == "planetary":
+            E = E * 1e-6  # uV/m to V/m
+            B = B * 1e-9  # nT to T
+
+        # --- Calculate V_HT by solving M * V_HT = C ---
+        # M_ij = sum(B^2 * delta_ij - B_i * B_j)
+        M = np.sum(B**2) * np.identity(3) - (B.T @ B)
+
+        # C = sum(E x B)
+        C = np.sum(np.cross(E, B), axis=0)
+
+        try:
+            V_HT = np.linalg.solve(M, C)  # Result is in m/s
+        except np.linalg.LinAlgError:
+            logger.warning(
+                "Could not determine de Hoffmann-Teller velocity. "
+                "The matrix M is singular, which can happen if all B vectors are parallel."
+            )
+            return None, None
+
+        # Convert V_HT back to km/s if using planetary units
+        if self.unit == "planetary":
+            V_HT /= 1e3
+
+        # --- Calculate shock normal using magnetic coplanarity ---
+        B_up_avg = np.mean(upstream_df.select(["bx", "by", "bz"]).to_numpy(), axis=0)
+        B_down_avg = np.mean(downstream_df.select(["bx", "by", "bz"]).to_numpy(), axis=0)
+
+        db = B_up_avg - B_down_avg
+        n_c = np.cross(B_up_avg, B_down_avg)
+        shock_normal = np.cross(db, n_c)
+        norm = np.linalg.norm(shock_normal)
+
+        if norm > 1e-9:
+            shock_normal /= norm
+        else:
+            logger.warning(
+                "Could not determine shock normal via magnetic coplanarity. "
+                "Upstream and downstream average B fields may be parallel."
+            )
+            return V_HT, None
+
+        return V_HT, shock_normal
+
+    def analyze_in_HT_frame(
+        self, pID: Tuple[int, int], outname: str = None, verbose: bool = False
+    ):
+        """
+        Analyzes a particle's trajectory in the de Hoffmann-Teller (HT) frame.
+
+        This method performs the following steps:
+        1. Finds the shock crossing and determines the upstream and downstream states.
+        2. Calculates the de Hoffmann-Teller velocity (V_HT) and the shock normal.
+        3. Transforms the particle's velocity and the electric/magnetic fields
+           into the HT frame.
+        4. In this frame, the energy gain is a direct measure of non-ideal
+           acceleration. It calculates and plots this energy gain.
+        5. Generates a summary plot of the analysis.
+
+        Args:
+            pID (Tuple[int, int]): The particle ID (cpu, id) to analyze.
+            outname (str, optional): If provided, the plot is saved to this
+                                     filename. Defaults to None (displays plot).
+            verbose (bool, optional): If True, prints diagnostic information.
+                                      Defaults to False.
+        """
+        # 1. Get upstream and downstream states for the particle
+        upstream_df, downstream_df = self.get_shock_up_down_states(
+            [pID], verbose=verbose
+        )
+
+        if (
+            upstream_df is None
+            or upstream_df.is_empty()
+            or downstream_df is None
+            or downstream_df.is_empty()
+        ):
+            logger.error(
+                f"Could not find valid upstream/downstream states for particle {pID}."
+            )
+            return
+
+        # 2. Calculate the HT frame velocity and shock normal
+        V_HT, shock_normal = self._get_HT_frame(upstream_df, downstream_df)
+
+        if V_HT is None:
+            logger.error(
+                f"Could not determine the de Hoffmann-Teller frame for particle {pID}."
+            )
+            return
+
+        if verbose:
+            logger.info(f"Determined V_HT = {V_HT} km/s")
+            if shock_normal is not None:
+                logger.info(f"Estimated shock normal n = {shock_normal}")
+
+        # 3. Get the full particle trajectory
+        pt_lazy = self[pID]
+        pt = pt_lazy.collect()
+
+        # 4. Transform trajectory data into the HT frame
+        v_vec = pt.select(["vx", "vy", "vz"]).to_numpy()
+        e_vec = pt.select(["ex", "ey", "ez"]).to_numpy()
+        b_vec = pt.select(["bx", "by", "bz"]).to_numpy()
+
+        # Velocity in HT frame
+        v_prime = v_vec - V_HT
+
+        # Electric field in HT frame: E' = E + V_HT x B
+        V_HT_si = V_HT
+        b_vec_si = b_vec
+        e_vec_si = e_vec
+        if self.unit == "planetary":
+            V_HT_si = V_HT * 1e3  # km/s to m/s
+            b_vec_si = b_vec * 1e-9  # nT to T
+            e_vec_si = e_vec * 1e-6  # uV/m to V/m
+
+        vht_cross_b = np.cross(V_HT_si, b_vec_si)
+        e_prime_si = e_vec_si + vht_cross_b
+
+        e_prime = e_prime_si
+        if self.unit == "planetary":
+            e_prime = e_prime_si * 1e6  # Convert back to uV/m for plotting
+
+        # Add transformed fields to the DataFrame
+        pt = pt.with_columns(
+            pl.Series("vx_ht", v_prime[:, 0]),
+            pl.Series("vy_ht", v_prime[:, 1]),
+            pl.Series("vz_ht", v_prime[:, 2]),
+            pl.Series("ex_ht", e_prime[:, 0]),
+            pl.Series("ey_ht", e_prime[:, 1]),
+            pl.Series("ez_ht", e_prime[:, 2]),
+        )
+
+        # 5. Calculate energy and its change rate in the HT frame
+        ke_ht = self.get_kinetic_energy(v_prime[:, 0], v_prime[:, 1], v_prime[:, 2])
+        time = pt["time"].to_numpy()
+        dke_dt_ht = np.gradient(ke_ht, time)
+
+        # Theoretical energy gain: (q/e) * E' . V'
+        v_prime_si = v_prime
+        if self.unit == "planetary":
+            v_prime_si = v_prime * 1e3  # km/s to m/s
+
+        e_dot_v_ht_j_per_c = np.sum(e_prime_si * v_prime_si, axis=1)
+        e_dot_v_ht = (self.charge / elementary_charge) * e_dot_v_ht_j_per_c
+
+        # 6. Plotting
+        fig, axes = plt.subplots(
+            nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
+        )
+        fig.suptitle(f"De Hoffmann-Teller Frame Analysis for Particle {pID}", fontsize=16)
+
+        time_plot = pt["time"]
+        v_unit = "km/s" if self.unit == "planetary" else "m/s"
+        e_unit = "μV/m" if self.unit == "planetary" else "V/m"
+
+        axes[0].plot(time_plot, pt["vx_ht"], label="$V'_x$")
+        axes[0].plot(time_plot, pt["vy_ht"], label="$V'_y$")
+        axes[0].plot(time_plot, pt["vz_ht"], label="$V'_z$")
+        axes[0].set_ylabel(f"V' [{v_unit}]")
+        axes[0].set_title("Velocity in HT Frame")
+        axes[0].legend()
+        axes[0].grid(True, linestyle="--", alpha=0.6)
+
+        axes[1].plot(time_plot, pt["ex_ht"], label="$E'_x$")
+        axes[1].plot(time_plot, pt["ey_ht"], label="$E'_y$")
+        axes[1].plot(time_plot, pt["ez_ht"], label="$E'_z$")
+        axes[1].set_ylabel(f"E' [{e_unit}]")
+        axes[1].set_title("Electric Field in HT Frame")
+        axes[1].legend()
+        axes[1].grid(True, linestyle="--", alpha=0.6)
+
+        axes[2].plot(time_plot, ke_ht, label="KE'")
+        axes[2].set_ylabel("KE' [eV]")
+        axes[2].set_yscale("log")
+        axes[2].set_title("Kinetic Energy in HT Frame")
+        axes[2].legend()
+        axes[2].grid(True, linestyle="--", alpha=0.6)
+
+        axes[3].plot(time_plot, dke_dt_ht, label="d(KE')/dt")
+        axes[3].plot(time_plot, e_dot_v_ht, label="q E' ⋅ V'", linestyle="--")
+        axes[3].set_ylabel("Rate [eV/s]")
+        axes[3].set_title("Non-ideal Energy Gain Rate")
+        axes[3].legend()
+        axes[3].grid(True, linestyle="--", alpha=0.6)
+
+        axes[-1].set_xlabel("Time [s]")
+
+        if outname:
+            plt.savefig(outname, bbox_inches="tight")
+            plt.close(fig)
+            if verbose:
+                logger.info(f"✅ Saved HT analysis plot to {outname}")
+        else:
+            plt.show()
+
     def plot_trajectory(
         self,
         pID: Tuple[int, int],
