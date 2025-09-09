@@ -771,15 +771,13 @@ class FLEKSTP(object):
 
     def get_adiabaticity_parameter(
         self,
-        pID: Tuple[int, int],
+        pt_lazy: pl.LazyFrame,
     ) -> pl.Series:
         """
         Calculates the adiabaticity parameter, defined as the ratio of the
         magnetic field's radius of curvature to the particle's gyroradius.
         When this parameter is >> 1, the motion is adiabatic.
         """
-        pt_lazy = self[pID]
-
         # Expression for v_perp
         v_mag_sq = pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2
         b_mag = (pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
@@ -1325,7 +1323,7 @@ class FLEKSTP(object):
         vc = self.get_curvature_drift(pt)
         vg = self.get_gradient_drift(pt)
         vp = self.get_polarization_drift(pt)
-        adiabaticity_param = self.get_adiabaticity_parameter(pid)
+        adiabaticity = self.get_adiabaticity_parameter(pt)
         mu = self.get_first_adiabatic_invariant(pt)
         pt = self.get_betatron_acceleration(pt, mu)
         dke_dt = self.get_kinetic_energy_change_rate(pt)
@@ -1440,9 +1438,9 @@ class FLEKSTP(object):
         axes[5].legend(ncol=3, fontsize="medium")
         axes[5].grid(True, linestyle="--", alpha=0.6)
 
-        axes[-1].semilogy(pt["time"], adiabaticity_param)
+        axes[-1].semilogy(pt["time"], adiabaticity)
         axes[-1].axhline(y=1.0, linestyle="--", color="tab:red")
-        axes[-1].set_ylim(adiabaticity_param.quantile(0.001), adiabaticity_param.max())
+        axes[-1].set_ylim(adiabaticity.quantile(0.001), adiabaticity.max())
         axes[-1].set_ylabel(r"$r_c / r_L$", fontsize=14)
         axes[-1].grid(True, linestyle="--", alpha=0.6)
 
