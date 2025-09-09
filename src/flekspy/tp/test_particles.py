@@ -779,7 +779,6 @@ class FLEKSTP(object):
         When this parameter is >> 1, the motion is adiabatic.
         """
         pt_lazy = self[pID]
-        epsilon = 1e-15
 
         # Expression for v_perp
         v_mag_sq = pl.col("vx") ** 2 + pl.col("vy") ** 2 + pl.col("vz") ** 2
@@ -789,7 +788,7 @@ class FLEKSTP(object):
             + pl.col("vy") * pl.col("by")
             + pl.col("vz") * pl.col("bz")
         )
-        sin_alpha_sq = 1 - (v_dot_b / (v_mag_sq.sqrt() * b_mag + epsilon)) ** 2
+        sin_alpha_sq = 1 - (v_dot_b / (v_mag_sq.sqrt() * b_mag)) ** 2
         v_perp = (v_mag_sq * sin_alpha_sq).sqrt()
 
         # Expression for curvature radius
@@ -800,18 +799,18 @@ class FLEKSTP(object):
 
         if self.unit == "planetary":
             # v_perp [km/s], b_mag [nT] -> r_g [km]
-            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag + epsilon) * 1e9
+            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag) * 1e9
             # kappa_mag [1/RE] -> r_c [km]
             r_c_factor = EARTH_RADIUS_KM
         elif self.unit == "SI":
             # v_perp [m/s], b_mag [T] -> r_g [m]
-            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag + epsilon)
+            r_g = (self.mass * v_perp) / (abs(self.charge) * b_mag)
             # kappa_mag [1/m] -> r_c [m]
             r_c_factor = 1.0
         else:
             raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
 
-        r_c = (1 / (kappa_mag + epsilon)) * r_c_factor
+        r_c = (1 / kappa_mag) * r_c_factor
 
         ratio_expr = (r_c / r_g).alias("adiabaticity")
 
