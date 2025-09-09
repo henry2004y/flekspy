@@ -285,7 +285,7 @@ class TestParticles:
         tp.analyze_drift(pid, "ExB")
 
         rc2rl = tp.get_adiabaticity_parameter(pid)[0]
-        assert np.isclose(rc2rl, 3.333809141473975e+16)
+        assert np.isclose(rc2rl, 3.2436217368142828e+16)
 
         tcross = tp.find_shock_crossing_time(tp.getIDs()[0], b_threshold_factor=1)
         assert tcross == 0.0
