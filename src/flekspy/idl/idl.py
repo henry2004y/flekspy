@@ -53,9 +53,15 @@ def _read_and_process_data(filename):
         dim_name = attrs["dims"][i]
         dims.append(dim_name)
         dim_idx = varnames.index(dim_name)
-        slicer = [0] * 3
-        slicer[i] = slice(None, attrs["grid"][i])
-        coords[dim_name] = np.squeeze(array[dim_idx, slicer[0], slicer[1], slicer[2]])
+
+        slicer_min = [0] * 3
+        slicer_max = [0] * 3
+        slicer_max[i] = -1
+
+        start = array[dim_idx, slicer_min[0], slicer_min[1], slicer_min[2]]
+        stop = array[dim_idx, slicer_max[0], slicer_max[1], slicer_max[2]]
+
+        coords[dim_name] = np.linspace(start, stop, attrs["grid"][i])
 
     data_vars = {}
     for i, var_name in enumerate(varnames):
