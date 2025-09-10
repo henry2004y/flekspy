@@ -54,12 +54,10 @@ def _read_and_process_data(filename):
         dims.append(dim_name)
         dim_idx = varnames.index(dim_name)
 
-        slicer_min = [0] * 3
-        slicer_max = [0] * 3
-        slicer_max[i] = -1
-
-        start = array[dim_idx, slicer_min[0], slicer_min[1], slicer_min[2]]
-        stop = array[dim_idx, slicer_max[0], slicer_max[1], slicer_max[2]]
+        start = array[dim_idx, 0, 0, 0]
+        stop_slicer = [0] * 3
+        stop_slicer[i] = -1
+        stop = array[(dim_idx,) + tuple(stop_slicer)]
 
         coords[dim_name] = np.linspace(start, stop, attrs["grid"][i])
 
