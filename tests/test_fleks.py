@@ -333,6 +333,13 @@ class TestParticles:
         tp.analyze_drifts_energy_change(pid, outname=str(outname))
         assert outname.exists()
 
+    def test_work_energy_verification(self, tmp_path):
+        tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True, unit="SI")
+        pid = tp.getIDs()[0]
+        outname = tmp_path / "test_work_energy.png"
+        tp.plot_work_energy_verification(pid, outname=str(outname))
+        assert outname.exists()
+
 
 def load(files):
     """
