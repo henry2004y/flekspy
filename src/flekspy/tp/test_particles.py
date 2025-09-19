@@ -549,24 +549,6 @@ class FLEKSTP(object):
 
         return pl.Series("dke_dt", dke_dt)
 
-    def get_kinetic_energy_change_rate(
-        self, pt_lazy: pl.LazyFrame
-    ) -> pl.Series:
-        """
-        Calculates the rate of change of kinetic energy in [eV/s].
-        """
-        # Select only necessary columns before collecting to improve performance.
-        collected = pt_lazy.select(["time", "vx", "vy", "vz"]).collect()
-        time = collected["time"].to_numpy()
-        vx = collected["vx"].to_numpy()
-        vy = collected["vy"].to_numpy()
-        vz = collected["vz"].to_numpy()
-
-        ke = self.get_kinetic_energy(vx, vy, vz)
-        dke_dt = np.gradient(ke, time)
-
-        return pl.Series("dke_dt", dke_dt)
-
     def get_pitch_angle(self, pID):
         pt_lazy = self[pID]
         # Pitch Angle Calculation
