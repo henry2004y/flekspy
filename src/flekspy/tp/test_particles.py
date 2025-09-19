@@ -150,9 +150,12 @@ class FLEKSTP(object):
     def __repr__(self):
         return (
             f"Particles species ID: {self.iSpecies}\n"
+            f"Particle mass [kg]  : {self.mass}\n"
+            f"Particle charge [C] : {self.charge}\n"
+            f"Unit system         : {self.unit}\n"
             f"Number of particles : {len(self.IDs)}\n"
-            f"First time tag      : {self.filetime[0]}\n"
-            f"Last  time tag      : {self.filetime[-1]}\n"
+            f"First time tag      : {self.filetime[0] if self.filetime else 'N/A'}\n"
+            f"Last  time tag      : {self.filetime[-1] if self.filetime else 'N/A'}\n"
         )
 
     def __len__(self):
