@@ -1677,11 +1677,14 @@ class FLEKSTP(object):
                                      filename. Defaults to None (displays plot).
         """
         pt_lazy = self[pID]
-        pt_df = pt_lazy.collect()
+        # Collect necessary columns once to improve performance.
+        required_cols = ["time", "vx", "vy", "vz", "ex", "ey", "ez"]
+        pt_df = pt_lazy.select(required_cols).collect()
         time = pt_df["time"]
 
         # 1. Calculate the rate of change of kinetic energy (d(KE)/dt)
-        dke_dt = self.get_kinetic_energy_change_rate(pt_lazy)
+        ke = self.get_kinetic_energy(pt_df["vx"], pt_df["vy"], pt_df["vz"])
+        dke_dt = pl.Series("dke_dt", np.gradient(ke.to_numpy(), time.to_numpy()))
 
         # 2. Calculate the rate of work done by the electric field (q * E.v)
         if self.unit == "planetary":
