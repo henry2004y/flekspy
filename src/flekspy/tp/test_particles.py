@@ -549,6 +549,24 @@ class FLEKSTP(object):
 
         return pl.Series("dke_dt", dke_dt)
 
+    def get_kinetic_energy_change_rate(
+        self, pt_lazy: pl.LazyFrame
+    ) -> pl.Series:
+        """
+        Calculates the rate of change of kinetic energy in [eV/s].
+        """
+        # Select only necessary columns before collecting to improve performance.
+        collected = pt_lazy.select(["time", "vx", "vy", "vz"]).collect()
+        time = collected["time"].to_numpy()
+        vx = collected["vx"].to_numpy()
+        vy = collected["vy"].to_numpy()
+        vz = collected["vz"].to_numpy()
+
+        ke = self.get_kinetic_energy(vx, vy, vz)
+        dke_dt = np.gradient(ke, time)
+
+        return pl.Series("dke_dt", dke_dt)
+
     def get_pitch_angle(self, pID):
         pt_lazy = self[pID]
         # Pitch Angle Calculation
@@ -1654,6 +1672,83 @@ class FLEKSTP(object):
         axes[3].grid(True, linestyle="--", alpha=0.6)
 
         fig.suptitle(f"Analysis of {drift_type} Drift for Particle {pID}", fontsize=16)
+
+        for ax in axes:
+            ax.set_xlim(left=time.min(), right=time.max())
+
+        if outname is not None:
+            plt.savefig(outname, bbox_inches="tight")
+            plt.close(fig)
+        else:
+            plt.show()
+
+    def plot_work_energy_verification(self, pID: Tuple[int, int], outname=None):
+        """
+        Verifies the work-energy theorem for a particle by plotting the rate of
+        change of kinetic energy against the work rate done by the electric field.
+        It also plots the integrated change in kinetic energy versus the total
+        work done.
+
+        Args:
+            pID (Tuple[int, int]): The particle ID (cpu, id).
+            outname (str, optional): If provided, the plot is saved to this
+                                     filename. Defaults to None (displays plot).
+        """
+        pt_lazy = self[pID]
+        pt_df = pt_lazy.collect()
+        time = pt_df["time"]
+
+        # 1. Calculate the rate of change of kinetic energy (d(KE)/dt)
+        dke_dt = self.get_kinetic_energy_change_rate(pt_lazy)
+
+        # 2. Calculate the rate of work done by the electric field (q * E.v)
+        if self.unit == "planetary":
+            # E[uV/m] * v[km/s] -> (1e-6 V/m) * (1e3 m/s) = 1e-3 J/C/s
+            # To get eV/s, multiply by (1 / elementary_charge)
+            unit_factor = 1e-3
+        elif self.unit == "SI":
+            unit_factor = 1.0
+
+        work_rate = (
+            (pt_df["ex"] * pt_df["vx"] +
+             pt_df["ey"] * pt_df["vy"] +
+             pt_df["ez"] * pt_df["vz"])
+            * unit_factor * self.charge / elementary_charge
+        )
+        work_rate = work_rate.rename("work_rate")
+
+        # 3. Integrate both rates over time
+        dt = time.diff().fill_null(0)
+
+        # Integrated change in kinetic energy
+        delta_ke_integrated = ((dke_dt + dke_dt.shift(1)) / 2 * dt).cum_sum().fill_null(0)
+
+        # Integrated work done
+        work_done_integrated = ((work_rate + work_rate.shift(1)) / 2 * dt).cum_sum().fill_null(0)
+
+        # 4. Plotting
+        fig, axes = plt.subplots(
+            nrows=2, ncols=1, figsize=(12, 8), sharex=True, constrained_layout=True
+        )
+        fig.suptitle(f"Work-Energy Verification for Particle {pID}", fontsize=16)
+
+        # Panel 1: Rates of change
+        axes[0].plot(time, dke_dt, label="d(KE)/dt", linewidth=2)
+        axes[0].plot(time, work_rate, label="q E⋅v (Work Rate)", linestyle='--', linewidth=2)
+        axes[0].set_ylabel("Rate [eV/s]", fontsize=14)
+        axes[0].set_title("Rate of Kinetic Energy Change vs. Work Rate", fontsize=14)
+        axes[0].legend()
+        axes[0].grid(True, linestyle="--", alpha=0.6)
+
+        # Panel 2: Integrated quantities
+        axes[1].plot(time, delta_ke_integrated, label="ΔKE (Integrated)", linewidth=2)
+        axes[1].plot(time, work_done_integrated, label="Total Work Done", linestyle='--', linewidth=2)
+        axes[1].set_ylabel("Energy [eV]", fontsize=14)
+        axes[1].set_title("Integrated Kinetic Energy Change vs. Total Work Done", fontsize=14)
+        axes[1].legend()
+        axes[1].grid(True, linestyle="--", alpha=0.6)
+
+        axes[1].set_xlabel("Time [s]", fontsize=14)
 
         for ax in axes:
             ax.set_xlim(left=time.min(), right=time.max())
