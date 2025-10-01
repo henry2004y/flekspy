@@ -2,9 +2,6 @@ import numpy as np
 import struct
 import yt
 import xarray as xr
-import uxarray as ux
-from scipy.spatial import Delaunay
-
 from flekspy.util.logger import get_logger
 
 logger = get_logger(name=__name__)
@@ -51,48 +48,12 @@ def _read_and_process_data(filename):
 
     if attrs.get("gencoord", False):
         data_vars = {}
-        grid_vars = {}
-        n_points = attrs["npoints"]
-        node_dim = "n_node"
-
-        # UGRID requires node_x and node_y for Cartesian grids. We assume X/x and Y/y are these.
-        coord_map = {
-            "X": "node_x",
-            "Y": "node_y",
-            "Z": "node_z",
-            "x": "node_x",
-            "y": "node_y",
-            "z": "node_z",
-        }
-
+        dims = ("n_points",)
         for i, var_name in enumerate(varnames):
             data_slice = np.squeeze(array[i, ...])
-            if var_name in coord_map:
-                grid_vars[coord_map[var_name]] = (node_dim, data_slice)
-            else:
-                data_vars[var_name] = (node_dim, data_slice)
+            data_vars[var_name] = (dims, data_slice)
 
-        # For 2D data, perform Delaunay triangulation to get face connectivity
-        if attrs["ndim"] == 2:
-            points = np.vstack((grid_vars["node_x"][1], grid_vars["node_y"][1])).T
-            tri = Delaunay(points)
-            face_node_connectivity = tri.simplices
-            grid_vars["face_node_connectivity"] = (
-                ("n_face", "n_max_face_nodes"),
-                face_node_connectivity,
-            )
-        else:  # For 1D or 3D data, treat as a point cloud
-            face_node_connectivity = np.arange(n_points, dtype=np.int32).reshape(-1, 1)
-            grid_vars["face_node_connectivity"] = (
-                ("n_face", "n_max_face_nodes"),
-                face_node_connectivity,
-            )
-
-        # Create the grid object from the grid variables
-        grid = ux.Grid(xr.Dataset(grid_vars))
-
-        # Create the UxDataset
-        dataset = ux.UxDataset(data_vars, uxgrid=grid)
+        dataset = xr.Dataset(data_vars)
     else:
         coords = {}
         dims = []
