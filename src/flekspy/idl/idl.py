@@ -2,7 +2,6 @@ import numpy as np
 import struct
 import yt
 import xarray as xr
-
 from flekspy.util.logger import get_logger
 
 logger = get_logger(name=__name__)
@@ -47,33 +46,42 @@ def _read_and_process_data(filename):
     shape = list(array.shape) + [1] * (4 - array.ndim)
     array = np.reshape(array, shape)
 
-    coords = {}
-    dims = []
-    for i in range(attrs["ndim"]):
-        dim_name = attrs["dims"][i]
-        dims.append(dim_name)
-        dim_idx = varnames.index(dim_name)
+    if attrs.get("gencoord", False):
+        data_vars = {}
+        dims = ("n_points",)
+        for i, var_name in enumerate(varnames):
+            data_slice = np.squeeze(array[i, ...])
+            data_vars[var_name] = (dims, data_slice)
 
-        start = array[dim_idx, 0, 0, 0]
-        stop_slicer = [0] * 3
-        stop_slicer[i] = -1
-        stop = array[(dim_idx,) + tuple(stop_slicer)]
+        dataset = xr.Dataset(data_vars)
+    else:
+        coords = {}
+        dims = []
+        for i in range(attrs["ndim"]):
+            dim_name = attrs["dims"][i]
+            dims.append(dim_name)
+            dim_idx = varnames.index(dim_name)
 
-        coords[dim_name] = np.linspace(start, stop, attrs["grid"][i])
+            start = array[dim_idx, 0, 0, 0]
+            stop_slicer = [0] * 3
+            stop_slicer[i] = -1
+            stop = array[(dim_idx,) + tuple(stop_slicer)]
 
-    data_vars = {}
-    for i, var_name in enumerate(varnames):
-        if var_name not in attrs["dims"]:
-            slicer = [i]
-            for d in range(3):
-                if d < attrs["ndim"]:
-                    slicer.append(slice(attrs["grid"][d]))
-                else:
-                    slicer.append(slice(1))
-            data_slice = array[tuple(slicer)]
-            data_vars[var_name] = (dims, np.squeeze(data_slice))
+            coords[dim_name] = np.linspace(start, stop, attrs["grid"][i])
 
-    dataset = xr.Dataset(data_vars, coords=coords)
+        data_vars = {}
+        for i, var_name in enumerate(varnames):
+            if var_name not in attrs["dims"]:
+                slicer = [i]
+                for d in range(3):
+                    if d < attrs["ndim"]:
+                        slicer.append(slice(attrs["grid"][d]))
+                    else:
+                        slicer.append(slice(1))
+                data_slice = array[tuple(slicer)]
+                data_vars[var_name] = (dims, np.squeeze(data_slice))
+
+        dataset = xr.Dataset(data_vars, coords=coords)
     dataset.attrs = attrs
     _post_process_param(dataset)
     return dataset
