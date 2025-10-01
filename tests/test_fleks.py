@@ -16,7 +16,7 @@ matplotlib.use("agg")
 
 filedir = os.path.dirname(__file__)
 
-if not os.path.isfile(filedir + "/data/3d_raw.out"):
+if not os.path.isfile(filedir + "/data/3d_raw.out") or not os.path.isdir(filedir + "/data/bx0_mhd_6_t00000100_n00000352.out"):
     url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz"
     download_testfile(url, "tests/data")
 
@@ -38,6 +38,7 @@ class TestIDL:
         "1d__raw_2_t25.60000_n00000258.out",
         "z=0_fluid_region0_0_t00001640_n00010142.out",
         "3d_raw.out",
+        "bx0_mhd_6_t00000100_n00000352.out",
     )
     files = [os.path.join("tests/data/", file) for file in filenames]
 
@@ -47,6 +48,9 @@ class TestIDL:
         assert ds.attrs["time"] == 25.6
         assert ds.coords["x"][1] == -126.5
         assert np.isclose(ds["Bx"][2].item(), 0.22360679775)
+
+        ds = fs.load(self.files[3])
+        assert isinstance(ds, xr.Dataset)
 
     def test_load_error(self):
         with pytest.raises(FileNotFoundError):
