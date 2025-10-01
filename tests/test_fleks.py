@@ -16,7 +16,9 @@ matplotlib.use("agg")
 
 filedir = os.path.dirname(__file__)
 
-if not os.path.isfile(filedir + "/data/3d_raw.out") or not os.path.isdir(filedir + "/data/bx0_mhd_6_t00000100_n00000352.out"):
+if not os.path.isfile(os.path.join(filedir, "data", "3d_raw.out")) or not os.path.isdir(
+    os.path.join(filedir, "data", "bx0_mhd_6_t00000100_n00000352.out")
+):
     url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz"
     download_testfile(url, "tests/data")
 
@@ -50,7 +52,7 @@ class TestIDL:
         assert np.isclose(ds["Bx"][2].item(), 0.22360679775)
 
         ds = fs.load(self.files[3])
-        assert isinstance(ds, xr.Dataset)
+        assert ds.Rho[1].item() == 6.8823977459
 
     def test_load_error(self):
         with pytest.raises(FileNotFoundError):
@@ -279,8 +281,12 @@ class TestParticles:
         assert np.isclose(
             tp.get_curvature_drift(pt_lazy).item(0, 0), -4.17402271497159e-23
         )
-        assert np.isclose(tp.get_gradient_drift(pt_lazy).item(0, 1), -6.209680085413732e-26)
-        assert np.isclose(tp.get_polarization_drift(pt_lazy).item(0, 2), 1.1582171530455036e-19)
+        assert np.isclose(
+            tp.get_gradient_drift(pt_lazy).item(0, 1), -6.209680085413732e-26
+        )
+        assert np.isclose(
+            tp.get_polarization_drift(pt_lazy).item(0, 2), 1.1582171530455036e-19
+        )
 
         df_drifts = tp.integrate_drift_accelerations(pid)
         assert "Wp_integrated" in df_drifts.columns
@@ -289,7 +295,7 @@ class TestParticles:
         tp.analyze_drift(pid, "ExB")
 
         rc2rl = tp.get_adiabaticity_parameter(pt_lazy)[0]
-        assert np.isclose(rc2rl, 3.2436217368142828e+16)
+        assert np.isclose(rc2rl, 3.2436217368142828e16)
 
         tcross = tp.find_shock_crossing_time(tp.getIDs()[0], b_threshold_factor=1)
         assert tcross == 0.0
@@ -298,7 +304,7 @@ class TestParticles:
             delta_t_up=0.1,
             delta_t_down=0.1,
             b_threshold_factor=1,
-            verbose=False
+            verbose=False,
         )
         assert s_up_dn[1]["time"][1] == 1.2570836544036865
 
@@ -328,7 +334,7 @@ class TestParticles:
         # Check that the number of rows is correct
         pt_len = len(tp[pid].collect())
         assert len(df) == pt_len
-        #TODO Check numerical values!
+        # TODO Check numerical values!
 
     def test_analyze_drifts_energy_change(self, tmp_path):
         tp = self.FLEKSTP(self.dirs[1], iSpecies=1, use_cache=True, unit="SI")
@@ -353,6 +359,7 @@ def load(files):
     ds = fs.load(files[1])
     return ds
 
+
 def test_load_idl(benchmark):
     filenames = (
         "1d__raw_2_t25.60000_n00000258.out",
@@ -364,12 +371,14 @@ def test_load_idl(benchmark):
 
     assert isinstance(result, xr.Dataset)
 
+
 def load_test_particle_trajectories(tp, pIDs):
     """
     Load all particle trajectories.
     """
     for pID in itertools.islice(pIDs, 100):
         tp.read_particle_trajectory(pID)
+
 
 def test_load_tp(benchmark):
     """
@@ -383,11 +392,13 @@ def test_load_tp(benchmark):
 
     benchmark(load_test_particle_trajectories, tp, pIDs)
 
+
 def get_drifts(tp, pid):
     pt_lazy = tp[pid]
     tp.get_curvature_drift(pt_lazy)
     tp.get_gradient_drift(pt_lazy)
     tp.get_ExB_drift(pt_lazy)
+
 
 def test_drift_tp(benchmark):
     """
