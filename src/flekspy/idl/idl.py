@@ -2,6 +2,7 @@ import numpy as np
 import struct
 import yt
 import xarray as xr
+import uxarray as ux
 
 from flekspy.util.logger import get_logger
 
@@ -47,33 +48,70 @@ def _read_and_process_data(filename):
     shape = list(array.shape) + [1] * (4 - array.ndim)
     array = np.reshape(array, shape)
 
-    coords = {}
-    dims = []
-    for i in range(attrs["ndim"]):
-        dim_name = attrs["dims"][i]
-        dims.append(dim_name)
-        dim_idx = varnames.index(dim_name)
+    if attrs.get("gencoord", False):
+        data_vars = {}
+        grid_vars = {}
+        n_points = attrs["npoints"]
 
-        start = array[dim_idx, 0, 0, 0]
-        stop_slicer = [0] * 3
-        stop_slicer[i] = -1
-        stop = array[(dim_idx,) + tuple(stop_slicer)]
+        # Create dummy connectivity for a point cloud, which is required by UGRID
+        face_node_connectivity = np.arange(n_points, dtype=np.int32).reshape(-1, 1)
+        grid_vars["face_node_connectivity"] = (
+            ("n_face", "n_max_face_nodes"),
+            face_node_connectivity,
+        )
 
-        coords[dim_name] = np.linspace(start, stop, attrs["grid"][i])
+        node_dim = "n_node"
 
-    data_vars = {}
-    for i, var_name in enumerate(varnames):
-        if var_name not in attrs["dims"]:
-            slicer = [i]
-            for d in range(3):
-                if d < attrs["ndim"]:
-                    slicer.append(slice(attrs["grid"][d]))
-                else:
-                    slicer.append(slice(1))
-            data_slice = array[tuple(slicer)]
-            data_vars[var_name] = (dims, np.squeeze(data_slice))
+        # UGRID requires node_lon and node_lat. We assume X/x and Y/y are these.
+        coord_map = {
+            "X": "node_lon",
+            "Y": "node_lat",
+            "Z": "node_z",
+            "x": "node_lon",
+            "y": "node_lat",
+            "z": "node_z",
+        }
 
-    dataset = xr.Dataset(data_vars, coords=coords)
+        for i, var_name in enumerate(varnames):
+            data_slice = np.squeeze(array[i, ...])
+            if var_name in coord_map:
+                grid_vars[coord_map[var_name]] = (node_dim, data_slice)
+            else:
+                data_vars[var_name] = (node_dim, data_slice)
+
+        # Create the grid object from the grid variables
+        grid = ux.Grid(xr.Dataset(grid_vars))
+
+        # Create the UxDataset
+        dataset = ux.UxDataset(data_vars, uxgrid=grid)
+    else:
+        coords = {}
+        dims = []
+        for i in range(attrs["ndim"]):
+            dim_name = attrs["dims"][i]
+            dims.append(dim_name)
+            dim_idx = varnames.index(dim_name)
+
+            start = array[dim_idx, 0, 0, 0]
+            stop_slicer = [0] * 3
+            stop_slicer[i] = -1
+            stop = array[(dim_idx,) + tuple(stop_slicer)]
+
+            coords[dim_name] = np.linspace(start, stop, attrs["grid"][i])
+
+        data_vars = {}
+        for i, var_name in enumerate(varnames):
+            if var_name not in attrs["dims"]:
+                slicer = [i]
+                for d in range(3):
+                    if d < attrs["ndim"]:
+                        slicer.append(slice(attrs["grid"][d]))
+                    else:
+                        slicer.append(slice(1))
+                data_slice = array[tuple(slicer)]
+                data_vars[var_name] = (dims, np.squeeze(data_slice))
+
+        dataset = xr.Dataset(data_vars, coords=coords)
     dataset.attrs = attrs
     _post_process_param(dataset)
     return dataset
