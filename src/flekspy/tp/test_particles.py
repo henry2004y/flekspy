@@ -80,13 +80,14 @@ class FLEKSTP(object):
         charge: float = elementary_charge,
         iListStart: int = 0,
         iListEnd: int = -1,
-        readAllFiles: bool = False,
         use_cache: bool = False,
     ):
         self.use_cache = use_cache
         self.unit = unit
         if self.unit not in {"planetary", "SI"}:
-            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
+            raise ValueError(
+                f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'."
+            )
         self._trajectory_cache = {}
         self.mass = mass
         self.charge = charge
@@ -118,14 +119,6 @@ class FLEKSTP(object):
 
         plistfiles.sort()
         self.pfiles.sort()
-
-        self.indextotime = []
-        if readAllFiles:
-            for filename in self.pfiles:
-                record = self._read_the_first_record(filename)
-                if record is None:
-                    continue
-                self.indextotime.append(record[Indices.TIME])
 
         if iListEnd == -1:
             iListEnd = len(plistfiles)
@@ -528,15 +521,15 @@ class FLEKSTP(object):
 
     def get_kinetic_energy(self, vx, vy, vz):
         if self.unit == "planetary":
-            ke = 0.5 * self.mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge  # [eV]
+            ke = (
+                0.5 * self.mass * (vx**2 + vy**2 + vz**2) * 1e6 / elementary_charge
+            )  # [eV]
         elif self.unit == "SI":
             ke = 0.5 * self.mass * (vx**2 + vy**2 + vz**2) / elementary_charge  # [eV]
 
         return ke
 
-    def get_kinetic_energy_change_rate(
-        self, pt_lazy: pl.LazyFrame
-    ) -> pl.Series:
+    def get_kinetic_energy_change_rate(self, pt_lazy: pl.LazyFrame) -> pl.Series:
         """
         Calculates the rate of change of kinetic energy in [eV/s].
         """
@@ -608,9 +601,7 @@ class FLEKSTP(object):
 
         return pitch_angle
 
-    def get_first_adiabatic_invariant(
-        self, pt_lazy: pl.LazyFrame
-    ) -> pl.Series:
+    def get_first_adiabatic_invariant(self, pt_lazy: pl.LazyFrame) -> pl.Series:
         """
         Calculates the 1st adiabatic invariant of a particle.
         The output units depend on the input data's units:
@@ -759,12 +750,17 @@ class FLEKSTP(object):
         b_mag_sq = pl.col("b_mag") ** 2
         if self.unit == "planetary":
             factor = (
-                (self.mass * v_parallel_sq) / (self.charge * b_mag_sq) * 1e9 / EARTH_RADIUS_KM
+                (self.mass * v_parallel_sq)
+                / (self.charge * b_mag_sq)
+                * 1e9
+                / EARTH_RADIUS_KM
             )
         elif self.unit == "SI":
             factor = (self.mass * v_parallel_sq) / (self.charge * b_mag_sq)
         else:
-            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
+            raise ValueError(
+                f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'."
+            )
 
         lf = lf.with_columns(
             vcx=factor * cross_x, vcy=factor * cross_y, vcz=factor * cross_z
@@ -809,7 +805,9 @@ class FLEKSTP(object):
             # kappa_mag [1/m] -> r_c [m]
             r_c_factor = 1.0
         else:
-            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
+            raise ValueError(
+                f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'."
+            )
 
         r_c = (1 / kappa_mag) * r_c_factor
 
@@ -897,7 +895,9 @@ class FLEKSTP(object):
         elif self.unit == "SI":
             factor = mu_expr / (self.charge * b_mag_sq)
         else:
-            raise ValueError(f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'.")
+            raise ValueError(
+                f"Unknown unit: '{self.unit}'. Must be 'planetary' or 'SI'."
+            )
 
         lf = lf.with_columns(
             vgx=factor * cross_x, vgy=factor * cross_y, vgz=factor * cross_z
@@ -1172,9 +1172,7 @@ class FLEKSTP(object):
         )
 
         df = df.with_columns(
-            dW_total=pl.col("dW_parallel")
-            + pl.col("dW_betatron")
-            + pl.col("dW_fermi")
+            dW_total=pl.col("dW_parallel") + pl.col("dW_betatron") + pl.col("dW_fermi")
         )
 
         return df
@@ -1390,7 +1388,9 @@ class FLEKSTP(object):
             nrows=7, ncols=1, figsize=(12, 12), sharex=True, constrained_layout=True
         )
 
-        def _plot_velocity_subplot(ax, time, vel_df, ylabel, switchYZ, x_col, y_col, z_col):
+        def _plot_velocity_subplot(
+            ax, time, vel_df, ylabel, switchYZ, x_col, y_col, z_col
+        ):
             """Helper to plot a velocity subplot."""
             ax.plot(time, vel_df[x_col], label=x_col)
             if switchYZ:
@@ -1405,20 +1405,43 @@ class FLEKSTP(object):
             ax.grid(True, linestyle="--", alpha=0.6)
 
         # --- 1. Raw Velocities ---
-        _plot_velocity_subplot(axes[0], pt["time"], pt, "V [km/s]", switchYZ, "vx", "vy", "vz")
+        _plot_velocity_subplot(
+            axes[0], pt["time"], pt, "V [km/s]", switchYZ, "vx", "vy", "vz"
+        )
 
         # --- 2. Plasma Convection Drift (vex, vey, vez) ---
-        _plot_velocity_subplot(axes[1], pt["time"], ve, r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]", switchYZ, "vex", "vey", "vez")
+        _plot_velocity_subplot(
+            axes[1],
+            pt["time"],
+            ve,
+            r"$V_{\mathbf{E}\times\mathbf{B}}$ [km/s]",
+            switchYZ,
+            "vex",
+            "vey",
+            "vez",
+        )
 
         # --- 3. Plasma Gradient Drift (vgx, vgy, vgz) ---
-        _plot_velocity_subplot(axes[2], pt["time"], vg, r"$V_{\nabla B}$ [km/s]", switchYZ, "vgx", "vgy", "vgz")
+        _plot_velocity_subplot(
+            axes[2],
+            pt["time"],
+            vg,
+            r"$V_{\nabla B}$ [km/s]",
+            switchYZ,
+            "vgx",
+            "vgy",
+            "vgz",
+        )
 
         # --- 4. Plasma Curvature Drift (vcx, vcy, vcz) ---
-        _plot_velocity_subplot(axes[3], pt["time"], vc, r"$V_c$ [km/s]", switchYZ, "vcx", "vcy", "vcz")
+        _plot_velocity_subplot(
+            axes[3], pt["time"], vc, r"$V_c$ [km/s]", switchYZ, "vcx", "vcy", "vcz"
+        )
 
         # --- 5. Plasma Polarization Drift (vpx, vpy, vpz) ---
-        _plot_velocity_subplot(axes[4], pt["time"], vp, r"$V_p$ [km/s]", switchYZ, "vpx", "vpy", "vpz")
-
+        _plot_velocity_subplot(
+            axes[4], pt["time"], vp, r"$V_p$ [km/s]", switchYZ, "vpx", "vpy", "vpz"
+        )
 
         # --- 6. Rate of Energy Change (E dot V) ---
         axes[5].plot(
@@ -1519,14 +1542,30 @@ class FLEKSTP(object):
 
         # Subplots for individual energy change terms
         plot_configs = [
-            {"data": dW_parallel, "label": r"$dW_{\parallel}/dt$", "title": "Parallel Acceleration"},
-            {"data": dW_betatron, "label": "$dW_{betatron}/dt$", "title": "Betatron Acceleration", "color": "tab:orange"},
-            {"data": dW_fermi, "label": "$dW_{fermi}/dt$", "title": "Fermi Acceleration", "color": "tab:green"},
+            {
+                "data": dW_parallel,
+                "label": r"$dW_{\parallel}/dt$",
+                "title": "Parallel Acceleration",
+            },
+            {
+                "data": dW_betatron,
+                "label": "$dW_{betatron}/dt$",
+                "title": "Betatron Acceleration",
+                "color": "tab:orange",
+            },
+            {
+                "data": dW_fermi,
+                "label": "$dW_{fermi}/dt$",
+                "title": "Fermi Acceleration",
+                "color": "tab:green",
+            },
         ]
 
         for i, config in enumerate(plot_configs):
             ax = axes[i]
-            ax.plot(time, config["data"], label=config["label"], color=config.get("color"))
+            ax.plot(
+                time, config["data"], label=config["label"], color=config.get("color")
+            )
             ax.set_ylabel("Rate [eV/s]")
             ax.set_title(config["title"])
             ax.grid(True, linestyle="--", alpha=0.6)
@@ -1698,10 +1737,14 @@ class FLEKSTP(object):
             unit_factor = 1.0
 
         work_rate = (
-            (pt_df["ex"] * pt_df["vx"] +
-             pt_df["ey"] * pt_df["vy"] +
-             pt_df["ez"] * pt_df["vz"])
-            * unit_factor * self.charge / elementary_charge
+            (
+                pt_df["ex"] * pt_df["vx"]
+                + pt_df["ey"] * pt_df["vy"]
+                + pt_df["ez"] * pt_df["vz"]
+            )
+            * unit_factor
+            * self.charge
+            / elementary_charge
         )
         work_rate = work_rate.rename("work_rate")
 
@@ -1709,10 +1752,14 @@ class FLEKSTP(object):
         dt = time.diff().fill_null(0)
 
         # Integrated change in kinetic energy
-        delta_ke_integrated = ((dke_dt + dke_dt.shift(1)) / 2 * dt).cum_sum().fill_null(0)
+        delta_ke_integrated = (
+            ((dke_dt + dke_dt.shift(1)) / 2 * dt).cum_sum().fill_null(0)
+        )
 
         # Integrated work done
-        work_done_integrated = ((work_rate + work_rate.shift(1)) / 2 * dt).cum_sum().fill_null(0)
+        work_done_integrated = (
+            ((work_rate + work_rate.shift(1)) / 2 * dt).cum_sum().fill_null(0)
+        )
 
         # 4. Plotting
         fig, axes = plt.subplots(
@@ -1722,7 +1769,9 @@ class FLEKSTP(object):
 
         # Panel 1: Rates of change
         axes[0].plot(time, dke_dt, label="d(KE)/dt", linewidth=2)
-        axes[0].plot(time, work_rate, label="q E⋅v (Work Rate)", linestyle='--', linewidth=2)
+        axes[0].plot(
+            time, work_rate, label="q E⋅v (Work Rate)", linestyle="--", linewidth=2
+        )
         axes[0].set_ylabel("Rate [eV/s]", fontsize=14)
         axes[0].set_title("Rate of Kinetic Energy Change vs. Work Rate", fontsize=14)
         axes[0].legend()
@@ -1730,9 +1779,17 @@ class FLEKSTP(object):
 
         # Panel 2: Integrated quantities
         axes[1].plot(time, delta_ke_integrated, label="ΔKE (Integrated)", linewidth=2)
-        axes[1].plot(time, work_done_integrated, label="Total Work Done", linestyle='--', linewidth=2)
+        axes[1].plot(
+            time,
+            work_done_integrated,
+            label="Total Work Done",
+            linestyle="--",
+            linewidth=2,
+        )
         axes[1].set_ylabel("Energy [eV]", fontsize=14)
-        axes[1].set_title("Integrated Kinetic Energy Change vs. Total Work Done", fontsize=14)
+        axes[1].set_title(
+            "Integrated Kinetic Energy Change vs. Total Work Done", fontsize=14
+        )
         axes[1].legend()
         axes[1].grid(True, linestyle="--", alpha=0.6)
 
@@ -1769,9 +1826,13 @@ class FLEKSTP(object):
         """
         # --- 1. Data Preparation ---
         pt = self[pid]
-        t_and_b_mag = pt.with_columns(
-            b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
-        ).select("time", "b_mag").collect()
+        t_and_b_mag = (
+            pt.with_columns(
+                b_mag=(pl.col("bx") ** 2 + pl.col("by") ** 2 + pl.col("bz") ** 2).sqrt()
+            )
+            .select("time", "b_mag")
+            .collect()
+        )
         t = t_and_b_mag["time"].to_numpy()
         b_mag = t_and_b_mag["b_mag"].to_numpy()
 
@@ -1852,14 +1913,18 @@ class FLEKSTP(object):
             Returns (None, None) if no particles with a valid shock crossing are found.
         """
         if verbose:
-            logger.info(f"Starting upstream/downstream analysis for {len(pids)} particles...")
+            logger.info(
+                f"Starting upstream/downstream analysis for {len(pids)} particles..."
+            )
         upstream_states = []
         downstream_states = []
         num_particles = len(pids)
 
         for i, pid in enumerate(pids):
             if verbose and ((i + 1) % 500 == 0 or i == num_particles - 1):
-                logger.info(f"  ...processing particle {i+1}/{num_particles} (ID: {pid})")
+                logger.info(
+                    f"  ...processing particle {i+1}/{num_particles} (ID: {pid})"
+                )
 
             # 1. Find the shock crossing time for the current particle
             t_cross = self.find_shock_crossing_time(
@@ -1869,7 +1934,9 @@ class FLEKSTP(object):
             # 2. Skip particle if no shock crossing is found
             if t_cross is None:
                 if verbose:
-                    logger.info(f"  -> No shock crossing found for particle {pid}. Skipping.")
+                    logger.info(
+                        f"  -> No shock crossing found for particle {pid}. Skipping."
+                    )
                 continue
 
             if verbose:
@@ -1889,7 +1956,9 @@ class FLEKSTP(object):
                 # Ensure we got two valid rows back
                 if interpolated_states.height != 2:
                     if verbose:
-                        logger.warning(f"  -> Interpolation failed for {pid}. Skipping.")
+                        logger.warning(
+                            f"  -> Interpolation failed for {pid}. Skipping."
+                        )
                     continue
 
                 # 5. Separate and enrich the data for collection
@@ -1915,13 +1984,17 @@ class FLEKSTP(object):
             except Exception as e:
                 # Catch any other errors during interpolation (e.g., times out of bounds)
                 if verbose:
-                    logger.error(f"  -> An error occurred for particle {pid}: {e}. Skipping.")
+                    logger.error(
+                        f"  -> An error occurred for particle {pid}: {e}. Skipping."
+                    )
                 continue
 
         # 6. Finalize the results
         if not upstream_states:
             if verbose:
-                logger.info("\nFinished processing. No valid shock-crossing particles found.")
+                logger.info(
+                    "\nFinished processing. No valid shock-crossing particles found."
+                )
             return None, None
 
         # Concatenate all the individual DataFrames into two final ones
@@ -1985,7 +2058,9 @@ class FLEKSTP(object):
 
         # --- Calculate shock normal using magnetic coplanarity ---
         B_up_avg = np.mean(upstream_df.select(["bx", "by", "bz"]).to_numpy(), axis=0)
-        B_down_avg = np.mean(downstream_df.select(["bx", "by", "bz"]).to_numpy(), axis=0)
+        B_down_avg = np.mean(
+            downstream_df.select(["bx", "by", "bz"]).to_numpy(), axis=0
+        )
 
         db = B_up_avg - B_down_avg
         n_c = np.cross(B_up_avg, B_down_avg)
@@ -2110,7 +2185,9 @@ class FLEKSTP(object):
         fig, axes = plt.subplots(
             nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
         )
-        fig.suptitle(f"De Hoffmann-Teller Frame Analysis for Particle {pID}", fontsize=16)
+        fig.suptitle(
+            f"De Hoffmann-Teller Frame Analysis for Particle {pID}", fontsize=16
+        )
 
         time_plot = pt["time"]
         v_unit = "km/s" if self.unit == "planetary" else "m/s"
@@ -2450,7 +2527,10 @@ class FLEKSTP(object):
                 mu = (0.5 * self.mass * v_perp**2) / (b_mag * 1e-9)  # [J/T]
                 # Gyrofrequency in Hz
                 gyro_freq = (
-                    (elementary_charge * b_mag) / (2 * np.pi * self.mass) * 1e-9 / fscaling
+                    (elementary_charge * b_mag)
+                    / (2 * np.pi * self.mass)
+                    * 1e-9
+                    / fscaling
                 )
                 # Gyroradius in km
                 gyro_radius = (
@@ -2466,7 +2546,9 @@ class FLEKSTP(object):
                 # Calculate mu, handle potential division by zero in B
                 mu = (0.5 * self.mass * v_perp**2) / b_mag  # [J/T]
                 # Gyrofrequency in Hz
-                gyro_freq = (elementary_charge * b_mag) / (2 * np.pi * self.mass) / fscaling
+                gyro_freq = (
+                    (elementary_charge * b_mag) / (2 * np.pi * self.mass) / fscaling
+                )
                 # Gyroradius in km
                 gyro_radius = (
                     (self.mass * v_perp) / (elementary_charge * b_mag) * 1e3 * fscaling
@@ -2744,8 +2826,7 @@ class FLEKSTP(object):
         """Integrates a velocity series using the trapezoidal rule."""
         initial_pos = initial_pos_series[0]
         integrated_pos = (
-            initial_pos
-            + (((v_series + v_series.shift(1)) / 2) * dt_series).cum_sum()
+            initial_pos + (((v_series + v_series.shift(1)) / 2) * dt_series).cum_sum()
         )
         return integrated_pos.fill_null(initial_pos)
 
@@ -2880,9 +2961,7 @@ class FLEKSTP(object):
         logger.info(f"Verifying guiding center model for particle ID: {pID}")
 
         # 1. Calculate "true" guiding center trajectory
-        pos_gc_true = self._calculate_true_gc_trajectory(
-            pt, smoothing_gyro_periods
-        )
+        pos_gc_true = self._calculate_true_gc_trajectory(pt, smoothing_gyro_periods)
 
         # 2. Calculate predicted guiding center trajectory
         pos_gc_pred = self._calculate_predicted_gc_trajectory(pt, pID)
@@ -2981,7 +3060,13 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
             + df["W_parallel_integrated"]
             + df["W_betatron_integrated"]
         ).to_numpy()
-        ax.plot(time_data, w_sum, label=r"$\text{W}_\text{sum}$", linewidth=2.5, linestyle="--")
+        ax.plot(
+            time_data,
+            w_sum,
+            label=r"$\text{W}_\text{sum}$",
+            linewidth=2.5,
+            linestyle="--",
+        )
 
         ke_data = df["ke"].to_numpy()
         delta_ke = ke_data - ke_data[0]
