@@ -1,6 +1,6 @@
 [project]
 name = "flekspy"
-version = "0.5.19"
+version = "0.5.20"
 description = "Python utilities for processing FLEKS data"
 authors = [
     {name = "Yuxi Chen", email = "yuxichen@umich.edu"},
@@ -16,6 +16,7 @@ dependencies = [
     "requests>=2.32.3,<3",
     "xarray>=2024.6.0",
     "polars>=0.20.21,<1",
+    "xugrid>=0.14.2,<1",
 ]
 
 [project.optional-dependencies]
