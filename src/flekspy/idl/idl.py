@@ -53,8 +53,8 @@ def _read_and_process_data(filename):
             x_coord_name = attrs["dims"][0]
             y_coord_name = attrs["dims"][1]
             # The varnames is a tuple of strings.
-            x_index = list(varnames).index(x_coord_name)
-            y_index = list(varnames).index(y_coord_name)
+            x_index = varnames.index(x_coord_name)
+            y_index = varnames.index(y_coord_name)
             node_x = np.squeeze(array[x_index, ...])
             node_y = np.squeeze(array[y_index, ...])
 
