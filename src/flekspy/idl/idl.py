@@ -2,6 +2,8 @@ import numpy as np
 import struct
 import yt
 import xarray as xr
+import xugrid as xu
+from scipy.spatial import Delaunay
 from flekspy.util.logger import get_logger
 
 logger = get_logger(name=__name__)
@@ -47,13 +49,44 @@ def _read_and_process_data(filename):
     array = np.reshape(array, shape)
 
     if attrs.get("gencoord", False):
-        data_vars = {}
-        dims = ("n_points",)
-        for i, var_name in enumerate(varnames):
-            data_slice = np.squeeze(array[i, ...])
-            data_vars[var_name] = (dims, data_slice)
+        if attrs["ndim"] == 2:
+            x_coord_name = attrs["dims"][0]
+            y_coord_name = attrs["dims"][1]
+            # The varnames is a tuple of strings.
+            x_index = list(varnames).index(x_coord_name)
+            y_index = list(varnames).index(y_coord_name)
+            node_x = np.squeeze(array[x_index, ...])
+            node_y = np.squeeze(array[y_index, ...])
 
-        dataset = xr.Dataset(data_vars)
+            # Create grid topology from points via Delaunay triangulation.
+            points = np.vstack((node_x, node_y)).T
+            triangulation = Delaunay(points)
+            faces = triangulation.simplices
+
+            grid = xu.Ugrid2d(
+                node_x=node_x,
+                node_y=node_y,
+                fill_value=-1,
+                face_node_connectivity=faces,
+                name="mesh2d",  # UGRID required name.
+            )
+
+            data_vars = {}
+            for i, var_name in enumerate(varnames):
+                if var_name not in attrs["dims"]:
+                    data_slice = np.squeeze(array[i, ...])
+                    # Data is located at the nodes of the grid.
+                    data_vars[var_name] = (grid.node_dimension, data_slice)
+            dataset = xu.UgridDataset(xr.Dataset(data_vars), grids=[grid])
+        else:
+            # Fallback to old behavior for 1D or 3D unstructured grids.
+            data_vars = {}
+            dims = ("n_points",)
+            for i, var_name in enumerate(varnames):
+                data_slice = np.squeeze(array[i, ...])
+                data_vars[var_name] = (dims, data_slice)
+
+            dataset = xr.Dataset(data_vars)
     else:
         coords = {}
         dims = []
