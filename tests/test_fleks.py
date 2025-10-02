@@ -79,6 +79,8 @@ class TestIDL:
         ds.rhoS0.plot.pcolormesh(x="x", y="y")
         ds["Bx"].plot.pcolormesh(x="x", y="y")
         ds.plot.streamplot(x="x", y="y", u="Bx", v="By", color="w")
+        ds = fs.load(self.files[3])
+        ds.Rho.ugrid.plot.contourf()
         assert True
 
 
