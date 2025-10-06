@@ -1471,7 +1471,7 @@ class FLEKSTP(object):
         axes[-1].grid(True, linestyle="--", alpha=0.6)
 
         for ax in axes:
-            ax.set_xlim(left=0, right=pt["time"][-1])
+            ax.set_xlim(left=pt["time"][0], right=pt["time"][-1])
 
         axes[-1].set_xlabel("Time [s]", fontsize=14)
 
