@@ -152,8 +152,11 @@ class AMReXParticleData:
         self._idata = None
         self._rdata = None
 
+        self.level_boxes = []
+
         self._parse_main_header()
         self.header = AMReXParticleHeader(self.output_dir / self.ptype / "Header")
+        self._parse_particle_h_files()
 
     def _load_data(self):
         """Loads the particle data from disk if it has not been loaded yet."""
@@ -201,6 +204,37 @@ class AMReXParticleData:
 
             self.domain_dimensions = [dim_x, dim_y, dim_z]
 
+    def _parse_particle_h_files(self):
+        """Parses the Particle_H files to get the box arrays for each level."""
+        self.level_boxes = [[] for _ in range(self.header.num_levels)]
+        for level_num in range(self.header.num_levels):
+            particle_h_path = self.output_dir / self.ptype / f"Level_{level_num}" / "Particle_H"
+            if not particle_h_path.exists():
+                continue
+
+            with open(particle_h_path, 'r') as f:
+                lines = f.readlines()
+
+            boxes = []
+            # The first line is `(num_boxes level`, e.g. `(20 0`.
+            # The rest of the lines are box definitions, e.g. `((0,0) (15,7) (0,0))`
+            for line in lines[1:]:
+                line = line.strip()
+                if line.startswith('((') and line.endswith('))'):
+                    try:
+                        parts = [int(x) for x in re.findall(r'-?\d+', line)]
+                        if self.header.dim == 2 and len(parts) >= 4:
+                            lo_corner = (parts[0], parts[1])
+                            hi_corner = (parts[2], parts[3])
+                            boxes.append((lo_corner, hi_corner))
+                        elif self.header.dim == 3 and len(parts) >= 6:
+                            lo_corner = (parts[0], parts[1], parts[2])
+                            hi_corner = (parts[3], parts[4], parts[5])
+                            boxes.append((lo_corner, hi_corner))
+                    except (ValueError, IndexError):
+                        continue # Not a valid box line
+            self.level_boxes[level_num] = boxes
+
     def __repr__(self):
         repr_str = (
             f"AMReXParticleData from {self.output_dir}\n"
@@ -225,9 +259,10 @@ class AMReXParticleData:
         Selectively loads real component data for particles that fall within a
         specified rectangular region.
 
-        This method reads particle data chunk-by-chunk and filters it on-the-fly,
-        avoiding loading the entire dataset into memory. Integer data is skipped
-        for efficiency.
+        This method first converts the physical range into an index-based range,
+        then identifies which grid files intersect with that range, and finally
+        reads only the necessary data. This avoids loading the entire dataset
+        into memory. Integer data is skipped for efficiency.
 
         Args:
             x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
@@ -239,47 +274,66 @@ class AMReXParticleData:
             np.ndarray: A numpy array containing the real data for the
                         selected particles.
         """
-        selected_rdata = []
 
+        # Convert physical range to index range
+        dx = [(self.right_edge[i] - self.left_edge[i]) / self.domain_dimensions[i] for i in range(self.dim)]
+
+        target_idx_ranges = []
+        ranges = [x_range, y_range, z_range]
+        for i in range(self.dim):
+            if ranges[i]:
+                idx_min = int((ranges[i][0] - self.left_edge[i]) / dx[i])
+                idx_max = int((ranges[i][1] - self.left_edge[i]) / dx[i])
+                target_idx_ranges.append((idx_min, idx_max))
+            else:
+                target_idx_ranges.append(None)
+
+        # Find overlapping grids based on index ranges
+        overlapping_grids = []
+        for level_num, boxes in enumerate(self.level_boxes):
+            for grid_index, (lo_corner, hi_corner) in enumerate(boxes):
+                box_overlap = True
+                for i in range(self.dim):
+                    if target_idx_ranges[i]:
+                        box_min_idx, box_max_idx = lo_corner[i], hi_corner[i]
+                        target_min_idx, target_max_idx = target_idx_ranges[i]
+                        if box_max_idx < target_min_idx or box_min_idx > target_max_idx:
+                            box_overlap = False
+                            break
+                if box_overlap:
+                    overlapping_grids.append((level_num, grid_index))
+
+        selected_rdata = []
         idtype = self.header.idtype_str
         fdtype = self.header.rdtype_str
 
-        for lvl, level_grids in enumerate(self.header.grids):
-            for which, count, where in level_grids:
-                if count == 0:
-                    continue
+        for level_num, grid_index in overlapping_grids:
+            try:
+                grid_data = self.header.grids[level_num][grid_index]
+            except IndexError:
+                continue
 
-                fn = self.output_dir / self.ptype / f"Level_{lvl}" / f"DATA_{which:05d}"
-                with open(fn, 'rb') as f:
-                    f.seek(where)
+            which, count, where = grid_data
+            if count == 0:
+                continue
 
-                    if self.header.is_checkpoint:
-                        # Skip over the integer data instead of reading it
-                        bytes_to_skip = count * np.dtype(idtype).itemsize
-                        f.seek(bytes_to_skip, 1)
+            fn = self.output_dir / self.ptype / f"Level_{level_num}" / f"DATA_{which:05d}"
+            with open(fn, 'rb') as f:
+                f.seek(where)
 
-                    floats = np.fromfile(f, dtype=fdtype, count=count)
+                if self.header.is_checkpoint:
+                    bytes_to_skip = count * np.dtype(idtype).itemsize
+                    f.seek(bytes_to_skip, 1)
 
-                    # Create a boolean mask, starting with all True
-                    mask = np.ones(count, dtype=bool)
+                floats = np.fromfile(f, dtype=fdtype, count=count)
 
-                    if x_range:
-                        x_coords = floats[:, 0]
-                        mask &= (x_coords >= x_range[0]) & (x_coords <= x_range[1])
+                mask = np.ones(count, dtype=bool)
+                for i in range(self.dim):
+                    if ranges[i]:
+                        mask &= (floats[:, i] >= ranges[i][0]) & (floats[:, i] <= ranges[i][1])
 
-                    if y_range:
-                        y_coords = floats[:, 1]
-                        mask &= (y_coords >= y_range[0]) & (y_coords <= y_range[1])
+                if np.any(mask):
+                    selected_rdata.append(floats[mask])
 
-                    if self.dim == 3 and z_range:
-                        z_coords = floats[:, 2]
-                        mask &= (z_coords >= z_range[0]) & (z_coords <= z_range[1])
-
-                    # Apply the mask to the data
-                    if np.any(mask):
-                        selected_rdata.append(floats[mask])
-
-        # Concatenate the lists of arrays into final numpy arrays
         final_rdata = np.concatenate(selected_rdata) if selected_rdata else np.empty((0, self.header.num_real), dtype=self.header.real_type)
-
         return final_rdata

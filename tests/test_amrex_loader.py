@@ -46,7 +46,7 @@ def test_select_particles_in_region(particle_data):
     assert np.all(rdata[:, 1] <= y_range[1])
 
     # Check that some particles were selected
-    assert rdata.shape[0] > 0
+    assert rdata.shape[0] == 64019
 
     # Ensure that not all particles were selected (i.e., filtering happened)
     assert rdata.shape[0] < particle_data.header.num_particles
