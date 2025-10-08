@@ -90,8 +90,20 @@ class AMReXParticleHeader:
             f"{level_info}"
         )
 
+    @property
+    def idtype_str(self):
+        return f"({self.num_int},)i4"
 
-def read_amrex_binary_particle_file(fn):
+    @property
+    def rdtype_str(self):
+        if self.real_type == np.float64:
+            return f"({self.num_real},)f8"
+        elif self.real_type == np.float32:
+            return f"({self.num_real},)f4"
+        raise RuntimeError("Unrecognized real type.")
+
+
+def read_amrex_binary_particle_file(fn, header):
     """
     This function returns the particle data stored in a particular
     plot file. It returns two numpy arrays, the
@@ -100,15 +112,9 @@ def read_amrex_binary_particle_file(fn):
     """
     ptype = "particles"
     base_fn = Path(fn) / ptype
-    header = AMReXParticleHeader(base_fn / "Header")
 
-    idtype = "(%d,)i4" % header.num_int
-    if header.real_type == np.float64:
-        fdtype = "(%d,)f8" % header.num_real
-    elif header.real_type == np.float32:
-        fdtype = "(%d,)f4" % header.num_real
-    else:
-        raise RuntimeError("Unrecognized real type in particle file.")
+    idtype = header.idtype_str
+    fdtype = header.rdtype_str
 
     idata = np.empty((header.num_particles, header.num_int), dtype=header.int_type)
     rdata = np.empty((header.num_particles, header.num_real), dtype=header.real_type)
@@ -153,7 +159,7 @@ class AMReXParticleData:
         """Loads the particle data from disk if it has not been loaded yet."""
         if self._idata is None:
             self._idata, self._rdata = read_amrex_binary_particle_file(
-                self.output_dir
+                self.output_dir, self.header
             )
 
     @property
@@ -184,7 +190,7 @@ class AMReXParticleData:
             self.left_edge = [float(v) for v in f.readline().strip().split()]
             self.right_edge = [float(v) for v in f.readline().strip().split()]
             f.readline()
-
+            #TODO check a 3D particle file for correctness!
             dim_line = f.readline().strip()
             matches = re.findall(r'\d+', dim_line)
             coords = [int(num) for num in matches]
@@ -235,13 +241,8 @@ class AMReXParticleData:
         """
         selected_rdata = []
 
-        idtype = f"({self.header.num_int},)i4"
-        if self.header.real_type == np.float64:
-            fdtype = f"({self.header.num_real},)f8"
-        elif self.header.real_type == np.float32:
-            fdtype = f"({self.header.num_real},)f4"
-        else:
-            raise RuntimeError("Unrecognized real type in particle file.")
+        idtype = self.header.idtype_str
+        fdtype = self.header.rdtype_str
 
         for lvl, level_grids in enumerate(self.header.grids):
             for which, count, where in level_grids:
