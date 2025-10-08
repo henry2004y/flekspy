@@ -57,3 +57,7 @@
 ## v0.5.5 (2025/08/15)
 
 - Use lazy Polars expression for test particle analysis if possible.
+
+## v0.5.21 (2025/10/08)
+
+- Add experimental native AMReX particle data loader.
