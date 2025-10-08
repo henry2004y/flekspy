@@ -328,12 +328,9 @@ class AMReXParticleData:
                 floats = np.fromfile(f, dtype=fdtype, count=count)
 
                 mask = np.ones(count, dtype=bool)
-                if x_range:
-                    mask &= (floats[:, 0] >= x_range[0]) & (floats[:, 0] <= x_range[1])
-                if y_range:
-                    mask &= (floats[:, 1] >= y_range[0]) & (floats[:, 1] <= y_range[1])
-                if self.dim == 3 and z_range:
-                    mask &= (floats[:, 2] >= z_range[0]) & (floats[:, 2] <= z_range[1])
+                for i in range(self.dim):
+                    if ranges[i]:
+                        mask &= (floats[:, i] >= ranges[i][0]) & (floats[:, i] <= ranges[i][1])
 
                 if np.any(mask):
                     selected_rdata.append(floats[mask])
