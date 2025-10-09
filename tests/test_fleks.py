@@ -94,14 +94,14 @@ class TestAMReX:
         assert ds["uxS1"].shape == (601, 2)
 
     def test_pic(self):
-        ds = fs.load(self.files[1])
+        ds = fs.load(self.files[1], use_yt_loader=True)
         assert ds.domain_left_edge[0].v == -0.016
         dc = ds.get_slice("z", 0.5)
         assert dc.data["particle_id"][0].value == 216050.0
         assert dc.__repr__().startswith("variables")
 
     def test_phase(self):
-        ds = fs.load(self.files[1])
+        ds = fs.load(self.files[1], use_yt_loader=True)
         x_field = "p_uy"
         y_field = "p_uz"
         z_field = "p_w"
@@ -141,6 +141,10 @@ class TestAMReX:
         )
         f = fs.extract_phase(pp)
         assert f[0].size == 16 and f[2].shape == (16, 16)
+
+    def test_amrex_particle_loader_default(self):
+        ds = fs.load("tests/data/3d_particle*amrex")
+        assert isinstance(ds, fs.amrex.AMReXParticleData)
 
 
 class TestParticles:

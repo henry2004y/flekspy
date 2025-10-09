@@ -24,7 +24,7 @@ class TestEvaluateExpression:
     files = [os.path.join("tests/data/", file) for file in files]
 
     def test_evaluate_expression(self):
-        ds = fs.load(self.files[0])
+        ds = fs.load(self.files[0], use_yt_loader=True)
         dc = ds.get_slice("z", 0.5)
 
         # Test a simple expression
