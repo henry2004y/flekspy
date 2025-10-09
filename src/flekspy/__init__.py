@@ -18,6 +18,7 @@ def load(
     iSpecies: int = 0,
     iFile: int = 0,
     readFieldData: bool = False,
+    use_yt_loader: bool = False,
 ):
     """Load FLEKS data.
 
@@ -28,6 +29,7 @@ def load(
         iFile (int, optional): The index of the file to load if the pattern
             matches multiple files. Defaults to 0.
         readFieldData (bool, optional): Whether or not to read field data for test particles. Defaults to False.
+        use_yt_loader (bool, optional): If True, forces the use of the yt loader for AMReX data. Defaults to False.
 
     Returns:
         FLEKS data: xarray.Dataset, FLEKSData, or FLEKSTP
@@ -56,9 +58,9 @@ def load(
     elif filepath.suffix in [".out", ".outs"]:
         return read_idl(filename)
     elif basename.endswith("_amrex"):
-        if "particle" in basename:
-            return AMReXParticleData(filename)
-        else:
+        if use_yt_loader or "particle" not in basename:
             return FLEKSData(filename, readFieldData)
+        else:
+            return AMReXParticleData(filename)
     else:
         raise Exception("Error: unknown file format!")
