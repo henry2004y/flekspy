@@ -17,8 +17,8 @@ class AMReXParticleHeader:
     contained in an AMReX particle header file.
     """
     version_string: str
-    real_type: Union[np.float64, np.float32]
-    int_type: np.int32
+    real_type: Union[Type[np.float64], Type[np.float32]]
+    int_type: Type[np.int32]
     dim: int
     num_int_base: int
     num_real_base: int
