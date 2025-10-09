@@ -121,3 +121,29 @@ def test_plot_phase(mock_subplots, mock_make_axes_locatable, mock_show):
 
     # Verify that the plot was displayed
     mock_show.assert_called_once()
+
+
+@patch('flekspy.amrex.logger')
+@patch('matplotlib.pyplot.subplots')
+def test_plot_phase_no_particles(mock_subplots, mock_logger):
+    """
+    Tests that plot_phase logs a warning and returns early
+    when there are no particles to plot.
+    """
+    # --- 1. Create a mock AMReXParticleData instance with empty data ---
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.rdata = np.empty((0, 5)) # No particles
+
+    # --- 2. Call the plot_phase method ---
+    AMReXParticleData.plot_phase(
+        mock_pdata,
+        x_variable='x',
+        y_variable='y'
+    )
+
+    # --- 3. Assertions ---
+    # Verify that a warning was logged
+    mock_logger.warning.assert_called_once_with("No particles to plot.")
+
+    # Verify that no plot was created
+    mock_subplots.assert_not_called()

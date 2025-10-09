@@ -2,7 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import re
+import logging
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+logger = logging.getLogger(__name__)
 
 
 class AMReXParticleHeader:
@@ -374,7 +377,7 @@ class AMReXParticleData:
             rdata = self.rdata
 
         if rdata.size == 0:
-            print("No particles to plot.")
+            logger.warning("No particles to plot.")
             return
 
         # --- 2. Map component names to column indices ---
