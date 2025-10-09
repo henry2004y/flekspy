@@ -53,14 +53,13 @@ def test_select_particles_in_region(particle_data):
     assert rdata.shape[0] < particle_data.header.num_particles
 
 
-@patch('matplotlib.pyplot.show')
 @patch('flekspy.amrex.make_axes_locatable')
 @patch('matplotlib.pyplot.subplots')
-def test_plot_phase(mock_subplots, mock_make_axes_locatable, mock_show):
+def test_plot_phase(mock_subplots, mock_make_axes_locatable):
     """
     Tests the plot_phase function by mocking the plotting backend.
     This test verifies that the correct matplotlib functions are called
-    with the expected arguments.
+    with the expected arguments, and that the figure and axes are returned.
     """
     # --- 1. Setup Mocks ---
     # Mock the figure and axes objects that subplots() would return
@@ -83,10 +82,8 @@ def test_plot_phase(mock_subplots, mock_make_axes_locatable, mock_show):
     # Create some random data for the plot to process
     mock_pdata.rdata = np.random.rand(100, 5)
 
-    # --- 3. Call the real plot_phase method on the mock instance ---
-    # We call the method directly from the class, passing our mock
-    # instance as `self`.
-    AMReXParticleData.plot_phase(
+    # --- 3. Call the real plot_phase method and capture the return value ---
+    result_fig, result_ax = AMReXParticleData.plot_phase(
         mock_pdata,
         x_variable='x',
         y_variable='vy',
@@ -98,6 +95,10 @@ def test_plot_phase(mock_subplots, mock_make_axes_locatable, mock_show):
     )
 
     # --- 4. Assertions ---
+    # Verify that the correct figure and axes are returned
+    assert result_fig is mock_fig
+    assert result_ax is mock_ax
+
     # Verify that subplots was called correctly
     mock_subplots.assert_called_once_with(figsize=(8, 6))
 
@@ -118,9 +119,6 @@ def test_plot_phase(mock_subplots, mock_make_axes_locatable, mock_show):
     # Check the label reflects that the data was normalized and weighted
     cbar_instance = mock_fig.colorbar.return_value
     cbar_instance.set_label.assert_called_once_with("Normalized Weighted Density")
-
-    # Verify that the plot was displayed
-    mock_show.assert_called_once()
 
 
 @patch('flekspy.amrex.logger')

@@ -369,6 +369,10 @@ class AMReXParticleData:
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
+
+        Returns:
+            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+                   This allows for further customization of the plot after its creation.
         """
         # --- 1. Select data ---
         if x_range or y_range or z_range:
@@ -445,5 +449,5 @@ class AMReXParticleData:
         cbar = fig.colorbar(im, cax=cax)
         cbar.set_label(cbar_label)
 
-        # --- 8. Display the plot ---
-        plt.show()
+        # --- 8. Return the plot objects ---
+        return fig, ax
