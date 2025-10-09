@@ -85,7 +85,7 @@ class TestIDL:
 
 
 class TestAMReX:
-    files = ("z=0_fluid_region0_0_t00001640_n00010142.out", "3d*amrex")
+    files = ("z=0_fluid_region0_0_t00001640_n00010142.out", "3d_region*amrex")
     files = [os.path.join("tests/data/", file) for file in files]
 
     def test_load(self):
@@ -141,6 +141,10 @@ class TestAMReX:
         )
         f = fs.extract_phase(pp)
         assert f[0].size == 16 and f[2].shape == (16, 16)
+
+    def test_amrex_particle_loader(self):
+        ds = fs.load("tests/data/3d_particle*amrex")
+        assert isinstance(ds, fs.amrex.AMReXParticleData)
 
 
 class TestParticles:

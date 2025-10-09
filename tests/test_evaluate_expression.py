@@ -20,7 +20,7 @@ if not os.path.isdir(
 
 
 class TestEvaluateExpression:
-    files = ("3d*amrex",)
+    files = ("3d_region*amrex",)
     files = [os.path.join("tests/data/", file) for file in files]
 
     def test_evaluate_expression(self):

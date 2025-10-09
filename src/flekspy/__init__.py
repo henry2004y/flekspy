@@ -8,6 +8,7 @@ from itertools import islice
 from flekspy.idl import read_idl, IDLAccessor
 from flekspy.yt import FLEKSData, extract_phase
 from flekspy.tp import FLEKSTP
+from flekspy.amrex import AMReXParticleData
 import xarray as xr
 
 
@@ -55,6 +56,9 @@ def load(
     elif filepath.suffix in [".out", ".outs"]:
         return read_idl(filename)
     elif basename.endswith("_amrex"):
-        return FLEKSData(filename, readFieldData)
+        if "particle" in basename:
+            return AMReXParticleData(filename)
+        else:
+            return FLEKSData(filename, readFieldData)
     else:
         raise Exception("Error: unknown file format!")
