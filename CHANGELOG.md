@@ -61,3 +61,8 @@
 ## v0.5.21 (2025/10/08)
 
 - Add experimental native AMReX particle data loader.
+
+## v0.6.0 (2025/10/09)
+
+- Switch the default AMReX particle loader. Add plotting support.
+- Separate IDL, AMReX, and test particle documentations.
