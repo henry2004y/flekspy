@@ -357,11 +357,11 @@ class AMReXParticleData:
             x_variable (str): The name of the variable for the x-axis.
             y_variable (str): The name of the variable for the y-axis.
             bins (int or tuple, optional): The number of bins. This can be a
-                                  single integer for the same number of
-                                  bins in each dimension, or a two-element
-                                  tuple for different numbers of bins in the
-                                  x and y dimension, respectively.
-                                  Defaults to 100.
+                                           single integer for the same number of
+                                           bins in each dimension, or a two-element
+                                           tuple for different numbers of bins in the
+                                           x and y dimension, respectively.
+                                           Defaults to 100.
             x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
             y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.
             z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.
