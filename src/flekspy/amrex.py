@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import logging
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from typing import List, Tuple, Optional, Any, Union
+from typing import List, Tuple, Optional, Any, Union, Type
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
