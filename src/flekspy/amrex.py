@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
 import re
 
@@ -337,3 +338,106 @@ class AMReXParticleData:
 
         final_rdata = np.concatenate(selected_rdata) if selected_rdata else np.empty((0, self.header.num_real), dtype=self.header.real_type)
         return final_rdata
+
+    def plot_phase(self, x_variable, y_variable, bins=100, x_range=None, y_range=None, z_range=None,
+                   normalize=False, title=None, xlabel=None, ylabel=None, **imshow_kwargs):
+        """
+        Plots the 2D phase space distribution for any two selected variables.
+
+        This function creates a 2D weighted histogram to visualize the particle
+        density. If a 'weight' component is present in the data, it will be
+        used for the histogram weighting. Otherwise, a standard (unweighted)
+        histogram is generated.
+
+        Args:
+            x_variable (str): The name of the variable for the x-axis.
+            y_variable (str): The name of the variable for the y-axis.
+            bins (int, optional): The number of bins for the histogram in each
+                                  dimension. Defaults to 100.
+            x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
+            y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.
+            z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.
+                                       For 2D data, this is ignored.
+            normalize (bool, optional): If True, the histogram is normalized to
+                                        form a probability density. Defaults to False.
+            title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
+            xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
+            ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
+            **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
+                             This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
+        """
+        # --- 1. Select data ---
+        if x_range or y_range or z_range:
+            rdata = self.select_particles_in_region(x_range, y_range, z_range)
+        else:
+            rdata = self.rdata
+
+        if rdata.size == 0:
+            print("No particles to plot.")
+            return
+
+        # --- 2. Map component names to column indices ---
+        component_map = {name: i for i, name in enumerate(self.header.real_component_names)}
+
+        # --- 3. Validate input variable names ---
+        if x_variable not in component_map or y_variable not in component_map:
+            raise ValueError(
+                f"Invalid variable name. Choose from {list(component_map.keys())}"
+            )
+
+        x_index = component_map[x_variable]
+        y_index = component_map[y_variable]
+
+        # --- 4. Extract the relevant data columns ---
+        x_data = rdata[:, x_index]
+        y_data = rdata[:, y_index]
+
+        # --- 5. Create the 2D histogram ---
+        weights = None
+        if "weight" in component_map:
+            weight_index = component_map["weight"]
+            weights = rdata[:, weight_index]
+            cbar_label = "Weighted Particle Density"
+        else:
+            cbar_label = "Particle Count"
+
+        H, xedges, yedges = np.histogram2d(x_data, y_data, bins=bins, weights=weights)
+
+        if normalize:
+            total = H.sum()
+            if total > 0:
+                H /= total
+            if weights is not None:
+                cbar_label = "Normalized Weighted Density"
+            else:
+                cbar_label = "Normalized Density"
+
+        # --- 6. Plot the resulting histogram as a color map ---
+        fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)
+
+        # Default imshow settings that can be overridden by user
+        imshow_settings = {
+            'interpolation': 'nearest',
+            'origin': 'lower',
+            'extent': [xedges[0], xedges[-1], yedges[0], yedges[-1]],
+            'aspect': 'auto'
+        }
+        imshow_settings.update(imshow_kwargs)
+
+        im = ax.imshow(H.T, **imshow_settings)
+
+        # --- 7. Add labels and a color bar for context ---
+        final_title = title if title is not None else "Phase Space Distribution"
+        final_xlabel = xlabel if xlabel is not None else x_variable
+        final_ylabel = ylabel if ylabel is not None else y_variable
+
+        ax.set_title(final_title, fontsize="x-large")
+        ax.set_xlabel(final_xlabel, fontsize="x-large")
+        ax.set_ylabel(final_ylabel, fontsize="x-large")
+        ax.minorticks_on()
+
+        cbar = fig.colorbar(im, ax=ax)
+        cbar.set_label(cbar_label)
+
+        # --- 8. Display the plot ---
+        plt.show()
