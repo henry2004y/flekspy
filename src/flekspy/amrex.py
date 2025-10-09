@@ -4,6 +4,9 @@ from pathlib import Path
 import re
 import logging
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from typing import List, Tuple, Optional, Any, Union, Type
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +16,27 @@ class AMReXParticleHeader:
     This class is designed to parse and store the information
     contained in an AMReX particle header file.
     """
+    version_string: str
+    real_type: Union[Type[np.float64], Type[np.float32]]
+    int_type: Type[np.int32]
+    dim: int
+    num_int_base: int
+    num_real_base: int
+    real_component_names: List[str]
+    int_component_names: List[str]
+    num_real_extra: int
+    num_int_extra: int
+    num_int: int
+    num_real: int
+    is_checkpoint: bool
+    num_particles: int
+    max_next_id: int
+    finest_level: int
+    num_levels: int
+    grids_per_level: np.ndarray
+    grids: List[List[Tuple[int, ...]]]
 
-    def __init__(self, header_filename):
+    def __init__(self, header_filename: Union[str, Path]):
 
         self.real_component_names = []
         self.int_component_names = []
@@ -70,7 +92,7 @@ class AMReXParticleHeader:
                     entry = [int(val) for val in f.readline().strip().split()]
                     self.grids[level_num].append(tuple(entry))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Returns a string representation of the header contents.
         """
@@ -96,11 +118,11 @@ class AMReXParticleHeader:
         )
 
     @property
-    def idtype_str(self):
+    def idtype_str(self) -> str:
         return f"({self.num_int},)i4"
 
     @property
-    def rdtype_str(self):
+    def rdtype_str(self) -> str:
         if self.real_type == np.float64:
             return f"({self.num_real},)f8"
         elif self.real_type == np.float32:
@@ -108,7 +130,9 @@ class AMReXParticleHeader:
         raise RuntimeError("Unrecognized real type.")
 
 
-def read_amrex_binary_particle_file(fn, header):
+def read_amrex_binary_particle_file(
+    fn: Union[str, Path], header: AMReXParticleHeader
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     This function returns the particle data stored in a particular
     plot file. It returns two numpy arrays, the
@@ -149,8 +173,19 @@ class AMReXParticleData:
     This class provides an interface to the particle data in a plotfile.
     Data is loaded lazily upon first access to `idata` or `rdata`.
     """
+    output_dir: Path
+    ptype: str
+    _idata: Optional[np.ndarray]
+    _rdata: Optional[np.ndarray]
+    level_boxes: List[List[Tuple[Tuple[int, ...], Tuple[int, ...]]]]
+    header: AMReXParticleHeader
+    dim: int
+    time: float
+    left_edge: List[float]
+    right_edge: List[float]
+    domain_dimensions: List[int]
 
-    def __init__(self, output_dir):
+    def __init__(self, output_dir: Union[str, Path]):
         self.output_dir = Path(output_dir)
         self.ptype = "particles"
 
@@ -163,7 +198,7 @@ class AMReXParticleData:
         self.header = AMReXParticleHeader(self.output_dir / self.ptype / "Header")
         self._parse_particle_h_files()
 
-    def _load_data(self):
+    def _load_data(self) -> None:
         """Loads the particle data from disk if it has not been loaded yet."""
         if self._idata is None:
             self._idata, self._rdata = read_amrex_binary_particle_file(
@@ -171,18 +206,20 @@ class AMReXParticleData:
             )
 
     @property
-    def idata(self):
+    def idata(self) -> np.ndarray:
         """Lazily loads and returns the integer particle data."""
         self._load_data()
+        assert self._idata is not None
         return self._idata
 
     @property
-    def rdata(self):
+    def rdata(self) -> np.ndarray:
         """Lazily loads and returns the real particle data."""
         self._load_data()
+        assert self._rdata is not None
         return self._rdata
 
-    def _parse_main_header(self):
+    def _parse_main_header(self) -> None:
         header_path = self.output_dir / "Header"
         with open(header_path, 'r') as f:
             f.readline() # version string
@@ -209,7 +246,7 @@ class AMReXParticleData:
 
             self.domain_dimensions = [dim_x, dim_y, dim_z]
 
-    def _parse_particle_h_files(self):
+    def _parse_particle_h_files(self) -> None:
         """Parses the Particle_H files to get the box arrays for each level."""
         self.level_boxes = [[] for _ in range(self.header.num_levels)]
         for level_num in range(self.header.num_levels):
@@ -240,7 +277,7 @@ class AMReXParticleData:
                         continue # Not a valid box line
             self.level_boxes[level_num] = boxes
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         repr_str = (
             f"AMReXParticleData from {self.output_dir}\n"
             f"Time: {self.time}\n"
@@ -259,7 +296,12 @@ class AMReXParticleData:
             repr_str += "\nParticle data: Not loaded (access .idata or .rdata to load)"
         return repr_str
 
-    def select_particles_in_region(self, x_range=None, y_range=None, z_range=None):
+    def select_particles_in_region(
+        self,
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+    ) -> np.ndarray:
         """
         Selectively loads real component data for particles that fall within a
         specified rectangular region.
@@ -283,7 +325,7 @@ class AMReXParticleData:
         # Convert physical range to index range
         dx = [(self.right_edge[i] - self.left_edge[i]) / self.domain_dimensions[i] for i in range(self.dim)]
 
-        target_idx_ranges = []
+        target_idx_ranges: List[Optional[Tuple[int, int]]] = []
         ranges = [x_range, y_range, z_range]
         for i in range(self.dim):
             if ranges[i]:
@@ -294,7 +336,7 @@ class AMReXParticleData:
                 target_idx_ranges.append(None)
 
         # Find overlapping grids based on index ranges
-        overlapping_grids = []
+        overlapping_grids: List[Tuple[int, int]] = []
         for level_num, boxes in enumerate(self.level_boxes):
             for grid_index, (lo_corner, hi_corner) in enumerate(boxes):
                 box_overlap = True
@@ -308,7 +350,7 @@ class AMReXParticleData:
                 if box_overlap:
                     overlapping_grids.append((level_num, grid_index))
 
-        selected_rdata = []
+        selected_rdata: List[np.ndarray] = []
         idtype = self.header.idtype_str
         fdtype = self.header.rdtype_str
 
@@ -343,8 +385,20 @@ class AMReXParticleData:
         final_rdata = np.concatenate(selected_rdata) if selected_rdata else np.empty((0, self.header.num_real), dtype=self.header.real_type)
         return final_rdata
 
-    def plot_phase(self, x_variable, y_variable, bins=100, x_range=None, y_range=None, z_range=None,
-                   normalize=False, title=None, xlabel=None, ylabel=None, **imshow_kwargs):
+    def plot_phase(
+        self,
+        x_variable: str,
+        y_variable: str,
+        bins: Union[int, Tuple[int, int]] = 100,
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+        normalize: bool = False,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        **imshow_kwargs: Any,
+    ) -> Optional[Tuple[Figure, Axes]]:
         """
         Plots the 2D phase space distribution for any two selected variables.
 
@@ -386,7 +440,7 @@ class AMReXParticleData:
 
         if rdata.size == 0:
             logger.warning("No particles to plot.")
-            return
+            return None
 
         # --- 2. Map component names to column indices ---
         component_map = {name: i for i, name in enumerate(self.header.real_component_names)}
