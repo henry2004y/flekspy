@@ -1,1 +1,1 @@
-from .yt import FLEKSData, extract_phase
+from .yt import YtFLEKSData, extract_phase

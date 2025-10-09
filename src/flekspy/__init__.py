@@ -6,7 +6,7 @@ from pathlib import Path
 import errno
 from itertools import islice
 from flekspy.idl import read_idl, IDLAccessor
-from flekspy.yt import FLEKSData, extract_phase
+from flekspy.yt import YtFLEKSData, extract_phase
 from flekspy.tp import FLEKSTP
 from flekspy.amrex import AMReXParticleData
 import xarray as xr
@@ -32,7 +32,7 @@ def load(
         use_yt_loader (bool, optional): If True, forces the use of the yt loader for AMReX data. Defaults to False.
 
     Returns:
-        FLEKS data: xarray.Dataset, FLEKSData, or FLEKSTP
+        FLEKS data: xarray.Dataset, YtFLEKSData, or FLEKSTP
     """
     p = Path(filename)
     file_generator = p.parent.rglob(p.name)
@@ -59,7 +59,7 @@ def load(
         return read_idl(filename)
     elif basename.endswith("_amrex"):
         if use_yt_loader or "particle" not in basename:
-            return FLEKSData(filename, readFieldData)
+            return YtFLEKSData(filename, readFieldData)
         else:
             return AMReXParticleData(filename)
     else:

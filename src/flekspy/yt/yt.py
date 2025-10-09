@@ -114,7 +114,7 @@ class FLEKSHierarchy(BoxlibHierarchy):
         self.raw_field_nghost = {}
 
 
-class FLEKSData(BoxlibDataset):
+class YtFLEKSData(BoxlibDataset):
     """
     Read and plot the AMReX format output from FLEKS.
 
@@ -123,7 +123,7 @@ class FLEKSData(BoxlibDataset):
 
     Examples:
         >>> import flekspy
-        >>> ds = flekspy.FLEKSData("3d_particle*n00004750_amrex")
+        >>> ds = flekspy.YtFLEKSData("3d_particle*n00004750_amrex")
     """
 
     _index_class = FLEKSHierarchy
@@ -145,7 +145,7 @@ class FLEKSData(BoxlibDataset):
         self.fluid_types = ("mesh", "index", "raw")
         self.read_field_data = read_field_data
 
-        super(FLEKSData, self).__init__(
+        super(YtFLEKSData, self).__init__(
             output_dir,
             cparam_filename,
             fparam_filename,
@@ -156,7 +156,7 @@ class FLEKSData(BoxlibDataset):
         )
 
     def _parse_parameter_file(self):
-        super(FLEKSData, self)._parse_parameter_file()
+        super(YtFLEKSData, self)._parse_parameter_file()
 
         fleks_header = Path(self.output_dir) / "FLEKSHeader"
         with open(fleks_header, "r") as f:
