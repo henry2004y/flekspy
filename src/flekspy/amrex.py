@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import re
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 class AMReXParticleHeader:
@@ -413,7 +414,7 @@ class AMReXParticleData:
                 cbar_label = "Normalized Density"
 
         # --- 6. Plot the resulting histogram as a color map ---
-        fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)
+        fig, ax = plt.subplots(figsize=(8, 6))
 
         # Default imshow settings that can be overridden by user
         imshow_settings = {
@@ -436,7 +437,9 @@ class AMReXParticleData:
         ax.set_ylabel(final_ylabel, fontsize="x-large")
         ax.minorticks_on()
 
-        cbar = fig.colorbar(im, ax=ax)
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="3%", pad=0.05)
+        cbar = fig.colorbar(im, cax=cax)
         cbar.set_label(cbar_label)
 
         # --- 8. Display the plot ---
