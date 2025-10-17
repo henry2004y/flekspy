@@ -3,7 +3,7 @@ import os
 from flekspy.util import download_testfile
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_data(tmp_path_factory):
+def setup_test_data():
     """
     Fixture to download and extract test data once per session.
     """
