@@ -1,6 +1,7 @@
 import pytest
 import os
 import numpy as np
+import yt
 
 import flekspy as fs
 from flekspy.util import download_testfile
@@ -10,41 +11,32 @@ import matplotlib
 matplotlib.use("agg")
 
 
-filedir = os.path.dirname(__file__)
-
-if not os.path.isdir(
-    os.path.join(filedir, "data", "3d_particle_region0_1_t00000002_n00000007_amrex")
-):
-    url = "https://raw.githubusercontent.com/henry2004y/batsrus_data/master/3d_particle.tar.gz"
-    download_testfile(url, "tests/data")
+@pytest.fixture(scope="module")
+def amrex_dataset(setup_test_data):
+    """Fixture to load the AMReX dataset for expression evaluation."""
+    file_path = os.path.join(setup_test_data, "3d*amrex")
+    ds = fs.load(file_path, use_yt_loader=True)
+    return ds.get_slice("z", 0.5)
 
 
 class TestEvaluateExpression:
-    files = ("3d*amrex",)
-    files = [os.path.join("tests/data/", file) for file in files]
-
-    def test_evaluate_expression(self):
-        ds = fs.load(self.files[0], use_yt_loader=True)
-        dc = ds.get_slice("z", 0.5)
-
-        # Test a simple expression
-        result = dc.evaluate_expression("{Bx} + {By}")
-
-        import yt
-
+    def test_simple_expression(self, amrex_dataset):
+        """Test a simple arithmetic expression."""
+        result = amrex_dataset.evaluate_expression("{Bx} + {By}")
         assert isinstance(result, yt.units.yt_array.YTArray)
-        assert result.shape == dc.data["Bx"].shape
-        expected = dc.data["Bx"] + dc.data["By"]
+        assert result.shape == amrex_dataset.data["Bx"].shape
+        expected = amrex_dataset.data["Bx"] + amrex_dataset.data["By"]
         np.testing.assert_allclose(result.value, expected.value)
 
-        # Test an expression with a function call
-        result = dc.evaluate_expression("np.sqrt({Bx}**2+{By}**2)")
-
+    def test_function_call_expression(self, amrex_dataset):
+        """Test an expression involving a NumPy function."""
+        result = amrex_dataset.evaluate_expression("np.sqrt({Bx}**2+{By}**2)")
         assert isinstance(result, yt.units.yt_array.YTArray)
-        assert result.shape == dc.data["Bx"].shape
-        expected = np.sqrt(dc.data["Bx"] ** 2 + dc.data["By"] ** 2)
+        assert result.shape == amrex_dataset.data["Bx"].shape
+        expected = np.sqrt(amrex_dataset.data["Bx"] ** 2 + amrex_dataset.data["By"] ** 2)
         np.testing.assert_allclose(result.value, expected.value)
 
-        # Test with a non-existent variable
+    def test_non_existent_variable(self, amrex_dataset):
+        """Test that a KeyError is raised for a non-existent variable."""
         with pytest.raises(KeyError):
-            dc.evaluate_expression("{non_existent_var}")
+            amrex_dataset.evaluate_expression("{non_existent_var}")
