@@ -370,10 +370,8 @@ class IDLAccessor:
     def get_slice(self, norm, cut_loc) -> xr.Dataset:
         """Get a 2D slice from the 3D IDL data.
         Args:
-            norm: str
-                The normal direction of the slice from "x", "y" or "z"
-            cur_loc: float
-                The position of slicing.
+            norm (str): The normal direction of the slice from "x", "y" or "z"
+            cur_loc (float): The position of slicing.
         Return: xarray.Dataset
         """
         return self._obj.sel({norm: cut_loc}, method="nearest")
