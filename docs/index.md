@@ -5,10 +5,10 @@
 :maxdepth: 1
 :hidden:
 
-algorithm.md
 idl_data.ipynb
 amrex_data.ipynb
 test_particle_data.ipynb
+algorithm.md
 changelog.md
 contributing.md
 conduct.md
