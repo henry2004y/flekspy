@@ -16,9 +16,11 @@ author = "Yuxi Chen, Hongyang Zhou"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.napoleon",
+    "amsmath",
+    "dollarmath",
     "myst_nb",
     "autoapi.extension",
+    "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.mathjax",
 ]
@@ -28,11 +30,6 @@ autoapi_dirs = ["../src"]
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-
-# Update MathJax configuration to prevent myst-nb from interfering with it
-# Disabling this setting resolves an issue where myst-nb modifies the MathJax configuration,
-# leading to incorrect rendering of LaTeX equations in Jupyter notebooks.
-myst_update_mathjax = False
 
 # If True, the build process is continued even if a runtime exception occurs:
 nbsphinx_allow_errors = False
