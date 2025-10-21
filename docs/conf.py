@@ -30,6 +30,8 @@ autoapi_dirs = ["../src"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # Update MathJax configuration to prevent myst-nb from interfering with it
+# Disabling this setting resolves an issue where myst-nb modifies the MathJax configuration,
+# leading to incorrect rendering of LaTeX equations in Jupyter notebooks.
 myst_update_mathjax = False
 
 # If True, the build process is continued even if a runtime exception occurs:
