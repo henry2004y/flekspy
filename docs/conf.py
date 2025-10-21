@@ -16,8 +16,6 @@ author = "Yuxi Chen, Hongyang Zhou"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "amsmath",
-    "dollarmath",
     "myst_nb",
     "autoapi.extension",
     "sphinx.ext.napoleon",
@@ -25,6 +23,22 @@ extensions = [
     "sphinx.ext.mathjax",
 ]
 autoapi_dirs = ["../src"]
+
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "linkify",
+    "replacements",
+    "smartquotes",
+    "substitution",
+    "tasklist",
+]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
