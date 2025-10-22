@@ -1,0 +1,87 @@
+flekspy.idl.idl
+===============
+
+.. py:module:: flekspy.idl.idl
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.idl.idl.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.idl.idl.IDLAccessor
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.idl.idl._read_and_process_data
+   flekspy.idl.idl._read_ascii
+   flekspy.idl.idl._read_ascii_instance
+   flekspy.idl.idl._read_binary
+   flekspy.idl.idl._read_binary_slow
+   flekspy.idl.idl._get_file_head
+   flekspy.idl.idl._read_binary_instance
+   flekspy.idl.idl._read_parameters
+   flekspy.idl.idl._read_variable_names
+   flekspy.idl.idl._post_process_param
+   flekspy.idl.idl.read_idl
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: _read_and_process_data(filename)
+
+.. py:function:: _read_ascii(filename, attrs)
+
+.. py:function:: _read_ascii_instance(infile, attrs)
+
+.. py:function:: _read_binary(filename, attrs)
+
+.. py:function:: _read_binary_slow(filename, attrs)
+
+.. py:function:: _get_file_head(infile, attrs)
+
+.. py:function:: _read_binary_instance(infile, attrs)
+
+.. py:function:: _read_parameters(infile, attrs)
+
+.. py:function:: _read_variable_names(infile, attrs)
+
+.. py:function:: _post_process_param(ds)
+
+.. py:class:: IDLAccessor(xarray_obj)
+
+   .. py:attribute:: _obj
+
+
+   .. py:method:: get_slice(norm, cut_loc) -> xarray.Dataset
+
+      Get a 2D slice from the 3D IDL data.
+      :param norm: The normal direction of the slice from "x", "y" or "z"
+      :type norm: str
+      :param cur_loc: The position of slicing.
+      :type cur_loc: float
+
+      Return: xarray.Dataset
+
+
+
+.. py:function:: read_idl(filename)
+
+   Read IDL format file.
+
+

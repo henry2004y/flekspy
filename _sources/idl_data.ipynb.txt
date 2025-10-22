@@ -1,0 +1,288 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# FLEKS Python Visualization Toolkit: IDL Data\n",
+    "\n",
+    "flekspy is a Python package for processing FLEKS data. This notebook focuses on handling data in the IDL format.\n",
+    "\n",
+    "## FLEKS data format\n",
+    "\n",
+    "* Field: *.out format or AMREX built-in format, whose directory name is assumed to end with \"_amrex\"\n",
+    "* PIC particle: AMREX built-in format \n",
+    "* Test particle: binary data format"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Importing the package"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import flekspy"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Downloading demo data\n",
+    "\n",
+    "If you don't have FLEKS data to start with, you can download demo field data with the following:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from flekspy.util import download_testfile\n",
+    "\n",
+    "url = \"https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz\"\n",
+    "download_testfile(url, \"data\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Loading data\n",
+    "\n",
+    "`flekspy.load` is the interface to read files of all formats. It returns a different object for different formats. IDL format data are processed into XArray data structures:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "file = \"data/1d__raw_2_t25.60000_n00000258.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "ds"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The coordinates can be accessed via"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds.coords"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The variables can be accessed via"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds.var"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "and individual variables can be accessed through keys or properties:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds[\"p\"]\n",
+    "ds.p"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Unstructured data\n",
+    "\n",
+    "Unstructured data is handled with [Xugrid](https://deltares.github.io/xugrid/index.html), with support of regridding and partitioning."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "file = \"data/bx0_mhd_6_t00000100_n00000352.out\"\n",
+    "dsu = flekspy.load(file)\n",
+    "dsu\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Interpolating data\n",
+    "\n",
+    "Variable interpolation is supported via [XArray](https://docs.xarray.dev/en/stable/user-guide/interpolation.html). For 1D data, simply provide the coordinate:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds[\"Rho\"].interp(x=100)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "For multidimensional interpolation, it can be easily extended as"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "file = \"data/z=0_fluid_region0_0_t00001640_n00010142.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "ds[\"rhoS0\"].interp(x=-28000.0, y =0.0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If you want to interpolate for all variables at a single location,"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds.interp(x=-28000.0, y =0.0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Visualizing fields\n",
+    "\n",
+    "Thanks to XArray's Matplotlib wrapper, all Matplotlib's plotting functionalities are directly supported."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "file = \"data/1d__raw_2_t25.60000_n00000258.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "\n",
+    "fig, axs = plt.subplots(2, 1, constrained_layout=True, sharex=True, sharey=True)\n",
+    "ds.p.plot(ax=axs[0])\n",
+    "ds.Bx.plot(ax=axs[1])\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "By default, XArray's 2D plotting functions map the first dimension to the vertical y-axis and the second dimension to the horizontal x-axis. To overwrite this default behavior, we can explicitly set the `x` and `y` arguments:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "file = \"data/z=0_fluid_region0_0_t00001640_n00010142.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "fig, axs = plt.subplots(3, 1, figsize=(10, 6), constrained_layout=True, sharex=True, sharey=True)\n",
+    "ds.Bx.plot.pcolormesh(ax=axs[0], x=\"x\", y=\"y\")\n",
+    "ds.By.plot.pcolormesh(ax=axs[1], x=\"x\", y=\"y\")\n",
+    "ds.Bz.plot.pcolormesh(ax=axs[2], x=\"x\", y=\"y\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Unstructured IDL format output plotting is supported directly by [Xugrid](https://deltares.github.io/xugrid/examples/plotting.html). Note that here we need an additional level `ugrid` compared to direct plotting via `xarray`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dsu.Rho.ugrid.plot.contourf()\n",
+    "plt.show()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3.9.7 64-bit",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.6"
+  },
+  "vscode": {
+   "interpreter": {
+    "hash": "f22a20af907fde35ff19e1e892fdb271353fb19b11c7ebd774491472e685293c"
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLEKS Python Visualization Toolkit: Test Particle Data &mdash; flekspy  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Algorithm" href="algorithm.html" />
+    <link rel="prev" title="FLEKS Python Visualization Toolkit: AMReX Data" href="amrex_data.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            flekspy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="idl_data.html">FLEKS Python Visualization Toolkit: IDL Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="amrex_data.html">FLEKS Python Visualization Toolkit: AMReX Data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FLEKS Python Visualization Toolkit: Test Particle Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fleks-data-format">FLEKS data format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#importing-the-package">Importing the package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#downloading-demo-data">Downloading demo data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plotting-test-particle-trajectories">Plotting Test Particle Trajectories</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#loading-particle-data">Loading particle data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#obtaining-particle-ids">Obtaining particle IDs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-particle-trajectory">Reading particle trajectory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-initial-location">Getting initial location</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interpolate-particles-trajectory-at-selected-times">Interpolate particles trajectory at selected times</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotting-trajectory">Plotting trajectory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-and-visualizing-all-particles-location-at-a-given-snapshot">Reading and visualizing all particle’s location at a given snapshot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#selecting-particles-starting-in-a-region">Selecting particles starting in a region</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saving-trajectories-to-csv">Saving trajectories to CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculating-drifts">Calculating drifts</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">flekspy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">FLEKS Python Visualization Toolkit: Test Particle Data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/test_particle_data.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="fleks-python-visualization-toolkit-test-particle-data">
+<h1>FLEKS Python Visualization Toolkit: Test Particle Data<a class="headerlink" href="#fleks-python-visualization-toolkit-test-particle-data" title="Link to this heading"></a></h1>
+<p>flekspy is a Python package for processing FLEKS data. This notebook focuses on handling test particle data.</p>
+<section id="fleks-data-format">
+<h2>FLEKS data format<a class="headerlink" href="#fleks-data-format" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Field: *.out format or AMREX built-in format, whose directory name is assumed to end with “_amrex”</p></li>
+<li><p>PIC particle: AMREX built-in format</p></li>
+<li><p>Test particle: binary data format</p></li>
+</ul>
+</section>
+<section id="importing-the-package">
+<h2>Importing the package<a class="headerlink" href="#importing-the-package" title="Link to this heading"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">flekspy</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="downloading-demo-data">
+<h2>Downloading demo data<a class="headerlink" href="#downloading-demo-data" title="Link to this heading"></a></h2>
+<p>Example test particle data can be downloaded as follows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flekspy.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_testfile</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles_PBEG.tar.gz&quot;</span>
+<span class="n">download_testfile</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plotting-test-particle-trajectories">
+<h2>Plotting Test Particle Trajectories<a class="headerlink" href="#plotting-test-particle-trajectories" title="Link to this heading"></a></h2>
+<section id="loading-particle-data">
+<h3>Loading particle data<a class="headerlink" href="#loading-particle-data" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flekspy</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLEKSTP</span>
+
+<span class="n">tp</span> <span class="o">=</span> <span class="n">FLEKSTP</span><span class="p">(</span><span class="s2">&quot;data/test_particles_PBEG&quot;</span><span class="p">,</span> <span class="n">iSpecies</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="obtaining-particle-ids">
+<h3>Obtaining particle IDs<a class="headerlink" href="#obtaining-particle-ids" title="Link to this heading"></a></h3>
+<p>Test particle IDs consists of a CPU index and a particle index attached to the CPU.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span><span class="o">.</span><span class="n">getIDs</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[(0, 3), (0, 4)]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="reading-particle-trajectory">
+<h3>Reading particle trajectory<a class="headerlink" href="#reading-particle-trajectory" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 22)</small><table border="1" class="dataframe"><thead><tr><th>time</th><th>x</th><th>y</th><th>z</th><th>vx</th><th>vy</th><th>vz</th><th>bx</th><th>by</th><th>bz</th><th>ex</th><th>ey</th><th>ez</th><th>dbxdx</th><th>dbxdy</th><th>dbxdz</th><th>dbydx</th><th>dbydy</th><th>dbydz</th><th>dbzdx</th><th>dbzdy</th><th>dbzdz</th></tr><tr><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td></tr></thead><tbody><tr><td>0.0</td><td>0.000128</td><td>-0.000795</td><td>0.0</td><td>0.000042</td><td>0.000067</td><td>0.000016</td><td>224199.65625</td><td>281.65274</td><td>11182.642578</td><td>-0.447306</td><td>3.064687</td><td>8.890797</td><td>0.0</td><td>0.0</td><td>0.0</td><td>2.1949e6</td><td>0.0</td><td>0.0</td><td>-107828.21875</td><td>0.0</td><td>0.0</td></tr><tr><td>0.286543</td><td>0.000134</td><td>-0.000786</td><td>0.000002</td><td>0.000042</td><td>0.000068</td><td>0.000014</td><td>224414.28125</td><td>207.771286</td><td>11134.431641</td><td>-1.991942</td><td>3.305334</td><td>8.97459</td><td>-225897.34375</td><td>123607.867188</td><td>0.0</td><td>1.993212e6</td><td>110127.578125</td><td>0.0</td><td>-52048.246094</td><td>458591.0</td><td>0.0</td></tr><tr><td>0.573086</td><td>0.000146</td><td>-0.000766</td><td>0.000002</td><td>0.000042</td><td>0.000069</td><td>0.000012</td><td>224547.4375</td><td>171.823151</td><td>11111.666016</td><td>-1.018998</td><td>2.346379</td><td>8.844476</td><td>-159384.8125</td><td>358307.84375</td><td>0.0</td><td>2.0199e6</td><td>25620.753906</td><td>0.0</td><td>68019.898438</td><td>1.3220e6</td><td>0.0</td></tr><tr><td>0.864857</td><td>0.000159</td><td>-0.000745</td><td>0.000002</td><td>0.000042</td><td>0.000071</td><td>0.000011</td><td>224356.78125</td><td>25.654217</td><td>11075.149414</td><td>1.378713</td><td>3.30056</td><td>9.281602</td><td>385832.53125</td><td>685539.1875</td><td>0.0</td><td>2.0586e6</td><td>-450143.34375</td><td>0.0</td><td>668866.25</td><td>693783.875</td><td>0.0</td></tr><tr><td>1.157084</td><td>0.000171</td><td>-0.000724</td><td>0.000001</td><td>0.000043</td><td>0.000072</td><td>0.000009</td><td>224224.421875</td><td>-133.657379</td><td>10893.328125</td><td>0.683855</td><td>2.13601</td><td>9.826899</td><td>822001.0</td><td>1.3780e6</td><td>0.0</td><td>1.7280e6</td><td>-886848.8125</td><td>0.0</td><td>1.0217e6</td><td>-653294.8125</td><td>0.0</td></tr></tbody></table></div></div></div>
+</div>
+</section>
+<section id="getting-initial-location">
+<h3>Getting initial location<a class="headerlink" href="#getting-initial-location" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">read_initial_condition</span><span class="p">(</span><span class="n">tp</span><span class="o">.</span><span class="n">getIDs</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;time, X, Y, Z, Vx, Vy, Vz&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>time, X, Y, Z, Vx, Vy, Vz
+0.00e+00, 1.28e-04, -7.95e-04, 0.00e+00, 4.21e-05, 6.65e-05, 1.55e-05
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="interpolate-particles-trajectory-at-selected-times">
+<h3>Interpolate particles trajectory at selected times<a class="headerlink" href="#interpolate-particles-trajectory-at-selected-times" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flekspy.tp</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate_at_times</span>
+
+<span class="n">interpolate_at_times</span><span class="p">(</span><span class="n">tp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 22)</small><table border="1" class="dataframe"><thead><tr><th>time</th><th>x</th><th>y</th><th>z</th><th>vx</th><th>vy</th><th>vz</th><th>bx</th><th>by</th><th>bz</th><th>ex</th><th>ey</th><th>ez</th><th>dbxdx</th><th>dbxdy</th><th>dbxdz</th><th>dbydx</th><th>dbydy</th><th>dbydz</th><th>dbzdx</th><th>dbzdy</th><th>dbzdz</th></tr><tr><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td></tr></thead><tbody><tr><td>1.0</td><td>0.000165</td><td>-0.000736</td><td>0.000001</td><td>0.000042</td><td>0.000071</td><td>0.00001</td><td>224295.5625</td><td>-48.021412</td><td>10991.063477</td><td>1.057367</td><td>2.761999</td><td>9.533781</td><td>587544.0625</td><td>1.0058e6</td><td>0.0</td><td>1.90571e6</td><td>-652103.1875</td><td>0.0</td><td>832021.6875</td><td>70810.625</td><td>0.0</td></tr></tbody></table></div></div></div>
+</div>
+</section>
+<section id="plotting-trajectory">
+<h3>Plotting trajectory<a class="headerlink" href="#plotting-trajectory" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="n">tp</span><span class="o">.</span><span class="n">plot_trajectory</span><span class="p">(</span><span class="n">tp</span><span class="o">.</span><span class="n">getIDs</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/ef2a163ca8b76d256d14a5c11bb97372c987bf1428649eb17f7f52ee535ffd59.png" src="_images/ef2a163ca8b76d256d14a5c11bb97372c987bf1428649eb17f7f52ee535ffd59.png" />
+</div>
+</div>
+</section>
+<section id="reading-and-visualizing-all-particles-location-at-a-given-snapshot">
+<h3>Reading and visualizing all particle’s location at a given snapshot<a class="headerlink" href="#reading-and-visualizing-all-particles-location-at-a-given-snapshot" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ids</span><span class="p">,</span> <span class="n">pData</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">read_particles_at_time</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">doSave</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">tp</span><span class="o">.</span><span class="n">plot_location</span><span class="p">(</span><span class="n">pData</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/86640e60a79cd3bc89633757aa38727fcdbb79bd292c3148c037b46e374bac5e.png" src="_images/86640e60a79cd3bc89633757aa38727fcdbb79bd292c3148c037b46e374bac5e.png" />
+</div>
+</div>
+</section>
+<section id="selecting-particles-starting-in-a-region">
+<h3>Selecting particles starting in a region<a class="headerlink" href="#selecting-particles-starting-in-a-region" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flekspy.tp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Indices</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">f_select</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+    <span class="n">pData</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">read_initial_condition</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+    <span class="n">inRegion</span> <span class="o">=</span> <span class="n">pData</span><span class="p">[</span><span class="n">Indices</span><span class="o">.</span><span class="n">X</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">pData</span><span class="p">[</span><span class="n">Indices</span><span class="o">.</span><span class="n">Y</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">inRegion</span>
+
+
+<span class="n">pSelected</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">select_particles</span><span class="p">(</span><span class="n">f_select</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="saving-trajectories-to-csv">
+<h3>Saving trajectories to CSV<a class="headerlink" href="#saving-trajectories-to-csv" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span><span class="o">.</span><span class="n">save_trajectory_to_csv</span><span class="p">(</span><span class="n">tp</span><span class="o">.</span><span class="n">getIDs</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="calculating-drifts">
+<h3>Calculating drifts<a class="headerlink" href="#calculating-drifts" title="Link to this heading"></a></h3>
+<p>With the <span class="math notranslate nohighlight">\(\mathbf{E}, \mathbf{B}\)</span>, and <span class="math notranslate nohighlight">\(\nabla \mathbf{B}\)</span> saved along the trajectory, we can compute various drifts:</p>
+<ul class="simple">
+<li><p>Convection drift velocity: <code class="docutils literal notranslate"><span class="pre">tp.get_ExB_drift(pid)</span></code></p></li>
+<li><p>Curvature drift velocity: <code class="docutils literal notranslate"><span class="pre">tp.get_curvature_drift(pid)</span></code></p></li>
+<li><p>Gradient drift velocity: <code class="docutils literal notranslate"><span class="pre">tp.get_gradient_drift(pid)</span></code></p></li>
+<li><p>Polarization drift velocity: <code class="docutils literal notranslate"><span class="pre">tp.get_polarization_drift(pid)</span></code></p></li>
+</ul>
+<p>The first adiabatic assumption can be checked by comparing the ratio between the curvature length and the gyroradius <span class="math notranslate nohighlight">\(r_c / r_L\)</span> via <code class="docutils literal notranslate"><span class="pre">get_adiabaticity_parameter</span></code>. If <span class="math notranslate nohighlight">\(r_c / r_L \gg 1\)</span>, then the gyromotion can be savely ignored.</p>
+<p>The Betatron acceleration <span class="math notranslate nohighlight">\(\mu \partial B/\partial t\)</span> can be indirectly computed with the knowledge of total derivative <span class="math notranslate nohighlight">\(\mathrm{d}B/\mathrm{d}t\)</span> and <span class="math notranslate nohighlight">\(\mathbf{v}\nabla B\)</span> along the trajectory:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pid</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">getIDs</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">pt</span> <span class="o">=</span> <span class="n">tp</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span>
+<span class="n">mu</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">get_first_adiabatic_invariant</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+<span class="n">pt</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">get_betatron_acceleration</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To analyze a specific drift:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span><span class="o">.</span><span class="n">analyze_drift</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="s2">&quot;gradient&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/f1e27a1a3bc4b6e72b2174ae132f63a2b632c11a9df4e5583e874418b5256515.png" src="_images/f1e27a1a3bc4b6e72b2174ae132f63a2b632c11a9df4e5583e874418b5256515.png" />
+</div>
+</div>
+<p>By combining all these together, we come up with time series of various terms:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tp</span><span class="o">.</span><span class="n">analyze_drifts</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c777b0d75289ea955162696ddc6cb9b276a8e1d51d8ca18f730a5a62bc64ee61.png" src="_images/c777b0d75289ea955162696ddc6cb9b276a8e1d51d8ca18f730a5a62bc64ee61.png" />
+</div>
+</div>
+<p>We can the track the energy change from drift and EM field variations:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flekspy.tp</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_integrated_energy</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">integrate_drift_accelerations</span><span class="p">(</span><span class="n">tp</span><span class="o">.</span><span class="n">getIDs</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plot_integrated_energy</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/f2056a05d4adb0eccffd23827d05b19959ae4c28a2a58eb3f26137c28d93d1f7.png" src="_images/f2056a05d4adb0eccffd23827d05b19959ae4c28a2a58eb3f26137c28d93d1f7.png" />
+</div>
+</div>
+<p>Alternatively, the energy change can be decomposed into three terms: the parallel acceleration, Betatron acceleration, and the Fermi acceleration:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">get_energy_change_guiding_center</span><span class="p">(</span><span class="n">tp</span><span class="o">.</span><span class="n">getIDs</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (5, 5)</small><table border="1" class="dataframe"><thead><tr><th>time</th><th>dW_parallel</th><th>dW_betatron</th><th>dW_fermi</th><th>dW_total</th></tr><tr><td>f32</td><td>f32</td><td>f32</td><td>f32</td><td>f32</td></tr></thead><tbody><tr><td>0.0</td><td>-1.2793e-15</td><td>7.9045e-14</td><td>1.1878e-18</td><td>7.7767e-14</td></tr><tr><td>0.286543</td><td>-6.5532e-8</td><td>6.6485e-14</td><td>1.0648e-18</td><td>-6.5532e-8</td></tr><tr><td>0.573086</td><td>-2.4509e-8</td><td>-1.0753e-14</td><td>1.0303e-18</td><td>-2.4509e-8</td></tr><tr><td>0.864857</td><td>7.8494e-8</td><td>-6.7355e-14</td><td>9.9597e-19</td><td>7.8494e-8</td></tr><tr><td>1.157084</td><td>4.9847e-8</td><td>-5.8379e-14</td><td>8.8976e-19</td><td>4.9847e-8</td></tr></tbody></table></div></div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="amrex_data.html" class="btn btn-neutral float-left" title="FLEKS Python Visualization Toolkit: AMReX Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="algorithm.html" class="btn btn-neutral float-right" title="Algorithm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yuxi Chen, Hongyang Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
