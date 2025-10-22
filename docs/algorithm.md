@@ -4,23 +4,11 @@
 
 Particle-In-Cell (PIC) models are incredibly useful for plasma simulation, but they do come with limitations imposed by numerical stability requirements. Let's break down those requirements and their impact:
 
-- **Time Step**: The Courant-Friedrichs-Lewy (CFL) condition in numerical simulations dictates that a particle (or information) shouldn't travel more than one grid cell within a single time step.  Mathematically, for a 1D simulation, it looks like:
-\begin{equation}
-\Delta t \le \Delta x / v_\mathrm{max}
-\end{equation}
-where $\Delta t$ is the time step, $\Delta x$ is the grid cell size, and $v_\mathrm{max}$ is the maximum velocity of particles in the system. If the CFL condition is violated, particles can artificially "jump" over cells, leading to inaccurate results and potential instabilities.
+- **Time Step**: The Courant-Friedrichs-Lewy (CFL) condition in numerical simulations dictates that a particle (or information) shouldn't travel more than one grid cell within a single time step.  Mathematically, for a 1D simulation, it looks like: $\Delta t \le \Delta x / v_\mathrm{max}$ where $\Delta t$ is the time step, $\Delta x$ is the grid cell size, and $v_\mathrm{max}$ is the maximum velocity of particles in the system. If the CFL condition is violated, particles can artificially "jump" over cells, leading to inaccurate results and potential instabilities.
 
-- **Resolving the Debye Length**: The Debye length ($\lambda_D$) is a fundamental length scale in plasmas, representing the distance over which charged particles shield each other's electric fields. To accurately model plasma behavior, your grid resolution needs to be smaller than the Debye length:
-\begin{equation}
-\Delta x < \lambda_D
-\end{equation}
-Failure in resolving $\lambda_D$ results in the finite-grid instability, as demonstrated in the famous PIC simulation book. This under-resolution introduces errors in the calculation of the electric field and charge density, leading to unphysical heating of the plasma over time. The instability manifests as an artificial growth rate in the plasma wave dispersion relation, causing the plasma to become hotter than it should be. This can significantly affect the accuracy and reliability of the simulation results. The energy-conserving PIC algorithms can help to suppress the instability.
+- **Resolving the Debye Length**: The Debye length ($\lambda_D$) is a fundamental length scale in plasmas, representing the distance over which charged particles shield each other's electric fields. To accurately model plasma behavior, your grid resolution needs to be smaller than the Debye length: $\Delta x < \lambda_D$. Failure in resolving $\lambda_D$ results in the finite-grid instability, as demonstrated in the famous PIC simulation book. This under-resolution introduces errors in the calculation of the electric field and charge density, leading to unphysical heating of the plasma over time. The instability manifests as an artificial growth rate in the plasma wave dispersion relation, causing the plasma to become hotter than it should be. This can significantly affect the accuracy and reliability of the simulation results. The energy-conserving PIC algorithms can help to suppress the instability.
 
-- **Resolving the Plasma Frequency**: The plasma frequency ($\omega_p$) represents the natural oscillation frequency of electrons in a plasma. Your simulation time step should be small enough to resolve this:
-\begin{equation}
-\Delta t < 1 / \omega_p
-\end{equation}
-Failing to meet this leads to inaccurate representation of plasma oscillations and potential numerical heating.
+- **Resolving the Plasma Frequency**: The plasma frequency ($\omega_p$) represents the natural oscillation frequency of electrons in a plasma. Your simulation time step should be small enough to resolve this: $\Delta t < 1 / \omega_p$. Failing to meet this leads to inaccurate representation of plasma oscillations and potential numerical heating.
 
 - **Satisfying the Gauss' Law**: Since in classical PIC algorithms we only solve for Faraday's law and Ampere's law, the charge conservation is not guaranteed. Gauss's law is critical in the conservation of both momentum and energy.
 
@@ -57,7 +45,6 @@ However, the semi-implicit methods prosposed in the 1980s (Implicit Moment Metho
 | Stability | Highly stable, larger time steps allowed | More stable than explicit, but not as unconditionally stable as fully implicit |
 | Accuracy | Can be very accurate | Accuracy can depend on the specific linearization technique, some energy conservation issues may exist |
 | Computational Cost | Highest, due to matrix inversions at each step | More expensive than explicit, but often less so than fully implicit |
-: Key Differences
 
 [^common]: One common misconception is that in a semi-implicit method, the particle pusher is explicit while the field solver is implicit. This is not exactly true, because we cannot simply separate the two components.
 
@@ -147,16 +134,16 @@ Most PIC simulations use a reduced speed of light. While their results may be in
 FLEKS uses the Gauss-Law satisfying energy conserving semi-implicit method (GL-ECSIM). Its semi-implicit nature allows the PIC model to run on a coarser grid with a larger time step than explicit PIC methods, which are limited by the stability conditions to $\Delta t < \Delta x/c$ and the grid resolution $\Delta x < \zeta \lambda_D$, where c is the speed of light, $\lambda_D$ is the Debye length, and $\zeta$ is of order one and depends on the numerical details of the method. GL-ECSIM facilitates the coupling between the MHD and the PIC models, and its energy conserving property helps eliminating numerical instabilities and spurious waves that would violate the energy conservation.
 
 ECSIM uses a staggered grid, where the electric field is defined at cell nodes, and the magnetic field is defined at cell centers. The Maxwell's equations are solved implicitly:
-\begin{aligned}
+\begin{align}
 \frac{\mathbf{B}^{n+1} - \mathbf{B}^n}{\Delta t} &= - c\nabla\times\mathbf{E}^{n+\theta} \\
 \frac{\mathbf{E}^{n+1} - \mathbf{E}^n}{\Delta t} &= - c\nabla\times\mathbf{B}^{n+\theta} - 4\pi\bar{\mathbf{J}}
-\end{aligned}
+\end{align}
 where $\theta \in [0.5, 1]$ is the time centering parameter. $\bar{\mathbf{J}}$ is the predicted current density at $n + \frac{1}{2}$ time stage, and it can be expressed as a linear function of the unknown electric field $\mathbf{E}^{n+\theta}$.
 The variables at time stage $n+\theta$ can be written as linear combinations of values at the time steps n and n + 1:
-\begin{aligned}
+\begin{align}
 \mathbf{E}^{n+\theta} &= (1-\theta)\mathbf{E}^n + \theta \mathbf{E}^{n+1} \\
 \mathbf{B}^{n+\theta} &= (1-\theta)\mathbf{B}^n + \theta \mathbf{B}^{n+1}
-\end{aligned}
+\end{align}
 
 After rearranging the equations above and using the identity $\nabla\times\nabla\times\mathbf{E}= \nabla(\nabla\cdot\mathbf{E}) − \nabla^2\mathbf{E}$, we come up with an equation of $\mathbf{E}^{n+\theta}$
 \begin{equation}
@@ -189,10 +176,10 @@ Manipulating the vectors[^v-avg], the average velocity between time steps n and 
 \frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2} = \hat{\mathbf{v}}_p + \beta_s\hat{\mathbf{E}}_p
 \end{equation}
 where the hatted quantities have been rotated by the magnetic field
-\begin{aligned}
+\begin{align}
 \hat{\mathbf{v}}_p &= \pmb{\alpha}_p^n \mathbf{v}_p^n \\
 \hat{\mathbf{E}}_p &= \pmb{\alpha}_p^n \mathbf{E}_p^{n+\theta}
-\end{aligned}
+\end{align}
 via a rotation matrix defined as
 \begin{equation}
 \pmb{\alpha}_p^n = \frac{1}{1 + (\beta_s B_p^n)^2} \left( \overleftrightarrow{I} - \beta_s \overleftrightarrow{I}\times\mathbf{B}_p^n +\beta_s^2\mathbf{B}_p^n \mathbf{B}_p^n \right)
