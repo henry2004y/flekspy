@@ -58,13 +58,28 @@ E_{cgs}^* = B_{cgs}^* = v_{cgs}^* \sqrt{\frac{m_{cgs}^*}{(x_{cgs}^*)^3}}
 
 ### Consequences of Changing the Speed of Light
 
-Reducing the speed of light changes the propagation speed of electromagnetic waves in the simulation, but it does not change the interaction between particles and the magnetic field. In the mass normalization, we require $\bar{q}/(\bar{m}\bar{c}) = 1$, not $\bar{q}/\bar{m} = 1$, because we do not assume $\bar{c}=1$. The speed of light in the first equation is always the physical speed of light, regardless of the choice of $v_{cgs}^*$. For example, if we set $v_{cgs}^* = 0.1c$, then $\bar{c}$ must be 10 to satisfy $\bar{q}/(\bar{m}\bar{c}) = 1$.
+Reducing the speed of light changes the propagation speed of electromagnetic waves in the simulation, but it does not change the interaction between particles and the magnetic field. In PIC codes, this is often called the Darwin, magneto-inductive, or "electrostatic-less" approximation, depending on the exact formulation. In the mass normalization, we require $\bar{q}/(\bar{m}\bar{c}) = 1$, not $\bar{q}/\bar{m} = 1$, because we do not assume $\bar{c}=1$. The speed of light in the first equation is always the physical speed of light, regardless of the choice of $v_{cgs}^*$. For example, if we set $v_{cgs}^* = 0.1c$, then $\bar{c}$ must be 10 to satisfy $\bar{q}/(\bar{m}\bar{c}) = 1$.
 
 Since reducing $v_{cgs}^*$ does not affect the particle-magnetic field interaction, the particle's gyromotion (both gyro-radius and gyro-frequency) remains unchanged. The inertial length, which is the gyro-radius of a particle moving at the Alfven velocity, is also unaffected because neither the gyromotion nor the Alfven velocity changes with $v_{cgs}^*$.
 
-However, what about the interaction between particles and the electric field? Since $\bar{c} = \bar{q}/\bar{m}$ is not necessarily 1, the Coulomb force on a proton should be $(\bar{q}/\bar{m})E = \bar{c}E$. In the code, $\bar{c}$ is ignored, suggesting that the simulated Coulomb force is $\bar{c}$ times weaker than in reality. Is this reasonable? What are its consequences? This needs to be clarified.
+However, what about the interaction between particles and the electric field? Since $\bar{c} = \bar{q}/\bar{m}$ is not necessarily 1, the electric force on a proton should be $(\bar{q}/\bar{m})E = \bar{c}E$. In the code, $\bar{c}$ is ignored,
+$
+\frac{d\bar{\mathbf{v}}}{d\bar{t}} = \mathbf{E} + \left(\bar{\mathbf{v}} \times \bar{\mathbf{B}}\right)
+$
+suggesting that the simulated electric force is $\bar{c}$ times weaker than in reality. This is a deliberate physical approximation to filter out unwanted physics. The primary goal of a reduced-$c$ model is to overcome the two most restrictive time-step constraints in an explicit EM-PIC code (although FLEKS is semi-implicit, the particle pusher is still explicit):
 
-Most PIC simulations use a reduced speed of light. While their results may be interpreted differently than in FLEKS/MHD-EPIC, I believe they also alter the ratio between the Coulomb force and the $\mathbf{v} \times \mathbf{B}$ force. Therefore, our approach of reducing the speed of light is likely reasonable.
+1. The Courant-Friedrichs-Lewy (CFL) Condition: $\Delta t < \Delta x / c$. This is required to resolve light waves.
+2. The Plasma Frequency Constraint: $\Delta t \lesssim 0.1 / \omega_{pe}$. This is required to resolve electron plasma oscillations (Langmuir waves).
+
+By reducing $c$ to $v_{cgs}^*$, the code's field solver relaxes the CFL condition to $\Delta t < \Delta x / v_{cgs}^*$. This is a huge win. However, this doesn't solve the $\omega_{pe}$ constraint. The electric force $q\mathbf{E}$ (specifically the electrostatic part, $\mathbf{E}_{es}$) is the restoring force for Langmuir waves. By implementing $\frac{d\bar{v}}{d\bar{t}} = \bar{\mathbf{E}}$ instead of $\frac{d\bar{v}}{d\bar{t}} = \bar{c}\bar{\mathbf{E}}$, we are artificially weakening the particle's response to the electric field.
+This modification effectively disables high-frequency electrostatic physics. The restoring force for Langmuir waves is made $\bar{c}$ times weaker, which dramatically lowers the plasma frequency $\omega_{pe}$ (or, more accurately, damps the waves entirely).
+
+Most PIC simulations use a reduced speed of light. While their results may be interpreted differently than in FLEKS, they also alter the ratio between the electric force and the $\mathbf{v} \times \mathbf{B}$ force. This reduced-c model is therefore designed to simulate phenomena where:
+
+- $v \ll c$ (non-relativistic).
+- Frequencies are low: $\omega \ll \omega_{pe}$.
+- Physics is dominated by magnetic and inductive effects (gyromotion, $\mathbf{v} \times \mathbf{B}$ forces, $\nabla \times \mathbf{E} = -\partial \mathbf{B}/\partial t$).
+- Physics is not dominated by electrostatic effects (Langmuir waves, Debye shielding, double layers).
 
 ## Particle Mover
 
