@@ -1,5 +1,21 @@
 # Algorithm
 
+## Key Features of FLEKS
+
+- Multi-Scale Modeling: FLEKS is often used as part of the MHD-AEPIC (Magnetohydrodynamics with Adaptively Embedded Particle-in-Cell) framework. This hybrid method bridges the gap between fluid-based plasma models (MHD) and detailed kinetic plasma models (PIC), allowing for the best of both worlds: efficient simulations with localized kinetic accuracy.
+
+- Adaptive Kinetic Regions: FLEKS features dynamically adaptive PIC regions. This means that the computationally demanding PIC simulations can be focused specifically on areas where kinetic effects are crucial, enabling efficient resource allocation. We now have Adaptive Mesh Refinement (AMR) support for FLEKS as well!
+
+- Exascale-Ready: FLEKS is designed to take advantage of powerful exascale computing systems, allowing for large-scale, highly detailed plasma simulations.
+
+- Accurate and Efficient Time-Stepping: FLEKS includes adaptive time-stepping, which adjusts the simulation time step based on the requirements for accuracy within different regions, enhancing simulation efficiency.
+
+- Load Balancing and Noise Reduction: Particle splitting and merging algorithms maintain optimal computational load balancing across computing cores and help suppress statistical noise in simulations.
+
+- Particle Trajectory Tracking: FLEKS includes a test-particle module, used for tracking individual particle trajectories in the dynamic electromagnetic fields.
+
+The semi-implicit solver as in FLEKS is useful for problems that cross both the ion and electron scales where a large domain is needed for studying the systematic impact. These features of the current energy-conserving semi-implicit method are particularly well-suited for multi-scale problems where resolving electron scales is computationally infeasible, but retaining some kinetic electron effects (like Landau damping, whistler waves) is physically necessary.
+
 ## Limitations for Classical PIC Models
 
 Particle-In-Cell (PIC) models are incredibly useful for plasma simulation, but they do come with limitations imposed by numerical stability requirements. Let's break down those requirements and their impact:
@@ -112,7 +128,7 @@ Since reducing $v_{cgs}^*$ does not affect the particle-magnetic field interacti
 
 However, what about the interaction between particles and the electric field? Since $\bar{c} = \bar{q}/\bar{m}$ is not necessarily 1, the electric force on a proton should be $(\bar{q}/\bar{m})E = \bar{c}E$. In the code, $\bar{c}$ is ignored,
 $
-\frac{d\bar{\mathbf{v}}}{d\bar{t}} = \mathbf{E} + \left(\bar{\mathbf{v}} \times \bar{\mathbf{B}}\right)
+\frac{d\bar{\mathbf{v}}}{d\bar{t}} = \mathbf{E} + \bar{\mathbf{v}} \times \bar{\mathbf{B}}
 $
 suggesting that the simulated electric force is $\bar{c}$ times weaker than in reality. This is a deliberate physical approximation to filter out unwanted physics. The primary goal of a reduced-$c$ model is to overcome the two most restrictive time-step constraints in an explicit EM-PIC code (although FLEKS is semi-implicit, the particle pusher is still explicit):
 
@@ -223,20 +239,6 @@ we obtain, in matrix form
 \end{equation}
 
 @eq-mass-matrix defines the elements of the mass matrices that are the most peculiar characteristic of the method proposed here. There are 3v such matrices, where v is the dimensionality of the magnetic field and velocity vector, not to be confused with the dimensionality of the geometry used for space d. The indices i and j in @eq-mass-matrix vary in the 3v-space. For example for full 3-components vectors, and there are 9 mass matrices. Each matrix is symmetric and very sparse with just 2d diagonals.
-
-## Key Features of FLEKS
-
-- Multi-Scale Modeling: FLEKS is often used as part of the MHD-AEPIC (Magnetohydrodynamics with Adaptively Embedded Particle-in-Cell) framework. This hybrid method bridges the gap between fluid-based plasma models (MHD) and detailed kinetic plasma models (PIC), allowing for the best of both worlds: efficient simulations with localized kinetic accuracy.
-
-- Adaptive Kinetic Regions: FLEKS features dynamically adaptive PIC regions. This means that the computationally demanding PIC simulations can be focused specifically on areas where kinetic effects are crucial, enabling efficient resource allocation.
-
-- Exascale-Ready: FLEKS is designed to take advantage of powerful exascale computing systems, allowing for large-scale, highly detailed plasma simulations.
-
-- Accurate and Efficient Time-Stepping: FLEKS includes adaptive time-stepping, which adjusts the simulation time step based on the requirements for accuracy within different regions, enhancing simulation efficiency.
-
-- Load Balancing and Noise Reduction: Particle splitting and merging algorithms maintain optimal computational load balancing across computing cores and help suppress statistical noise in simulations.
-
-- Particle Trajectory Tracking: FLEKS includes a test-particle module, used for tracking individual particle trajectories in the dynamic electromagnetic fields produced by a global simulation.
 
 ## Particle Mover
 
