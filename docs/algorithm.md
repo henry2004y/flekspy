@@ -1,5 +1,66 @@
 # Algorithm
 
+## Limitations for Classical PIC Models
+
+Particle-In-Cell (PIC) models are incredibly useful for plasma simulation, but they do come with limitations imposed by numerical stability requirements. Let's break down those requirements and their impact:
+
+- **Time Step**: The Courant-Friedrichs-Lewy (CFL) condition in numerical simulations dictates that a particle (or information) shouldn't travel more than one grid cell within a single time step.  Mathematically, for a 1D simulation, it looks like:
+\begin{equation}
+\Delta t \le \Delta x / v_\mathrm{max}
+\end{equation}
+where $\Delta t$ is the time step, $\Delta x$ is the grid cell size, and $v_\mathrm{max}$ is the maximum velocity of particles in the system. If the CFL condition is violated, particles can artificially "jump" over cells, leading to inaccurate results and potential instabilities.
+
+- **Resolving the Debye Length**: The Debye length ($\lambda_D$) is a fundamental length scale in plasmas, representing the distance over which charged particles shield each other's electric fields. To accurately model plasma behavior, your grid resolution needs to be smaller than the Debye length:
+\begin{equation}
+\Delta x < \lambda_D
+\end{equation}
+Failure in resolving $\lambda_D$ results in the finite-grid instability, as demonstrated in the famous PIC simulation book. This under-resolution introduces errors in the calculation of the electric field and charge density, leading to unphysical heating of the plasma over time. The instability manifests as an artificial growth rate in the plasma wave dispersion relation, causing the plasma to become hotter than it should be. This can significantly affect the accuracy and reliability of the simulation results. The energy-conserving PIC algorithms can help to suppress the instability.
+
+- **Resolving the Plasma Frequency**: The plasma frequency ($\omega_p$) represents the natural oscillation frequency of electrons in a plasma. Your simulation time step should be small enough to resolve this:
+\begin{equation}
+\Delta t < 1 / \omega_p
+\end{equation}
+Failing to meet this leads to inaccurate representation of plasma oscillations and potential numerical heating.
+
+- **Satisfying the Gauss' Law**: Since in classical PIC algorithms we only solve for Faraday's law and Ampere's law, the charge conservation is not guaranteed. Gauss's law is critical in the conservation of both momentum and energy.
+
+Finer grid resolutions and smaller time steps directly increase the number of calculations needed in a simulation. This translates to significantly higher computational demands. For plasmas containing extremely fast particles, the CFL condition can force you to use impractically small time steps to maintain stability.
+
+Many modern PIC codes use relatively high order shape functions, and as a result, the worst-case numerical growth rates are undetectably small; in addition, some codes use energy-conserving methods which usually prevent this numerical instability from arising.
+
+### How to Loose The Numerical Constraints?
+
+How to handle the limitations of classical PIC algorithms? Why is FLEKS called a semi-implicit PIC model? To answer that, let us first review the differences of explicit and implicit schemes.
+
+PIC methods can be explicit, semi-implicit or fully implicit. Plasmas are governed by two sets of equations: the equations for the motion of the particles and the equations for the evolution of the fields. The two sets of equations are coupled because the field equations need the sources (current and charge) from the particles, and the particles need the fields to compute the force. There is no specific ordering of the equations, which is also consistent with the essence of plasma physics: collective interaction of particles with the fields. Fully implicit methods are required to solve the discretized equations to solve the nonlinear field-particle interactions. In fully implicit methods, the particle equations of motion and the field equations are solved together within a nonlinear solver. In explicit methods, conversely, the coupling between particles and fields is suspended for a small time step. In that small time interval, one assumes that the known fields can be used unchanged for moving the particles, and the particle information can be used unchanged to evolve the fields. This assumption leads to the convenience of using explicit timestepping algorithms which has been proved to be the most efficient method in solving the equations.
+
+However, in explicit PIC methods, timesteps are severely limited by numerical stability considerations. Specifically, not only the time resolution needs to be high enough to resolve the electron plasma frequency $\omega_{pe}$, $\Delta t < 2\omega_{pe}^{-1}$, but also the space resolution needs to cover the Debye length $\lambda_D$ to avoid the finite-grid instability ([@birdsall2018plasma]). The constraints are greatly loosened by the implicit approach.
+
+Another consequence in following the explicit PIC methods is that energy is not conserved. Using a good resolution, energy is acceptably maintained. There is always a secular trend of energy increase, but as the resolution is relaxed closer to the stability limit of the finite grid instability, the energy increase becomes more severe, until at the instability limit, it starts to grow exponentially. [@birdsall2018plasma] This effect cannot be avoided, but it can be improved by using smoothing and higher-order interpolation techniques. Recent structure-preserving geometric particle-in-cell methods use symplectic integrators to ensure local energy conservation at small time steps. The implicit PIC method, instead, conserves energy exactly, whatever resolution is used. This feature is both physically important and practically useful, which serves as a requirement for running PIC models for sufficiently a long time. @barnes2021finite demonstrates that while EC-PIC algorithms are not free from the finite-grid instability for drifting plasmas in principle, they feature a benign stability threshold for finite-temperature plasmas that make them usable in practice for a large class of problems without the need to consider the size of the Debye length.
+
+The semi-implicit PIC method tries to make a compromise and retain some of the advantages of both approaches. In semi-implicit methods, the particles and the fields are still advanced together, and an iteration is needed, but the coupling is linearized, and the iteration uses linear solvers. [@lapenta2023advances] With the addition of Gauss' law conservation correction ([@chen2019gauss]), the semi-implicit energy conserving PIC method has shown improved numerical stability performance.
+
+- **Explicit PIC**: In traditional explicit PIC, field values at the _current_ time step are used to calculate forces on particles. These forces then determine how particles move to the next time step. The fields are then updated based on this new particle distribution. This explicit approach leads to the strict stability constraints (CFL, resolving Debye length, etc.) we discussed earlier.
+
+- **Fully Implicit PIC**: To get around stability limitations, fully implicit PIC models solve a system of equations where fields at the _future_ time step are considered unknowns along with _future_ particle positions.  This means the movement of particles and the update of fields are implicitly linked. Solution involves large matrix inversions at each time step.
+
+- **Semi-Implicit PIC**[^common]: Semi-implicit methods aim for a hybrid approach. They partially _linearize_ the coupling between particles and fields to improve stability somewhat. This involves using field values from the current and potentially from previous time steps, to calculate particle motion and field updates. Several techniques exist for this linearization (implicit moment, direct implicit etc.).
+  - Particle Push: Similar to explicit PIC, the method first uses the electric fields from the current time step (or potentially from a combination of current and previous time steps) to calculate the force acting on each particle.
+  - Linearized Update:  Here's where the 'implicitness' comes in.  The semi-implicit method employs a specific technique to linearize the relationship between how particles move and how the fields update.  Some common linearization techniques include:
+    1. Implicit Moment Method: This method solves a set of moment equations for the particles' distribution function, which is then used to update the fields in a linearized manner.
+    2. Direct Implicit Method: This method performs a formal linear expansion of the coupling operator between particles and fields, allowing for a linearized update of the fields.
+  - Field Update: Once the coupling between particles and fields is linearized, the method updates the electric fields on the grid using the information from the particle push step implicitly.
+However, the semi-implicit methods prosposed in the 1980s (Implicit Moment Method, Direct Implicit Method) lack energy conservation, which causes instability issues with grid resolution much larger than the Debye length.
+
+| Feature | Fully Implicit PIC | Semi-Implicit PIC |
+|---|---|---|
+| Stability | Highly stable, larger time steps allowed | More stable than explicit, but not as unconditionally stable as fully implicit |
+| Accuracy | Can be very accurate | Accuracy can depend on the specific linearization technique, some energy conservation issues may exist |
+| Computational Cost | Highest, due to matrix inversions at each step | More expensive than explicit, but often less so than fully implicit |
+: Key Differences
+
+[^common]: One common misconception is that in a semi-implicit method, the particle pusher is explicit while the field solver is implicit. This is not exactly true, because we cannot simply separate the two components.
+
 ## Unit Conversion
 
 A physical quantity consists of two parts: a value and a unit. For example, the weight of a table can be expressed as $w = 50 \text{ kg} = 50,000 \text{ g}$, where 50 and 50,000 are the values, and kg and g are the units. If we define a new unit, wg, such that $1 \text{ wg} = 2.5 \text{ kg}$, the table's weight becomes $w = 20 \text{ wg}$. In general, a physical quantity $u$ can be expressed as $u = \bar{u} u^*$, where $\bar{u}$ is its numerical value and $u^*$ is its unit.
@@ -80,6 +141,115 @@ Most PIC simulations use a reduced speed of light. While their results may be in
 - Frequencies are low: $\omega \ll \omega_{pe}$.
 - Physics is dominated by magnetic and inductive effects (gyromotion, $\mathbf{v} \times \mathbf{B}$ forces, $\nabla \times \mathbf{E} = -\partial \mathbf{B}/\partial t$).
 - Physics is not dominated by electrostatic effects (Langmuir waves, Debye shielding, double layers).
+
+## Semi-Implicit Methodology
+
+FLEKS uses the Gauss-Law satisfying energy conserving semi-implicit method (GL-ECSIM). Its semi-implicit nature allows the PIC model to run on a coarser grid with a larger time step than explicit PIC methods, which are limited by the stability conditions to $\Delta t < \Delta x/c$ and the grid resolution $\Delta x < \zeta \lambda_D$, where c is the speed of light, $\lambda_D$ is the Debye length, and $\zeta$ is of order one and depends on the numerical details of the method. GL-ECSIM facilitates the coupling between the MHD and the PIC models, and its energy conserving property helps eliminating numerical instabilities and spurious waves that would violate the energy conservation.
+
+ECSIM uses a staggered grid, where the electric field is defined at cell nodes, and the magnetic field is defined at cell centers. The Maxwell's equations are solved implicitly:
+\begin{aligned}
+\frac{\mathbf{B}^{n+1} - \mathbf{B}^n}{\Delta t} &= - c\nabla\times\mathbf{E}^{n+\theta} \\
+\frac{\mathbf{E}^{n+1} - \mathbf{E}^n}{\Delta t} &= - c\nabla\times\mathbf{B}^{n+\theta} - 4\pi\bar{\mathbf{J}}
+\end{aligned}
+where $\theta \in [0.5, 1]$ is the time centering parameter. $\bar{\mathbf{J}}$ is the predicted current density at $n + \frac{1}{2}$ time stage, and it can be expressed as a linear function of the unknown electric field $\mathbf{E}^{n+\theta}$.
+The variables at time stage $n+\theta$ can be written as linear combinations of values at the time steps n and n + 1:
+\begin{aligned}
+\mathbf{E}^{n+\theta} &= (1-\theta)\mathbf{E}^n + \theta \mathbf{E}^{n+1} \\
+\mathbf{B}^{n+\theta} &= (1-\theta)\mathbf{B}^n + \theta \mathbf{B}^{n+1}
+\end{aligned}
+
+After rearranging the equations above and using the identity $\nabla\times\nabla\times\mathbf{E}= \nabla(\nabla\cdot\mathbf{E}) − \nabla^2\mathbf{E}$, we come up with an equation of $\mathbf{E}^{n+\theta}$
+\begin{equation}
+\mathbf{E}^{n+\theta} + \delta^2\left[ \nabla(\nabla\cdot\mathbf{E}^{n+\theta}) − \nabla^2\mathbf{E}^{n+\theta} \right] = \mathbf{E}^n + \delta\left( \nabla\times\mathbf{B}^n - \frac{4\pi}{c}\bar{\mathbf{J}} \right)
+\end{equation}
+where $\delta = c\theta \Delta t$. After applying finite difference discretizations to the gradient and divergence operators, we obtain a linear system of equations for the discrete values of $\mathbf{E}^{n+\theta}$ at the cell nodes. The iterative generalized minimal residual method (GMRES) is used to solve the equations to obtain $\mathbf{E}^{n+\theta}$. Using equations (1) and (3), the magnetic field $\mathbf{B}^{n+1}$ and electric field $\mathbf{E}^{n+1}$ at the next time step can be obtained, respectively.
+
+The position and velocity of the macro-particle are staggered in time, i.e., the particle velocity $\mathbf{v}_p$ is at the integer time stage and the location $\mathbf{x}_p$ is at the half time stage. First the velocity is pushed to time level n + 1 by
+\begin{equation}
+\mathbf{v}_p^{n+1} = \mathbf{v}_p^n + \frac{q_p \Delta t}{m_p}\left( \mathbf{E}^{n+\theta}(\mathbf{x}_p^{n+1/2}) + \frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2}\times\mathbf{B}^n(\mathbf{x}_p^{n+1/2}) \right)
+\end{equation}
+
+The fields $\mathbf{E}^{n+\theta}(\mathbf{x}_p^{n+1/2})$ and $\mathbf{B}^{n}(\mathbf{x}_p^{n+1/2})$ are interpolated to the particle locations $\mathbf{x}_p^{n+1/2}$. $q_p$ and $m_p$ are the charge and mass of particle species p. Finally, the particle position is updated to a preliminary new position
+\begin{equation}
+\tilde{\mathbf{x}}_p^{n+3/2} = \mathbf{x}_p^{n+1/2} + \Delta t \mathbf{v}_p^{n+1}
+\end{equation}
+
+Because Gauss's law is not automatically satisfied or controlled in the original ECSIM algorithm, artificial effects can develop in long simulations. @chen2019gauss proposed several methods to reduce the error and eliminate the artifacts.
+
+The above equations require the new particle velocities to compute the current in the Maxwell's equations and the particle pusher requires the new advanced electric field to move the particles. In the spirit of the semi-implicit method, we do not want to solve two coupled sets with a single nonlinear iteration and find instead a way to extract analytically from the equations of motion the information needed for computing the current without first moving the particles. In previous semi-implicit methods this is done via a linearization procedure. The new mover used here allows us to derive the current rigorously without any approximation.
+
+The current for each species s in each grid location g is
+\begin{equation}
+\bar{\mathbf{J}}_{sg} = \frac{1}{V_g} \sum_{p\in s}q_p \frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2} W(\mathbf{x}_p^{n+1/2} - \mathbf{x}_g) = \frac{1}{V_g} \sum_{p\in s}q_p \frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2} W_{pg}
+\end{equation}
+where the summation is over particles of the same species s.
+
+Manipulating the vectors[^v-avg], the average velocity between time steps n and n+1 can be rewritten as
+\begin{equation}
+\frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2} = \hat{\mathbf{v}}_p + \beta_s\hat{\mathbf{E}}_p
+\end{equation}
+where the hatted quantities have been rotated by the magnetic field
+\begin{aligned}
+\hat{\mathbf{v}}_p &= \pmb{\alpha}_p^n \mathbf{v}_p^n \\
+\hat{\mathbf{E}}_p &= \pmb{\alpha}_p^n \mathbf{E}_p^{n+\theta}
+\end{aligned}
+via a rotation matrix defined as
+\begin{equation}
+\pmb{\alpha}_p^n = \frac{1}{1 + (\beta_s B_p^n)^2} \left( \overleftrightarrow{I} - \beta_s \overleftrightarrow{I}\times\mathbf{B}_p^n +\beta_s^2\mathbf{B}_p^n \mathbf{B}_p^n \right)
+\end{equation}
+where $\overleftrightarrow{I}$ is the dyadic tensor and $\beta_s = q_p \Delta t / 2m_p$. The elements of the rotation matrix are indicated as $\alpha_p^{ij,n}$ with label i and j referring to the 3 components of the vector space (x, y, z).
+
+[^v-avg]: This is important for having an explicit particle pusher.
+
+Substituting then @eq-vavg-form2 into @eq-Jbar, we obtain without any approximation or linearization:
+\begin{equation}
+\bar{\mathbf{J}}_{sg} = \frac{1}{V_g}\sum_p q_p \hat{\mathbf{v}}_p W_{pg} + \frac{\beta_s}{V_g}\sum_p q_p \hat{\mathbf{E}}_p^{n+\theta} W_{pg}
+\end{equation}
+where the summation is intended over all particles of species s.
+
+Let
+\begin{equation}
+\hat{\mathbf{J}}_{sg} = \sum_p q_p \hat{\mathbf{v}}_p W_{pg}
+\end{equation}
+be the current based on hatted velocity, we have, together with @eq-hat-v-E,
+\begin{equation}
+\bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_p q_p \pmb{\alpha}_p^n \mathbf{E}_p^{n+\theta} W_{pg}
+\end{equation}
+
+The fields at the particle positions are computed by interpolation:
+\begin{equation}
+\mathbf{E}_p^{n+\theta} = \mathbf{E}^{n+\theta}(\mathbf{x}_p^{n+1/2}) = \sum_g \mathbf{E}_g^{n+\theta} W_{pg}
+\end{equation}
+
+It follows that
+\begin{equation}
+\bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_p\sum_{g^\prime} q_p \pmb{\alpha}_p^n \mathbf{E}_{g^\prime}^{n+\theta}W_{pg^\prime} W_{pg}
+\end{equation}
+
+Exchanging the order of summation and introducing the elements of the mass matrices as
+\begin{equation}
+M_{s,gg^\prime}^{ij} \equiv \sum_p q_p \alpha_p^{ij,n}W_{pg^\prime} W_{pg}
+\end{equation}
+we obtain, in matrix form
+\begin{equation}
+\bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_{g^\prime} M_{s,gg^\prime}\mathbf{E}_{g^\prime}^{n+\theta}
+\end{equation}
+
+@eq-mass-matrix defines the elements of the mass matrices that are the most peculiar characteristic of the method proposed here. There are 3v such matrices, where v is the dimensionality of the magnetic field and velocity vector, not to be confused with the dimensionality of the geometry used for space d. The indices i and j in @eq-mass-matrix vary in the 3v-space. For example for full 3-components vectors, and there are 9 mass matrices. Each matrix is symmetric and very sparse with just 2d diagonals.
+
+## Key Features of FLEKS
+
+- Multi-Scale Modeling: FLEKS is often used as part of the MHD-AEPIC (Magnetohydrodynamics with Adaptively Embedded Particle-in-Cell) framework. This hybrid method bridges the gap between fluid-based plasma models (MHD) and detailed kinetic plasma models (PIC), allowing for the best of both worlds: efficient simulations with localized kinetic accuracy.
+
+- Adaptive Kinetic Regions: FLEKS features dynamically adaptive PIC regions. This means that the computationally demanding PIC simulations can be focused specifically on areas where kinetic effects are crucial, enabling efficient resource allocation.
+
+- Exascale-Ready: FLEKS is designed to take advantage of powerful exascale computing systems, allowing for large-scale, highly detailed plasma simulations.
+
+- Accurate and Efficient Time-Stepping: FLEKS includes adaptive time-stepping, which adjusts the simulation time step based on the requirements for accuracy within different regions, enhancing simulation efficiency.
+
+- Load Balancing and Noise Reduction: Particle splitting and merging algorithms maintain optimal computational load balancing across computing cores and help suppress statistical noise in simulations.
+
+- Particle Trajectory Tracking: FLEKS includes a test-particle module, used for tracking individual particle trajectories in the dynamic electromagnetic fields produced by a global simulation.
 
 ## Particle Mover
 
@@ -195,3 +365,27 @@ The second and third terms are zero. The first term is the sum of the pressure t
 \begin{equation}
 p_{m,n} = \sum_s p^s_{m,n} + \sum_s \rho_s (\bar{v}_m^s - \bar{v}_m)(\bar{v}_n^s - \bar{v}_n)
 \end{equation}
+
+### Noise Reduction
+
+> One man's noise is another man's signal [@birdsall2018plasma]. Without noise, there would be no particle simulation; without proper treatment of noise, there would still be no particle simulation.
+
+In Particle-in-Cell simulations, a key challenge is managing statistical noise. Compared to deterministic continuum kinetic schemes, PIC intrinsically possesses numerical errors associated with particle noise, which decreases slowly as one increases the number of particles. Specifically, the noise in PIC schemes decreases as $1/\sqrt{P_c}$ where $P_c = N_p/N_c$ is the number of particles per cell [@birdsall2018plasma].
+
+- Representing the Plasma: A PIC simulation doesn't track every single particle in the real plasma. Instead, it uses "super-particles" to represent a large group of real particles. This introduces statistical fluctuations since a finite number of super-particles can't perfectly reflect the smooth, continuous behavior of a real plasma.
+
+- Field Calculations: Particle positions and velocities are used to calculate the electric and magnetic fields in the simulation. Statistical fluctuations in the particle distribution can lead to noisy fields, which in turn, feed back into the particle motion, potentially amplifying the noise further.
+
+FLEKS employs several techniques to mitigate noise:
+
+- Higher-Order Particle Weighting: Using smoother mathematical functions (splines) to distribute the charge and current of super-particles onto the simulation grid. This reduces the abrupt changes that lead to noise.
+
+- Particle Splitting and Merging: This technique helps control the number of super-particles in different simulation regions, leading to a more consistent and accurate noise level. Let's break down how this works:
+  - Particle Splitting
+    - When it happens: In simulation regions with high particle density, super-particles become very "heavy" (representing many real particles). This can make them computationally unwieldy and introduce local noise.
+    - How it works: FLEKS splits heavy super-particles into several smaller super-particles, each representing a smaller number of real particles. This reduces local noise and improves computational load balancing.
+  - Particle Merging
+    - When it happens: In regions of low particle density, too few super-particles can also be a source of noise. This makes it hard to accurately calculate local fields.
+    - How it works: FLEKS merges multiple low-weight super-particles into a single heavier one. This smooths out the particle distribution and promotes more accurate field calculations.
+
+Key Point: Particle splitting and merging in FLEKS are not just about noise reduction. They also play a crucial role in achieving proper load balancing across many computational cores, essential for simulations to run efficiently.
