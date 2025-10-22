@@ -66,7 +66,92 @@ However, the semi-implicit methods prosposed in the 1980s (Implicit Moment Metho
 
 ## Unit Conversion
 
-A physical quantity consists of two parts: a value and a unit. For example, the weight of a table can be expressed as $w = 50 \text{ kg} = 50,000 \text{ g}$, where 50 and 50,000 are the values, and kg and g are the units. If we define a new unit, wg, such that $1 \text{ wg} = 2.5 \text{ kg}$, the table's weight becomes $w = 20 \text{ wg}$. In general, a physical quantity $u$ can be expressed as $u = \bar{u} u^*$, where $\bar{u}$ is its numerical value and $u^*$ is its unit.
+A physical quantity consists of two parts: a value and a unit. For example, the weight of a table can be expressed as $w = 50\,\text{kg} = 50,000\,\text{g}$, where 50 and 50,000 are the values, and kg and g are the units. If we define a new unit, wg, such that $1\,\text{wg} = 2.5\,\text{kg}$, the table's weight becomes $w = 20\,\text{wg}$. In general, a physical quantity $u$ can be expressed as $u = \bar{u} u^*$, where $\bar{u}$ is its numerical value and $u^*$ is its unit.
+
+### Lorentz Equation
+
+**Base Normalization Scales**
+
+- Mass: $m_0 = m_p$ (the proton mass)
+- Charge: $q_0 = e$ (the elementary charge)
+- Time: $t_0 = 1 / \omega_{pp}$ (the inverse of the proton plasma frequency, $\omega_{pp} = \sqrt{n_0 e^2 / (m_p \epsilon_0)}$ in SI)
+- Length: $x_0 = c / \omega_{pp}$ (the proton inertial length, $d_p$)
+
+**Normalized (Code) Variables**
+
+This new base changes our normalized variables.
+
+- Time: $\tilde{t} = t / t_0$
+- Position: $\tilde{\vec{x}} = \vec{x} / x_0$
+- Mass: $\tilde{m} = m / m_0 = m / m_p$
+- Charge: $\tilde{q} = q / q_0 = q / e$
+
+In FLEKS, we normalize to the ion scale.
+
+- For a proton: $\tilde{m} = m_p / m_p = 1$ and $\tilde{q} = e / e = 1$.
+- For an electron: $\tilde{m} = m_e / m_p \approx 1/1836$ (physical) and $\tilde{q} = -e / e = -1$.
+
+The derived normalization constants are:
+
+- Velocity: $v_0 = x_0 / t_0 = (c / \omega_{pp}) / (1 / \omega_{pp}) = c$.
+    - $\tilde{\vec{v}} = \vec{v} / c$
+- Momentum: $p_0 = m_0 v_0 = m_p c$.
+    - $\tilde{\vec{p}} = \vec{p} / (m_p c)$
+    
+The relativistic relationship $\vec{p} = \gamma m \vec{v}$ becomes $\tilde{\vec{p}} = \tilde{\gamma} \tilde{m} \tilde{\vec{v}}$, where $\tilde{\gamma} = (1 - \tilde{v}^2)^{-1/2}$.
+
+**Derivation from SI Units**
+
+1. Physical Equation (SI):
+$\frac{d\vec{p}}{dt} = q(\vec{E} + \vec{v} \times \vec{B})$
+
+2. Substitute Normalized Variables:
+$\frac{d(\tilde{\vec{p}} p_0)}{d(\tilde{t} t_0)} = (\tilde{q} q_0) \left( (\tilde{\vec{E}} E_0) + (\tilde{\vec{v}} v_0) \times (\tilde{\vec{B}} B_0) \right)$
+
+3. Isolate Normalized Equation:
+$\left[ \frac{p_0}{t_0} \right] \frac{d\tilde{\vec{p}}}{d\tilde{t}} = (\tilde{q} q_0 E_0) \tilde{\vec{E}} + (\tilde{q} q_0 v_0 B_0) (\tilde{\vec{v}} \times \tilde{\vec{B}})$
+
+$\frac{d\tilde{\vec{p}}}{d\tilde{t}} = \tilde{q} \left[ \frac{q_0 E_0 t_0}{p_0} \right] \tilde{\vec{E}} + \tilde{q} \left[ \frac{q_0 v_0 B_0 t_0}{p_0} \right] (\tilde{\vec{v}} \times \tilde{\vec{B}})$
+
+4. Define $E_0$ and $B_0$ (Set brackets to 1):
+    - $E_0 = \frac{p_0}{q_0 t_0} = \frac{m_p c}{e (1 / \omega_{pp})} = \frac{m_p c \omega_{pp}}{e}$
+    - $B_0 = \frac{p_0}{q_0 v_0 t_0} = \frac{m_p c}{e c (1 / \omega_{pp})} = \frac{m_p \omega_{pp}}{e}$
+
+**Derivation from CGS Units**
+
+1. Physical Equation (CGS):
+$\frac{d\vec{p}}{dt} = q \left( \vec{E} + \frac{\vec{v}}{c} \times \vec{B} \right)$
+
+2. Substitute Normalized Variables:
+$\frac{d(\tilde{\vec{p}} p_0)}{d(\tilde{t} t_0)} = (\tilde{q} q_0) \left( (\tilde{\vec{E}} E_0) + \frac{(\tilde{\vec{v}} v_0)}{c} \times (\tilde{\vec{B}} B_0) \right)$
+
+3. Substitute $v_0 = c$:
+$\left[ \frac{p_0}{t_0} \right] \frac{d\tilde{\vec{p}}}{d\tilde{t}} = (\tilde{q} q_0 E_0) \tilde{\vec{E}} + \tilde{q} \left[ \frac{q_0 c B_0}{c} \right] (\tilde{\vec{v}} \times \tilde{\vec{B}})$
+
+The $c$ in the magnetic term cancels out perfectly.
+
+4. Isolate Normalized Equation:
+$\left[ \frac{p_0}{t_0} \right] \frac{d\tilde{\vec{p}}}{d\tilde{t}} = (\tilde{q} q_0 E_0) \tilde{\vec{E}} + (\tilde{q} q_0 B_0) (\tilde{\vec{v}} \times \tilde{\vec{B}})$
+
+$\frac{d\tilde{\vec{p}}}{d\tilde{t}} = \tilde{q} \left[ \frac{q_0 E_0 t_0}{p_0} \right] \tilde{\vec{E}} + \tilde{q} \left[ \frac{q_0 B_0 t_0}{p_0} \right] (\tilde{\vec{v}} \times \tilde{\vec{B}})$
+
+5. Define $E_0$ and $B_0$ (Set brackets to 1):
+    - $E_0 = \frac{p_0}{q_0 t_0} = \frac{m_p c}{e (1 / \omega_{pp})} = \frac{m_p c \omega_{pp}}{e}$
+    - $B_0 = \frac{p_0}{q_0 t_0} = \frac{m_p c}{e (1 / \omega_{pp})} = \frac{m_p c \omega_{pp}}{e}$ (Note: In CGS, $\omega_{pp} = \sqrt{4\pi n_0 e^2 / m_p}$, and $E_0=B_0$).
+
+**Summary: The Final Normalized Equations**
+
+In both SI and CGS, the final, unitless equations are identical:
+\begin{gather}
+\frac{d\tilde{\vec{x}}}{d\tilde{t}} &= \tilde{\vec{v}} \\
+\frac{d\tilde{\vec{p}}}{d\tilde{t}} &= \tilde{q} (\tilde{\vec{E}} + \tilde{\vec{v}} \times \tilde{\vec{B}})
+\end{gather}
+
+The physics is captured by the normalized mass and charge parameters fed to the pusher:
+    - Protons: $\tilde{m} = 1$, $\tilde{q} = 1$
+    - Electrons: $\tilde{m} = m_e/m_p$, $\tilde{q} = -1$
+
+In the non-relativistic limit, there is no speed of light. In the pusher, we use c as the velocity normalization, but we can choose it freely.
 
 ### Mass Normalization
 
@@ -124,13 +209,7 @@ E_{cgs}^* = B_{cgs}^* = v_{cgs}^* \sqrt{\frac{m_{cgs}^*}{(x_{cgs}^*)^3}}
 
 Reducing the speed of light changes the propagation speed of electromagnetic waves in the simulation, but it does not change the interaction between particles and the magnetic field. In PIC codes, this is often called the Darwin, magneto-inductive, or "electrostatic-less" approximation, depending on the exact formulation. In the mass normalization, we require $\bar{q}/(\bar{m}\bar{c}) = 1$, not $\bar{q}/\bar{m} = 1$, because we do not assume $\bar{c}=1$. The speed of light in the first equation is always the physical speed of light, regardless of the choice of $v_{cgs}^*$. For example, if we set $v_{cgs}^* = 0.1c$, then $\bar{c}$ must be 10 to satisfy $\bar{q}/(\bar{m}\bar{c}) = 1$.
 
-Since reducing $v_{cgs}^*$ does not affect the particle-magnetic field interaction, the particle's gyromotion (both gyro-radius and gyro-frequency) remains unchanged. The inertial length, which is the gyro-radius of a particle moving at the Alfven velocity, is also unaffected because neither the gyromotion nor the Alfven velocity changes with $v_{cgs}^*$.
-
-However, what about the interaction between particles and the electric field? Since $\bar{c} = \bar{q}/\bar{m}$ is not necessarily 1, the electric force on a proton should be $(\bar{q}/\bar{m})E = \bar{c}E$. In the code, $\bar{c}$ is ignored,
-$
-\frac{d\bar{\mathbf{v}}}{d\bar{t}} = \mathbf{E} + \bar{\mathbf{v}} \times \bar{\mathbf{B}}
-$
-suggesting that the simulated electric force is $\bar{c}$ times weaker than in reality. This is a deliberate physical approximation to filter out unwanted physics. The primary goal of a reduced-$c$ model is to overcome the two most restrictive time-step constraints in an explicit EM-PIC code (although FLEKS is semi-implicit, the particle pusher is still explicit):
+The primary goal of a reduced-$c$ model is to overcome the two most restrictive time-step constraints in an explicit EM-PIC code (although FLEKS is semi-implicit, the particle pusher is still explicit):
 
 1. The Courant-Friedrichs-Lewy (CFL) Condition: $\Delta t < \Delta x / c$. This is required to resolve light waves.
 2. The Plasma Frequency Constraint: $\Delta t \lesssim 0.1 / \omega_{pe}$. This is required to resolve electron plasma oscillations (Langmuir waves).
