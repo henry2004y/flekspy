@@ -72,7 +72,7 @@ class FLEKSTP(object):
 
     def __init__(
         self,
-        dirs: Union[str, List[str]],
+        dirs: str,
         iDomain: int = 0,
         iSpecies: int = 0,
         unit: str = "planetary",
@@ -92,41 +92,31 @@ class FLEKSTP(object):
         self.mass = mass
         self.charge = charge
 
-        if isinstance(dirs, str):
-            dirs = [dirs]
-
-        header = Path(dirs[0] + "/Header")
+        header = Path(dirs + "/Header")
         if header.exists():
             with open(header, "r") as f:
                 self.nReal = int(f.readline())
         else:
-            raise FileNotFoundError(f"Header file not found in {dirs[0]}")
+            raise FileNotFoundError(f"Header file not found in {dirs}")
 
         self.iSpecies = iSpecies
-        plistfiles = list()
         self.pfiles = list()
 
-        for outputDir in dirs:
-            plistfiles.extend(
-                glob.glob(
-                    f"{outputDir}/FLEKS{iDomain}_particle_list_species_{iSpecies}_*"
-                )
-            )
+        self.pfiles.extend(
+            glob.glob(f"{dirs}/FLEKS{iDomain}_particle_species_{iSpecies}_n*")
+        )
 
-            self.pfiles.extend(
-                glob.glob(f"{outputDir}/FLEKS{iDomain}_particle_species_{iSpecies}_*")
-            )
-
-        plistfiles.sort()
         self.pfiles.sort()
 
         if iListEnd == -1:
-            iListEnd = len(plistfiles)
-        plistfiles = plistfiles[iListStart:iListEnd]
+            iListEnd = len(self.pfiles)
         self.pfiles = self.pfiles[iListStart:iListEnd]
 
         self.particle_locations: Dict[Tuple[int, int], List[Tuple[str, int]]] = {}
-        for plist_filename, p_filename in zip(plistfiles, self.pfiles):
+        for p_filename in self.pfiles:
+            plist_filename = p_filename.replace(
+                "_particle_species_", "_particle_list_species_"
+            )
             plist = self.read_particle_list(plist_filename)
             for pID, ploc in plist.items():
                 self.particle_locations.setdefault(pID, []).append((p_filename, ploc))
