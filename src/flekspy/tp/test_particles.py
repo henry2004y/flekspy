@@ -3,6 +3,7 @@ from typing import List, Tuple, Dict, Union, Callable
 from flekspy.util.logger import get_logger
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+import h5py
 
 logger = get_logger(name=__name__)
 from matplotlib.colors import Normalize, LogNorm
@@ -386,6 +387,28 @@ class FLEKSTP(object):
         except (IOError, pl.exceptions.PolarsError) as e:
             logger.error(f"Error saving trajectory to {format.upper()}: {e}")
 
+    def save_trajectories(
+        self,
+        pIDs: List[Tuple[int, int]],
+        filename: str = "trajectories.h5",
+    ) -> None:
+        """
+        Save the trajectories of multiple particles to a single HDF5 file.
+
+        Args:
+            pIDs: A list of particle IDs to save.
+            filename (str): The name of the HDF5 file to save the trajectories to.
+        """
+        with h5py.File(filename, "w") as f:
+            for pID in pIDs:
+                try:
+                    pData_lazy = self[pID]
+                    pData = pData_lazy.collect()
+                    dataset_name = f"ID_{pID[0]}_{pID[1]}"
+                    dset = f.create_dataset(dataset_name, data=pData.to_numpy())
+                    dset.attrs["columns"] = pData.columns
+                except (KeyError, ValueError, IOError, pl.exceptions.PolarsError) as e:
+                    logger.error(f"Error processing particle {pID}: {e}")
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
