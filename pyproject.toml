@@ -17,6 +17,7 @@ dependencies = [
     "xarray>=2024.6.0",
     "polars>=0.20.21,<1",
     "xugrid>=0.14.2,<1",
+    "h5py>=3.11.0,<4",
 ]
 
 [project.optional-dependencies]

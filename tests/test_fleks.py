@@ -363,6 +363,32 @@ class TestParticles:
         particle_tracker_si.plot_work_energy_verification(pid, outname=str(outname))
         assert outname.exists()
 
+    def test_save_trajectories_h5(self, particle_tracker):
+        pIDs = particle_tracker.getIDs()
+        default_filename = "trajectories.h5"
+
+        # Ensure the file doesn't exist before the test
+        if os.path.exists(default_filename):
+            os.remove(default_filename)
+
+        try:
+            # Call the method without a filename to test the default
+            particle_tracker.save_trajectories(pIDs[:2])
+
+            # Verify the file was created
+            assert os.path.exists(default_filename)
+
+            import h5py
+            with h5py.File(default_filename, "r") as f:
+                assert "ID_0_5121" in f.keys()
+                assert "ID_0_5122" in f.keys()
+                dset = f["ID_0_5121"]
+                assert dset.shape[0] > 0
+        finally:
+            # Clean up the created file
+            if os.path.exists(default_filename):
+                os.remove(default_filename)
+
 
 def load_and_benchmark(files):
     """
