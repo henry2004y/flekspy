@@ -405,7 +405,8 @@ class FLEKSTP(object):
                     pData_lazy = self[pID]
                     pData = pData_lazy.collect()
                     dataset_name = f"ID_{pID[0]}_{pID[1]}"
-                    f.create_dataset(dataset_name, data=pData.to_numpy())
+                    dset = f.create_dataset(dataset_name, data=pData.to_numpy())
+                    dset.attrs["columns"] = pData.columns
                 except (KeyError, ValueError) as e:
                     logger.error(f"Error processing particle {pID}: {e}")
 
