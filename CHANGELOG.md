@@ -66,3 +66,7 @@
 
 - Switch the default AMReX particle loader. Add plotting support.
 - Separate IDL, AMReX, and test particle documentations.
+
+## v0.6.2 (2025/10/30)
+
+- Add `save_trajectory` (CSV, Parquet) and `save_trajectories` (HDF5) to test particles.
