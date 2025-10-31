@@ -377,9 +377,9 @@ class FLEKSTP(object):
         )
 
         try:
-            if format == "csv":
+            if format.lower() == "csv":
                 pData_to_save.sink_csv(filename)
-            elif format == "parquet":
+            elif format.lower() == "parquet":
                 pData_to_save.sink_parquet(filename)
             else:
                 raise ValueError(f"Unsupported format: {format}")
