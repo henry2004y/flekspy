@@ -17,6 +17,9 @@ dependencies = [
     "xarray>=2024.6.0",
     "polars>=0.20.21,<1",
     "xugrid>=0.14.2,<1",
+    "pandas>=2.2.2,<3",
+    "tables>=3.9.2,<4",
+    "pyarrow>=16.1.0,<17",
 ]
 
 [project.optional-dependencies]

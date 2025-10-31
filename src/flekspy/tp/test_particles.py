@@ -386,6 +386,98 @@ class FLEKSTP(object):
         except (IOError, pl.exceptions.PolarsError) as e:
             logger.error(f"Error saving trajectory to {format.upper()}: {e}")
 
+    def save_trajectories(
+        self,
+        pIDs: List[Tuple[int, int]],
+        filename: str,
+    ) -> None:
+        """
+        Save the trajectories of multiple particles to a single HDF5 file.
+
+        Each particle's trajectory is stored as a separate dataset, with a key
+        formatted as '/cpu_{cpu_id}/id_{particle_id}'.
+
+        Args:
+            pIDs (List[Tuple[int, int]]): A list of particle IDs to save.
+            filename (str): The name of the HDF5 file.
+        """
+        if not filename.endswith((".h5", ".hdf5")):
+            filename += ".h5"
+
+        # Define header columns based on unit system
+        if self.unit == "planetary":
+            header_cols = [
+                "time [s]",
+                "X [R]",
+                "Y [R]",
+                "Z [R]",
+                "U_x [km/s]",
+                "U_y [km/s]",
+                "U_z [km/s]",
+            ]
+            if self.nReal >= 10:
+                header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
+            if self.nReal >= 13:
+                header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
+        elif self.unit == "SI":
+            header_cols = [
+                "time [s]",
+                "X [m]",
+                "Y [m]",
+                "Z [m]",
+                "U_x [m/s]",
+                "U_y [m/s]",
+                "U_z [m/s]",
+            ]
+            if self.nReal >= 10:
+                header_cols += ["B_x [T]", "B_y [T]", "B_z [T]"]
+            if self.nReal >= 13:
+                header_cols += ["E_x [V/m]", "E_y [V/m]", "E_z [V/m]"]
+
+        if self.nReal >= 22:
+            header_cols += [
+                "dBx_dx",
+                "dBx_dy",
+                "dBx_dz",
+                "dBy_dx",
+                "dBy_dy",
+                "dBy_dz",
+                "dBz_dx",
+                "dBz_dy",
+                "dBz_dz",
+            ]
+
+        for pID in pIDs:
+            try:
+                pData_lazy = self[pID]
+
+                # Rename columns
+                pData_to_save = pData_lazy.select(
+                    [
+                        pl.col(original_name).alias(new_name)
+                        for original_name, new_name in zip(
+                            pData_lazy.columns, header_cols
+                        )
+                    ]
+                )
+
+                # Convert to pandas DataFrame
+                pData_pd = pData_to_save.collect().to_pandas()
+
+                # Define the key for the HDF5 store
+                key = f"/cpu_{pID[0]}/id_{pID[1]}"
+
+                # Append to the HDF5 file
+                pData_pd.to_hdf(filename, key=key, mode="a")
+
+            except (KeyError, ValueError) as e:
+                logger.warning(
+                    f"Could not read trajectory for particle {pID}. Skipping. Reason: {e}"
+                )
+            except (IOError, ImportError) as e:
+                logger.error(f"Error saving trajectory for {pID} to HDF5: {e}")
+                # Stop if there's a file-level error
+                return
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""

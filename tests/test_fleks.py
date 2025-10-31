@@ -363,6 +363,43 @@ class TestParticles:
         particle_tracker_si.plot_work_energy_verification(pid, outname=str(outname))
         assert outname.exists()
 
+    def test_save_trajectories(self, particle_tracker, tmp_path):
+        pIDs = particle_tracker.getIDs()[:3]  # Select the first 3 particles
+        output_file = tmp_path / "trajectories.h5"
+
+        # Save the trajectories
+        particle_tracker.save_trajectories(pIDs, str(output_file))
+
+        # --- Verification ---
+        assert output_file.exists()
+
+        # Read back and verify each trajectory
+        import pandas as pd
+
+        for pID in pIDs:
+            key = f"/cpu_{pID[0]}/id_{pID[1]}"
+            try:
+                df_read = pd.read_hdf(output_file, key)
+            except KeyError:
+                pytest.fail(f"Key {key} not found in HDF5 file.")
+
+            # Get the original trajectory for comparison
+            df_original = particle_tracker[pID].collect().to_pandas()
+
+            # Verify the number of records
+            assert len(df_read) == len(df_original)
+
+            # Check a few values to ensure correctness
+            # We check the first column (time) and the second (X)
+            original_time_col_name = df_original.columns[0]
+            read_time_col_name = df_read.columns[0]
+            assert np.allclose(
+                df_read[read_time_col_name], df_original[original_time_col_name]
+            )
+
+            original_x_col_name = df_original.columns[1]
+            read_x_col_name = df_read.columns[1]
+            assert np.allclose(df_read[read_x_col_name], df_original[original_x_col_name])
 
 def load_and_benchmark(files):
     """
