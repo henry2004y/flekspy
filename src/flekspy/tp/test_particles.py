@@ -65,7 +65,8 @@ class FLEKSTP(object):
     10240
     >>> trajectory = tp[0]
     >>> tp.plot_trajectory(tp.IDs[3])
-    >>> tp.save_trajectory_to_csv(tp.IDs[5])
+    >>> tp.save_trajectory(tp.IDs[5], format="csv")
+    >>> tp.save_trajectory(tp.IDs[5], format="parquet")
     >>> ids, pData = tp.read_particles_at_time(0.0, doSave=False)
     >>> f = tp.plot_location(pData)
     """
@@ -288,27 +289,29 @@ class FLEKSTP(object):
 
         return idData, npData
 
-    def save_trajectory_to_csv(
+    def save_trajectory(
         self,
         pID: Tuple[int, int],
         filename: str = None,
         shiftTime: bool = False,
         scaleTime: bool = False,
+        format: str = "csv",
     ) -> None:
         """
-        Save the trajectory of a particle to a csv file.
-
+        Save the trajectory of a particle to a file.
         Args:
             pID: particle ID.
+            filename (str, optional): The name of the file to save the trajectory to.
+                                      If None, a default name will be generated.
             shiftTime (bool): If set to True, set the initial time to be 0.
             scaleTime (bool): If set to True, scale the time into [0,1] range.
-
+            format (str): The output format, either "csv" or "parquet".
         Example:
-        >>> tp.save_trajectory_to_csv((3,15))
+        >>> tp.save_trajectory((3,15), format="parquet")
         """
         pData_lazy = self[pID]
         if filename is None:
-            filename = f"trajectory_{pID[0]}_{pID[1]}.csv"
+            filename = f"trajectory_{pID[0]}_{pID[1]}.{format}"
 
         if self.unit == "planetary":
             header_cols = [
@@ -374,9 +377,15 @@ class FLEKSTP(object):
         )
 
         try:
-            pData_to_save.sink_csv(filename)
+            if format.lower() == "csv":
+                pData_to_save.sink_csv(filename)
+            elif format.lower() == "parquet":
+                pData_to_save.sink_parquet(filename)
+            else:
+                raise ValueError(f"Unsupported format: {format}")
         except (IOError, pl.exceptions.PolarsError) as e:
-            logger.error(f"Error saving trajectory to CSV: {e}")
+            logger.error(f"Error saving trajectory to {format.upper()}: {e}")
+
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
