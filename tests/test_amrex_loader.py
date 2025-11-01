@@ -139,3 +139,29 @@ def test_plot_phase_no_particles(mock_logger, mock_plot_components):
 
     mock_logger.warning.assert_called_once_with("No particles to plot.")
     mock_plot_components["subplots"].assert_not_called()
+
+
+@patch("numpy.histogram2d")
+def test_plot_phase_with_range(mock_histogram2d, mock_plot_components):
+    """
+    Tests that the range parameter is correctly passed to numpy.histogram2d.
+    """
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.random.rand(100, 2)
+    mock_histogram2d.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+    )
+
+    custom_range = [[0.1, 0.9], [0.2, 0.8]]
+    AMReXParticleData.plot_phase(
+        mock_pdata, x_variable="x", y_variable="y", range=custom_range
+    )
+
+    mock_histogram2d.assert_called_once()
+    _, _, kwargs = mock_histogram2d.mock_calls[0]
+    assert "range" in kwargs
+    assert kwargs["range"] == custom_range
