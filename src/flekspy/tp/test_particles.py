@@ -404,38 +404,19 @@ class FLEKSTP(object):
             if pIDs and isinstance(pIDs[0], int):
                 # Handle list of integer indices
                 for pID_index in pIDs:
-                    try:
-                        pID = self.IDs[pID_index]
-                        pData_lazy = self[pID]
-                        pData = pData_lazy.collect()
-                        dataset_name = f"ID_{pID_index}"
-                        dset = f.create_dataset(dataset_name, data=pData.to_numpy())
-                        dset.attrs["columns"] = pData.columns
-                        dset.attrs["original_pID"] = pID
-                    except (
-                        KeyError,
-                        ValueError,
-                        IOError,
-                        pl.exceptions.PolarsError,
-                        IndexError,
-                    ) as e:
-                        logger.error(f"Error processing particle index {pID_index}: {e}")
+                    pData_lazy = self[pID]
+                    pData = pData_lazy.collect()
+                    dataset_name = f"ID_{pID_index}"
+                    dset = f.create_dataset(dataset_name, data=pData.to_numpy())
+                    dset.attrs["columns"] = pData.columns
             else:
                 # Handle list of tuples
                 for pID in pIDs:
-                    try:
-                        pData_lazy = self[pID]
-                        pData = pData_lazy.collect()
-                        dataset_name = f"ID_{pID[0]}_{pID[1]}"
-                        dset = f.create_dataset(dataset_name, data=pData.to_numpy())
-                        dset.attrs["columns"] = pData.columns
-                    except (
-                        KeyError,
-                        ValueError,
-                        IOError,
-                        pl.exceptions.PolarsError,
-                    ) as e:
-                        logger.error(f"Error processing particle {pID}: {e}")
+                    pData_lazy = self[pID]
+                    pData = pData_lazy.collect()
+                    dataset_name = f"ID_{pID[0]}_{pID[1]}"
+                    dset = f.create_dataset(dataset_name, data=pData.to_numpy())
+                    dset.attrs["columns"] = pData.columns
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
