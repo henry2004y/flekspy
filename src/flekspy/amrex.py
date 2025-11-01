@@ -390,7 +390,7 @@ class AMReXParticleData:
         x_variable: str,
         y_variable: str,
         bins: Union[int, Tuple[int, int]] = 100,
-        range: Optional[List[List[float]]] = None,
+        hist_range: Optional[List[List[float]]] = None,
         x_range: Optional[Tuple[float, float]] = None,
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
@@ -417,7 +417,7 @@ class AMReXParticleData:
                                            tuple for different numbers of bins in the
                                            x and y dimension, respectively.
                                            Defaults to 100.
-            range (list of lists, optional): The leftmost and rightmost edges of the
+            hist_range (list of lists, optional): The leftmost and rightmost edges of the
                                              bins along each dimension. It should be
                                              in the format [[xmin, xmax], [ymin, ymax]].
                                              Defaults to None.
@@ -472,7 +472,7 @@ class AMReXParticleData:
         else:
             cbar_label = "Particle Count"
 
-        H, xedges, yedges = np.histogram2d(x_data, y_data, bins=bins, range=range, weights=weights)
+        H, xedges, yedges = np.histogram2d(x_data, y_data, bins=bins, range=hist_range, weights=weights)
 
         if normalize:
             total = H.sum()

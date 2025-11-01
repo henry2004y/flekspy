@@ -142,9 +142,9 @@ def test_plot_phase_no_particles(mock_logger, mock_plot_components):
 
 
 @patch("numpy.histogram2d")
-def test_plot_phase_with_range(mock_histogram2d, mock_plot_components):
+def test_plot_phase_with_hist_range(mock_histogram2d, mock_plot_components):
     """
-    Tests that the range parameter is correctly passed to numpy.histogram2d.
+    Tests that the hist_range parameter is correctly passed to numpy.histogram2d.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
@@ -158,7 +158,7 @@ def test_plot_phase_with_range(mock_histogram2d, mock_plot_components):
 
     custom_range = [[0.1, 0.9], [0.2, 0.8]]
     AMReXParticleData.plot_phase(
-        mock_pdata, x_variable="x", y_variable="y", range=custom_range
+        mock_pdata, x_variable="x", y_variable="y", hist_range=custom_range
     )
 
     mock_histogram2d.assert_called_once()
