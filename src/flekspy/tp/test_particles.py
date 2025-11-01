@@ -404,7 +404,7 @@ class FLEKSTP(object):
             if pIDs and isinstance(pIDs[0], int):
                 # Handle list of integer indices
                 for pID_index in pIDs:
-                    pData_lazy = self[pID]
+                    pData_lazy = self[pID_index]
                     pData = pData_lazy.collect()
                     dataset_name = f"ID_{pID_index}"
                     dset = f.create_dataset(dataset_name, data=pData.to_numpy())
