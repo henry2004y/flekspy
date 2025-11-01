@@ -1,0 +1,302 @@
+flekspy.amrex
+=============
+
+.. py:module:: flekspy.amrex
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.amrex.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.amrex.AMReXParticleHeader
+   flekspy.amrex.AMReXParticleData
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.amrex.read_amrex_binary_particle_file
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: AMReXParticleHeader(header_filename: Union[str, pathlib.Path])
+
+   This class is designed to parse and store the information
+   contained in an AMReX particle header file.
+
+
+   .. py:attribute:: version_string
+      :type:  str
+
+
+   .. py:attribute:: real_type
+      :type:  Union[Type[numpy.float64], Type[numpy.float32]]
+
+
+   .. py:attribute:: int_type
+      :type:  Type[numpy.int32]
+
+
+   .. py:attribute:: dim
+      :type:  int
+
+
+   .. py:attribute:: num_int_base
+      :type:  int
+
+
+   .. py:attribute:: num_real_base
+      :type:  int
+
+
+   .. py:attribute:: real_component_names
+      :type:  List[str]
+
+
+   .. py:attribute:: int_component_names
+      :type:  List[str]
+
+
+   .. py:attribute:: num_real_extra
+      :type:  int
+
+
+   .. py:attribute:: num_int_extra
+      :type:  int
+
+
+   .. py:attribute:: num_int
+      :type:  int
+
+
+   .. py:attribute:: num_real
+      :type:  int
+
+
+   .. py:attribute:: is_checkpoint
+      :type:  bool
+
+
+   .. py:attribute:: num_particles
+      :type:  int
+
+
+   .. py:attribute:: max_next_id
+      :type:  int
+
+
+   .. py:attribute:: finest_level
+      :type:  int
+
+
+   .. py:attribute:: num_levels
+      :type:  int
+
+
+   .. py:attribute:: grids_per_level
+      :type:  numpy.ndarray
+
+
+   .. py:attribute:: grids
+      :type:  List[List[Tuple[int, Ellipsis]]]
+
+
+   .. py:method:: __repr__() -> str
+
+      Returns a string representation of the header contents.
+
+
+
+   .. py:property:: idtype_str
+      :type: str
+
+
+
+   .. py:property:: rdtype_str
+      :type: str
+
+
+
+.. py:function:: read_amrex_binary_particle_file(fn: Union[str, pathlib.Path], header: AMReXParticleHeader) -> Tuple[numpy.ndarray, numpy.ndarray]
+
+   This function returns the particle data stored in a particular
+   plot file. It returns two numpy arrays, the
+   first containing the particle integer data, and the second the
+   particle real data.
+
+
+.. py:class:: AMReXParticleData(output_dir: Union[str, pathlib.Path])
+
+   This class provides an interface to the particle data in a plotfile.
+   Data is loaded lazily upon first access to `idata` or `rdata`.
+
+
+   .. py:attribute:: output_dir
+      :type:  pathlib.Path
+
+
+   .. py:attribute:: ptype
+      :type:  str
+
+
+   .. py:attribute:: _idata
+      :type:  Optional[numpy.ndarray]
+
+
+   .. py:attribute:: _rdata
+      :type:  Optional[numpy.ndarray]
+
+
+   .. py:attribute:: level_boxes
+      :type:  List[List[Tuple[Tuple[int, Ellipsis], Tuple[int, Ellipsis]]]]
+
+
+   .. py:attribute:: header
+      :type:  AMReXParticleHeader
+
+
+   .. py:attribute:: dim
+      :type:  int
+
+
+   .. py:attribute:: time
+      :type:  float
+
+
+   .. py:attribute:: left_edge
+      :type:  List[float]
+
+
+   .. py:attribute:: right_edge
+      :type:  List[float]
+
+
+   .. py:attribute:: domain_dimensions
+      :type:  List[int]
+
+
+   .. py:method:: _load_data() -> None
+
+      Loads the particle data from disk if it has not been loaded yet.
+
+
+
+   .. py:property:: idata
+      :type: numpy.ndarray
+
+
+      Lazily loads and returns the integer particle data.
+
+
+   .. py:property:: rdata
+      :type: numpy.ndarray
+
+
+      Lazily loads and returns the real particle data.
+
+
+   .. py:method:: _parse_main_header() -> None
+
+
+   .. py:method:: _parse_particle_h_files() -> None
+
+      Parses the Particle_H files to get the box arrays for each level.
+
+
+
+   .. py:method:: __repr__() -> str
+
+
+   .. py:method:: select_particles_in_region(x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None) -> numpy.ndarray
+
+      Selectively loads real component data for particles that fall within a
+      specified rectangular region.
+
+      This method first converts the physical range into an index-based range,
+      then identifies which grid files intersect with that range, and finally
+      reads only the necessary data. This avoids loading the entire dataset
+      into memory. Integer data is skipped for efficiency.
+
+      :param x_range: A tuple (min, max) for the x-axis boundary.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for the y-axis boundary.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for the z-axis boundary.
+                      For 2D data, this is ignored.
+      :type z_range: tuple, optional
+
+      :returns:
+
+                A numpy array containing the real data for the
+                            selected particles.
+      :rtype: np.ndarray
+
+
+
+   .. py:method:: plot_phase(x_variable: str, y_variable: str, bins: Union[int, Tuple[int, int]] = 100, hist_range: Optional[List[List[float]]] = None, x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None, normalize: bool = False, title: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None, **imshow_kwargs: Any) -> Optional[Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]]
+
+      Plots the 2D phase space distribution for any two selected variables.
+
+      This function creates a 2D weighted histogram to visualize the particle
+      density. If a 'weight' component is present in the data, it will be
+      used for the histogram weighting. Otherwise, a standard (unweighted)
+      histogram is generated.
+
+      :param x_variable: The name of the variable for the x-axis.
+      :type x_variable: str
+      :param y_variable: The name of the variable for the y-axis.
+      :type y_variable: str
+      :param bins: The number of bins. This can be a
+                   single integer for the same number of
+                   bins in each dimension, or a two-element
+                   tuple for different numbers of bins in the
+                   x and y dimension, respectively.
+                   Defaults to 100.
+      :type bins: int or tuple, optional
+      :param hist_range: The leftmost and rightmost edges of the
+                         bins along each dimension. It should be
+                         in the format [[xmin, xmax], [ymin, ymax]].
+                         Defaults to None.
+      :type hist_range: list of lists, optional
+      :param x_range: A tuple (min, max) for the x-axis boundary.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for the y-axis boundary.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for the z-axis boundary.
+                      For 2D data, this is ignored.
+      :type z_range: tuple, optional
+      :param normalize: If True, the histogram is normalized to
+                        form a probability density. Defaults to False.
+      :type normalize: bool, optional
+      :param title: The title for the plot. Defaults to "Phase Space Distribution".
+      :type title: str, optional
+      :param xlabel: The label for the x-axis. Defaults to `x_variable`.
+      :type xlabel: str, optional
+      :param ylabel: The label for the y-axis. Defaults to `y_variable`.
+      :type ylabel: str, optional
+      :param \*\*imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
+                                This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
+
+      :returns:
+
+                A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+                       This allows for further customization of the plot after its creation.
+      :rtype: tuple
+
+
+

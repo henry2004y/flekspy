@@ -1,0 +1,56 @@
+flekspy.idl
+===========
+
+.. py:module:: flekspy.idl
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/idl/idl/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.idl.IDLAccessor
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.idl.read_idl
+
+
+Package Contents
+----------------
+
+.. py:function:: read_idl(filename)
+
+   Read IDL format file.
+
+
+.. py:class:: IDLAccessor(xarray_obj)
+
+   .. py:attribute:: _obj
+
+
+   .. py:method:: get_slice(norm, cut_loc) -> xarray.Dataset
+
+      Get a 2D slice from the 3D IDL data.
+      :param norm: The normal direction of the slice from "x", "y" or "z"
+      :type norm: str
+      :param cur_loc: The position of slicing.
+      :type cur_loc: float
+
+      Return: xarray.Dataset
+
+
+

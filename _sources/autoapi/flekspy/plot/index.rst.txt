@@ -1,0 +1,15 @@
+flekspy.plot
+============
+
+.. py:module:: flekspy.plot
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/plot/streamplot/index
+
+

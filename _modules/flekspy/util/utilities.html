@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>flekspy.util.utilities &mdash; flekspy  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            flekspy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../idl_data.html">FLEKS Python Visualization Toolkit: IDL Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../amrex_data.html">FLEKS Python Visualization Toolkit: AMReX Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../test_particle_data.html">FLEKS Python Visualization Toolkit: Test Particle Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">flekspy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../flekspy.html">flekspy</a></li>
+      <li class="breadcrumb-item active">flekspy.util.utilities</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for flekspy.util.utilities</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tarfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flekspy.util.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">plot_unit_planet</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;amu&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="s2">&quot;amu/cm**3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ux&quot;</span><span class="p">:</span> <span class="s2">&quot;km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uy&quot;</span><span class="p">:</span> <span class="s2">&quot;km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uz&quot;</span><span class="p">:</span> <span class="s2">&quot;km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;nPa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pxx&quot;</span><span class="p">:</span> <span class="s2">&quot;nPa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pxy&quot;</span><span class="p">:</span> <span class="s2">&quot;nPa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pxz&quot;</span><span class="p">:</span> <span class="s2">&quot;nPa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pyy&quot;</span><span class="p">:</span> <span class="s2">&quot;nPa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pyz&quot;</span><span class="p">:</span> <span class="s2">&quot;nPa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pzz&quot;</span><span class="p">:</span> <span class="s2">&quot;nPa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="s2">&quot;nT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bx&quot;</span><span class="p">:</span> <span class="s2">&quot;nT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;by&quot;</span><span class="p">:</span> <span class="s2">&quot;nT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bz&quot;</span><span class="p">:</span> <span class="s2">&quot;nT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="s2">&quot;nT*km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ex&quot;</span><span class="p">:</span> <span class="s2">&quot;nT*km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ey&quot;</span><span class="p">:</span> <span class="s2">&quot;nT*km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ez&quot;</span><span class="p">:</span> <span class="s2">&quot;nT*km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;Planet_Radius&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;Planet_Radius&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="s2">&quot;Planet_Radius&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_x&quot;</span><span class="p">:</span> <span class="s2">&quot;Planet_Radius&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_y&quot;</span><span class="p">:</span> <span class="s2">&quot;Planet_Radius&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_z&quot;</span><span class="p">:</span> <span class="s2">&quot;Planet_Radius&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_ux&quot;</span><span class="p">:</span> <span class="s2">&quot;km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_uy&quot;</span><span class="p">:</span> <span class="s2">&quot;km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_uz&quot;</span><span class="p">:</span> <span class="s2">&quot;km/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_w&quot;</span><span class="p">:</span> <span class="s2">&quot;amu&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">plot_unit_si</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="s2">&quot;kg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="s2">&quot;kg/m**3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ux&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uy&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uz&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;Pa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pxx&quot;</span><span class="p">:</span> <span class="s2">&quot;Pa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pxy&quot;</span><span class="p">:</span> <span class="s2">&quot;Pa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pxz&quot;</span><span class="p">:</span> <span class="s2">&quot;Pa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pyy&quot;</span><span class="p">:</span> <span class="s2">&quot;Pa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pyz&quot;</span><span class="p">:</span> <span class="s2">&quot;Pa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pzz&quot;</span><span class="p">:</span> <span class="s2">&quot;Pa&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bx&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;by&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bz&quot;</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="s2">&quot;T*m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ex&quot;</span><span class="p">:</span> <span class="s2">&quot;T*m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ey&quot;</span><span class="p">:</span> <span class="s2">&quot;T*m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ez&quot;</span><span class="p">:</span> <span class="s2">&quot;T*m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_x&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_y&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_z&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_ux&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_uy&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_uz&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;p_w&quot;</span><span class="p">:</span> <span class="s2">&quot;kg&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="get_unit">
+<a class="viewcode-back" href="../../../autoapi/flekspy/util/utilities/index.html#flekspy.util.get_unit">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_unit</span><span class="p">(</span><span class="n">var</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">unit_type</span><span class="o">=</span><span class="s2">&quot;planet&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the unit of variable.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        var (str): variable name.</span>
+<span class="sd">        unit_type (str, optional): unit system. Defaults to &quot;planet&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: unit in the specified unit system.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">var</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="c1"># Example: pxxs0 -&gt; pxx</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">var</span> <span class="ow">in</span> <span class="n">plot_unit_planet</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">return</span> <span class="s2">&quot;dimensionless&quot;</span>
+
+    <span class="n">unit_type</span> <span class="o">=</span> <span class="n">unit_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">unit_type</span> <span class="o">==</span> <span class="s2">&quot;planet&quot;</span> <span class="ow">or</span> <span class="n">unit_type</span> <span class="o">==</span> <span class="s2">&quot;planetary&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">plot_unit_planet</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">unit_type</span> <span class="o">==</span> <span class="s2">&quot;si&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">plot_unit_si</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;dimensionless&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="get_ticks">
+<a class="viewcode-back" href="../../../autoapi/flekspy/util/utilities/index.html#flekspy.util.get_ticks">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_ticks</span><span class="p">(</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">):</span>
+    <span class="n">dv</span> <span class="o">=</span> <span class="n">vmax</span> <span class="o">-</span> <span class="n">vmin</span>
+    <span class="k">if</span> <span class="n">dv</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">vmin</span><span class="p">]</span>
+    <span class="n">norder</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dv</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">v0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vmin</span> <span class="o">/</span> <span class="n">norder</span><span class="p">)</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vmax</span> <span class="o">/</span> <span class="n">norder</span><span class="p">)</span>
+
+    <span class="n">dtick</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">dv</span> <span class="o">=</span> <span class="n">dtick</span> <span class="o">*</span> <span class="n">norder</span>
+
+    <span class="n">tickMin</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">vmin</span> <span class="o">/</span> <span class="n">dv</span><span class="p">)</span> <span class="o">*</span> <span class="n">dv</span>
+    <span class="n">tickMax</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">vmax</span> <span class="o">/</span> <span class="n">dv</span><span class="p">)</span> <span class="o">*</span> <span class="n">dv</span>
+    <span class="n">nticks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">tickMax</span> <span class="o">-</span> <span class="n">tickMin</span><span class="p">)</span> <span class="o">/</span> <span class="n">dv</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">tickMin</span><span class="p">,</span> <span class="n">tickMax</span><span class="p">,</span> <span class="n">nticks</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="unit_one">
+<a class="viewcode-back" href="../../../autoapi/flekspy/util/utilities/index.html#flekspy.util.unit_one">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">unit_one</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Utility function for setting equal weights for macroparticles.</span>
+<span class="sd">    TBD: add units.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">data</span><span class="p">[(</span><span class="s2">&quot;particles&quot;</span><span class="p">,</span> <span class="s2">&quot;p_w&quot;</span><span class="p">)])</span></div>
+
+
+
+<div class="viewcode-block" id="download_testfile">
+<a class="viewcode-back" href="../../../autoapi/flekspy/util/utilities/index.html#flekspy.util.download_testfile">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_testfile</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_path</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downloads a tar.gz file from a URL and extracts its contents.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      url (str): the URL of the tar.gz file.</span>
+<span class="sd">      target_path (str): the directory to extract the files to. Defaults to the current directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+    <span class="n">target_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_path</span><span class="p">)</span>
+    <span class="n">temp_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;temp.tar.gz&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>  <span class="c1"># Raise an exception for bad status codes</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+        <span class="n">target_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">temp_file</span><span class="p">,</span> <span class="s2">&quot;r:gz&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+            <span class="n">tar</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error downloading file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">TarError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error extracting tar file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">temp_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">temp_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Clean up temporary file</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Yuxi Chen, Hongyang Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
