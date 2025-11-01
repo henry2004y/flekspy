@@ -389,26 +389,34 @@ class FLEKSTP(object):
 
     def save_trajectories(
         self,
-        pIDs: List[Tuple[int, int]],
+        pIDs: Union[List[Tuple[int, int]], List[int]],
         filename: str = "trajectories.h5",
     ) -> None:
         """
         Save the trajectories of multiple particles to a single HDF5 file.
 
         Args:
-            pIDs: A list of particle IDs to save.
+            pIDs: A list of particle IDs to save. This can be a list of tuples
+                  (cpu, id) or a list of integer indices.
             filename (str): The name of the HDF5 file to save the trajectories to.
         """
         with h5py.File(filename, "w") as f:
-            for pID in pIDs:
-                try:
+            if pIDs and isinstance(pIDs[0], int):
+                # Handle list of integer indices
+                for pID in pIDs:
+                    pData_lazy = self[pID]
+                    pData = pData_lazy.collect()
+                    dataset_name = f"ID_{pID}"
+                    dset = f.create_dataset(dataset_name, data=pData.to_numpy())
+                    dset.attrs["columns"] = pData.columns
+            else:
+                # Handle list of tuples
+                for pID in pIDs:
                     pData_lazy = self[pID]
                     pData = pData_lazy.collect()
                     dataset_name = f"ID_{pID[0]}_{pID[1]}"
                     dset = f.create_dataset(dataset_name, data=pData.to_numpy())
                     dset.attrs["columns"] = pData.columns
-                except (KeyError, ValueError, IOError, pl.exceptions.PolarsError) as e:
-                    logger.error(f"Error processing particle {pID}: {e}")
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""

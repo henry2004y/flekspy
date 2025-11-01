@@ -383,6 +383,21 @@ class TestParticles:
             saved_columns = dset.attrs["columns"]
             assert all(original_columns == saved_columns)
 
+    def test_save_trajectories_h5_int_list(self, particle_tracker, tmp_path):
+        pID_indices = [0, 1]
+        filename = tmp_path / "trajectories_int.h5"
+
+        particle_tracker.save_trajectories(pID_indices, filename=str(filename))
+
+        import h5py
+        assert filename.exists()
+        with h5py.File(filename, "r") as f:
+            expected_keys = [f"ID_{i}" for i in pID_indices]
+            assert all(key in f.keys() for key in expected_keys)
+
+            # Verify data and attributes for the first particle
+            dset = f[expected_keys[0]]
+            assert dset.shape[0] > 0
 
 def load_and_benchmark(files):
     """
