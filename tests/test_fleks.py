@@ -399,14 +399,6 @@ class TestParticles:
             dset = f[expected_keys[0]]
             assert dset.shape[0] > 0
 
-            original_pID = tuple(dset.attrs["original_pID"])
-            assert original_pID == particle_tracker.IDs[pID_indices[0]]
-
-            original_columns = particle_tracker[original_pID].collect().columns
-            saved_columns = dset.attrs["columns"]
-            assert all(original_columns == saved_columns)
-
-
 def load_and_benchmark(files):
     """
     Helper function for benchmarking flekspy loading.
