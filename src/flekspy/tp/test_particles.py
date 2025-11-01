@@ -387,36 +387,25 @@ class FLEKSTP(object):
         except (IOError, pl.exceptions.PolarsError) as e:
             logger.error(f"Error saving trajectory to {format.upper()}: {e}")
 
-    def _normalize_pIDs(
-        self, pIDs: Union[List[Tuple[int, int]], List[int], np.ndarray]
-    ) -> List[Tuple[int, int]]:
-        """
-        Converts various pID formats into a list of tuples.
-        """
-        if isinstance(pIDs, np.ndarray):
-            pIDs = pIDs.tolist()
-
-        if pIDs and isinstance(pIDs[0], int):
-            return [self.IDs[i] for i in pIDs]
-        return pIDs
-
     def save_trajectories(
         self,
-        pIDs: Union[List[Tuple[int, int]], List[int], np.ndarray],
+        pIDs: Union[List[Tuple[int, int]], List[int]],
         filename: str = "trajectories.h5",
     ) -> None:
         """
         Save the trajectories of multiple particles to a single HDF5 file.
         Args:
-            pIDs: A list of particle IDs, a list of integers, or a numpy array of integers to save.
+            pIDs: A list of particle IDs or a list of integers to save.
             filename (str): The name of the HDF5 file to save the trajectories to.
         """
-
-        normalized_pIDs = self._normalize_pIDs(pIDs)
-
         with h5py.File(filename, "w") as f:
-            for pID in normalized_pIDs:
+            for pID_item in pIDs:
                 try:
+                    if isinstance(pID_item, int):
+                        pID = self.IDs[pID_item]
+                    else:
+                        pID = pID_item
+
                     pData_lazy = self[pID]
                     pData = pData_lazy.collect()
                     dataset_name = f"ID_{pID[0]}_{pID[1]}"
