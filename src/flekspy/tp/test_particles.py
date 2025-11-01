@@ -403,10 +403,10 @@ class FLEKSTP(object):
         with h5py.File(filename, "w") as f:
             if pIDs and isinstance(pIDs[0], int):
                 # Handle list of integer indices
-                for pID_index in pIDs:
-                    pData_lazy = self[pID_index]
+                for pID in pIDs:
+                    pData_lazy = self[pID]
                     pData = pData_lazy.collect()
-                    dataset_name = f"ID_{pID_index}"
+                    dataset_name = f"ID_{pID}"
                     dset = f.create_dataset(dataset_name, data=pData.to_numpy())
                     dset.attrs["columns"] = pData.columns
             else:
