@@ -384,24 +384,25 @@ class TestParticles:
             assert all(original_columns == saved_columns)
 
     def test_save_trajectories_h5_int_list(self, particle_tracker, tmp_path):
-        pIDs = [0, 1]
+        pID_indices = [0, 1]
         filename = tmp_path / "trajectories_int.h5"
 
-        particle_tracker.save_trajectories(pIDs, filename=str(filename))
+        particle_tracker.save_trajectories(pID_indices, filename=str(filename))
 
         import h5py
         assert filename.exists()
         with h5py.File(filename, "r") as f:
-            # Need to get the actual pID tuples from the particle_tracker
-            expected_pIDs = [particle_tracker.IDs[i] for i in pIDs]
-            expected_keys = [f"ID_{pid[0]}_{pid[1]}" for pid in expected_pIDs]
+            expected_keys = [f"ID_{i}" for i in pID_indices]
             assert all(key in f.keys() for key in expected_keys)
 
             # Verify data and attributes for the first particle
             dset = f[expected_keys[0]]
             assert dset.shape[0] > 0
 
-            original_columns = particle_tracker[expected_pIDs[0]].collect().columns
+            original_pID = tuple(dset.attrs["original_pID"])
+            assert original_pID == particle_tracker.IDs[pID_indices[0]]
+
+            original_columns = particle_tracker[original_pID].collect().columns
             saved_columns = dset.attrs["columns"]
             assert all(original_columns == saved_columns)
 
