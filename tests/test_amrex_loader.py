@@ -17,9 +17,10 @@ def particle_data(setup_test_data):
 @pytest.fixture
 def mock_plot_components():
     """Fixture to mock matplotlib components for plotting tests."""
-    with patch("matplotlib.pyplot.subplots") as mock_subplots, patch(
-        "flekspy.amrex.make_axes_locatable"
-    ) as mock_make_axes_locatable:
+    with (
+        patch("matplotlib.pyplot.subplots") as mock_subplots,
+        patch("flekspy.amrex.make_axes_locatable") as mock_make_axes_locatable,
+    ):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_subplots.return_value = (mock_fig, mock_ax)

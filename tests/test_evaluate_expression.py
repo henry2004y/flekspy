@@ -33,7 +33,9 @@ class TestEvaluateExpression:
         result = amrex_dataset.evaluate_expression("np.sqrt({Bx}**2+{By}**2)")
         assert isinstance(result, yt.units.yt_array.YTArray)
         assert result.shape == amrex_dataset.data["Bx"].shape
-        expected = np.sqrt(amrex_dataset.data["Bx"] ** 2 + amrex_dataset.data["By"] ** 2)
+        expected = np.sqrt(
+            amrex_dataset.data["Bx"] ** 2 + amrex_dataset.data["By"] ** 2
+        )
         np.testing.assert_allclose(result.value, expected.value)
 
     def test_non_existent_variable(self, amrex_dataset):

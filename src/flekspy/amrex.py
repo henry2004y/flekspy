@@ -16,6 +16,7 @@ class AMReXParticleHeader:
     This class is designed to parse and store the information
     contained in an AMReX particle header file.
     """
+
     version_string: str
     real_type: Union[Type[np.float64], Type[np.float32]]
     int_type: Type[np.int32]
@@ -173,6 +174,7 @@ class AMReXParticleData:
     This class provides an interface to the particle data in a plotfile.
     Data is loaded lazily upon first access to `idata` or `rdata`.
     """
+
     output_dir: Path
     ptype: str
     _idata: Optional[np.ndarray]
@@ -221,8 +223,8 @@ class AMReXParticleData:
 
     def _parse_main_header(self) -> None:
         header_path = self.output_dir / "Header"
-        with open(header_path, 'r') as f:
-            f.readline() # version string
+        with open(header_path, "r") as f:
+            f.readline()  # version string
             num_fields = int(f.readline())
             # skip field names
             for _ in range(num_fields):
@@ -230,14 +232,14 @@ class AMReXParticleData:
 
             self.dim = int(f.readline())
             self.time = float(f.readline())
-            f.readline() # prob_refine_ratio
+            f.readline()  # prob_refine_ratio
 
             self.left_edge = [float(v) for v in f.readline().strip().split()]
             self.right_edge = [float(v) for v in f.readline().strip().split()]
             f.readline()
-            #TODO check a 3D particle file for correctness!
+            # TODO check a 3D particle file for correctness!
             dim_line = f.readline().strip()
-            matches = re.findall(r'\d+', dim_line)
+            matches = re.findall(r"\d+", dim_line)
             coords = [int(num) for num in matches]
             x1, y1, x2, y2, z1, z2 = coords
             dim_x = x2 - x1 + 1
@@ -250,11 +252,13 @@ class AMReXParticleData:
         """Parses the Particle_H files to get the box arrays for each level."""
         self.level_boxes = [[] for _ in range(self.header.num_levels)]
         for level_num in range(self.header.num_levels):
-            particle_h_path = self.output_dir / self.ptype / f"Level_{level_num}" / "Particle_H"
+            particle_h_path = (
+                self.output_dir / self.ptype / f"Level_{level_num}" / "Particle_H"
+            )
             if not particle_h_path.exists():
                 continue
 
-            with open(particle_h_path, 'r') as f:
+            with open(particle_h_path, "r") as f:
                 lines = f.readlines()
 
             boxes = []
@@ -262,9 +266,9 @@ class AMReXParticleData:
             # The rest of the lines are box definitions, e.g. `((0,0) (15,7) (0,0))`
             for line in lines[1:]:
                 line = line.strip()
-                if line.startswith('((') and line.endswith('))'):
+                if line.startswith("((") and line.endswith("))"):
                     try:
-                        parts = [int(x) for x in re.findall(r'-?\d+', line)]
+                        parts = [int(x) for x in re.findall(r"-?\d+", line)]
                         if self.header.dim == 2 and len(parts) >= 4:
                             lo_corner = (parts[0], parts[1])
                             hi_corner = (parts[2], parts[3])
@@ -274,7 +278,7 @@ class AMReXParticleData:
                             hi_corner = (parts[3], parts[4], parts[5])
                             boxes.append((lo_corner, hi_corner))
                     except (ValueError, IndexError):
-                        continue # Not a valid box line
+                        continue  # Not a valid box line
             self.level_boxes[level_num] = boxes
 
     def __repr__(self) -> str:
@@ -323,7 +327,10 @@ class AMReXParticleData:
         """
 
         # Convert physical range to index range
-        dx = [(self.right_edge[i] - self.left_edge[i]) / self.domain_dimensions[i] for i in range(self.dim)]
+        dx = [
+            (self.right_edge[i] - self.left_edge[i]) / self.domain_dimensions[i]
+            for i in range(self.dim)
+        ]
 
         target_idx_ranges: List[Optional[Tuple[int, int]]] = []
         ranges = [x_range, y_range, z_range]
@@ -364,8 +371,13 @@ class AMReXParticleData:
             if count == 0:
                 continue
 
-            fn = self.output_dir / self.ptype / f"Level_{level_num}" / f"DATA_{which:05d}"
-            with open(fn, 'rb') as f:
+            fn = (
+                self.output_dir
+                / self.ptype
+                / f"Level_{level_num}"
+                / f"DATA_{which:05d}"
+            )
+            with open(fn, "rb") as f:
                 f.seek(where)
 
                 if self.header.is_checkpoint:
@@ -377,12 +389,18 @@ class AMReXParticleData:
                 mask = np.ones(count, dtype=bool)
                 for i in range(self.dim):
                     if ranges[i]:
-                        mask &= (floats[:, i] >= ranges[i][0]) & (floats[:, i] <= ranges[i][1])
+                        mask &= (floats[:, i] >= ranges[i][0]) & (
+                            floats[:, i] <= ranges[i][1]
+                        )
 
                 if np.any(mask):
                     selected_rdata.append(floats[mask])
 
-        final_rdata = np.concatenate(selected_rdata) if selected_rdata else np.empty((0, self.header.num_real), dtype=self.header.real_type)
+        final_rdata = (
+            np.concatenate(selected_rdata)
+            if selected_rdata
+            else np.empty((0, self.header.num_real), dtype=self.header.real_type)
+        )
         return final_rdata
 
     def plot_phase(
@@ -448,7 +466,9 @@ class AMReXParticleData:
             return None
 
         # --- 2. Map component names to column indices ---
-        component_map = {name: i for i, name in enumerate(self.header.real_component_names)}
+        component_map = {
+            name: i for i, name in enumerate(self.header.real_component_names)
+        }
 
         # --- 3. Validate input variable names ---
         if x_variable not in component_map or y_variable not in component_map:
@@ -472,7 +492,9 @@ class AMReXParticleData:
         else:
             cbar_label = "Particle Count"
 
-        H, xedges, yedges = np.histogram2d(x_data, y_data, bins=bins, range=hist_range, weights=weights)
+        H, xedges, yedges = np.histogram2d(
+            x_data, y_data, bins=bins, range=hist_range, weights=weights
+        )
 
         if normalize:
             total = H.sum()
@@ -488,10 +510,10 @@ class AMReXParticleData:
 
         # Default imshow settings that can be overridden by user
         imshow_settings = {
-            'interpolation': 'nearest',
-            'origin': 'lower',
-            'extent': [xedges[0], xedges[-1], yedges[0], yedges[-1]],
-            'aspect': 'auto'
+            "interpolation": "nearest",
+            "origin": "lower",
+            "extent": [xedges[0], xedges[-1], yedges[0], yedges[-1]],
+            "aspect": "auto",
         }
         imshow_settings.update(imshow_kwargs)
 

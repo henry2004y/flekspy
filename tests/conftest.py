@@ -2,6 +2,7 @@ import pytest
 import os
 from flekspy.util import download_testfile
 
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_data():
     """
