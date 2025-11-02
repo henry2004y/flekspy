@@ -510,6 +510,7 @@ class AMReXParticleData:
 
         # Default imshow settings that can be overridden by user
         imshow_settings = {
+            "cmap": "turbo",
             "interpolation": "nearest",
             "origin": "lower",
             "extent": [xedges[0], xedges[-1], yedges[0], yedges[-1]],
@@ -669,7 +670,9 @@ class AMReXParticleData:
         z_centers = (edges[2][:-1] + edges[2][1:]) / 2
 
         # Create a meshgrid of bin centers
-        x_grid, y_grid, z_grid = np.meshgrid(x_centers, y_centers, z_centers, indexing="ij")
+        x_grid, y_grid, z_grid = np.meshgrid(
+            x_centers, y_centers, z_centers, indexing="ij"
+        )
 
         # Flatten the arrays for scatter plot
         x_flat = x_grid.flatten()
@@ -684,7 +687,6 @@ class AMReXParticleData:
         z_flat = z_flat[non_empty]
         density = density[non_empty]
 
-
         # --- 7. Plot the resulting histogram as a 3D scatter plot ---
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection="3d")
@@ -692,10 +694,9 @@ class AMReXParticleData:
         scatter_settings = {
             "c": density,
             "cmap": "turbo",
-            "s": 20, # a default size
+            "s": 20,  # a default size
         }
         scatter_settings.update(scatter_kwargs)
-
 
         sc = ax.scatter(x_flat, y_flat, z_flat, **scatter_settings)
 
@@ -757,7 +758,14 @@ class AMReXParticleData:
         facecolors = cmap(normalized_data)
 
         ax.plot_surface(
-            X, Y, Z, rstride=1, cstride=1, facecolors=facecolors, shade=False, **surface_kwargs
+            X,
+            Y,
+            Z,
+            rstride=1,
+            cstride=1,
+            facecolors=facecolors,
+            shade=False,
+            **surface_kwargs,
         )
 
     def plot_intersecting_planes(
@@ -833,7 +841,9 @@ class AMReXParticleData:
         self._plot_plane(ax, H, edges, "z", cmap, **surface_kwargs)
 
         # --- 7. Add labels and title ---
-        final_title = title if title is not None else "Intersecting Planes of Phase Space"
+        final_title = (
+            title if title is not None else "Intersecting Planes of Phase Space"
+        )
         final_xlabel = xlabel if xlabel is not None else x_variable
         final_ylabel = ylabel if ylabel is not None else y_variable
         final_zlabel = zlabel if zlabel is not None else z_variable
@@ -848,7 +858,6 @@ class AMReXParticleData:
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])  # Dummy array for the mappable
         fig.colorbar(sm, ax=ax, shrink=0.6, aspect=20, pad=0.1, label=cbar_label)
-
 
         # --- 9. Return the plot objects ---
         return fig, ax
