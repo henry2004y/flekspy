@@ -536,3 +536,319 @@ class AMReXParticleData:
 
         # --- 8. Return the plot objects ---
         return fig, ax
+
+    def _prepare_3d_histogram_data(
+        self,
+        x_variable: str,
+        y_variable: str,
+        z_variable: str,
+        bins: Union[int, Tuple[int, int, int]],
+        hist_range: Optional[List[List[float]]],
+        x_range: Optional[Tuple[float, float]],
+        y_range: Optional[Tuple[float, float]],
+        z_range: Optional[Tuple[float, float]],
+        normalize: bool,
+    ) -> Optional[Tuple[np.ndarray, Tuple[np.ndarray, ...], str]]:
+        """Prepares 3D histogram data for plotting methods."""
+        if x_range or y_range or z_range:
+            rdata = self.select_particles_in_region(x_range, y_range, z_range)
+        else:
+            rdata = self.rdata
+
+        if rdata.size == 0:
+            logger.warning("No particles to plot.")
+            return None
+
+        component_map = {
+            name: i for i, name in enumerate(self.header.real_component_names)
+        }
+
+        if (
+            x_variable not in component_map
+            or y_variable not in component_map
+            or z_variable not in component_map
+        ):
+            raise ValueError(
+                f"Invalid variable name. Choose from {list(component_map.keys())}"
+            )
+
+        x_index = component_map[x_variable]
+        y_index = component_map[y_variable]
+        z_index = component_map[z_variable]
+
+        x_data = rdata[:, x_index]
+        y_data = rdata[:, y_index]
+        z_data = rdata[:, z_index]
+        sample = np.vstack([x_data, y_data, z_data]).T
+
+        weights = None
+        cbar_label = "Particle Count"
+        if "weight" in component_map:
+            weight_index = component_map["weight"]
+            weights = rdata[:, weight_index]
+            cbar_label = "Weighted Particle Density"
+
+        H, edges = np.histogramdd(sample, bins=bins, range=hist_range, weights=weights)
+
+        if normalize:
+            total = H.sum()
+            if total > 0:
+                H /= total
+            if weights is not None:
+                cbar_label = "Normalized Weighted Density"
+            else:
+                cbar_label = "Normalized Density"
+
+        return H, edges, cbar_label
+
+    def plot_phase_3d(
+        self,
+        x_variable: str,
+        y_variable: str,
+        z_variable: str,
+        bins: Union[int, Tuple[int, int, int]] = 50,
+        hist_range: Optional[List[List[float]]] = None,
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+        normalize: bool = False,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        zlabel: Optional[str] = None,
+        **scatter_kwargs: Any,
+    ) -> Optional[Tuple[Figure, Axes]]:
+        """
+        Plots the 3D phase space distribution for any three selected variables.
+
+        This function creates a 3D histogram and visualizes it as a scatter plot,
+        where the color of each point corresponds to the particle density in that bin.
+
+        Args:
+            x_variable (str): The name of the variable for the x-axis.
+            y_variable (str): The name of the variable for the y-axis.
+            z_variable (str): The name of the variable for the z-axis.
+            bins (int or tuple, optional): The number of bins for each dimension.
+                                           Defaults to 50.
+            hist_range (list of lists, optional): The range for the bins in the format
+                                             [[xmin, xmax], [ymin, ymax], [zmin, zmax]].
+                                             Defaults to None.
+            x_range (tuple, optional): A tuple (min, max) for filtering particles by x-position.
+            y_range (tuple, optional): A tuple (min, max) for filtering particles by y-position.
+            z_range (tuple, optional): A tuple (min, max) for filtering particles by z-position.
+            normalize (bool, optional): If True, normalize the histogram to form a
+                                        probability density. Defaults to False.
+            title (str, optional): The title for the plot. Defaults to "3D Phase Space Distribution".
+            xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
+            ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
+            zlabel (str, optional): The label for the z-axis. Defaults to `z_variable`.
+            **scatter_kwargs: Additional keyword arguments to be passed to `ax.scatter()`.
+
+        Returns:
+            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+        """
+        # --- 1. Prepare histogram data ---
+        hist_data = self._prepare_3d_histogram_data(
+            x_variable,
+            y_variable,
+            z_variable,
+            bins,
+            hist_range,
+            x_range,
+            y_range,
+            z_range,
+            normalize,
+        )
+        if hist_data is None:
+            return None
+        H, edges, cbar_label = hist_data
+
+        # --- 6. Prepare data for scatter plot ---
+        x_centers = (edges[0][:-1] + edges[0][1:]) / 2
+        y_centers = (edges[1][:-1] + edges[1][1:]) / 2
+        z_centers = (edges[2][:-1] + edges[2][1:]) / 2
+
+        # Create a meshgrid of bin centers
+        x_grid, y_grid, z_grid = np.meshgrid(x_centers, y_centers, z_centers, indexing="ij")
+
+        # Flatten the arrays for scatter plot
+        x_flat = x_grid.flatten()
+        y_flat = y_grid.flatten()
+        z_flat = z_grid.flatten()
+        density = H.flatten()
+
+        # Filter out empty bins
+        non_empty = density > 0
+        x_flat = x_flat[non_empty]
+        y_flat = y_flat[non_empty]
+        z_flat = z_flat[non_empty]
+        density = density[non_empty]
+
+
+        # --- 7. Plot the resulting histogram as a 3D scatter plot ---
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection="3d")
+
+        scatter_settings = {
+            "c": density,
+            "cmap": "viridis",
+            "s": 20, # a default size
+        }
+        scatter_settings.update(scatter_kwargs)
+
+
+        sc = ax.scatter(x_flat, y_flat, z_flat, **scatter_settings)
+
+        # --- 8. Add labels and a color bar ---
+        final_title = title if title is not None else "3D Phase Space Distribution"
+        final_xlabel = xlabel if xlabel is not None else x_variable
+        final_ylabel = ylabel if ylabel is not None else y_variable
+        final_zlabel = zlabel if zlabel is not None else z_variable
+
+        ax.set_title(final_title, fontsize="x-large")
+        ax.set_xlabel(final_xlabel, fontsize="x-large")
+        ax.set_ylabel(final_ylabel, fontsize="x-large")
+        ax.set_zlabel(final_zlabel, fontsize="x-large")
+
+        cbar = fig.colorbar(sc)
+        cbar.set_label(cbar_label)
+
+        # --- 9. Return the plot objects ---
+        return fig, ax
+
+    @staticmethod
+    def _plot_plane(ax, H, edges, fixed_coord, cmap, **surface_kwargs):
+        """Helper function to plot a single plane."""
+        nx, ny, nz = H.shape
+        x_edges, y_edges, z_edges = edges
+
+        min_val, max_val = H.min(), H.max()
+        cmap = plt.get_cmap(cmap)
+
+        slice_index = {"x": nx // 2, "y": ny // 2, "z": nz // 2}[fixed_coord]
+
+        # Prepare coordinates and data for the selected plane
+        if fixed_coord == "x":
+            Y_centers = (y_edges[:-1] + y_edges[1:]) / 2
+            Z_centers = (z_edges[:-1] + z_edges[1:]) / 2
+            Y, Z = np.meshgrid(Y_centers, Z_centers, indexing="ij")
+            X = np.full_like(Y, (x_edges[slice_index] + x_edges[slice_index + 1]) / 2)
+            plane_data = H[slice_index, :, :]
+        elif fixed_coord == "y":
+            X_centers = (x_edges[:-1] + x_edges[1:]) / 2
+            Z_centers = (z_edges[:-1] + z_edges[1:]) / 2
+            X, Z = np.meshgrid(X_centers, Z_centers, indexing="ij")
+            Y = np.full_like(X, (y_edges[slice_index] + y_edges[slice_index + 1]) / 2)
+            plane_data = H[:, slice_index, :]
+        else:  # fixed_coord == 'z'
+            X_centers = (x_edges[:-1] + x_edges[1:]) / 2
+            Y_centers = (y_edges[:-1] + y_edges[1:]) / 2
+            X, Y = np.meshgrid(X_centers, Y_centers, indexing="ij")
+            Z = np.full_like(X, (z_edges[slice_index] + z_edges[slice_index + 1]) / 2)
+            plane_data = H[:, :, slice_index]
+
+        # Normalize data for coloring
+        denominator = max_val - min_val
+        if denominator == 0:
+            normalized_data = np.full(plane_data.shape, 0.5)
+        else:
+            normalized_data = (plane_data - min_val) / denominator
+
+        facecolors = cmap(normalized_data)
+
+        ax.plot_surface(
+            X, Y, Z, rstride=1, cstride=1, facecolors=facecolors, shade=False, **surface_kwargs
+        )
+
+    def plot_intersecting_planes(
+        self,
+        x_variable: str,
+        y_variable: str,
+        z_variable: str,
+        bins: Union[int, Tuple[int, int, int]] = 50,
+        hist_range: Optional[List[List[float]]] = None,
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+        normalize: bool = False,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        zlabel: Optional[str] = None,
+        cmap: str = "viridis",
+        **surface_kwargs: Any,
+    ) -> Optional[Tuple[Figure, Axes]]:
+        """
+        Plots the 3D phase space distribution using three intersecting planes.
+
+        This function creates a 3D histogram and visualizes the density on three
+        orthogonal planes that intersect at the center of the histogrammed data.
+
+        Args:
+            x_variable (str): The name of the variable for the x-axis.
+            y_variable (str): The name of the variable for the y-axis.
+            z_variable (str): The name of the variable for the z-axis.
+            bins (int or tuple, optional): The number of bins for each dimension.
+                                           Defaults to 50.
+            hist_range (list of lists, optional): The range for the bins in the format
+                                             [[xmin, xmax], [ymin, ymax], [zmin, zmax]].
+                                             Defaults to None.
+            x_range (tuple, optional): A tuple (min, max) for filtering particles by x-position.
+            y_range (tuple, optional): A tuple (min, max) for filtering particles by y-position.
+            z_range (tuple, optional): A tuple (min, max) for filtering particles by z-position.
+            normalize (bool, optional): If True, normalize the histogram to form a
+                                        probability density. Defaults to False.
+            title (str, optional): The title for the plot. Defaults to "Intersecting Planes of Phase Space".
+            xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
+            ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
+            zlabel (str, optional): The label for the z-axis. Defaults to `z_variable`.
+            cmap (str, optional): The colormap to use for the planes. Defaults to "viridis".
+            **surface_kwargs: Additional keyword arguments to be passed to `ax.plot_surface()`.
+
+        Returns:
+            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+        """
+        # --- 1. Prepare histogram data ---
+        hist_data = self._prepare_3d_histogram_data(
+            x_variable,
+            y_variable,
+            z_variable,
+            bins,
+            hist_range,
+            x_range,
+            y_range,
+            z_range,
+            normalize,
+        )
+        if hist_data is None:
+            return None
+        H, edges, cbar_label = hist_data
+
+        # --- 6. Plot the intersecting planes ---
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection="3d")
+
+        self._plot_plane(ax, H, edges, "x", cmap, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "y", cmap, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "z", cmap, **surface_kwargs)
+
+        # --- 7. Add labels and title ---
+        final_title = title if title is not None else "Intersecting Planes of Phase Space"
+        final_xlabel = xlabel if xlabel is not None else x_variable
+        final_ylabel = ylabel if ylabel is not None else y_variable
+        final_zlabel = zlabel if zlabel is not None else z_variable
+
+        ax.set_title(final_title, fontsize="x-large")
+        ax.set_xlabel(final_xlabel, fontsize="x-large")
+        ax.set_ylabel(final_ylabel, fontsize="x-large")
+        ax.set_zlabel(final_zlabel, fontsize="x-large")
+
+        # --- 8. Add a colorbar ---
+        norm = plt.Normalize(vmin=H.min(), vmax=H.max())
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])  # Dummy array for the mappable
+        fig.colorbar(sm, ax=ax, shrink=0.6, aspect=20, pad=0.1, label=cbar_label)
+
+
+        # --- 9. Return the plot objects ---
+        return fig, ax
