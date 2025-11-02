@@ -537,6 +537,70 @@ class AMReXParticleData:
         # --- 8. Return the plot objects ---
         return fig, ax
 
+    def _prepare_3d_histogram_data(
+        self,
+        x_variable: str,
+        y_variable: str,
+        z_variable: str,
+        bins: Union[int, Tuple[int, int, int]],
+        hist_range: Optional[List[List[float]]],
+        x_range: Optional[Tuple[float, float]],
+        y_range: Optional[Tuple[float, float]],
+        z_range: Optional[Tuple[float, float]],
+        normalize: bool,
+    ) -> Optional[Tuple[np.ndarray, Tuple[np.ndarray, ...], str]]:
+        """Prepares 3D histogram data for plotting methods."""
+        if x_range or y_range or z_range:
+            rdata = self.select_particles_in_region(x_range, y_range, z_range)
+        else:
+            rdata = self.rdata
+
+        if rdata.size == 0:
+            logger.warning("No particles to plot.")
+            return None
+
+        component_map = {
+            name: i for i, name in enumerate(self.header.real_component_names)
+        }
+
+        if (
+            x_variable not in component_map
+            or y_variable not in component_map
+            or z_variable not in component_map
+        ):
+            raise ValueError(
+                f"Invalid variable name. Choose from {list(component_map.keys())}"
+            )
+
+        x_index = component_map[x_variable]
+        y_index = component_map[y_variable]
+        z_index = component_map[z_variable]
+
+        x_data = rdata[:, x_index]
+        y_data = rdata[:, y_index]
+        z_data = rdata[:, z_index]
+        sample = np.vstack([x_data, y_data, z_data]).T
+
+        weights = None
+        cbar_label = "Particle Count"
+        if "weight" in component_map:
+            weight_index = component_map["weight"]
+            weights = rdata[:, weight_index]
+            cbar_label = "Weighted Particle Density"
+
+        H, edges = np.histogramdd(sample, bins=bins, range=hist_range, weights=weights)
+
+        if normalize:
+            total = H.sum()
+            if total > 0:
+                H /= total
+            if weights is not None:
+                cbar_label = "Normalized Weighted Density"
+            else:
+                cbar_label = "Normalized Density"
+
+        return H, edges, cbar_label
+
     def plot_phase_3d(
         self,
         x_variable: str,
@@ -583,60 +647,21 @@ class AMReXParticleData:
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
         """
-        # --- 1. Select data ---
-        if x_range or y_range or z_range:
-            rdata = self.select_particles_in_region(x_range, y_range, z_range)
-        else:
-            rdata = self.rdata
-
-        if rdata.size == 0:
-            logger.warning("No particles to plot.")
+        # --- 1. Prepare histogram data ---
+        hist_data = self._prepare_3d_histogram_data(
+            x_variable,
+            y_variable,
+            z_variable,
+            bins,
+            hist_range,
+            x_range,
+            y_range,
+            z_range,
+            normalize,
+        )
+        if hist_data is None:
             return None
-
-        # --- 2. Map component names to column indices ---
-        component_map = {
-            name: i for i, name in enumerate(self.header.real_component_names)
-        }
-
-        # --- 3. Validate input variable names ---
-        if (
-            x_variable not in component_map
-            or y_variable not in component_map
-            or z_variable not in component_map
-        ):
-            raise ValueError(
-                f"Invalid variable name. Choose from {list(component_map.keys())}"
-            )
-
-        x_index = component_map[x_variable]
-        y_index = component_map[y_variable]
-        z_index = component_map[z_variable]
-
-        # --- 4. Extract the relevant data columns ---
-        x_data = rdata[:, x_index]
-        y_data = rdata[:, y_index]
-        z_data = rdata[:, z_index]
-        sample = np.vstack([x_data, y_data, z_data]).T
-
-        # --- 5. Create the 3D histogram ---
-        weights = None
-        if "weight" in component_map:
-            weight_index = component_map["weight"]
-            weights = rdata[:, weight_index]
-            cbar_label = "Weighted Particle Density"
-        else:
-            cbar_label = "Particle Count"
-
-        H, edges = np.histogramdd(sample, bins=bins, range=hist_range, weights=weights)
-
-        if normalize:
-            total = H.sum()
-            if total > 0:
-                H /= total
-            if weights is not None:
-                cbar_label = "Normalized Weighted Density"
-            else:
-                cbar_label = "Normalized Density"
+        H, edges, cbar_label = hist_data
 
         # --- 6. Prepare data for scatter plot ---
         x_centers = (edges[0][:-1] + edges[0][1:]) / 2
@@ -783,59 +808,21 @@ class AMReXParticleData:
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
         """
-        # --- 1. Select data ---
-        if x_range or y_range or z_range:
-            rdata = self.select_particles_in_region(x_range, y_range, z_range)
-        else:
-            rdata = self.rdata
-
-        if rdata.size == 0:
-            logger.warning("No particles to plot.")
+        # --- 1. Prepare histogram data ---
+        hist_data = self._prepare_3d_histogram_data(
+            x_variable,
+            y_variable,
+            z_variable,
+            bins,
+            hist_range,
+            x_range,
+            y_range,
+            z_range,
+            normalize,
+        )
+        if hist_data is None:
             return None
-
-        # --- 2. Map component names to column indices ---
-        component_map = {
-            name: i for i, name in enumerate(self.header.real_component_names)
-        }
-
-        # --- 3. Validate input variable names ---
-        if (
-            x_variable not in component_map
-            or y_variable not in component_map
-            or z_variable not in component_map
-        ):
-            raise ValueError(
-                f"Invalid variable name. Choose from {list(component_map.keys())}"
-            )
-
-        x_index = component_map[x_variable]
-        y_index = component_map[y_variable]
-        z_index = component_map[z_variable]
-
-        # --- 4. Extract the relevant data columns ---
-        x_data = rdata[:, x_index]
-        y_data = rdata[:, y_index]
-        z_data = rdata[:, z_index]
-        sample = np.vstack([x_data, y_data, z_data]).T
-
-        # --- 5. Create the 3D histogram ---
-        weights = None
-        cbar_label = "Particle Count"
-        if "weight" in component_map:
-            weight_index = component_map["weight"]
-            weights = rdata[:, weight_index]
-            cbar_label = "Weighted Particle Density"
-
-        H, edges = np.histogramdd(sample, bins=bins, range=hist_range, weights=weights)
-
-        if normalize:
-            total = H.sum()
-            if total > 0:
-                H /= total
-            if weights is not None:
-                cbar_label = "Normalized Weighted Density"
-            else:
-                cbar_label = "Normalized Density"
+        H, edges, cbar_label = hist_data
 
         # --- 6. Plot the intersecting planes ---
         fig = plt.figure(figsize=(10, 8))
