@@ -127,6 +127,56 @@ def test_plot_phase(mock_plot_components):
     cbar_instance.set_label.assert_called_once_with("Normalized Weighted Density")
 
 
+def test_plot_phase_with_existing_axes(mock_plot_components):
+    """
+    Tests that plot_phase can draw on an existing matplotlib axes.
+    """
+    mock_fig = mock_plot_components["fig"]
+    mock_ax = mock_plot_components["ax"]
+    mock_ax.figure = mock_fig
+
+    # This time, we pass the existing ax to the function
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.random.rand(100, 2)
+
+    result_fig, result_ax = AMReXParticleData.plot_phase(
+        mock_pdata, x_variable="x", y_variable="y", ax=mock_ax
+    )
+
+    # Assert that the returned objects are the same ones we passed in
+    assert result_fig is mock_fig
+    assert result_ax is mock_ax
+
+    # Assert that no new subplots were created
+    mock_plot_components["subplots"].assert_not_called()
+
+    # Assert that the plotting was done on the provided axes
+    assert mock_ax.imshow.called
+
+
+def test_plot_phase_no_colorbar(mock_plot_components):
+    """
+    Tests that the colorbar is not created when add_colorbar=False.
+    """
+    mock_fig = mock_plot_components["fig"]
+    mock_ax = mock_plot_components["ax"]
+
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.random.rand(100, 2)
+
+    AMReXParticleData.plot_phase(
+        mock_pdata, x_variable="x", y_variable="y", add_colorbar=False
+    )
+
+    # Assert that the colorbar creation logic was not called
+    mock_plot_components["make_axes_locatable"].assert_not_called()
+    mock_fig.colorbar.assert_not_called()
+
+
 @patch("flekspy.amrex.logger")
 def test_plot_phase_no_particles(mock_logger, mock_plot_components):
     """
