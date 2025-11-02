@@ -413,6 +413,7 @@ class AMReXParticleData:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
+        plot_zero_lines: bool = False,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -445,6 +446,8 @@ class AMReXParticleData:
                                        For 2D data, this is ignored.
             normalize (bool, optional): If True, the histogram is normalized to
                                         form a probability density. Defaults to False.
+            plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
+                                              Defaults to False.
             title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -519,6 +522,10 @@ class AMReXParticleData:
         imshow_settings.update(imshow_kwargs)
 
         im = ax.imshow(H.T, **imshow_settings)
+
+        if plot_zero_lines:
+            ax.axhline(0, color="black", linestyle="--")
+            ax.axvline(0, color="black", linestyle="--")
 
         # --- 7. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
