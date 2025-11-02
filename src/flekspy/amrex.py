@@ -692,8 +692,8 @@ class AMReXParticleData:
         return fig, ax
 
     @staticmethod
-    def _plot_plane_quadrants(ax, H, edges, fixed_coord, cmap, **surface_kwargs):
-        """Helper function to plot a single plane divided into four quadrants."""
+    def _plot_plane(ax, H, edges, fixed_coord, cmap, **surface_kwargs):
+        """Helper function to plot a single plane."""
         nx, ny, nz = H.shape
         x_edges, y_edges, z_edges = edges
 
@@ -701,74 +701,39 @@ class AMReXParticleData:
         cmap = plt.get_cmap(cmap)
 
         slice_index = {"x": nx // 2, "y": ny // 2, "z": nz // 2}[fixed_coord]
-        plane_idx = {
-            "x": (slice_index, slice(None), slice(None)),
-            "y": (slice(None), slice_index, slice(None)),
-            "z": (slice(None), slice(None), slice_index),
-        }[fixed_coord]
-        plane_data = H[plane_idx]
 
-        coord_edges = {
-            "x": (y_edges, z_edges),
-            "y": (x_edges, z_edges),
-            "z": (x_edges, y_edges),
-        }[fixed_coord]
-        n0, n1 = plane_data.shape
-        edges0, edges1 = coord_edges
+        # Prepare coordinates and data for the selected plane
+        if fixed_coord == "x":
+            Y_centers = (y_edges[:-1] + y_edges[1:]) / 2
+            Z_centers = (z_edges[:-1] + z_edges[1:]) / 2
+            Y, Z = np.meshgrid(Y_centers, Z_centers, indexing="ij")
+            X = np.full_like(Y, (x_edges[slice_index] + x_edges[slice_index + 1]) / 2)
+            plane_data = H[slice_index, :, :]
+        elif fixed_coord == "y":
+            X_centers = (x_edges[:-1] + x_edges[1:]) / 2
+            Z_centers = (z_edges[:-1] + z_edges[1:]) / 2
+            X, Z = np.meshgrid(X_centers, Z_centers, indexing="ij")
+            Y = np.full_like(X, (y_edges[slice_index] + y_edges[slice_index + 1]) / 2)
+            plane_data = H[:, slice_index, :]
+        else:  # fixed_coord == 'z'
+            X_centers = (x_edges[:-1] + x_edges[1:]) / 2
+            Y_centers = (y_edges[:-1] + y_edges[1:]) / 2
+            X, Y = np.meshgrid(X_centers, Y_centers, indexing="ij")
+            Z = np.full_like(X, (z_edges[slice_index] + z_edges[slice_index + 1]) / 2)
+            plane_data = H[:, :, slice_index]
 
-        centers0 = (edges0[:-1] + edges0[1:]) / 2
-        centers1 = (edges1[:-1] + edges1[1:]) / 2
+        # Normalize data for coloring
+        denominator = max_val - min_val
+        if denominator == 0:
+            normalized_data = np.full(plane_data.shape, 0.5)
+        else:
+            normalized_data = (plane_data - min_val) / denominator
 
-        quadrant_data = [
-            plane_data[: n0 // 2, : n1 // 2],
-            plane_data[: n0 // 2, n1 // 2 :],
-            plane_data[n0 // 2 :, : n1 // 2],
-            plane_data[n0 // 2 :, n1 // 2 :],
-        ]
-        quadrant_centers0 = [
-            centers0[: n0 // 2],
-            centers0[: n0 // 2],
-            centers0[n0 // 2 :],
-            centers0[n0 // 2 :],
-        ]
-        quadrant_centers1 = [
-            centers1[: n1 // 2],
-            centers1[n1 // 2 :],
-            centers1[: n1 // 2],
-            centers1[n1 // 2 :],
-        ]
+        facecolors = cmap(normalized_data)
 
-        for i in range(4):
-            q_data = quadrant_data[i]
-            q_centers0 = quadrant_centers0[i]
-            q_centers1 = quadrant_centers1[i]
-
-            if q_data.size == 0:
-                continue
-
-            denominator = max_val - min_val
-            if denominator == 0:
-                # All values are the same, so assign a single color.
-                normalized_data = np.full(q_data.shape, 0.5)
-            else:
-                normalized_data = (q_data - min_val) / denominator
-            facecolors = cmap(normalized_data)
-
-
-            C0, C1 = np.meshgrid(q_centers0, q_centers1, indexing="ij")
-
-            if fixed_coord == "x":
-                X = np.full_like(C0, (x_edges[nx // 2] + x_edges[nx // 2 + 1]) / 2)
-                Y, Z = C0, C1
-            elif fixed_coord == "y":
-                Y = np.full_like(C0, (y_edges[ny // 2] + y_edges[ny // 2 + 1]) / 2)
-                X, Z = C0, C1
-            else:  # fixed_coord == 'z'
-                Z = np.full_like(C0, (z_edges[nz // 2] + z_edges[nz // 2 + 1]) / 2)
-                X, Y = C0, C1
-            ax.plot_surface(
-                X, Y, Z, rstride=1, cstride=1, facecolors=facecolors, shade=False, **surface_kwargs
-            )
+        ax.plot_surface(
+            X, Y, Z, rstride=1, cstride=1, facecolors=facecolors, shade=False, **surface_kwargs
+        )
 
     def plot_intersecting_planes(
         self,
@@ -876,9 +841,9 @@ class AMReXParticleData:
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection="3d")
 
-        self._plot_plane_quadrants(ax, H, edges, "x", cmap, **surface_kwargs)
-        self._plot_plane_quadrants(ax, H, edges, "y", cmap, **surface_kwargs)
-        self._plot_plane_quadrants(ax, H, edges, "z", cmap, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "x", cmap, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "y", cmap, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "z", cmap, **surface_kwargs)
 
         # --- 7. Add labels and title ---
         final_title = title if title is not None else "Intersecting Planes of Phase Space"
