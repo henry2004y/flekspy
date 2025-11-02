@@ -418,6 +418,7 @@ class AMReXParticleData:
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         ax: Optional[Axes] = None,
+        add_colorbar: bool = True,
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
@@ -455,6 +456,8 @@ class AMReXParticleData:
             ax (matplotlib.axes.Axes, optional): An existing axes object to plot on.
                                                  If None, a new figure and axes are created.
                                                  Defaults to None.
+            add_colorbar (bool, optional): If True, a colorbar is added to the plot.
+                                           Defaults to True.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
 
@@ -544,10 +547,11 @@ class AMReXParticleData:
         ax.set_ylabel(final_ylabel, fontsize="x-large")
         ax.minorticks_on()
 
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="3%", pad=0.05)
-        cbar = fig.colorbar(im, cax=cax)
-        cbar.set_label(cbar_label)
+        if add_colorbar:
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="3%", pad=0.05)
+            cbar = fig.colorbar(im, cax=cax)
+            cbar.set_label(cbar_label)
 
         # --- 8. Return the plot objects ---
         return fig, ax

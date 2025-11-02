@@ -156,6 +156,27 @@ def test_plot_phase_with_existing_axes(mock_plot_components):
     assert mock_ax.imshow.called
 
 
+def test_plot_phase_no_colorbar(mock_plot_components):
+    """
+    Tests that the colorbar is not created when add_colorbar=False.
+    """
+    mock_fig = mock_plot_components["fig"]
+    mock_ax = mock_plot_components["ax"]
+
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.random.rand(100, 2)
+
+    AMReXParticleData.plot_phase(
+        mock_pdata, x_variable="x", y_variable="y", add_colorbar=False
+    )
+
+    # Assert that the colorbar creation logic was not called
+    mock_plot_components["make_axes_locatable"].assert_not_called()
+    mock_fig.colorbar.assert_not_called()
+
+
 @patch("flekspy.amrex.logger")
 def test_plot_phase_no_particles(mock_logger, mock_plot_components):
     """
