@@ -691,7 +691,7 @@ class AMReXParticleData:
 
         scatter_settings = {
             "c": density,
-            "cmap": "viridis",
+            "cmap": "turbo",
             "s": 20, # a default size
         }
         scatter_settings.update(scatter_kwargs)
@@ -775,7 +775,7 @@ class AMReXParticleData:
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         zlabel: Optional[str] = None,
-        cmap: str = "viridis",
+        cmap: str = "turbo",
         **surface_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
