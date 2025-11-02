@@ -1,6 +1,6 @@
 [project]
 name = "flekspy"
-version = "0.6.3"
+version = "0.6.4"
 description = "Python utilities for processing FLEKS data"
 authors = [
     {name = "Yuxi Chen", email = "yuxichen@umich.edu"},
