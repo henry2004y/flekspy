@@ -538,6 +538,178 @@ class AMReXParticleData:
         # --- 8. Return the plot objects ---
         return fig, ax
 
+    def plot_phase_subplots(
+        self,
+        x_variable: str,
+        y_variable: str,
+        x_ranges: List[Tuple[float, float]],
+        y_ranges: List[Tuple[float, float]],
+        bins: Union[int, Tuple[int, int]] = 100,
+        normalize: bool = False,
+        suptitle: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        **imshow_kwargs: Any,
+    ) -> Optional[Tuple[Figure, np.ndarray]]:
+        """
+        Plots the 2D phase space distribution for multiple regions as subplots.
+
+        This function creates a grid of subplots, each showing the phase space
+        distribution for a specified x and y range. All subplots share a common
+        colorbar.
+
+        Args:
+            x_variable (str): The name of the variable for the x-axis.
+            y_variable (str): The name of the variable for the y-axis.
+            x_ranges (List[Tuple[float, float]]): A list of tuples, where each
+                                                  tuple defines the (min, max)
+                                                  for the x-axis of a subplot.
+            y_ranges (List[Tuple[float, float]]): A list of tuples, where each
+                                                  tuple defines the (min, max)
+                                                  for the y-axis of a subplot.
+            bins (int or tuple, optional): The number of bins for the histogram.
+                                           Defaults to 100.
+            normalize (bool, optional): If True, the histogram is normalized.
+                                        Defaults to False.
+            suptitle (str, optional): The main title for the entire figure.
+            xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
+            ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
+            **imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
+
+        Returns:
+            tuple: A tuple containing the matplotlib figure and the array of axes
+                   objects (`fig`, `axes`).
+        """
+        if len(x_ranges) != len(y_ranges):
+            raise ValueError("x_ranges and y_ranges must have the same length.")
+
+        num_plots = len(x_ranges)
+        if num_plots == 0:
+            return None
+
+        component_map = {
+            name: i for i, name in enumerate(self.header.real_component_names)
+        }
+
+        if x_variable not in component_map or y_variable not in component_map:
+            raise ValueError(
+                f"Invalid variable name. Choose from {list(component_map.keys())}"
+            )
+
+        x_index = component_map[x_variable]
+        y_index = component_map[y_variable]
+
+        weights_present = "weight" in component_map
+        weight_index = component_map.get("weight")
+
+        histograms = []
+        xedges_list = []
+        yedges_list = []
+        for i in range(num_plots):
+            rdata_region = self.select_particles_in_region(
+                x_range=x_ranges[i], y_range=y_ranges[i]
+            )
+
+            if rdata_region.size == 0:
+                histograms.append(np.array([[]]))
+                xedges_list.append(np.array([x_ranges[i][0], x_ranges[i][1]]))
+                yedges_list.append(np.array([y_ranges[i][0], y_ranges[i][1]]))
+                continue
+
+            x_data = rdata_region[:, x_index]
+            y_data = rdata_region[:, y_index]
+            weights = rdata_region[:, weight_index] if weights_present else None
+
+            H, xedges, yedges = np.histogram2d(
+                x_data,
+                y_data,
+                bins=bins,
+                weights=weights,
+                density=normalize,
+            )
+            histograms.append(H)
+            xedges_list.append(xedges)
+            yedges_list.append(yedges)
+
+        # Determine the global min and max for the color scale
+        vmin, vmax = float("inf"), float("-inf")
+        for H in histograms:
+            if H is not None and H.size > 0:
+                vmin = min(vmin, H.min())
+                vmax = max(vmax, H.max())
+
+        if vmin == float("inf"): # All histograms were empty
+            vmin, vmax = 0, 1
+
+        # Create subplots
+        ncols = int(np.ceil(np.sqrt(num_plots)))
+        nrows = int(np.ceil(num_plots / ncols))
+        fig, axes = plt.subplots(
+            nrows, ncols, figsize=(4 * ncols, 4 * nrows), squeeze=False
+        )
+        axes_flat = axes.flatten()
+
+        imshow_settings = {
+            "cmap": "turbo",
+            "interpolation": "nearest",
+            "origin": "lower",
+            "aspect": "auto",
+            "norm": plt.Normalize(vmin=vmin, vmax=vmax),
+        }
+        imshow_settings.update(imshow_kwargs)
+
+        im = None
+        for i in range(num_plots):
+            ax = axes_flat[i]
+            H = histograms[i]
+            xedges = xedges_list[i]
+            yedges = yedges_list[i]
+            if H is not None and H.size > 0 and np.any(H):
+                im = ax.imshow(
+                    H.T,
+                    extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
+                    **imshow_settings,
+                )
+
+            ax.set_title(f"x range: {x_ranges[i]}, y range: {y_ranges[i]}")
+            ax.minorticks_on()
+
+        # Hide unused subplots
+        for i in range(num_plots, len(axes_flat)):
+            axes_flat[i].set_visible(False)
+
+        # Add a single colorbar
+        fig.subplots_adjust(right=0.85)
+        cbar_ax = fig.add_axes([0.9, 0.15, 0.03, 0.7])
+
+        if im is None:
+            # Create a dummy ScalarMappable if no images were drawn
+            norm = plt.Normalize(vmin=vmin, vmax=vmax)
+            sm = plt.cm.ScalarMappable(cmap=imshow_settings["cmap"], norm=norm)
+            sm.set_array([])
+            im = sm
+
+        cbar = fig.colorbar(im, cax=cbar_ax)
+
+        if normalize:
+            cbar_label = "Normalized Density"
+            if weights_present:
+                cbar_label = "Normalized Weighted Density"
+        else:
+            cbar_label = "Particle Count"
+            if weights_present:
+                cbar_label = "Weighted Particle Density"
+        cbar.set_label(cbar_label)
+
+        if suptitle:
+            fig.suptitle(suptitle, fontsize="x-large")
+
+        final_xlabel = xlabel if xlabel is not None else x_variable
+        final_ylabel = ylabel if ylabel is not None else y_variable
+        fig.text(0.5, 0.04, final_xlabel, ha="center", va="center", fontsize="x-large")
+        fig.text(0.06, 0.5, final_ylabel, ha="center", va="center", rotation="vertical", fontsize="x-large")
+
+        return fig, axes
     def _prepare_3d_histogram_data(
         self,
         x_variable: str,
