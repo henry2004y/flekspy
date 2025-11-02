@@ -417,6 +417,7 @@ class AMReXParticleData:
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
+        ax: Optional[Axes] = None,
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
@@ -451,12 +452,15 @@ class AMReXParticleData:
             title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
+            ax (matplotlib.axes.Axes, optional): An existing axes object to plot on.
+                                                 If None, a new figure and axes are created.
+                                                 Defaults to None.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
 
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
-                   This allows for further customization of the plot after its creation.
+                   This allows for a further customization of the plot after its creation.
         """
         # --- 1. Select data ---
         if x_range or y_range or z_range:
@@ -509,7 +513,10 @@ class AMReXParticleData:
                 cbar_label = "Normalized Density"
 
         # --- 6. Plot the resulting histogram as a color map ---
-        fig, ax = plt.subplots(figsize=(8, 6))
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 6))
+        else:
+            fig = ax.figure
 
         # Default imshow settings that can be overridden by user
         imshow_settings = {
