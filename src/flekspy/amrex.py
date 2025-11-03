@@ -7,6 +7,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import List, Tuple, Optional, Any, Union, Type
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
+from matplotlib import colors
 
 logger = logging.getLogger(__name__)
 
@@ -413,6 +414,9 @@ class AMReXParticleData:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
+        log_scale: bool = True,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
         plot_zero_lines: bool = True,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
@@ -448,6 +452,8 @@ class AMReXParticleData:
                                        For 2D data, this is ignored.
             normalize (bool, optional): If True, the histogram is normalized to
                                         form a probability density. Defaults to False.
+            log_scale (bool, optional): If True, the colorbar is plotted in log scale.
+                                        Defaults to True.
             plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
                                               Defaults to True.
             title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
@@ -531,7 +537,27 @@ class AMReXParticleData:
         }
         imshow_settings.update(imshow_kwargs)
 
-        im = ax.imshow(H.T, **imshow_settings)
+        # --- Handle log scale ---
+        if log_scale:
+            # Mask zero values to handle them separately
+            masked_H = np.ma.masked_where(H <= 0, H)
+
+            # Get the colormap and set the color for masked values (zeros) to white
+            cmap = plt.get_cmap(imshow_settings["cmap"])
+            cmap.set_bad(color="white")
+            imshow_settings["cmap"] = cmap
+
+            # Apply logarithmic normalization
+            # Set vmin to the smallest non-zero value in the data to avoid issues with log(0)
+            if masked_H.count() > 0:  # Check if there is any unmasked data
+                min_val = masked_H.min() if vmin is None else vmin
+                max_val = masked_H.max() if vmax is None else vmax
+                if min_val < max_val:
+                   imshow_settings["norm"] = colors.LogNorm(vmin=min_val, vmax=max_val)
+            im = ax.imshow(masked_H.T, **imshow_settings)
+        else:
+            im = ax.imshow(H.T, **imshow_settings)
+
 
         if plot_zero_lines:
             ax.axhline(0, color="black", linestyle="--")
