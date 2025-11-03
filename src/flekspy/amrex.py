@@ -556,6 +556,10 @@ class AMReXParticleData:
                    imshow_settings["norm"] = colors.LogNorm(vmin=min_val, vmax=max_val)
             im = ax.imshow(masked_H.T, **imshow_settings)
         else:
+            if vmin is not None:
+                imshow_settings["vmin"] = vmin
+            if vmax is not None:
+                imshow_settings["vmax"] = vmax
             im = ax.imshow(H.T, **imshow_settings)
 
 
