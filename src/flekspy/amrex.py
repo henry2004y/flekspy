@@ -553,7 +553,7 @@ class AMReXParticleData:
                 min_val = masked_H.min() if vmin is None else vmin
                 max_val = masked_H.max() if vmax is None else vmax
                 if min_val < max_val:
-                   imshow_settings["norm"] = colors.LogNorm(vmin=min_val, vmax=max_val)
+                    imshow_settings["norm"] = colors.LogNorm(vmin=min_val, vmax=max_val)
             im = ax.imshow(masked_H.T, **imshow_settings)
         else:
             if vmin is not None:
@@ -561,7 +561,6 @@ class AMReXParticleData:
             if vmax is not None:
                 imshow_settings["vmax"] = vmax
             im = ax.imshow(H.T, **imshow_settings)
-
 
         if plot_zero_lines:
             ax.axhline(0, color="gray", linestyle="--")
@@ -686,7 +685,7 @@ class AMReXParticleData:
                 vmin = min(vmin, H.min())
                 vmax = max(vmax, H.max())
 
-        if vmin == float("inf"): # All histograms were empty
+        if vmin == float("inf"):  # All histograms were empty
             vmin, vmax = 0, 1
 
         # Create subplots
@@ -755,9 +754,18 @@ class AMReXParticleData:
         final_xlabel = xlabel if xlabel is not None else x_variable
         final_ylabel = ylabel if ylabel is not None else y_variable
         fig.text(0.5, 0.04, final_xlabel, ha="center", va="center", fontsize="x-large")
-        fig.text(0.06, 0.5, final_ylabel, ha="center", va="center", rotation="vertical", fontsize="x-large")
+        fig.text(
+            0.06,
+            0.5,
+            final_ylabel,
+            ha="center",
+            va="center",
+            rotation="vertical",
+            fontsize="x-large",
+        )
 
         return fig, axes
+
     def _prepare_3d_histogram_data(
         self,
         x_variable: str,
