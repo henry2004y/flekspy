@@ -564,8 +564,8 @@ class AMReXParticleData:
 
 
         if plot_zero_lines:
-            ax.axhline(0, color="black", linestyle="--")
-            ax.axvline(0, color="black", linestyle="--")
+            ax.axhline(0, color="gray", linestyle="--")
+            ax.axvline(0, color="gray", linestyle="--")
 
         # --- 7. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
