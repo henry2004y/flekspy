@@ -574,8 +574,10 @@ class AMReXParticleData:
         ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
         ax.set_ylabel(final_ylabel, fontsize="x-large")
+        ax.tick_params(
+            top=True, right=True, direction="in", labeltop=False, labelright=False
+        )
         ax.minorticks_on()
-        ax.tick_params(top=True, right=True, direction="in", labeltop=False, labelright=False)
 
         if add_colorbar:
             divider = make_axes_locatable(ax)
