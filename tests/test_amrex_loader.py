@@ -114,7 +114,7 @@ def test_plot_phase(mock_plot_components):
     mock_plot_components["subplots"].assert_called_once_with(figsize=(8, 6))
     assert mock_ax.imshow.called
     imshow_kwargs = mock_ax.imshow.call_args.kwargs
-    assert imshow_kwargs["cmap"] == "viridis"
+    assert imshow_kwargs["cmap"].name == "viridis"
     mock_ax.set_title.assert_called_once_with("Test Title", fontsize="x-large")
     mock_ax.set_xlabel.assert_called_once_with("Custom X Label", fontsize="x-large")
     mock_ax.set_ylabel.assert_called_once_with("Custom Y Label", fontsize="x-large")
@@ -216,6 +216,23 @@ def test_plot_phase_with_hist_range(mock_histogram2d, mock_plot_components):
     _, _, kwargs = mock_histogram2d.mock_calls[0]
     assert "range" in kwargs
     assert kwargs["range"] == custom_range
+
+
+def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components):
+    """
+    Tests that vmin and vmax are correctly used in log scale.
+    """
+    mock_ax = mock_plot_components["ax"]
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.random.rand(100, 2) + 0.1  # Ensure data is > 0 for log
+
+    with patch("flekspy.amrex.colors.LogNorm") as mock_log_norm:
+        AMReXParticleData.plot_phase(
+            mock_pdata, x_variable="x", y_variable="y", log_scale=True, vmin=1, vmax=10
+        )
+        mock_log_norm.assert_called_once_with(vmin=1, vmax=10)
 
 
 def test_plot_phase_subplots():
