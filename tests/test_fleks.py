@@ -374,15 +374,17 @@ class TestParticles:
         assert filename.exists()
         with h5py.File(filename, "r") as f:
             expected_keys = [f"ID_{pid[0]}_{pid[1]}" for pid in pIDs]
+            assert "columns" in f.keys()
             assert all(key in f.keys() for key in expected_keys)
 
-            # Verify data and attributes for the first particle
+            # Verify data for the first particle
             dset = f[expected_keys[0]]
             assert dset.shape[0] > 0
 
+            # Verify columns
             original_columns = particle_tracker[pIDs[0]].collect().columns
-            saved_columns = dset.attrs["columns"]
-            assert all(original_columns == saved_columns)
+            saved_columns = [col.decode("utf-8") for col in f["columns"][:]]
+            assert original_columns == saved_columns
 
     def test_save_trajectories_h5_int_list(self, particle_tracker, tmp_path):
         pID_indices = [0, 1]
@@ -395,11 +397,17 @@ class TestParticles:
         assert filename.exists()
         with h5py.File(filename, "r") as f:
             expected_keys = [f"ID_{i}" for i in pID_indices]
+            assert "columns" in f.keys()
             assert all(key in f.keys() for key in expected_keys)
 
-            # Verify data and attributes for the first particle
+            # Verify data for the first particle
             dset = f[expected_keys[0]]
             assert dset.shape[0] > 0
+
+            # Verify columns
+            original_columns = particle_tracker[pID_indices[0]].collect().columns
+            saved_columns = [col.decode("utf-8") for col in f["columns"][:]]
+            assert original_columns == saved_columns
 
 
 def load_and_benchmark(files):

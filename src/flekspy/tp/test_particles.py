@@ -400,23 +400,33 @@ class FLEKSTP(object):
                   (cpu, id) or a list of integer indices.
             filename (str): The name of the HDF5 file to save the trajectories to.
         """
+        if not pIDs:
+            return
+
         with h5py.File(filename, "w") as f:
-            if pIDs and isinstance(pIDs[0], int):
+            # Get the columns from the first particle and save them.
+            pData_first = self[pIDs[0]].collect()
+            f.create_dataset("columns", data=np.array(pData_first.columns, dtype="S"))
+
+            # Determine the type of pIDs once.
+            if isinstance(pIDs[0], int):
                 # Handle list of integer indices
-                for pID in pIDs:
-                    pData_lazy = self[pID]
-                    pData = pData_lazy.collect()
-                    dataset_name = f"ID_{pID}"
-                    dset = f.create_dataset(dataset_name, data=pData.to_numpy())
-                    dset.attrs["columns"] = pData.columns
+                # First particle is already collected.
+                f.create_dataset(f"ID_{pIDs[0]}", data=pData_first.to_numpy())
+                # Process the rest of the particles.
+                for pID in pIDs[1:]:
+                    pData = self[pID].collect()
+                    f.create_dataset(f"ID_{pID}", data=pData.to_numpy())
             else:
                 # Handle list of tuples
-                for pID in pIDs:
-                    pData_lazy = self[pID]
-                    pData = pData_lazy.collect()
-                    dataset_name = f"ID_{pID[0]}_{pID[1]}"
-                    dset = f.create_dataset(dataset_name, data=pData.to_numpy())
-                    dset.attrs["columns"] = pData.columns
+                # First particle is already collected.
+                f.create_dataset(
+                    f"ID_{pIDs[0][0]}_{pIDs[0][1]}", data=pData_first.to_numpy()
+                )
+                # Process the rest of the particles.
+                for pID in pIDs[1:]:
+                    pData = self[pID].collect()
+                    f.create_dataset(f"ID_{pID[0]}_{pID[1]}", data=pData.to_numpy())
 
     def _get_particle_raw_data(self, pID: Tuple[int, int]) -> np.ndarray:
         """Reads all raw trajectory data for a particle across multiple files."""
