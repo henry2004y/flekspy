@@ -561,13 +561,15 @@ class AMReXPlottingMixin:
         # --- 9. Return the plot objects ---
         return fig, ax
 
-    def plot_velocity_pairplot(
+    def pairplot(
         self,
+        variables: List[str] = ["velocity_x", "velocity_y", "velocity_z"],
         x_range: Optional[Tuple[float, float]] = None,
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         bins: int = 50,
         figsize=(10, 10),
+        title: str = "Velocity Space Pairplot",
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, np.ndarray]]:
         """
@@ -578,6 +580,8 @@ class AMReXPlottingMixin:
         plots show the 2D histogram for each pair of velocity components.
 
         Args:
+            variables (list, optional): A list of velocity components to plot.
+                                         Defaults to ["velocity_x", "velocity_y", "velocity_z"].
             x_range (tuple, optional): A tuple (min, max) for filtering particles
                                        by x-position.
             y_range (tuple, optional): A tuple (min, max) for filtering particles
@@ -585,6 +589,8 @@ class AMReXPlottingMixin:
             z_range (tuple, optional): A tuple (min, max) for filtering particles
                                        by z-position.
             bins (int, optional): The number of bins for histograms. Defaults to 50.
+            figsize (tuple, optional): The size of the figure. Defaults to (10, 10).
+            title (str, optional): The title for the plot. Defaults to "Velocity Space Pairplot".
             **imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
 
         Returns:
@@ -592,6 +598,7 @@ class AMReXPlottingMixin:
                    objects (`fig`, `axes`).
         """
         # --- 1. Select data ---
+        nvar = len(variables)
         if x_range or y_range or z_range:
             rdata = self.select_particles_in_region(x_range, y_range, z_range)
         else:
@@ -605,20 +612,28 @@ class AMReXPlottingMixin:
         component_map = {
             name: i for i, name in enumerate(self.header.real_component_names)
         }
-        vel_components = ["velocity_x", "velocity_y", "velocity_z"]
-        for comp in vel_components:
+        for comp in variables:
             if comp not in component_map:
                 raise ValueError(f"Velocity component '{comp}' not found in data.")
 
-        vel_indices = [component_map[comp] for comp in vel_components]
+        vel_indices = [component_map[comp] for comp in variables]
         vel_data = rdata[:, vel_indices]
+
+        # Default imshow settings that can be overridden by user
+        imshow_settings = {
+            "cmap": "turbo",
+            "interpolation": "nearest",
+            "origin": "lower",
+            "aspect": "auto",
+        }
+        imshow_settings.update(imshow_kwargs)
 
         # --- 3. Create subplot grid ---
         fig, axes = plt.subplots(3, 3, figsize=figsize, constrained_layout=True)
 
         # --- 4. Plot histograms ---
-        for i in range(3):
-            for j in range(3):
+        for i in range(nvar):
+            for j in range(nvar):
                 ax = axes[i, j]
                 if i == j:  # Diagonal: 1D histogram
                     ax.hist(vel_data[:, i], bins=bins, color="gray")
@@ -629,19 +644,17 @@ class AMReXPlottingMixin:
                     )
                     im = ax.imshow(
                         H.T,
-                        origin="lower",
                         extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
-                        aspect="auto",
-                        **imshow_kwargs,
+                        **imshow_settings,
                     )
 
                 # --- 5. Set labels ---
                 if i == 2:
-                    ax.set_xlabel(vel_components[j])
+                    ax.set_xlabel(variables[j])
                 if j == 0:
-                    ax.set_ylabel(vel_components[i])
+                    ax.set_ylabel(variables[i])
 
-        fig.suptitle("Velocity Space Pairplot", fontsize="x-large")
+        fig.suptitle(title, fontsize="x-large")
 
         return fig, axes
 
