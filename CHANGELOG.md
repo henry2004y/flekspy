@@ -70,3 +70,7 @@
 ## v0.6.2 (2025/10/30)
 
 - Add `save_trajectory` (CSV, Parquet) and `save_trajectories` (HDF5) to test particles.
+
+## v0.6.8 (2025/11/07)
+
+- Make the native AMReX particle loader into a module.
