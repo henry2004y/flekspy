@@ -19,9 +19,7 @@ def mock_plot_components():
     """Fixture to mock matplotlib components for plotting tests."""
     with (
         patch("flekspy.amrex.plotting.plt.subplots") as mock_subplots,
-        patch(
-            "flekspy.amrex.plotting.make_axes_locatable"
-        ) as mock_make_axes_locatable,
+        patch("flekspy.amrex.plotting.make_axes_locatable") as mock_make_axes_locatable,
     ):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
@@ -257,16 +255,19 @@ def test_plot_phase_subplots():
     axes_mock[0, 0] = MagicMock()
     axes_mock[0, 1] = MagicMock()
 
-    with patch(
-        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
-    ) as mock_subplots, patch(
-        "numpy.histogram2d",
-        return_value=(
-            np.random.rand(10, 10),
-            np.linspace(0, 1, 11),
-            np.linspace(0, 1, 11),
-        ),
-    ) as mock_hist:
+    with (
+        patch(
+            "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+        ) as mock_subplots,
+        patch(
+            "numpy.histogram2d",
+            return_value=(
+                np.random.rand(10, 10),
+                np.linspace(0, 1, 11),
+                np.linspace(0, 1, 11),
+            ),
+        ) as mock_hist,
+    ):
         result_fig, result_axes = AMReXParticleData.plot_phase_subplots(
             mock_pdata,
             x_variable="x",
@@ -293,9 +294,7 @@ def test_plot_phase_subplots():
         result_fig.colorbar.assert_called_once()
         cbar_instance = result_fig.colorbar.return_value
         cbar_instance.set_label.assert_called_once_with("Weighted Particle Density")
-        result_fig.suptitle.assert_called_once_with(
-            "Test Subplots", fontsize="x-large"
-        )
+        result_fig.suptitle.assert_called_once_with("Test Subplots", fontsize="x-large")
 
 
 def test_plot_phase_subplots_empty_region():
@@ -331,3 +330,46 @@ def test_plot_phase_subplots_empty_region():
             x_ranges=x_ranges,
             y_ranges=y_ranges,
         )
+
+
+def test_pairplot():
+    """
+    Tests the pairplot function.
+    """
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = [
+        "x",
+        "y",
+        "velocity_x",
+        "velocity_y",
+        "velocity_z",
+        "weight",
+    ]
+    mock_pdata.rdata = np.random.rand(100, 6)
+
+    fig_mock = MagicMock()
+    axes_mock = np.empty((3, 3), dtype=object)
+    for i in range(3):
+        for j in range(3):
+            axes_mock[i, j] = MagicMock()
+
+    with patch(
+        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+    ) as mock_subplots:
+        result_fig, result_axes = AMReXParticleData.pairplot(mock_pdata)
+
+        assert result_fig is fig_mock
+        assert np.array_equal(result_axes, axes_mock)
+        mock_subplots.assert_called_once_with(
+            3, 3, figsize=(10, 10), constrained_layout=True
+        )
+
+        # Verify histograms were called
+        for i in range(3):
+            for j in range(3):
+                ax = result_axes[i, j]
+                if i == j:
+                    ax.hist.assert_called_once()
+                else:
+                    ax.imshow.assert_called_once()

@@ -561,6 +561,109 @@ class AMReXPlottingMixin:
         # --- 9. Return the plot objects ---
         return fig, ax
 
+    def pairplot(
+        self,
+        variables: List[str] = ["velocity_x", "velocity_y", "velocity_z"],
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+        bins: int = 50,
+        figsize=(10, 10),
+        title: str = "Velocity Space Pairplot",
+        **imshow_kwargs: Any,
+    ) -> Optional[Tuple[Figure, np.ndarray]]:
+        """
+        Plots a pairplot of the velocity space distributions (vx, vy, vz).
+
+        This function creates a 3x3 grid of subplots. The diagonal plots
+        show the 1D histogram for each velocity component. The off-diagonal
+        plots show the 2D histogram for each pair of velocity components.
+
+        Args:
+            variables (list, optional): A list of velocity components to plot.
+                                         Defaults to ["velocity_x", "velocity_y", "velocity_z"].
+            x_range (tuple, optional): A tuple (min, max) for filtering particles
+                                       by x-position.
+            y_range (tuple, optional): A tuple (min, max) for filtering particles
+                                       by y-position.
+            z_range (tuple, optional): A tuple (min, max) for filtering particles
+                                       by z-position.
+            bins (int, optional): The number of bins for histograms. Defaults to 50.
+            figsize (tuple, optional): The size of the figure. Defaults to (10, 10).
+            title (str, optional): The title for the plot. Defaults to "Velocity Space Pairplot".
+            **imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
+
+        Returns:
+            tuple: A tuple containing the matplotlib figure and the array of axes
+                   objects (`fig`, `axes`).
+        """
+        # --- 1. Select data ---
+        nvar = len(variables)
+        if x_range or y_range or z_range:
+            rdata = self.select_particles_in_region(x_range, y_range, z_range)
+        else:
+            rdata = self.rdata
+
+        if rdata.size == 0:
+            logger.warning("No particles to plot.")
+            return None
+
+        # --- 2. Map component names to column indices ---
+        component_map = {
+            name: i for i, name in enumerate(self.header.real_component_names)
+        }
+        for comp in variables:
+            if comp not in component_map:
+                raise ValueError(f"Component '{comp}' not found in data.")
+
+        vel_indices = [component_map[comp] for comp in variables]
+        vel_data = rdata[:, vel_indices]
+
+        # Default imshow settings that can be overridden by user
+        imshow_settings = {
+            "cmap": "turbo",
+            "interpolation": "nearest",
+            "origin": "lower",
+            "aspect": "auto",
+        }
+        imshow_settings.update(imshow_kwargs)
+
+        # Get universal ranges
+        ranges = [(vel_data[:, k].min(), vel_data[:, k].max()) for k in range(nvar)]
+
+        # --- 3. Create subplot grid ---
+        fig, axes = plt.subplots(nvar, nvar, figsize=figsize, constrained_layout=True)
+
+        # --- 4. Plot histograms ---
+        for i in range(nvar):
+            for j in range(nvar):
+                ax = axes[i, j]
+                if i == j:  # Diagonal: 1D histogram
+                    ax.hist(vel_data[:, i], bins=bins, color="gray", range=ranges[i])
+                    ax.set_yticklabels([])
+                else:  # Off-diagonal: 2D histogram
+                    H, xedges, yedges = np.histogram2d(
+                        vel_data[:, j],
+                        vel_data[:, i],
+                        bins=bins,
+                        range=[ranges[j], ranges[i]],
+                    )
+                    im = ax.imshow(
+                        H.T,
+                        extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
+                        **imshow_settings,
+                    )
+
+                # --- 5. Set labels ---
+                if i == nvar - 1:
+                    ax.set_xlabel(variables[j])
+                if j == 0:
+                    ax.set_ylabel(variables[i])
+
+        fig.suptitle(title, fontsize="x-large")
+
+        return fig, axes
+
     @staticmethod
     def _plot_plane(ax, H, edges, fixed_coord, cmap, **surface_kwargs):
         """Helper function to plot a single plane."""
