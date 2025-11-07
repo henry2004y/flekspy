@@ -18,8 +18,10 @@ def particle_data(setup_test_data):
 def mock_plot_components():
     """Fixture to mock matplotlib components for plotting tests."""
     with (
-        patch("matplotlib.pyplot.subplots") as mock_subplots,
-        patch("flekspy.amrex.make_axes_locatable") as mock_make_axes_locatable,
+        patch("flekspy.amrex.plotting.plt.subplots") as mock_subplots,
+        patch(
+            "flekspy.amrex.plotting.make_axes_locatable"
+        ) as mock_make_axes_locatable,
     ):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
@@ -177,7 +179,7 @@ def test_plot_phase_no_colorbar(mock_plot_components):
     mock_fig.colorbar.assert_not_called()
 
 
-@patch("flekspy.amrex.logger")
+@patch("flekspy.amrex.plotting.logger")
 def test_plot_phase_no_particles(mock_logger, mock_plot_components):
     """
     Tests that plot_phase logs a warning and returns early
@@ -185,8 +187,11 @@ def test_plot_phase_no_particles(mock_logger, mock_plot_components):
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.rdata = np.empty((0, 5))  # No particles
+    mock_pdata.select_particles_in_region.return_value = np.empty((0, 5))
 
-    AMReXParticleData.plot_phase(mock_pdata, x_variable="x", y_variable="y")
+    AMReXParticleData.plot_phase(
+        mock_pdata, x_variable="x", y_variable="y", x_range=(0, 1)
+    )
 
     mock_logger.warning.assert_called_once_with("No particles to plot.")
     mock_plot_components["subplots"].assert_not_called()
@@ -228,7 +233,7 @@ def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components):
     mock_pdata.header.real_component_names = ["x", "y"]
     mock_pdata.rdata = np.random.rand(100, 2) + 0.1  # Ensure data is > 0 for log
 
-    with patch("flekspy.amrex.colors.LogNorm") as mock_log_norm:
+    with patch("flekspy.amrex.plotting.colors.LogNorm") as mock_log_norm:
         AMReXParticleData.plot_phase(
             mock_pdata, x_variable="x", y_variable="y", log_scale=True, vmin=1, vmax=10
         )
@@ -252,8 +257,16 @@ def test_plot_phase_subplots():
     axes_mock[0, 0] = MagicMock()
     axes_mock[0, 1] = MagicMock()
 
-    with patch("flekspy.amrex.plt.subplots", return_value=(fig_mock, axes_mock)) as mock_subplots, \
-         patch("numpy.histogram2d", return_value=(np.random.rand(10, 10), np.linspace(0, 1, 11), np.linspace(0, 1, 11))) as mock_hist:
+    with patch(
+        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+    ) as mock_subplots, patch(
+        "numpy.histogram2d",
+        return_value=(
+            np.random.rand(10, 10),
+            np.linspace(0, 1, 11),
+            np.linspace(0, 1, 11),
+        ),
+    ) as mock_hist:
         result_fig, result_axes = AMReXParticleData.plot_phase_subplots(
             mock_pdata,
             x_variable="x",
@@ -280,7 +293,9 @@ def test_plot_phase_subplots():
         result_fig.colorbar.assert_called_once()
         cbar_instance = result_fig.colorbar.return_value
         cbar_instance.set_label.assert_called_once_with("Weighted Particle Density")
-        result_fig.suptitle.assert_called_once_with("Test Subplots", fontsize="x-large")
+        result_fig.suptitle.assert_called_once_with(
+            "Test Subplots", fontsize="x-large"
+        )
 
 
 def test_plot_phase_subplots_empty_region():
@@ -305,7 +320,9 @@ def test_plot_phase_subplots_empty_region():
     axes_mock[0, 0] = MagicMock()
     axes_mock[0, 1] = MagicMock()
 
-    with patch("flekspy.amrex.plt.subplots", return_value=(fig_mock, axes_mock)):
+    with patch(
+        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+    ):
         # This should execute without raising a ValueError
         AMReXParticleData.plot_phase_subplots(
             mock_pdata,
