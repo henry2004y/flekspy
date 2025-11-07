@@ -567,6 +567,7 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         bins: int = 50,
+        figsize=(10, 10),
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, np.ndarray]]:
         """
@@ -604,7 +605,7 @@ class AMReXPlottingMixin:
         component_map = {
             name: i for i, name in enumerate(self.header.real_component_names)
         }
-        vel_components = ["vx", "vy", "vz"]
+        vel_components = ["velocity_x", "velocity_y", "velocity_z"]
         for comp in vel_components:
             if comp not in component_map:
                 raise ValueError(f"Velocity component '{comp}' not found in data.")
@@ -613,8 +614,7 @@ class AMReXPlottingMixin:
         vel_data = rdata[:, vel_indices]
 
         # --- 3. Create subplot grid ---
-        fig, axes = plt.subplots(3, 3, figsize=(10, 10))
-        plt.subplots_adjust(wspace=0.3, hspace=0.3)
+        fig, axes = plt.subplots(3, 3, figsize=figsize, constrained_layout=True)
 
         # --- 4. Plot histograms ---
         for i in range(3):
