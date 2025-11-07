@@ -561,7 +561,7 @@ class AMReXPlottingMixin:
         # --- 9. Return the plot objects ---
         return fig, ax
 
-    def plot_velocity_pairplot(
+    def pairplot(
         self,
         variables: List[str] = ["velocity_x", "velocity_y", "velocity_z"],
         x_range: Optional[Tuple[float, float]] = None,
