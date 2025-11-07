@@ -649,7 +649,7 @@ class AMReXPlottingMixin:
                     )
 
                 # --- 5. Set labels ---
-                if i == 2:
+                if i == nvar - 1:
                     ax.set_xlabel(variables[j])
                 if j == 0:
                     ax.set_ylabel(variables[i])
