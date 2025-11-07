@@ -629,7 +629,7 @@ class AMReXPlottingMixin:
         imshow_settings.update(imshow_kwargs)
 
         # --- 3. Create subplot grid ---
-        fig, axes = plt.subplots(3, 3, figsize=figsize, constrained_layout=True)
+        fig, axes = plt.subplots(nvar, nvar, figsize=figsize, constrained_layout=True)
 
         # --- 4. Plot histograms ---
         for i in range(nvar):
