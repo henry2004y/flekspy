@@ -628,6 +628,9 @@ class AMReXPlottingMixin:
         }
         imshow_settings.update(imshow_kwargs)
 
+        # Get universal ranges
+        ranges = [(vel_data[:, k].min(), vel_data[:, k].max()) for k in range(nvar)]
+
         # --- 3. Create subplot grid ---
         fig, axes = plt.subplots(nvar, nvar, figsize=figsize, constrained_layout=True)
 
@@ -636,11 +639,14 @@ class AMReXPlottingMixin:
             for j in range(nvar):
                 ax = axes[i, j]
                 if i == j:  # Diagonal: 1D histogram
-                    ax.hist(vel_data[:, i], bins=bins, color="gray")
+                    ax.hist(vel_data[:, i], bins=bins, color="gray", range=ranges[i])
                     ax.set_yticklabels([])
                 else:  # Off-diagonal: 2D histogram
                     H, xedges, yedges = np.histogram2d(
-                        vel_data[:, j], vel_data[:, i], bins=bins
+                        vel_data[:, j],
+                        vel_data[:, i],
+                        bins=bins,
+                        range=[ranges[j], ranges[i]],
                     )
                     im = ax.imshow(
                         H.T,
