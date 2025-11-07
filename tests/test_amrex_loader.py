@@ -339,7 +339,7 @@ def test_plot_velocity_pairplot():
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "vx", "vy", "vz", "weight"]
+    mock_pdata.header.real_component_names = ["x", "y", "velocity_x", "velocity_y", "velocity_z", "weight"]
     mock_pdata.rdata = np.random.rand(100, 6)
 
     fig_mock = MagicMock()
