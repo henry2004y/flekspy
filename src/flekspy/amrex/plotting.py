@@ -614,7 +614,7 @@ class AMReXPlottingMixin:
         }
         for comp in variables:
             if comp not in component_map:
-                raise ValueError(f"Velocity component '{comp}' not found in data.")
+                raise ValueError(f"Component '{comp}' not found in data.")
 
         vel_indices = [component_map[comp] for comp in variables]
         vel_data = rdata[:, vel_indices]
