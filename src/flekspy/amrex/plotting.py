@@ -209,7 +209,7 @@ class AMReXPlottingMixin:
         y_ranges: List[Tuple[float, float]],
         bins: Union[int, Tuple[int, int]] = 100,
         normalize: bool = False,
-        log_scale: bool = False,
+        log_scale: bool = True,
         suptitle: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -236,7 +236,7 @@ class AMReXPlottingMixin:
             normalize (bool, optional): If True, the histogram is normalized.
                                         Defaults to False.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
-                                        Defaults to False.
+                                        Defaults to True.
             suptitle (str, optional): The main title for the entire figure.
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -483,7 +483,7 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
-        log_scale: bool = False,
+        log_scale: bool = True,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -511,7 +511,7 @@ class AMReXPlottingMixin:
             normalize (bool, optional): If True, normalize the histogram to form a
                                         probability density. Defaults to False.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
-                                        Defaults to False.
+                                        Defaults to True.
             title (str, optional): The title for the plot. Defaults to "3D Phase Space Distribution".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -601,7 +601,7 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         bins: int = 50,
-        log_scale: bool = False,
+        log_scale: bool = True,
         figsize=(10, 10),
         title: str = "Velocity Space Pairplot",
         **imshow_kwargs: Any,
@@ -624,7 +624,7 @@ class AMReXPlottingMixin:
                                        by z-position.
             bins (int, optional): The number of bins for histograms. Defaults to 50.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
-                                        Defaults to False.
+                                        Defaults to True.
             figsize (tuple, optional): The size of the figure. Defaults to (10, 10).
             title (str, optional): The title for the plot. Defaults to "Velocity Space Pairplot".
             **imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
@@ -792,7 +792,7 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
-        log_scale: bool = False,
+        log_scale: bool = True,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -821,7 +821,7 @@ class AMReXPlottingMixin:
             normalize (bool, optional): If True, normalize the histogram to form a
                                         probability density. Defaults to False.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
-                                        Defaults to False.
+                                        Defaults to True.
             title (str, optional): The title for the plot. Defaults to "Intersecting Planes of Phase Space".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
