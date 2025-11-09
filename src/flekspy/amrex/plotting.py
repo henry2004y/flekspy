@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 class AMReXPlottingMixin:
     """A mixin class for AMReXParticleData plotting functionalities."""
 
+    _AXIS_LABEL_MAP = {
+        "velocity_x": r"$v_x$",
+        "velocity_y": r"$v_y$",
+        "velocity_z": r"$v_z$",
+    }
+
+    def _get_axis_label(self, variable_name: str) -> str:
+        """Returns the appropriate axis label for a given variable."""
+        return self._AXIS_LABEL_MAP.get(variable_name, variable_name)
+
     def plot_phase(
         self,
         x_variable: str,
@@ -177,8 +187,8 @@ class AMReXPlottingMixin:
 
         # --- 7. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
-        final_xlabel = xlabel if xlabel is not None else x_variable
-        final_ylabel = ylabel if ylabel is not None else y_variable
+        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
 
         ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
@@ -384,8 +394,8 @@ class AMReXPlottingMixin:
         if suptitle:
             fig.suptitle(suptitle, fontsize="x-large")
 
-        final_xlabel = xlabel if xlabel is not None else x_variable
-        final_ylabel = ylabel if ylabel is not None else y_variable
+        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
         fig.text(0.5, 0.04, final_xlabel, ha="center", va="center", fontsize="x-large")
         fig.text(
             0.06,
@@ -570,9 +580,9 @@ class AMReXPlottingMixin:
 
         # --- 8. Add labels and a color bar ---
         final_title = title if title is not None else "3D Phase Space Distribution"
-        final_xlabel = xlabel if xlabel is not None else x_variable
-        final_ylabel = ylabel if ylabel is not None else y_variable
-        final_zlabel = zlabel if zlabel is not None else z_variable
+        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        final_zlabel = zlabel if zlabel is not None else self._get_axis_label(z_variable)
 
         ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
@@ -713,9 +723,9 @@ class AMReXPlottingMixin:
 
                 # --- 5. Set labels ---
                 if i == nvar - 1:
-                    ax.set_xlabel(variables[j])
+                    ax.set_xlabel(self._get_axis_label(variables[j]))
                 if j == 0:
-                    ax.set_ylabel(variables[i])
+                    ax.set_ylabel(self._get_axis_label(variables[i]))
 
         fig.suptitle(title, fontsize="x-large")
 
@@ -856,9 +866,9 @@ class AMReXPlottingMixin:
         final_title = (
             title if title is not None else "Intersecting Planes of Phase Space"
         )
-        final_xlabel = xlabel if xlabel is not None else x_variable
-        final_ylabel = ylabel if ylabel is not None else y_variable
-        final_zlabel = zlabel if zlabel is not None else z_variable
+        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        final_zlabel = zlabel if zlabel is not None else self._get_axis_label(z_variable)
 
         ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
