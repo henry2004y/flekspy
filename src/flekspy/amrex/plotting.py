@@ -732,7 +732,7 @@ class AMReXPlottingMixin:
         return fig, axes
 
     @staticmethod
-    def _plot_plane(ax, H, edges, fixed_coord, cmap, norm, **surface_kwargs):
+    def _plot_plane(ax, H, edges, fixed_coord, cmap, norm, opacity, **surface_kwargs):
         """Helper function to plot a single plane."""
         nx, ny, nz = H.shape
         x_edges, y_edges, z_edges = edges
@@ -766,6 +766,7 @@ class AMReXPlottingMixin:
             plot_data = plane_data
 
         facecolors = cmap(norm(plot_data))
+        facecolors[:, :, -1] = opacity
 
         ax.plot_surface(
             X,
@@ -795,6 +796,7 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         zlabel: Optional[str] = None,
         cmap: str = "turbo",
+        opacity: float = 0.8,
         **surface_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
@@ -858,9 +860,9 @@ class AMReXPlottingMixin:
             norm = plt.Normalize(vmin=H.min(), vmax=H.max())
             cmap_obj = plt.get_cmap(cmap)
 
-        self._plot_plane(ax, H, edges, "x", cmap_obj, norm, **surface_kwargs)
-        self._plot_plane(ax, H, edges, "y", cmap_obj, norm, **surface_kwargs)
-        self._plot_plane(ax, H, edges, "z", cmap_obj, norm, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "x", cmap_obj, norm, opacity, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "y", cmap_obj, norm, opacity, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "z", cmap_obj, norm, opacity, **surface_kwargs)
 
         # --- 7. Add labels and title ---
         final_title = (
