@@ -485,8 +485,9 @@ class AMReXPlottingMixin:
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
         log_scale: bool = True,
-        vmin: Optional[float] = None,
+        vmin: Optional[float] = 0,
         vmax: Optional[float] = None,
+        cmap: str = "turbo",
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -512,8 +513,12 @@ class AMReXPlottingMixin:
                                         probability density. Defaults to False.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
                                         Defaults to True.
-            vmin (float, optional): The minimum value for the colorbar. Defaults to None.
+            vmin (float, optional): The minimum value for the colorbar. Defaults to 0.
+                                    If `log_scale` is True, `vmin` must be greater than 0.
+                                    If a non-positive value is given, it is ignored and
+                                    the smallest positive value in the data is used instead.
             vmax (float, optional): The maximum value for the colorbar. Defaults to None.
+            cmap (str, optional): The colormap to use for the volume rendering. Defaults to "turbo".
             title (str, optional): The title for the plot. Defaults to "3D Phase Space Distribution".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -562,6 +567,9 @@ class AMReXPlottingMixin:
 
         if "clim" not in plotter_kwargs:
             plotter_kwargs["clim"] = [vmin, vmax]
+
+        if "cmap" not in plotter_kwargs:
+            plotter_kwargs["cmap"] = cmap
 
         plotter.add_volume(
             grid,
