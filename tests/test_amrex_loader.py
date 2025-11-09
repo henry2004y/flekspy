@@ -420,21 +420,59 @@ def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
 
 
 @patch("numpy.histogram2d")
-def test_plot_phase_with_reordering_transform(mock_histogram2d, mock_plot_components):
+def test_plot_phase_with_field_aligned_transform(
+    mock_histogram2d, mock_plot_components
+):
     """
-    Tests that the transform function works correctly when reordering columns.
+    Tests the transform functionality with a realistic field-aligned
+    coordinate transformation.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "vx", "vy"]
-    original_data = np.array([[1.0, 2.0, 10.0, 20.0], [3.0, 4.0, 30.0, 40.0]])
+    mock_pdata.header.real_component_names = [
+        "x",
+        "y",
+        "z",
+        "velocity_x",
+        "velocity_y",
+        "velocity_z",
+    ]
+
+    original_data = np.random.rand(100, 6)
     mock_pdata.rdata = original_data.copy()
 
-    def swap_velocities_transform(data):
+    # Define a magnetic field direction and create the rotation matrix
+    B = np.array([0.0, 1.0, 0.0])
+    b_hat = B / np.linalg.norm(B)
+
+    e1 = np.array([1.0, 0.0, 0.0])
+    u1 = np.cross(b_hat, e1)
+    u1_hat = u1 / np.linalg.norm(u1)
+
+    u2_hat = np.cross(b_hat, u1_hat)
+
+    # Rotation matrix to transform from (vx, vy, vz) to (v_perp2, v_parallel, v_perp1)
+    # The rows are the new basis vectors in the old coordinate system.
+    rotation_matrix = np.array([u2_hat, b_hat, u1_hat])
+
+    def field_aligned_transform(data):
+        # Extract velocity components
+        velocities = data[:, 3:6]
+        # Apply rotation
+        transformed_velocities = np.dot(velocities, rotation_matrix.T)
+
+        # Create the new data array with transformed velocities
         transformed_data = data.copy()
-        # Swap columns for vx and vy
-        transformed_data[:, [2, 3]] = transformed_data[:, [3, 2]]
-        new_names = ["x", "y", "vy", "vx"]
+        transformed_data[:, 3:6] = transformed_velocities
+
+        new_names = [
+            "x",
+            "y",
+            "z",
+            "v_perp2",
+            "v_parallel",
+            "v_perp1",
+        ]
         return transformed_data, new_names
 
     mock_histogram2d.return_value = (
@@ -444,7 +482,10 @@ def test_plot_phase_with_reordering_transform(mock_histogram2d, mock_plot_compon
     )
 
     AMReXParticleData.plot_phase(
-        mock_pdata, x_variable="vy", y_variable="vx", transform=swap_velocities_transform
+        mock_pdata,
+        x_variable="v_parallel",
+        y_variable="v_perp1",
+        transform=field_aligned_transform,
     )
 
     mock_histogram2d.assert_called_once()
@@ -452,10 +493,11 @@ def test_plot_phase_with_reordering_transform(mock_histogram2d, mock_plot_compon
     x_data_passed = call_args[0]
     y_data_passed = call_args[1]
 
-    # After transform, the 'vy' column (index 2) should contain original 'vy' data
-    expected_x_data = original_data[:, 3]
-    # After transform, the 'vx' column (index 3) should contain original 'vx' data
-    expected_y_data = original_data[:, 2]
+    # Calculate the expected data that should be passed to the histogram
+    original_velocities = original_data[:, 3:6]
+    transformed_velocities = np.dot(original_velocities, rotation_matrix.T)
+    expected_x_data = transformed_velocities[:, 1]  # v_parallel
+    expected_y_data = transformed_velocities[:, 2]  # v_perp1
 
     np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
     np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)
