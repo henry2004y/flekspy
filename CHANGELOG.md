@@ -74,3 +74,7 @@
 ## v0.6.8 (2025/11/07)
 
 - Make the native AMReX particle loader into a module.
+
+## v0.6.9 (2025/11/09)
+
+- Add transform to `plot_phase`.
