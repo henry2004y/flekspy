@@ -6,6 +6,8 @@ from typing import List, Tuple, Optional, Any, Union
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib import colors
+import pyvista as pv
+from pyvista import BasePlotter
 
 logger = logging.getLogger(__name__)
 
@@ -479,14 +481,12 @@ class AMReXPlottingMixin:
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         zlabel: Optional[str] = None,
-        **scatter_kwargs: Any,
-    ) -> Optional[Tuple[Figure, Axes]]:
+        **plotter_kwargs: Any,
+    ) -> Optional[BasePlotter]:
         """
-        Plots the 3D phase space distribution for any three selected variables.
-
-        This function creates a 3D histogram and visualizes it as a scatter plot,
+        Plots the 3D phase space distribution using PyVista.
+        This function creates a 3D histogram and visualizes it as a point cloud,
         where the color of each point corresponds to the particle density in that bin.
-
         Args:
             x_variable (str): The name of the variable for the x-axis.
             y_variable (str): The name of the variable for the y-axis.
@@ -507,10 +507,9 @@ class AMReXPlottingMixin:
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
             zlabel (str, optional): The label for the z-axis. Defaults to `z_variable`.
-            **scatter_kwargs: Additional keyword arguments to be passed to `ax.scatter()`.
-
+            **plotter_kwargs: Additional keyword arguments to be passed to `pyvista.Plotter.add_mesh()`.
         Returns:
-            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+            pyvista.BasePlotter: A PyVista plotter object.
         """
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(
@@ -528,62 +527,64 @@ class AMReXPlottingMixin:
             return None
         H, edges, cbar_label = hist_data
 
-        # --- 6. Prepare data for scatter plot ---
+        # --- 2. Prepare data for PyVista ---
         x_centers = (edges[0][:-1] + edges[0][1:]) / 2
         y_centers = (edges[1][:-1] + edges[1][1:]) / 2
         z_centers = (edges[2][:-1] + edges[2][1:]) / 2
 
-        # Create a meshgrid of bin centers
         x_grid, y_grid, z_grid = np.meshgrid(
             x_centers, y_centers, z_centers, indexing="ij"
         )
 
-        # Flatten the arrays for scatter plot
         x_flat = x_grid.flatten()
         y_flat = y_grid.flatten()
         z_flat = z_grid.flatten()
         density = H.flatten()
 
-        # Filter out empty bins
         non_empty = density > 0
-        x_flat = x_flat[non_empty]
-        y_flat = y_flat[non_empty]
-        z_flat = z_flat[non_empty]
-        density = density[non_empty]
+        points = np.vstack(
+            (x_flat[non_empty], y_flat[non_empty], z_flat[non_empty])
+        ).T
+        density_values = density[non_empty]
 
-        # --- 7. Plot the resulting histogram as a 3D scatter plot ---
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection="3d")
+        if points.shape[0] == 0:
+            logger.warning("No non-empty bins to plot.")
+            return None
 
-        scatter_settings = {
-            "c": density,
+        # --- 3. Create PyVista plot ---
+        cloud = pv.PolyData(points)
+        cloud["density"] = density_values
+
+        plotter = pv.Plotter()
+
+        plotter_settings = {
             "cmap": "turbo",
-            "s": 20,  # a default size
+            "point_size": 5,
+            "render_points_as_spheres": True,
         }
-        if log_scale and density.size > 0:
-            scatter_settings["norm"] = colors.LogNorm(
-                vmin=max(1e-15, density.min()), vmax=density.max()
-            )
-        scatter_settings.update(scatter_kwargs)
+        plotter_settings.update(plotter_kwargs)
 
-        sc = ax.scatter(x_flat, y_flat, z_flat, **scatter_settings)
+        plotter.add_mesh(
+            cloud,
+            scalars="density",
+            log_scale=log_scale,
+            scalar_bar_args={"title": cbar_label},
+            **plotter_settings,
+        )
 
-        # --- 8. Add labels and a color bar ---
         final_title = title if title is not None else "3D Phase Space Distribution"
         final_xlabel = xlabel if xlabel is not None else x_variable
         final_ylabel = ylabel if ylabel is not None else y_variable
         final_zlabel = zlabel if zlabel is not None else z_variable
 
-        ax.set_title(final_title, fontsize="x-large")
-        ax.set_xlabel(final_xlabel, fontsize="x-large")
-        ax.set_ylabel(final_ylabel, fontsize="x-large")
-        ax.set_zlabel(final_zlabel, fontsize="x-large")
+        plotter.add_axes(
+            xlabel=final_xlabel, ylabel=final_ylabel, zlabel=final_zlabel
+        )
+        plotter.camera_position = "iso"
+        plotter.set_background("white")
+        plotter.add_text(final_title, position="upper_edge", font_size=10)
 
-        cbar = fig.colorbar(sc)
-        cbar.set_label(cbar_label)
-
-        # --- 9. Return the plot objects ---
-        return fig, ax
+        return plotter
 
     def pairplot(
         self,
@@ -721,53 +722,6 @@ class AMReXPlottingMixin:
 
         return fig, axes
 
-    @staticmethod
-    def _plot_plane(ax, H, edges, fixed_coord, cmap, norm, **surface_kwargs):
-        """Helper function to plot a single plane."""
-        nx, ny, nz = H.shape
-        x_edges, y_edges, z_edges = edges
-
-        slice_index = {"x": nx // 2, "y": ny // 2, "z": nz // 2}[fixed_coord]
-
-        # Prepare coordinates and data for the selected plane
-        if fixed_coord == "x":
-            Y_centers = (y_edges[:-1] + y_edges[1:]) / 2
-            Z_centers = (z_edges[:-1] + z_edges[1:]) / 2
-            Y, Z = np.meshgrid(Y_centers, Z_centers, indexing="ij")
-            X = np.full_like(Y, (x_edges[slice_index] + x_edges[slice_index + 1]) / 2)
-            plane_data = H[slice_index, :, :]
-        elif fixed_coord == "y":
-            X_centers = (x_edges[:-1] + x_edges[1:]) / 2
-            Z_centers = (z_edges[:-1] + z_edges[1:]) / 2
-            X, Z = np.meshgrid(X_centers, Z_centers, indexing="ij")
-            Y = np.full_like(X, (y_edges[slice_index] + y_edges[slice_index + 1]) / 2)
-            plane_data = H[:, slice_index, :]
-        else:  # fixed_coord == 'z'
-            X_centers = (x_edges[:-1] + x_edges[1:]) / 2
-            Y_centers = (y_edges[:-1] + y_edges[1:]) / 2
-            X, Y = np.meshgrid(X_centers, Y_centers, indexing="ij")
-            Z = np.full_like(X, (z_edges[slice_index] + z_edges[slice_index + 1]) / 2)
-            plane_data = H[:, :, slice_index]
-
-        # Normalize data for coloring
-        if isinstance(norm, colors.LogNorm):
-            plot_data = np.ma.masked_where(plane_data <= 0, plane_data)
-        else:
-            plot_data = plane_data
-
-        facecolors = cmap(norm(plot_data))
-
-        ax.plot_surface(
-            X,
-            Y,
-            Z,
-            rstride=1,
-            cstride=1,
-            facecolors=facecolors,
-            shade=False,
-            **surface_kwargs,
-        )
-
     def plot_intersecting_planes(
         self,
         x_variable: str,
@@ -785,14 +739,12 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         zlabel: Optional[str] = None,
         cmap: str = "turbo",
-        **surface_kwargs: Any,
-    ) -> Optional[Tuple[Figure, Axes]]:
+        **plotter_kwargs: Any,
+    ) -> Optional[BasePlotter]:
         """
-        Plots the 3D phase space distribution using three intersecting planes.
-
+        Plots the 3D phase space distribution using three intersecting planes with PyVista.
         This function creates a 3D histogram and visualizes the density on three
         orthogonal planes that intersect at the center of the histogrammed data.
-
         Args:
             x_variable (str): The name of the variable for the x-axis.
             y_variable (str): The name of the variable for the y-axis.
@@ -813,11 +765,10 @@ class AMReXPlottingMixin:
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
             zlabel (str, optional): The label for the z-axis. Defaults to `z_variable`.
-            cmap (str, optional): The colormap to use for the planes. Defaults to "viridis".
-            **surface_kwargs: Additional keyword arguments to be passed to `ax.plot_surface()`.
-
+            cmap (str, optional): The colormap to use for the planes. Defaults to "turbo".
+            **plotter_kwargs: Additional keyword arguments to be passed to `pyvista.Plotter.add_mesh()`.
         Returns:
-            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+            pyvista.BasePlotter: A PyVista plotter object.
         """
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(
@@ -835,24 +786,35 @@ class AMReXPlottingMixin:
             return None
         H, edges, cbar_label = hist_data
 
-        # --- 6. Plot the intersecting planes ---
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection="3d")
+        if np.sum(H) == 0:
+            logger.warning("Histogram is empty, nothing to plot.")
+            return None
 
-        non_zero_H = H[H > 0]
-        if log_scale and non_zero_H.size > 0:
-            norm = colors.LogNorm(vmin=non_zero_H.min(), vmax=H.max())
-            cmap_obj = plt.get_cmap(cmap)
-            cmap_obj.set_bad(color="white")
-        else:
-            norm = plt.Normalize(vmin=H.min(), vmax=H.max())
-            cmap_obj = plt.get_cmap(cmap)
+        # --- 2. Create PyVista grid ---
+        grid = pv.ImageData()
+        grid.dimensions = np.array(H.shape) + 1
+        grid.origin = (edges[0][0], edges[1][0], edges[2][0])
+        grid.spacing = (
+            (edges[0][-1] - edges[0][0]) / H.shape[0],
+            (edges[1][-1] - edges[1][0]) / H.shape[1],
+            (edges[2][-1] - edges[2][0]) / H.shape[2],
+        )
+        grid.cell_data["density"] = H.flatten(order="F")
 
-        self._plot_plane(ax, H, edges, "x", cmap_obj, norm, **surface_kwargs)
-        self._plot_plane(ax, H, edges, "y", cmap_obj, norm, **surface_kwargs)
-        self._plot_plane(ax, H, edges, "z", cmap_obj, norm, **surface_kwargs)
+        # --- 3. Create PyVista plot ---
+        plotter = pv.Plotter()
 
-        # --- 7. Add labels and title ---
+        plotter_settings = {"cmap": cmap}
+        plotter_settings.update(plotter_kwargs)
+
+        plotter.add_mesh(
+            grid.slice_orthogonal(),
+            scalars="density",
+            log_scale=log_scale,
+            scalar_bar_args={"title": cbar_label},
+            **plotter_settings,
+        )
+
         final_title = (
             title if title is not None else "Intersecting Planes of Phase Space"
         )
@@ -860,15 +822,11 @@ class AMReXPlottingMixin:
         final_ylabel = ylabel if ylabel is not None else y_variable
         final_zlabel = zlabel if zlabel is not None else z_variable
 
-        ax.set_title(final_title, fontsize="x-large")
-        ax.set_xlabel(final_xlabel, fontsize="x-large")
-        ax.set_ylabel(final_ylabel, fontsize="x-large")
-        ax.set_zlabel(final_zlabel, fontsize="x-large")
+        plotter.add_axes(
+            xlabel=final_xlabel, ylabel=final_ylabel, zlabel=final_zlabel
+        )
+        plotter.camera_position = "iso"
+        plotter.set_background("white")
+        plotter.add_text(final_title, position="upper_edge", font_size=10)
 
-        # --- 8. Add a colorbar ---
-        sm = plt.cm.ScalarMappable(cmap=cmap_obj, norm=norm)
-        sm.set_array([])  # Dummy array for the mappable
-        fig.colorbar(sm, ax=ax, shrink=0.6, aspect=20, pad=0.1, label=cbar_label)
-
-        # --- 9. Return the plot objects ---
-        return fig, ax
+        return plotter
