@@ -299,24 +299,15 @@ class AMReXPlottingMixin:
 
         # Determine the global min and max for the color scale
         vmin, vmax = float("inf"), float("-inf")
-        if log_scale:
-            # For log scale, find min and max of non-zero elements
-            for H in histograms:
-                if H is not None and H.size > 0:
-                    non_zero_H = H[H > 0]
-                    if non_zero_H.size > 0:
-                        vmin = min(vmin, non_zero_H.min())
-                        vmax = max(vmax, non_zero_H.max())
-        else:
-            for H in histograms:
-                if H is not None and H.size > 0:
-                    vmin = min(vmin, H.min())
-                    vmax = max(vmax, H.max())
+        for H in histograms:
+            if H is not None and H.size > 0:
+                data_to_consider = H[H > 0] if log_scale else H
+                if data_to_consider.size > 0:
+                    vmin = min(vmin, data_to_consider.min())
+                    vmax = max(vmax, data_to_consider.max())
 
         if vmin == float("inf"):  # All histograms were empty or all zeros
-            vmin, vmax = (
-                (1, 10) if log_scale else (0, 1)
-            )  # Dummy range for empty plots
+            vmin, vmax = (1, 10) if log_scale else (0, 1)  # Dummy range for empty plots
 
         # Create subplots
         ncols = int(np.ceil(np.sqrt(num_plots)))
@@ -569,7 +560,7 @@ class AMReXPlottingMixin:
             "cmap": "turbo",
             "s": 20,  # a default size
         }
-        if log_scale:
+        if log_scale and density.size > 0:
             scatter_settings["norm"] = colors.LogNorm(
                 vmin=max(1e-15, density.min()), vmax=density.max()
             )
@@ -684,14 +675,10 @@ class AMReXPlottingMixin:
                         range=[ranges[j], ranges[i]],
                     )
                     histograms[(i, j)] = H
-                    if log_scale:
-                        non_zero_H = H[H > 0]
-                        if non_zero_H.size > 0:
-                            h_min = min(h_min, non_zero_H.min())
-                            h_max = max(h_max, non_zero_H.max())
-                    else:
-                        h_min = min(h_min, H.min())
-                        h_max = max(h_max, H.max())
+                    data_to_consider = H[H > 0] if log_scale else H
+                    if data_to_consider.size > 0:
+                        h_min = min(h_min, data_to_consider.min())
+                        h_max = max(h_max, data_to_consider.max())
 
         if h_min == float("inf"):
             h_min, h_max = (1, 10) if log_scale else (0, 1)
