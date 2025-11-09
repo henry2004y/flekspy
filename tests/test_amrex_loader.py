@@ -373,3 +373,89 @@ def test_pairplot():
                     ax.hist.assert_called_once()
                 else:
                     ax.imshow.assert_called_once()
+
+
+@patch("numpy.histogram2d")
+def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
+    """
+    Tests that the transform function is correctly applied and that the
+    new component names are used.
+    """
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    original_data = np.array([[1.0, 2.0], [3.0, 4.0]])
+    mock_pdata.rdata = original_data.copy()
+
+    # Define a transformation function that returns new data and new names
+    def scale_and_rename_transform(data):
+        transformed_data = data * 2
+        new_names = ["x_scaled", "y_scaled"]
+        return transformed_data, new_names
+
+    mock_histogram2d.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+    )
+
+    AMReXParticleData.plot_phase(
+        mock_pdata,
+        x_variable="x_scaled",
+        y_variable="y_scaled",
+        transform=scale_and_rename_transform,
+    )
+
+    # Verify that the data passed to histogram2d is the transformed data
+    mock_histogram2d.assert_called_once()
+    call_args = mock_histogram2d.call_args[0]
+    x_data_passed = call_args[0]
+    y_data_passed = call_args[1]
+
+    expected_x_data = original_data[:, 0] * 2
+    expected_y_data = original_data[:, 1] * 2
+
+    np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
+    np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)
+
+
+@patch("numpy.histogram2d")
+def test_plot_phase_with_reordering_transform(mock_histogram2d, mock_plot_components):
+    """
+    Tests that the transform function works correctly when reordering columns.
+    """
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y", "vx", "vy"]
+    original_data = np.array([[1.0, 2.0, 10.0, 20.0], [3.0, 4.0, 30.0, 40.0]])
+    mock_pdata.rdata = original_data.copy()
+
+    def swap_velocities_transform(data):
+        transformed_data = data.copy()
+        # Swap columns for vx and vy
+        transformed_data[:, [2, 3]] = transformed_data[:, [3, 2]]
+        new_names = ["x", "y", "vy", "vx"]
+        return transformed_data, new_names
+
+    mock_histogram2d.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+    )
+
+    AMReXParticleData.plot_phase(
+        mock_pdata, x_variable="vy", y_variable="vx", transform=swap_velocities_transform
+    )
+
+    mock_histogram2d.assert_called_once()
+    call_args = mock_histogram2d.call_args[0]
+    x_data_passed = call_args[0]
+    y_data_passed = call_args[1]
+
+    # After transform, the 'vy' column (index 2) should contain original 'vy' data
+    expected_x_data = original_data[:, 3]
+    # After transform, the 'vx' column (index 3) should contain original 'vx' data
+    expected_y_data = original_data[:, 2]
+
+    np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
+    np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)

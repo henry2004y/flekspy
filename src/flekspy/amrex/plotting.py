@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import logging
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from typing import List, Tuple, Optional, Any, Union
+from typing import List, Tuple, Optional, Any, Union, Callable
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib import colors
@@ -42,6 +42,7 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         ax: Optional[Axes] = None,
         add_colorbar: bool = True,
+        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
@@ -83,6 +84,12 @@ class AMReXPlottingMixin:
                                                  Defaults to None.
             add_colorbar (bool, optional): If True, a colorbar is added to the plot.
                                            Defaults to True.
+            transform (callable, optional):
+                A function that takes the particle data (`rdata`, a NumPy array)
+                and returns a tuple: (`transformed_rdata`, `new_component_names`).
+                This allows for plotting derived quantities or changing coordinate systems.
+                If provided, `x_variable` and `y_variable` should refer to names
+                in `new_component_names`. Defaults to None.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
 
@@ -100,9 +107,14 @@ class AMReXPlottingMixin:
             logger.warning("No particles to plot.")
             return None
 
-        # --- 2. Map component names to column indices ---
+        # --- 2. Apply transformation if provided ---
+        component_names = self.header.real_component_names
+        if transform:
+            rdata, component_names = transform(rdata)
+
+        # --- 3. Map component names to column indices ---
         component_map = {
-            name: i for i, name in enumerate(self.header.real_component_names)
+            name: i for i, name in enumerate(component_names)
         }
 
         # --- 3. Validate input variable names ---
