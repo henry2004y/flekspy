@@ -62,10 +62,9 @@ def create_field_transform(
         v = data[:, [vx_idx, vy_idx, vz_idx]]
 
         # --- Perform the transformation ---
+        b_hat = b_field / np.linalg.norm(b_field)
         if e_field is None:
             # --- B-field only transformation ---
-            b_hat = b_field / np.linalg.norm(b_field)
-
             # Project velocity onto B
             v_parallel = np.dot(v, b_hat)
 
@@ -79,8 +78,6 @@ def create_field_transform(
         else:
             # --- E-B field transformation ---
             # Define orthonormal basis
-            b_hat = b_field / np.linalg.norm(b_field)
-
             # E perpendicular component
             E_perp = e_field - np.dot(e_field, b_hat) * b_hat
             norm_E_perp = np.linalg.norm(E_perp)
