@@ -556,11 +556,13 @@ def test_plot_phase_with_field_aligned_transform(
     x_data_passed = call_args[0]
     y_data_passed = call_args[1]
 
-    # Calculate the expected data that should be passed to the histogram
-    original_velocities = original_data[:, 3:6]
-    transformed_velocities = np.dot(original_velocities, rotation_matrix.T)
-    expected_x_data = transformed_velocities[:, 1]  # v_parallel
-    expected_y_data = transformed_velocities[:, 2]  # v_perp1
+    # Calculate the expected data by calling the transform function and then
+    # selecting the columns based on the new names. This also verifies that
+    # plot_phase correctly uses the new component names.
+    expected_data, new_names = field_aligned_transform(original_data)
+    component_map = {name: i for i, name in enumerate(new_names)}
+    expected_x_data = expected_data[:, component_map["v_parallel"]]
+    expected_y_data = expected_data[:, component_map["v_perp1"]]
 
     np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
     np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)
