@@ -477,6 +477,8 @@ class AMReXPlottingMixin:
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
         log_scale: bool = True,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -502,6 +504,8 @@ class AMReXPlottingMixin:
                                         probability density. Defaults to False.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
                                         Defaults to True.
+            vmin (float, optional): The minimum value for the colorbar. Defaults to None.
+            vmax (float, optional): The maximum value for the colorbar. Defaults to None.
             title (str, optional): The title for the plot. Defaults to "3D Phase Space Distribution".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -547,6 +551,9 @@ class AMReXPlottingMixin:
 
         # --- 3. Create PyVista plot ---
         plotter = pv.Plotter()
+
+        if "clim" not in plotter_kwargs:
+            plotter_kwargs["clim"] = [vmin, vmax]
 
         plotter.add_volume(
             grid,
