@@ -209,6 +209,7 @@ class AMReXPlottingMixin:
         y_ranges: List[Tuple[float, float]],
         bins: Union[int, Tuple[int, int]] = 100,
         normalize: bool = False,
+        log_scale: bool = True,
         suptitle: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -234,6 +235,8 @@ class AMReXPlottingMixin:
                                            Defaults to 100.
             normalize (bool, optional): If True, the histogram is normalized.
                                         Defaults to False.
+            log_scale (bool, optional): If True, the colorbar is plotted in log scale.
+                                        Defaults to True.
             suptitle (str, optional): The main title for the entire figure.
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -298,11 +301,13 @@ class AMReXPlottingMixin:
         vmin, vmax = float("inf"), float("-inf")
         for H in histograms:
             if H is not None and H.size > 0:
-                vmin = min(vmin, H.min())
-                vmax = max(vmax, H.max())
+                data_to_consider = H[H > 0] if log_scale else H
+                if data_to_consider.size > 0:
+                    vmin = min(vmin, data_to_consider.min())
+                    vmax = max(vmax, data_to_consider.max())
 
-        if vmin == float("inf"):  # All histograms were empty
-            vmin, vmax = 0, 1
+        if vmin == float("inf"):  # All histograms were empty or all zeros
+            vmin, vmax = (1, 10) if log_scale else (0, 1)  # Dummy range for empty plots
 
         # Create subplots
         ncols = int(np.ceil(np.sqrt(num_plots)))
@@ -317,9 +322,18 @@ class AMReXPlottingMixin:
             "interpolation": "nearest",
             "origin": "lower",
             "aspect": "auto",
-            "norm": plt.Normalize(vmin=vmin, vmax=vmax),
         }
         imshow_settings.update(imshow_kwargs)
+
+        # Handle log scale normalization
+        if log_scale:
+            if "norm" not in imshow_settings:
+                imshow_settings["norm"] = colors.LogNorm(vmin=vmin, vmax=vmax)
+            cmap = plt.get_cmap(imshow_settings["cmap"])
+            cmap.set_bad(color="white")
+            imshow_settings["cmap"] = cmap
+        elif "norm" not in imshow_settings:
+            imshow_settings["norm"] = plt.Normalize(vmin=vmin, vmax=vmax)
 
         im = None
         for i in range(num_plots):
@@ -327,9 +341,12 @@ class AMReXPlottingMixin:
             H = histograms[i]
             xedges = xedges_list[i]
             yedges = yedges_list[i]
+
             if H is not None and H.size > 0 and np.any(H):
+                # For log scale, mask zero values
+                plot_H = np.ma.masked_where(H <= 0, H) if log_scale else H
                 im = ax.imshow(
-                    H.T,
+                    plot_H.T,
                     extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
                     **imshow_settings,
                 )
@@ -457,6 +474,7 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
+        log_scale: bool = True,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -483,6 +501,8 @@ class AMReXPlottingMixin:
             z_range (tuple, optional): A tuple (min, max) for filtering particles by z-position.
             normalize (bool, optional): If True, normalize the histogram to form a
                                         probability density. Defaults to False.
+            log_scale (bool, optional): If True, the colorbar is plotted in log scale.
+                                        Defaults to True.
             title (str, optional): The title for the plot. Defaults to "3D Phase Space Distribution".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -540,6 +560,10 @@ class AMReXPlottingMixin:
             "cmap": "turbo",
             "s": 20,  # a default size
         }
+        if log_scale and density.size > 0:
+            scatter_settings["norm"] = colors.LogNorm(
+                vmin=max(1e-15, density.min()), vmax=density.max()
+            )
         scatter_settings.update(scatter_kwargs)
 
         sc = ax.scatter(x_flat, y_flat, z_flat, **scatter_settings)
@@ -568,6 +592,7 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         bins: int = 50,
+        log_scale: bool = True,
         figsize=(10, 10),
         title: str = "Velocity Space Pairplot",
         **imshow_kwargs: Any,
@@ -589,6 +614,8 @@ class AMReXPlottingMixin:
             z_range (tuple, optional): A tuple (min, max) for filtering particles
                                        by z-position.
             bins (int, optional): The number of bins for histograms. Defaults to 50.
+            log_scale (bool, optional): If True, the colorbar is plotted in log scale.
+                                        Defaults to True.
             figsize (tuple, optional): The size of the figure. Defaults to (10, 10).
             title (str, optional): The title for the plot. Defaults to "Velocity Space Pairplot".
             **imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
@@ -635,6 +662,37 @@ class AMReXPlottingMixin:
         fig, axes = plt.subplots(nvar, nvar, figsize=figsize, constrained_layout=True)
 
         # --- 4. Plot histograms ---
+        # Find the min and max for the color scale across all 2D histograms
+        h_min, h_max = float("inf"), float("-inf")
+        histograms = {}
+        for i in range(nvar):
+            for j in range(nvar):
+                if i != j:
+                    H, _, _ = np.histogram2d(
+                        vel_data[:, j],
+                        vel_data[:, i],
+                        bins=bins,
+                        range=[ranges[j], ranges[i]],
+                    )
+                    histograms[(i, j)] = H
+                    data_to_consider = H[H > 0] if log_scale else H
+                    if data_to_consider.size > 0:
+                        h_min = min(h_min, data_to_consider.min())
+                        h_max = max(h_max, data_to_consider.max())
+
+        if h_min == float("inf"):
+            h_min, h_max = (1, 10) if log_scale else (0, 1)
+        if h_min >= h_max:
+            h_max = h_min + 1
+
+        if log_scale:
+            imshow_settings["norm"] = colors.LogNorm(vmin=h_min, vmax=h_max)
+            cmap = plt.get_cmap(imshow_settings["cmap"])
+            cmap.set_bad(color="white")
+            imshow_settings["cmap"] = cmap
+        else:
+            imshow_settings["norm"] = plt.Normalize(vmin=h_min, vmax=h_max)
+
         for i in range(nvar):
             for j in range(nvar):
                 ax = axes[i, j]
@@ -642,15 +700,14 @@ class AMReXPlottingMixin:
                     ax.hist(vel_data[:, i], bins=bins, color="gray", range=ranges[i])
                     ax.set_yticklabels([])
                 else:  # Off-diagonal: 2D histogram
-                    H, xedges, yedges = np.histogram2d(
-                        vel_data[:, j],
-                        vel_data[:, i],
-                        bins=bins,
-                        range=[ranges[j], ranges[i]],
-                    )
+                    H = histograms.get((i, j), np.array([[]]))
+                    x_edges = np.linspace(ranges[j][0], ranges[j][1], bins + 1)
+                    y_edges = np.linspace(ranges[i][0], ranges[i][1], bins + 1)
+                    plot_H = np.ma.masked_where(H <= 0, H) if log_scale else H
+
                     im = ax.imshow(
-                        H.T,
-                        extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
+                        plot_H.T,
+                        extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
                         **imshow_settings,
                     )
 
@@ -665,13 +722,10 @@ class AMReXPlottingMixin:
         return fig, axes
 
     @staticmethod
-    def _plot_plane(ax, H, edges, fixed_coord, cmap, **surface_kwargs):
+    def _plot_plane(ax, H, edges, fixed_coord, cmap, norm, **surface_kwargs):
         """Helper function to plot a single plane."""
         nx, ny, nz = H.shape
         x_edges, y_edges, z_edges = edges
-
-        min_val, max_val = H.min(), H.max()
-        cmap = plt.get_cmap(cmap)
 
         slice_index = {"x": nx // 2, "y": ny // 2, "z": nz // 2}[fixed_coord]
 
@@ -696,13 +750,12 @@ class AMReXPlottingMixin:
             plane_data = H[:, :, slice_index]
 
         # Normalize data for coloring
-        denominator = max_val - min_val
-        if denominator == 0:
-            normalized_data = np.full(plane_data.shape, 0.5)
+        if isinstance(norm, colors.LogNorm):
+            plot_data = np.ma.masked_where(plane_data <= 0, plane_data)
         else:
-            normalized_data = (plane_data - min_val) / denominator
+            plot_data = plane_data
 
-        facecolors = cmap(normalized_data)
+        facecolors = cmap(norm(plot_data))
 
         ax.plot_surface(
             X,
@@ -726,6 +779,7 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
+        log_scale: bool = True,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
@@ -753,6 +807,8 @@ class AMReXPlottingMixin:
             z_range (tuple, optional): A tuple (min, max) for filtering particles by z-position.
             normalize (bool, optional): If True, normalize the histogram to form a
                                         probability density. Defaults to False.
+            log_scale (bool, optional): If True, the colorbar is plotted in log scale.
+                                        Defaults to True.
             title (str, optional): The title for the plot. Defaults to "Intersecting Planes of Phase Space".
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
@@ -783,9 +839,18 @@ class AMReXPlottingMixin:
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection="3d")
 
-        self._plot_plane(ax, H, edges, "x", cmap, **surface_kwargs)
-        self._plot_plane(ax, H, edges, "y", cmap, **surface_kwargs)
-        self._plot_plane(ax, H, edges, "z", cmap, **surface_kwargs)
+        non_zero_H = H[H > 0]
+        if log_scale and non_zero_H.size > 0:
+            norm = colors.LogNorm(vmin=non_zero_H.min(), vmax=H.max())
+            cmap_obj = plt.get_cmap(cmap)
+            cmap_obj.set_bad(color="white")
+        else:
+            norm = plt.Normalize(vmin=H.min(), vmax=H.max())
+            cmap_obj = plt.get_cmap(cmap)
+
+        self._plot_plane(ax, H, edges, "x", cmap_obj, norm, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "y", cmap_obj, norm, **surface_kwargs)
+        self._plot_plane(ax, H, edges, "z", cmap_obj, norm, **surface_kwargs)
 
         # --- 7. Add labels and title ---
         final_title = (
@@ -801,8 +866,7 @@ class AMReXPlottingMixin:
         ax.set_zlabel(final_zlabel, fontsize="x-large")
 
         # --- 8. Add a colorbar ---
-        norm = plt.Normalize(vmin=H.min(), vmax=H.max())
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm = plt.cm.ScalarMappable(cmap=cmap_obj, norm=norm)
         sm.set_array([])  # Dummy array for the mappable
         fig.colorbar(sm, ax=ax, shrink=0.6, aspect=20, pad=0.1, label=cbar_label)
 
