@@ -510,6 +510,10 @@ class AMReXPlottingMixin:
             **plotter_kwargs: Additional keyword arguments to be passed to `pyvista.Plotter.add_mesh()`.
         Returns:
             pyvista.BasePlotter: A PyVista plotter object.
+        Note:
+            It is recommended to close the plotter object using `plotter.close()`
+            after you are done with it to prevent potential issues with a unclean
+            shutdown of the VTK backend.
         """
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(
@@ -769,6 +773,10 @@ class AMReXPlottingMixin:
             **plotter_kwargs: Additional keyword arguments to be passed to `pyvista.Plotter.add_mesh()`.
         Returns:
             pyvista.BasePlotter: A PyVista plotter object.
+        Note:
+            It is recommended to close the plotter object using `plotter.close()`
+            after you are done with it to prevent potential issues with a unclean
+            shutdown of the VTK backend.
         """
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(

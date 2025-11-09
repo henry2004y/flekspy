@@ -28,15 +28,18 @@ def test_3d_plots(setup_test_data, data_file, plot_method_name):
         plotter = plot_func("x", "y", "velocity_z")
         assert plotter is not None, "Plotter should not be None"
         assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        plotter.close()
 
     # Test with normalization
     with patch("pyvista.Plotter.show"):
         plotter = plot_func("x", "y", "velocity_z", normalize=True)
         assert plotter is not None, "Plotter should not be None"
         assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        plotter.close()
 
     # Test with different variables
     with patch("pyvista.Plotter.show"):
         plotter = plot_func("velocity_x", "velocity_y", "velocity_z")
         assert plotter is not None, "Plotter should not be None"
         assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        plotter.close()
