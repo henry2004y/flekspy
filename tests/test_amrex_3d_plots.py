@@ -11,35 +11,69 @@ pv.OFF_SCREEN = True
     "data_file",
     ["3d_particle_region0_1_t00000002_n00000007_amrex"],
 )
-@pytest.mark.parametrize("plot_method_name", [
-    "plot_phase_3d",
-    "plot_intersecting_planes",
-])
-def test_3d_plots(setup_test_data, data_file, plot_method_name):
+def test_plot_phase_3d(setup_test_data, data_file):
     """
-    Test 3D plotting methods to ensure they run without errors and return
+    Test the plot_phase_3d method to ensure it runs without errors and returns
     a PyVista plotter object.
     """
     data_dir = Path(setup_test_data)
     ds = AMReXParticleData(data_dir / data_file)
-    plot_func = getattr(ds, plot_method_name)
 
-    with patch("pyvista.Plotter.show"):
-        plotter = plot_func("x", "y", "velocity_z")
+    with patch("pyvista.Plotter.add_volume") as mock_add_volume:
+        plotter = ds.plot_phase_3d("x", "y", "velocity_z")
         assert plotter is not None, "Plotter should not be None"
         assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        mock_add_volume.assert_called_once()
         plotter.close()
 
     # Test with normalization
-    with patch("pyvista.Plotter.show"):
-        plotter = plot_func("x", "y", "velocity_z", normalize=True)
+    with patch("pyvista.Plotter.add_volume") as mock_add_volume:
+        plotter = ds.plot_phase_3d("x", "y", "velocity_z", normalize=True)
         assert plotter is not None, "Plotter should not be None"
         assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        mock_add_volume.assert_called_once()
         plotter.close()
 
     # Test with different variables
-    with patch("pyvista.Plotter.show"):
-        plotter = plot_func("velocity_x", "velocity_y", "velocity_z")
+    with patch("pyvista.Plotter.add_volume") as mock_add_volume:
+        plotter = ds.plot_phase_3d("velocity_x", "velocity_y", "velocity_z")
         assert plotter is not None, "Plotter should not be None"
         assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        mock_add_volume.assert_called_once()
+        plotter.close()
+
+
+@pytest.mark.parametrize(
+    "data_file",
+    ["3d_particle_region0_1_t00000002_n00000007_amrex"],
+)
+def test_plot_intersecting_planes(setup_test_data, data_file):
+    """
+    Test the plot_intersecting_planes method to ensure it runs without errors and returns
+    a PyVista plotter object.
+    """
+    data_dir = Path(setup_test_data)
+    ds = AMReXParticleData(data_dir / data_file)
+
+    with patch("pyvista.Plotter.add_mesh") as mock_add_mesh:
+        plotter = ds.plot_intersecting_planes("x", "y", "velocity_z")
+        assert plotter is not None, "Plotter should not be None"
+        assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        mock_add_mesh.assert_called_once()
+        plotter.close()
+
+    # Test with normalization
+    with patch("pyvista.Plotter.add_mesh") as mock_add_mesh:
+        plotter = ds.plot_intersecting_planes("x", "y", "velocity_z", normalize=True)
+        assert plotter is not None, "Plotter should not be None"
+        assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        mock_add_mesh.assert_called_once()
+        plotter.close()
+
+    # Test with different variables
+    with patch("pyvista.Plotter.add_mesh") as mock_add_mesh:
+        plotter = ds.plot_intersecting_planes("velocity_x", "velocity_y", "velocity_z")
+        assert plotter is not None, "Plotter should not be None"
+        assert isinstance(plotter, pv.BasePlotter), "Should return a PyVista plotter"
+        mock_add_mesh.assert_called_once()
         plotter.close()

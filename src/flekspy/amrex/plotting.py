@@ -484,9 +484,8 @@ class AMReXPlottingMixin:
         **plotter_kwargs: Any,
     ) -> Optional[BasePlotter]:
         """
-        Plots the 3D phase space distribution using PyVista.
-        This function creates a 3D histogram and visualizes it as a point cloud,
-        where the color of each point corresponds to the particle density in that bin.
+        Plots the 3D phase space distribution using PyVista volume rendering.
+        This function creates a 3D histogram and visualizes it as a volume.
         Args:
             x_variable (str): The name of the variable for the x-axis.
             y_variable (str): The name of the variable for the y-axis.
@@ -507,7 +506,7 @@ class AMReXPlottingMixin:
             xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
             ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
             zlabel (str, optional): The label for the z-axis. Defaults to `z_variable`.
-            **plotter_kwargs: Additional keyword arguments to be passed to `pyvista.Plotter.add_mesh()`.
+            **plotter_kwargs: Additional keyword arguments to be passed to `pyvista.Plotter.add_volume()`.
         Returns:
             pyvista.BasePlotter: A PyVista plotter object.
         Note:
@@ -531,49 +530,30 @@ class AMReXPlottingMixin:
             return None
         H, edges, cbar_label = hist_data
 
-        # --- 2. Prepare data for PyVista ---
-        x_centers = (edges[0][:-1] + edges[0][1:]) / 2
-        y_centers = (edges[1][:-1] + edges[1][1:]) / 2
-        z_centers = (edges[2][:-1] + edges[2][1:]) / 2
-
-        x_grid, y_grid, z_grid = np.meshgrid(
-            x_centers, y_centers, z_centers, indexing="ij"
-        )
-
-        x_flat = x_grid.flatten()
-        y_flat = y_grid.flatten()
-        z_flat = z_grid.flatten()
-        density = H.flatten()
-
-        non_empty = density > 0
-        points = np.vstack(
-            (x_flat[non_empty], y_flat[non_empty], z_flat[non_empty])
-        ).T
-        density_values = density[non_empty]
-
-        if points.shape[0] == 0:
-            logger.warning("No non-empty bins to plot.")
+        if np.sum(H) == 0:
+            logger.warning("Histogram is empty, nothing to plot.")
             return None
 
-        # --- 3. Create PyVista plot ---
-        cloud = pv.PolyData(points)
-        cloud["density"] = density_values
+        # --- 2. Create PyVista grid ---
+        grid = pv.ImageData()
+        grid.dimensions = np.array(H.shape) + 1
+        grid.origin = (edges[0][0], edges[1][0], edges[2][0])
+        grid.spacing = (
+            (edges[0][-1] - edges[0][0]) / H.shape[0],
+            (edges[1][-1] - edges[1][0]) / H.shape[1],
+            (edges[2][-1] - edges[2][0]) / H.shape[2],
+        )
+        grid.cell_data["density"] = H.flatten(order="F")
 
+        # --- 3. Create PyVista plot ---
         plotter = pv.Plotter()
 
-        plotter_settings = {
-            "cmap": "turbo",
-            "point_size": 5,
-            "render_points_as_spheres": True,
-        }
-        plotter_settings.update(plotter_kwargs)
-
-        plotter.add_mesh(
-            cloud,
+        plotter.add_volume(
+            grid,
             scalars="density",
             log_scale=log_scale,
             scalar_bar_args={"title": cbar_label},
-            **plotter_settings,
+            **plotter_kwargs,
         )
 
         final_title = title if title is not None else "3D Phase Space Distribution"
