@@ -373,3 +373,41 @@ def test_pairplot():
                     ax.hist.assert_called_once()
                 else:
                     ax.imshow.assert_called_once()
+
+
+@patch("numpy.histogram2d")
+def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
+    """
+    Tests that the transform function is correctly applied to the data.
+    """
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    original_data = np.array([[1.0, 2.0], [3.0, 4.0]])
+    mock_pdata.rdata = original_data.copy()
+
+    # Define a simple transformation function
+    def scale_transform(data):
+        return data * 2
+
+    mock_histogram2d.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+    )
+
+    AMReXParticleData.plot_phase(
+        mock_pdata, x_variable="x", y_variable="y", transform=scale_transform
+    )
+
+    # Verify that the data passed to histogram2d is the transformed data
+    mock_histogram2d.assert_called_once()
+    call_args = mock_histogram2d.call_args[0]
+    x_data_passed = call_args[0]
+    y_data_passed = call_args[1]
+
+    expected_x_data = original_data[:, 0] * 2
+    expected_y_data = original_data[:, 1] * 2
+
+    np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
+    np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)

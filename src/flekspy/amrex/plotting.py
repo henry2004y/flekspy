@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import logging
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from typing import List, Tuple, Optional, Any, Union
+from typing import List, Tuple, Optional, Any, Union, Callable
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib import colors
@@ -42,6 +42,7 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         ax: Optional[Axes] = None,
         add_colorbar: bool = True,
+        transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
@@ -83,6 +84,11 @@ class AMReXPlottingMixin:
                                                  Defaults to None.
             add_colorbar (bool, optional): If True, a colorbar is added to the plot.
                                            Defaults to True.
+            transform (callable, optional): A function that takes the particle data
+                                            (`rdata`, a NumPy array) and returns
+                                            a transformed array. This can be used
+                                            to plot derived quantities or change
+                                            coordinate systems. Defaults to None.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
 
@@ -100,7 +106,11 @@ class AMReXPlottingMixin:
             logger.warning("No particles to plot.")
             return None
 
-        # --- 2. Map component names to column indices ---
+        # --- 2. Apply transformation if provided ---
+        if transform:
+            rdata = transform(rdata)
+
+        # --- 3. Map component names to column indices ---
         component_map = {
             name: i for i, name in enumerate(self.header.real_component_names)
         }
