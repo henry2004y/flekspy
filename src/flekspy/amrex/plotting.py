@@ -187,8 +187,12 @@ class AMReXPlottingMixin:
 
         # --- 7. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
-        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
-        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        final_xlabel = (
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        )
+        final_ylabel = (
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        )
 
         ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
@@ -394,8 +398,12 @@ class AMReXPlottingMixin:
         if suptitle:
             fig.suptitle(suptitle, fontsize="x-large")
 
-        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
-        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        final_xlabel = (
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        )
+        final_ylabel = (
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        )
         fig.text(0.5, 0.04, final_xlabel, ha="center", va="center", fontsize="x-large")
         fig.text(
             0.06,
@@ -580,9 +588,15 @@ class AMReXPlottingMixin:
 
         # --- 8. Add labels and a color bar ---
         final_title = title if title is not None else "3D Phase Space Distribution"
-        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
-        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
-        final_zlabel = zlabel if zlabel is not None else self._get_axis_label(z_variable)
+        final_xlabel = (
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        )
+        final_ylabel = (
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        )
+        final_zlabel = (
+            zlabel if zlabel is not None else self._get_axis_label(z_variable)
+        )
 
         ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
@@ -734,6 +748,8 @@ class AMReXPlottingMixin:
     @staticmethod
     def _plot_plane(ax, H, edges, fixed_coord, cmap, norm, opacity, **surface_kwargs):
         """Helper function to plot a single plane."""
+        if not 0.0 <= opacity <= 1.0:
+            raise ValueError("opacity must be between 0.0 and 1.0")
         nx, ny, nz = H.shape
         x_edges, y_edges, z_edges = edges
 
@@ -762,11 +778,12 @@ class AMReXPlottingMixin:
         # Normalize data for coloring
         if isinstance(norm, colors.LogNorm):
             plot_data = np.ma.masked_where(plane_data <= 0, plane_data)
+            facecolors = cmap(norm(plot_data))
+            facecolors[~plot_data.mask, -1] = opacity
         else:
             plot_data = plane_data
-
-        facecolors = cmap(norm(plot_data))
-        facecolors[:, :, -1] = opacity
+            facecolors = cmap(norm(plot_data))
+            facecolors[:, :, -1] = opacity
 
         ax.plot_surface(
             X,
@@ -868,9 +885,15 @@ class AMReXPlottingMixin:
         final_title = (
             title if title is not None else "Intersecting Planes of Phase Space"
         )
-        final_xlabel = xlabel if xlabel is not None else self._get_axis_label(x_variable)
-        final_ylabel = ylabel if ylabel is not None else self._get_axis_label(y_variable)
-        final_zlabel = zlabel if zlabel is not None else self._get_axis_label(z_variable)
+        final_xlabel = (
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+        )
+        final_ylabel = (
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+        )
+        final_zlabel = (
+            zlabel if zlabel is not None else self._get_axis_label(z_variable)
+        )
 
         ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
