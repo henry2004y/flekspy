@@ -469,12 +469,10 @@ def test_plot_phase_with_spatial_transform(mock_histogram2d, mock_plot_component
     x_data_passed = call_args[0]
     y_data_passed = call_args[1]
 
-    # Manually calculate the expected data for verification
-    b_hat = B / np.linalg.norm(B)
-    expected_pos_parallel = np.dot(original_data, b_hat)
-    vec_parallel = expected_pos_parallel[:, np.newaxis] * b_hat
-    vec_perp = original_data - vec_parallel
-    expected_pos_perp = np.linalg.norm(vec_perp, axis=1)
+    # Calculate the expected transformed data by calling the transform function directly.
+    expected_transformed_data, _ = spatial_transform(original_data)
+    expected_pos_parallel = expected_transformed_data[:, 0]
+    expected_pos_perp = expected_transformed_data[:, 1]
 
     np.testing.assert_array_almost_equal(x_data_passed, expected_pos_parallel)
     np.testing.assert_array_almost_equal(y_data_passed, expected_pos_perp)
