@@ -13,14 +13,15 @@ logger = logging.getLogger(__name__)
 class AMReXPlottingMixin:
     """A mixin class for AMReXParticleData plotting functionalities."""
 
+    _AXIS_LABEL_MAP = {
+        "velocity_x": r"$v_x$",
+        "velocity_y": r"$v_y$",
+        "velocity_z": r"$v_z$",
+    }
+
     def _get_axis_label(self, variable_name: str) -> str:
         """Returns the appropriate axis label for a given variable."""
-        label_map = {
-            "velocity_x": r"$v_x$",
-            "velocity_y": r"$v_y$",
-            "velocity_z": r"$v_z$",
-        }
-        return label_map.get(variable_name, variable_name)
+        return self._AXIS_LABEL_MAP.get(variable_name, variable_name)
 
     def plot_phase(
         self,
