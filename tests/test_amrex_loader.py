@@ -420,21 +420,35 @@ def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
 
 
 @patch("numpy.histogram2d")
-def test_plot_phase_with_reordering_transform(mock_histogram2d, mock_plot_components):
+def test_plot_phase_with_spatial_transform(mock_histogram2d, mock_plot_components):
     """
-    Tests that the transform function works correctly when reordering columns.
+    Tests transforming from 3D spatial coordinates to 2D parallel and
+    perpendicular coordinates relative to a magnetic field.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "vx", "vy"]
-    original_data = np.array([[1.0, 2.0, 10.0, 20.0], [3.0, 4.0, 30.0, 40.0]])
+    mock_pdata.header.real_component_names = ["x", "y", "z"]
+    original_data = np.random.rand(100, 3)
     mock_pdata.rdata = original_data.copy()
 
-    def swap_velocities_transform(data):
-        transformed_data = data.copy()
-        # Swap columns for vx and vy
-        transformed_data[:, [2, 3]] = transformed_data[:, [3, 2]]
-        new_names = ["x", "y", "vy", "vx"]
+    # Define a magnetic field direction
+    B = np.array([1.0, 1.0, 0.0])
+
+    def spatial_transform(data):
+        positions = data[:, 0:3]
+        b_hat = B / np.linalg.norm(B)
+
+        # Project positions onto the B field direction
+        pos_parallel = np.dot(positions, b_hat)
+
+        # Calculate the perpendicular distance
+        vec_parallel = pos_parallel[:, np.newaxis] * b_hat
+        vec_perp = positions - vec_parallel
+        pos_perp = np.linalg.norm(vec_perp, axis=1)
+
+        # The new data array contains only the transformed components
+        transformed_data = np.column_stack([pos_parallel, pos_perp])
+        new_names = ["pos_parallel", "pos_perp"]
         return transformed_data, new_names
 
     mock_histogram2d.return_value = (
@@ -444,7 +458,10 @@ def test_plot_phase_with_reordering_transform(mock_histogram2d, mock_plot_compon
     )
 
     AMReXParticleData.plot_phase(
-        mock_pdata, x_variable="vy", y_variable="vx", transform=swap_velocities_transform
+        mock_pdata,
+        x_variable="pos_parallel",
+        y_variable="pos_perp",
+        transform=spatial_transform,
     )
 
     mock_histogram2d.assert_called_once()
@@ -452,10 +469,100 @@ def test_plot_phase_with_reordering_transform(mock_histogram2d, mock_plot_compon
     x_data_passed = call_args[0]
     y_data_passed = call_args[1]
 
-    # After transform, the 'vy' column (index 2) should contain original 'vy' data
-    expected_x_data = original_data[:, 3]
-    # After transform, the 'vx' column (index 3) should contain original 'vx' data
-    expected_y_data = original_data[:, 2]
+    # Calculate the expected transformed data by calling the transform function directly.
+    expected_transformed_data, _ = spatial_transform(original_data)
+    expected_pos_parallel = expected_transformed_data[:, 0]
+    expected_pos_perp = expected_transformed_data[:, 1]
+
+    np.testing.assert_array_almost_equal(x_data_passed, expected_pos_parallel)
+    np.testing.assert_array_almost_equal(y_data_passed, expected_pos_perp)
+
+
+@patch("numpy.histogram2d")
+def test_plot_phase_with_field_aligned_transform(
+    mock_histogram2d, mock_plot_components
+):
+    """
+    Tests the transform functionality with a realistic field-aligned
+    coordinate transformation.
+    """
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = [
+        "x",
+        "y",
+        "z",
+        "velocity_x",
+        "velocity_y",
+        "velocity_z",
+    ]
+
+    original_data = np.random.rand(100, 6)
+    mock_pdata.rdata = original_data.copy()
+
+    # Define B and E field directions to uniquely determine the field-aligned coordinates.
+    B = np.array([0.0, 1.0, 0.0])
+    E = np.array([0.5, 0.5, 0.0])
+
+    # The parallel direction is along B.
+    b_hat = B / np.linalg.norm(B)
+
+    # The first perpendicular direction is determined by the component of E perpendicular to B.
+    E_perp = E - np.dot(E, b_hat) * b_hat
+    u1_hat = E_perp / np.linalg.norm(E_perp)
+
+    # The second perpendicular direction completes the right-handed system.
+    u2_hat = np.cross(b_hat, u1_hat)
+
+    # Rotation matrix to transform from (vx, vy, vz) to (v_perp2, v_parallel, v_perp1)
+    # The rows are the new basis vectors in the old coordinate system.
+    rotation_matrix = np.array([u2_hat, b_hat, u1_hat])
+
+    def field_aligned_transform(data):
+        # Extract velocity components
+        velocities = data[:, 3:6]
+        # Apply rotation
+        transformed_velocities = np.dot(velocities, rotation_matrix.T)
+
+        # Create the new data array with transformed velocities
+        transformed_data = data.copy()
+        transformed_data[:, 3:6] = transformed_velocities
+
+        new_names = [
+            "x",
+            "y",
+            "z",
+            "v_perp2",
+            "v_parallel",
+            "v_perp1",
+        ]
+        return transformed_data, new_names
+
+    mock_histogram2d.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+    )
+
+    AMReXParticleData.plot_phase(
+        mock_pdata,
+        x_variable="v_parallel",
+        y_variable="v_perp1",
+        transform=field_aligned_transform,
+    )
+
+    mock_histogram2d.assert_called_once()
+    call_args = mock_histogram2d.call_args[0]
+    x_data_passed = call_args[0]
+    y_data_passed = call_args[1]
+
+    # Calculate the expected data by calling the transform function and then
+    # selecting the columns based on the new names. This also verifies that
+    # plot_phase correctly uses the new component names.
+    expected_data, new_names = field_aligned_transform(original_data)
+    component_map = {name: i for i, name in enumerate(new_names)}
+    expected_x_data = expected_data[:, component_map["v_parallel"]]
+    expected_y_data = expected_data[:, component_map["v_perp1"]]
 
     np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
     np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)
