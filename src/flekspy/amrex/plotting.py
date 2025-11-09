@@ -26,7 +26,7 @@ class AMReXPlottingMixin:
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
         log_scale: bool = True,
-        vmin: Optional[float] = None,
+        vmin: Optional[float] = 0,
         vmax: Optional[float] = None,
         plot_zero_lines: bool = True,
         title: Optional[str] = None,
@@ -65,6 +65,11 @@ class AMReXPlottingMixin:
                                         form a probability density. Defaults to False.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
                                         Defaults to True.
+            vmin (float, optional): The minimum value for the colorbar. Defaults to 0.
+                                    If `log_scale` is True, `vmin` must be greater than 0.
+                                    If a non-positive value is given, it is ignored and
+                                    the smallest positive value in the data is used instead.
+            vmax (float, optional): The maximum value for the colorbar. Defaults to None.
             plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
                                               Defaults to True.
             title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
@@ -161,7 +166,10 @@ class AMReXPlottingMixin:
             # Apply logarithmic normalization
             # Set vmin to the smallest non-zero value in the data to avoid issues with log(0)
             if masked_H.count() > 0:  # Check if there is any unmasked data
-                min_val = masked_H.min() if vmin is None else vmin
+                min_val = vmin
+                if vmin is None or vmin <= 0:
+                    min_val = masked_H.min()
+
                 max_val = masked_H.max() if vmax is None else vmax
                 if min_val < max_val:
                     imshow_settings["norm"] = colors.LogNorm(vmin=min_val, vmax=max_val)
