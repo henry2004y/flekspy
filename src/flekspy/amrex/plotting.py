@@ -42,7 +42,7 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         ax: Optional[Axes] = None,
         add_colorbar: bool = True,
-        transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
@@ -84,11 +84,12 @@ class AMReXPlottingMixin:
                                                  Defaults to None.
             add_colorbar (bool, optional): If True, a colorbar is added to the plot.
                                            Defaults to True.
-            transform (callable, optional): A function that takes the particle data
-                                            (`rdata`, a NumPy array) and returns
-                                            a transformed array. This can be used
-                                            to plot derived quantities or change
-                                            coordinate systems. Defaults to None.
+            transform (callable, optional):
+                A function that takes the particle data (`rdata`, a NumPy array)
+                and returns a tuple: (`transformed_rdata`, `new_component_names`).
+                This allows for plotting derived quantities or changing coordinate systems.
+                If provided, `x_variable` and `y_variable` should refer to names
+                in `new_component_names`. Defaults to None.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
 
@@ -107,12 +108,13 @@ class AMReXPlottingMixin:
             return None
 
         # --- 2. Apply transformation if provided ---
+        component_names = self.header.real_component_names
         if transform:
-            rdata = transform(rdata)
+            rdata, component_names = transform(rdata)
 
         # --- 3. Map component names to column indices ---
         component_map = {
-            name: i for i, name in enumerate(self.header.real_component_names)
+            name: i for i, name in enumerate(component_names)
         }
 
         # --- 3. Validate input variable names ---

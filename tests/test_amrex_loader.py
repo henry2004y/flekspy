@@ -378,7 +378,8 @@ def test_pairplot():
 @patch("numpy.histogram2d")
 def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
     """
-    Tests that the transform function is correctly applied to the data.
+    Tests that the transform function is correctly applied and that the
+    new component names are used.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
@@ -386,9 +387,11 @@ def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
     original_data = np.array([[1.0, 2.0], [3.0, 4.0]])
     mock_pdata.rdata = original_data.copy()
 
-    # Define a simple transformation function
-    def scale_transform(data):
-        return data * 2
+    # Define a transformation function that returns new data and new names
+    def scale_and_rename_transform(data):
+        transformed_data = data * 2
+        new_names = ["x_scaled", "y_scaled"]
+        return transformed_data, new_names
 
     mock_histogram2d.return_value = (
         np.random.rand(10, 10),
@@ -397,7 +400,10 @@ def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
     )
 
     AMReXParticleData.plot_phase(
-        mock_pdata, x_variable="x", y_variable="y", transform=scale_transform
+        mock_pdata,
+        x_variable="x_scaled",
+        y_variable="y_scaled",
+        transform=scale_and_rename_transform,
     )
 
     # Verify that the data passed to histogram2d is the transformed data
