@@ -420,6 +420,67 @@ def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
 
 
 @patch("numpy.histogram2d")
+def test_plot_phase_with_spatial_transform(mock_histogram2d, mock_plot_components):
+    """
+    Tests transforming from 3D spatial coordinates to 2D parallel and
+    perpendicular coordinates relative to a magnetic field.
+    """
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y", "z"]
+    original_data = np.random.rand(100, 3)
+    mock_pdata.rdata = original_data.copy()
+
+    # Define a magnetic field direction
+    B = np.array([1.0, 1.0, 0.0])
+
+    def spatial_transform(data):
+        positions = data[:, 0:3]
+        b_hat = B / np.linalg.norm(B)
+
+        # Project positions onto the B field direction
+        pos_parallel = np.dot(positions, b_hat)
+
+        # Calculate the perpendicular distance
+        vec_parallel = pos_parallel[:, np.newaxis] * b_hat
+        vec_perp = positions - vec_parallel
+        pos_perp = np.linalg.norm(vec_perp, axis=1)
+
+        # The new data array contains only the transformed components
+        transformed_data = np.column_stack([pos_parallel, pos_perp])
+        new_names = ["pos_parallel", "pos_perp"]
+        return transformed_data, new_names
+
+    mock_histogram2d.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+    )
+
+    AMReXParticleData.plot_phase(
+        mock_pdata,
+        x_variable="pos_parallel",
+        y_variable="pos_perp",
+        transform=spatial_transform,
+    )
+
+    mock_histogram2d.assert_called_once()
+    call_args = mock_histogram2d.call_args[0]
+    x_data_passed = call_args[0]
+    y_data_passed = call_args[1]
+
+    # Manually calculate the expected data for verification
+    b_hat = B / np.linalg.norm(B)
+    expected_pos_parallel = np.dot(original_data, b_hat)
+    vec_parallel = expected_pos_parallel[:, np.newaxis] * b_hat
+    vec_perp = original_data - vec_parallel
+    expected_pos_perp = np.linalg.norm(vec_perp, axis=1)
+
+    np.testing.assert_array_almost_equal(x_data_passed, expected_pos_parallel)
+    np.testing.assert_array_almost_equal(y_data_passed, expected_pos_perp)
+
+
+@patch("numpy.histogram2d")
 def test_plot_phase_with_field_aligned_transform(
     mock_histogram2d, mock_plot_components
 ):
@@ -441,14 +502,18 @@ def test_plot_phase_with_field_aligned_transform(
     original_data = np.random.rand(100, 6)
     mock_pdata.rdata = original_data.copy()
 
-    # Define a magnetic field direction and create the rotation matrix
+    # Define B and E field directions to uniquely determine the field-aligned coordinates.
     B = np.array([0.0, 1.0, 0.0])
+    E = np.array([0.5, 0.5, 0.0])
+
+    # The parallel direction is along B.
     b_hat = B / np.linalg.norm(B)
 
-    e1 = np.array([1.0, 0.0, 0.0])
-    u1 = np.cross(b_hat, e1)
-    u1_hat = u1 / np.linalg.norm(u1)
+    # The first perpendicular direction is determined by the component of E perpendicular to B.
+    E_perp = E - np.dot(E, b_hat) * b_hat
+    u1_hat = E_perp / np.linalg.norm(E_perp)
 
+    # The second perpendicular direction completes the right-handed system.
     u2_hat = np.cross(b_hat, u1_hat)
 
     # Rotation matrix to transform from (vx, vy, vz) to (v_perp2, v_parallel, v_perp1)
