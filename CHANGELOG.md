@@ -78,3 +78,7 @@
 ## v0.6.9 (2025/11/09)
 
 - Add transform to `plot_phase`.
+
+## v0.6.10 (2025/11/09)
+
+- Support B and E field velocity transformations.
