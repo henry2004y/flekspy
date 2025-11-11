@@ -501,3 +501,138 @@ def test_plot_phase_with_field_aligned_transform(mock_plot_components):
     mock_pdata.get_phase_space_density.assert_called_once()
     _, kwargs = mock_pdata.get_phase_space_density.call_args
     assert kwargs["transform"] == field_aligned_transform
+
+
+def test_get_phase_space_density_basic():
+    """Tests the basic functionality of get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y", "weight"]
+    mock_pdata.rdata = np.random.rand(100, 3)
+    mock_pdata.select_particles_in_region.return_value = mock_pdata.rdata
+
+    with patch("numpy.histogram2d") as mock_histogram2d:
+        mock_histogram2d.return_value = (
+            np.array([[1.0]]),
+            np.array([0.0, 1.0]),
+            np.array([0.0, 1.0]),
+        )
+        H, xedges, yedges, cbar_label = AMReXParticleData.get_phase_space_density(
+            mock_pdata, x_variable="x", y_variable="y"
+        )
+
+        mock_histogram2d.assert_called_once()
+        _, kwargs = mock_histogram2d.call_args
+        assert "weights" in kwargs
+        np.testing.assert_array_equal(kwargs["weights"], mock_pdata.rdata[:, 2])
+        assert cbar_label == "Weighted Particle Density"
+
+
+def test_get_phase_space_density_normalized():
+    """Tests the normalization in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.random.rand(100, 2)
+    # Since select_particles_in_region is not mocked, it will return None,
+    # and get_phase_space_density will use mock_pdata.rdata
+    mock_pdata.select_particles_in_region.return_value = mock_pdata.rdata
+
+    H, _, _, cbar_label = AMReXParticleData.get_phase_space_density(
+        mock_pdata, x_variable="x", y_variable="y", normalize=True
+    )
+
+    assert np.isclose(H.sum(), 1.0)
+    assert cbar_label == "Normalized Density"
+
+
+def test_get_phase_space_density_with_transform():
+    """Tests the transform functionality in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    original_data = np.array([[1.0, 2.0], [3.0, 4.0]])
+    mock_pdata.rdata = original_data.copy()
+
+    def scale_transform(data):
+        return data * 2, ["x_scaled", "y_scaled"]
+
+    with patch("numpy.histogram2d") as mock_histogram2d:
+        mock_histogram2d.return_value = (
+            np.array([[1.0]]),
+            np.array([0.0, 1.0]),
+            np.array([0.0, 1.0]),
+        )
+        AMReXParticleData.get_phase_space_density(
+            mock_pdata,
+            x_variable="x_scaled",
+            y_variable="y_scaled",
+            transform=scale_transform,
+        )
+
+        mock_histogram2d.assert_called_once()
+        call_args, _ = mock_histogram2d.call_args
+        x_data_passed = call_args[0]
+        y_data_passed = call_args[1]
+        expected_x = original_data[:, 0] * 2
+        expected_y = original_data[:, 1] * 2
+        np.testing.assert_array_equal(x_data_passed, expected_x)
+        np.testing.assert_array_equal(y_data_passed, expected_y)
+
+
+def test_get_phase_space_density_with_kde():
+    """Tests the KDE functionality in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y", "weight"]
+    mock_pdata.rdata = np.random.rand(100, 3)
+    weights = mock_pdata.rdata[:, 2]
+
+    with patch("flekspy.amrex.plotting.gaussian_kde") as mock_gaussian_kde:
+        mock_kde_instance = MagicMock()
+        mock_kde_instance.return_value = np.random.rand(10 * 10)
+        mock_gaussian_kde.return_value = mock_kde_instance
+
+        _, _, _, cbar_label = AMReXParticleData.get_phase_space_density(
+            mock_pdata,
+            x_variable="x",
+            y_variable="y",
+            use_kde=True,
+            kde_grid_size=10,
+        )
+
+        mock_gaussian_kde.assert_called_once()
+        _, kwargs = mock_gaussian_kde.call_args
+        assert "weights" in kwargs
+        np.testing.assert_array_equal(kwargs["weights"], weights)
+        assert cbar_label == "Weighted Density"
+
+
+def test_get_phase_space_density_particle_selection():
+    """Tests particle selection in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.array([[0.1, 0.1], [0.5, 0.5], [0.9, 0.9]])
+
+    # Mock select_particles_in_region to filter based on range
+    def mock_select(x_range=None, y_range=None, z_range=None):
+        data = mock_pdata.rdata
+        if x_range:
+            data = data[(data[:, 0] >= x_range[0]) & (data[:, 0] <= x_range[1])]
+        if y_range:
+            data = data[(data[:, 1] >= y_range[0]) & (data[:, 1] <= y_range[1])]
+        return data
+
+    mock_pdata.select_particles_in_region.side_effect = mock_select
+
+    H, _, _, _ = AMReXParticleData.get_phase_space_density(
+        mock_pdata,
+        x_variable="x",
+        y_variable="y",
+        x_range=(0.4, 0.6),
+        bins=1
+    )
+
+    # histogram should be based on 1 particle
+    assert H.sum() == 1
