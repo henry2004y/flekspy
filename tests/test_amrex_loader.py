@@ -419,6 +419,57 @@ def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
     np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)
 
 
+def test_plot_phase_with_kde(mock_plot_components):
+    """
+    Tests that the KDE functionality is correctly triggered and that the
+    appropriate functions are called, including handling weights.
+    """
+    mock_fig = mock_plot_components["fig"]
+    mock_ax = mock_plot_components["ax"]
+
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y", "weight"]
+    mock_pdata.rdata = np.random.rand(100, 3)
+    weights = mock_pdata.rdata[:, 2]
+
+    with patch("flekspy.amrex.plotting.gaussian_kde") as mock_gaussian_kde, patch(
+        "flekspy.amrex.plotting.np.mgrid"
+    ) as mock_mgrid:
+        # Configure the mock for mgrid's __getitem__
+        mock_X = MagicMock()
+        mock_Y = MagicMock()
+        mock_X.ravel.return_value = np.random.rand(50 * 50)
+        mock_Y.ravel.return_value = np.random.rand(50 * 50)
+        mock_X.shape = (50, 50)  # Set the shape attribute
+        mock_mgrid.__getitem__.return_value = (mock_X, mock_Y)
+
+        # Mock the KDE object and its result
+        mock_kde_instance = MagicMock()
+        mock_kde_instance.return_value = np.random.rand(50 * 50)
+        mock_gaussian_kde.return_value = mock_kde_instance
+
+        AMReXParticleData.plot_phase(
+            mock_pdata,
+            x_variable="x",
+            y_variable="y",
+            use_kde=True,
+            kde_bandwidth="silverman",
+            kde_grid_size=50,
+        )
+
+        # Assert that gaussian_kde was called with weights
+        mock_gaussian_kde.assert_called_once()
+        _, call_kwargs = mock_gaussian_kde.call_args
+        assert "weights" in call_kwargs
+        np.testing.assert_array_equal(call_kwargs["weights"], weights)
+
+        # Assert that the colorbar label is "Weighted Density"
+        mock_fig.colorbar.assert_called_once()
+        cbar_instance = mock_fig.colorbar.return_value
+        cbar_instance.set_label.assert_called_once_with("Weighted Density")
+
+
 @patch("numpy.histogram2d")
 def test_plot_phase_with_spatial_transform(mock_histogram2d, mock_plot_components):
     """
