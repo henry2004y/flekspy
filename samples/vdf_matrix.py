@@ -52,49 +52,33 @@ def calculate_histograms(particle_file, regions, var_x, var_y, hist_range, hist_
     processed_regions = []
 
     for i, region in enumerate(regions):
-        # Create a dummy figure and axes (will not be shown)
-        dummy_fig, dummy_ax = plt.subplots()
-
-        # Create a copy to avoid modifying the original list
         new_region = region.copy()
-
         try:
-            #TODO: this can be improved by extracting the histrogram directly.
-            # Use flekspy to plot *onto the dummy axes*
-            f, ax_out = pd.plot_phase(
-                var_x,
-                var_y,
-                ax=dummy_ax,
+            density_data = pd.get_phase_space_density(
+                x_variable=var_x,
+                y_variable=var_y,
                 x_range=new_region["x_range"],
                 y_range=new_region["y_range"],
                 hist_range=hist_range,
                 bins=hist_bins,
                 normalize=True,
-                add_colorbar=False,
             )
 
-            # Extract the 2D histogram data from the plotted image
-            hist_data = ax_out.images[0].get_array()
-
-            # Store the data in the new region dict
-            new_region["hist_data"] = hist_data
-
-            # Update the global maximum value for normalization
-            current_max = hist_data.max()
-            if current_max > global_vmax:
-                global_vmax = current_max
+            if density_data:
+                hist_data, _, _, _ = density_data
+                new_region["hist_data"] = hist_data
+                current_max = hist_data.max()
+                if current_max > global_vmax:
+                    global_vmax = current_max
+            else:
+                new_region["hist_data"] = None
 
             processed_regions.append(new_region)
 
         except Exception as e:
-            # This can happen if a region has no particles
-            print(f"Warning: Could not plot phase for region {i}: {e}")
+            print(f"Warning: Could not process region {i}: {e}")
             new_region["hist_data"] = None
-            # We still append it so the loop in create_plot can skip it
             processed_regions.append(new_region)
-
-        # Close the dummy figure to free memory
-        plt.close(dummy_fig)
 
     print(f"All histograms calculated. Global max count: {global_vmax}")
     return processed_regions, global_vmax
