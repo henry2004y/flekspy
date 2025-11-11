@@ -6,6 +6,7 @@ from typing import List, Tuple, Optional, Any, Union, Callable
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib import colors
+from scipy.stats import gaussian_kde
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,9 @@ class AMReXPlottingMixin:
         log_scale: bool = True,
         vmin: Optional[float] = None,
         vmax: Optional[float] = None,
+        use_kde: bool = False,
+        kde_bandwidth: Optional[Union[str, float]] = None,
+        kde_grid_size: int = 100,
         plot_zero_lines: bool = True,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
@@ -47,12 +51,10 @@ class AMReXPlottingMixin:
     ) -> Optional[Tuple[Figure, Axes]]:
         """
         Plots the 2D phase space distribution for any two selected variables.
-
         This function creates a 2D weighted histogram to visualize the particle
         density. If a 'weight' component is present in the data, it will be
         used for the histogram weighting. Otherwise, a standard (unweighted)
         histogram is generated.
-
         Args:
             x_variable (str): The name of the variable for the x-axis.
             y_variable (str): The name of the variable for the y-axis.
@@ -74,6 +76,15 @@ class AMReXPlottingMixin:
                                         form a probability density. Defaults to False.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
                                         Defaults to True.
+            use_kde (bool, optional): If True, use Kernel Density Estimation instead
+                                      of a histogram. Defaults to False.
+            kde_bandwidth (str or float, optional): The bandwidth for the KDE.
+                                                    Can be 'scott', 'silverman', a scalar
+                                                    constant or a callable. If None,
+                                                    `gaussian_kde` will use its default.
+                                                    Defaults to None.
+            kde_grid_size (int, optional): The number of grid points in each dimension for
+                                           the KDE. Defaults to 100.
             plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
                                               Defaults to True.
             title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
@@ -92,7 +103,6 @@ class AMReXPlottingMixin:
                 in `new_component_names`. Defaults to None.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
-
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
                    This allows for a further customization of the plot after its creation.
@@ -138,20 +148,45 @@ class AMReXPlottingMixin:
             cbar_label = "Weighted Particle Density"
         else:
             cbar_label = "Particle Count"
-
-        H, xedges, yedges = np.histogram2d(
-            x_data, y_data, bins=bins, range=hist_range, weights=weights
-        )
-
-        if normalize:
-            total = H.sum()
-            if total > 0:
-                H /= total
+        if use_kde:
             if weights is not None:
-                cbar_label = "Normalized Weighted Density"
-            else:
-                cbar_label = "Normalized Density"
+                logger.warning(
+                    "Weights are not supported for KDE. They will be ignored."
+                )
 
+            xmin, xmax = (
+                (hist_range[0][0], hist_range[0][1])
+                if hist_range
+                else (x_data.min(), x_data.max())
+            )
+            ymin, ymax = (
+                (hist_range[1][0], hist_range[1][1])
+                if hist_range
+                else (y_data.min(), y_data.max())
+            )
+
+            grid_complex = complex(0, kde_grid_size)
+            X, Y = np.mgrid[xmin:xmax:grid_complex, ymin:ymax:grid_complex]
+            positions = np.vstack([X.ravel(), Y.ravel()])
+            values = np.vstack([x_data, y_data])
+            kernel = gaussian_kde(values, bw_method=kde_bandwidth)
+            H = np.reshape(kernel(positions).T, X.shape)
+            xedges = np.linspace(xmin, xmax, kde_grid_size + 1)
+            yedges = np.linspace(ymin, ymax, kde_grid_size + 1)
+            cbar_label = "Density"
+
+        else:
+            H, xedges, yedges = np.histogram2d(
+                x_data, y_data, bins=bins, range=hist_range, weights=weights
+            )
+            if normalize:
+                total = H.sum()
+                if total > 0:
+                    H /= total
+                if weights is not None:
+                    cbar_label = "Normalized Weighted Density"
+                else:
+                    cbar_label = "Normalized Density"
         # --- 6. Plot the resulting histogram as a color map ---
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
