@@ -702,6 +702,7 @@ class AMReXPlottingMixin:
         x_variable: str = None,
         y_variable: str = None,
         ax: Optional[Axes] = None,
+        scale: float = 2.0 * np.sqrt(2.0),
         **plot_kwargs,
     ) -> Tuple[Figure, Axes]:
         """
@@ -737,7 +738,7 @@ class AMReXPlottingMixin:
             v, w = np.linalg.eigh(cov)
             u = w[:, 0]
             angle = np.degrees(np.arctan2(u[1], u[0]))
-            v = 2.0 * np.sqrt(2.0) * np.sqrt(v)
+            v = scale * np.sqrt(v)
             ell = patches.Ellipse(
                 mean,
                 v[0],
@@ -748,7 +749,7 @@ class AMReXPlottingMixin:
                 linewidth=2,
             )
             ell.set_clip_box(ax.bbox)
-            ell.set_alpha(0.9)
+            ell.set_alpha(0.5)
             ax.add_artist(ell)
 
         return fig, ax
