@@ -24,7 +24,7 @@ class AMReXPlottingMixin:
         """Returns the appropriate axis label for a given variable."""
         return self._AXIS_LABEL_MAP.get(variable_name, variable_name)
 
-    def plot_phase(
+    def get_phase_space_density(
         self,
         x_variable: str,
         y_variable: str,
@@ -34,27 +34,18 @@ class AMReXPlottingMixin:
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         normalize: bool = False,
-        log_scale: bool = True,
-        vmin: Optional[float] = None,
-        vmax: Optional[float] = None,
         use_kde: bool = False,
         kde_bandwidth: Optional[Union[str, float]] = None,
         kde_grid_size: int = 100,
-        plot_zero_lines: bool = True,
-        title: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        ax: Optional[Axes] = None,
-        add_colorbar: bool = True,
         transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
-        **imshow_kwargs: Any,
-    ) -> Optional[Tuple[Figure, Axes]]:
+    ) -> Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, str]]:
         """
-        Plots the 2D phase space distribution for any two selected variables.
-        This function creates a 2D weighted histogram to visualize the particle
-        density. If a 'weight' component is present in the data, it will be
-        used for the histogram weighting. Otherwise, a standard (unweighted)
-        histogram is generated.
+        Calculates the 2D phase space density for any two selected variables.
+
+        This function produces a 2D weighted histogram (or Kernel Density Estimate)
+        of the particle distribution. If a 'weight' component is present, it's used
+        for weighting.
+
         Args:
             x_variable (str): The name of the variable for the x-axis.
             y_variable (str): The name of the variable for the y-axis.
@@ -74,8 +65,6 @@ class AMReXPlottingMixin:
                                        For 2D data, this is ignored.
             normalize (bool, optional): If True, the histogram is normalized to
                                         form a probability density. Defaults to False.
-            log_scale (bool, optional): If True, the colorbar is plotted in log scale.
-                                        Defaults to True.
             use_kde (bool, optional): If True, use Kernel Density Estimation instead
                                       of a histogram. Defaults to False.
             kde_bandwidth (str or float, optional): The bandwidth for the KDE.
@@ -85,27 +74,17 @@ class AMReXPlottingMixin:
                                                     Defaults to None.
             kde_grid_size (int, optional): The number of grid points in each dimension for
                                            the KDE. Defaults to 100.
-            plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
-                                              Defaults to True.
-            title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
-            xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
-            ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
-            ax (matplotlib.axes.Axes, optional): An existing axes object to plot on.
-                                                 If None, a new figure and axes are created.
-                                                 Defaults to None.
-            add_colorbar (bool, optional): If True, a colorbar is added to the plot.
-                                           Defaults to True.
             transform (callable, optional):
                 A function that takes the particle data (`rdata`, a NumPy array)
                 and returns a tuple: (`transformed_rdata`, `new_component_names`).
                 This allows for plotting derived quantities or changing coordinate systems.
                 If provided, `x_variable` and `y_variable` should refer to names
                 in `new_component_names`. Defaults to None.
-            **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
-                             This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
+
         Returns:
-            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
-                   This allows for a further customization of the plot after its creation.
+            tuple: A tuple containing (H, xedges, yedges, cbar_label), where H is the
+                   2D histogram, xedges and yedges are the bin edges, and cbar_label
+                   is a suggested label for a colorbar. Returns None if no data.
         """
         # --- 1. Select data ---
         if x_range or y_range or z_range:
@@ -123,11 +102,9 @@ class AMReXPlottingMixin:
             rdata, component_names = transform(rdata)
 
         # --- 3. Map component names to column indices ---
-        component_map = {
-            name: i for i, name in enumerate(component_names)
-        }
+        component_map = {name: i for i, name in enumerate(component_names)}
 
-        # --- 3. Validate input variable names ---
+        # --- 4. Validate input variable names ---
         if x_variable not in component_map or y_variable not in component_map:
             raise ValueError(
                 f"Invalid variable name. Choose from {list(component_map.keys())}"
@@ -184,7 +161,93 @@ class AMReXPlottingMixin:
                     cbar_label = "Normalized Weighted Density"
                 else:
                     cbar_label = "Normalized Density"
-        # --- 6. Plot the resulting histogram as a color map ---
+        return H, xedges, yedges, cbar_label
+
+    def plot_phase(
+        self,
+        x_variable: str,
+        y_variable: str,
+        bins: Union[int, Tuple[int, int]] = 100,
+        hist_range: Optional[List[List[float]]] = None,
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+        normalize: bool = False,
+        log_scale: bool = True,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
+        use_kde: bool = False,
+        kde_bandwidth: Optional[Union[str, float]] = None,
+        kde_grid_size: int = 100,
+        plot_zero_lines: bool = True,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        ax: Optional[Axes] = None,
+        add_colorbar: bool = True,
+        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
+        **imshow_kwargs: Any,
+    ) -> Optional[Tuple[Figure, Axes]]:
+        """
+        Plots the 2D phase space distribution for any two selected variables.
+        This function creates a 2D weighted histogram to visualize the particle
+        density. This function first calls `get_phase_space_density` to compute
+        the histogram and then plots the result.
+
+        Args:
+            x_variable (str): The variable for the x-axis. See `get_phase_space_density`.
+            y_variable (str): The variable for the y-axis. See `get_phase_space_density`.
+            bins (int or tuple, optional): Bins for the histogram. See `get_phase_space_density`.
+            hist_range (list, optional): Edges for bins. See `get_phase_space_density`.
+            x_range (tuple, optional): Boundary for the x-axis. See `get_phase_space_density`.
+            y_range (tuple, optional): Boundary for the y-axis. See `get_phase_space_density`.
+            z_range (tuple, optional): Boundary for the z-axis. See `get_phase_space_density`.
+            normalize (bool, optional): Normalize the density. See `get_phase_space_density`.
+            log_scale (bool, optional): If True, the colorbar is plotted in log scale.
+                                        Defaults to True.
+            use_kde (bool, optional): Use KDE. See `get_phase_space_density`.
+            kde_bandwidth (str or float, optional): Bandwidth for KDE. See `get_phase_space_density`.
+            kde_grid_size (int, optional): Grid points for KDE. See `get_phase_space_density`.
+            plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
+                                              Defaults to True.
+            title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
+            xlabel (str, optional): The label for the x-axis. Defaults to `x_variable`.
+            ylabel (str, optional): The label for the y-axis. Defaults to `y_variable`.
+            ax (matplotlib.axes.Axes, optional): An existing axes object to plot on.
+                                                 If None, a new figure and axes are created.
+                                                 Defaults to None.
+            add_colorbar (bool, optional): If True, a colorbar is added to the plot.
+                                           Defaults to True.
+            transform (callable, optional): A function to transform particle data.
+                                            See `get_phase_space_density`.
+            **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
+                             This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
+        Returns:
+            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+                   This allows for a further customization of the plot after its creation.
+        """
+        # --- 1. Get phase space density data ---
+        density_data = self.get_phase_space_density(
+            x_variable=x_variable,
+            y_variable=y_variable,
+            bins=bins,
+            hist_range=hist_range,
+            x_range=x_range,
+            y_range=y_range,
+            z_range=z_range,
+            normalize=normalize,
+            use_kde=use_kde,
+            kde_bandwidth=kde_bandwidth,
+            kde_grid_size=kde_grid_size,
+            transform=transform,
+        )
+
+        if density_data is None:
+            return None
+
+        H, xedges, yedges, cbar_label = density_data
+
+        # --- 2. Plot the resulting histogram as a color map ---
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
         else:
@@ -229,7 +292,7 @@ class AMReXPlottingMixin:
             ax.axhline(0, color="gray", linestyle="--")
             ax.axvline(0, color="gray", linestyle="--")
 
-        # --- 7. Add labels and a color bar for context ---
+        # --- 3. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
         final_xlabel = (
             xlabel if xlabel is not None else self._get_axis_label(x_variable)
@@ -256,7 +319,7 @@ class AMReXPlottingMixin:
             cbar = fig.colorbar(im, cax=cax)
             cbar.set_label(cbar_label)
 
-        # --- 8. Return the plot objects ---
+        # --- 4. Return the plot objects ---
         return fig, ax
 
     def plot_phase_subplots(

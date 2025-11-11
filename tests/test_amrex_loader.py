@@ -94,9 +94,12 @@ def test_plot_phase(mock_plot_components):
     mock_ax = mock_plot_components["ax"]
 
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "vx", "vy", "weight"]
-    mock_pdata.rdata = np.random.rand(100, 5)
+    mock_pdata.get_phase_space_density.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+        "Normalized Weighted Density",
+    )
 
     result_fig, result_ax = AMReXParticleData.plot_phase(
         mock_pdata,
@@ -111,6 +114,7 @@ def test_plot_phase(mock_plot_components):
 
     assert result_fig is mock_fig
     assert result_ax is mock_ax
+    mock_pdata.get_phase_space_density.assert_called_once()
     mock_plot_components["subplots"].assert_called_once_with(figsize=(8, 6))
     assert mock_ax.imshow.called
     imshow_kwargs = mock_ax.imshow.call_args.kwargs
@@ -135,24 +139,21 @@ def test_plot_phase_with_existing_axes(mock_plot_components):
     mock_ax = mock_plot_components["ax"]
     mock_ax.figure = mock_fig
 
-    # This time, we pass the existing ax to the function
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y"]
-    mock_pdata.rdata = np.random.rand(100, 2)
+    mock_pdata.get_phase_space_density.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+        "Particle Count",
+    )
 
     result_fig, result_ax = AMReXParticleData.plot_phase(
         mock_pdata, x_variable="x", y_variable="y", ax=mock_ax
     )
 
-    # Assert that the returned objects are the same ones we passed in
     assert result_fig is mock_fig
     assert result_ax is mock_ax
-
-    # Assert that no new subplots were created
     mock_plot_components["subplots"].assert_not_called()
-
-    # Assert that the plotting was done on the provided axes
     assert mock_ax.imshow.called
 
 
@@ -161,53 +162,48 @@ def test_plot_phase_no_colorbar(mock_plot_components):
     Tests that the colorbar is not created when add_colorbar=False.
     """
     mock_fig = mock_plot_components["fig"]
-    mock_ax = mock_plot_components["ax"]
 
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y"]
-    mock_pdata.rdata = np.random.rand(100, 2)
+    mock_pdata.get_phase_space_density.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+        "Particle Count",
+    )
 
     AMReXParticleData.plot_phase(
         mock_pdata, x_variable="x", y_variable="y", add_colorbar=False
     )
 
-    # Assert that the colorbar creation logic was not called
     mock_plot_components["make_axes_locatable"].assert_not_called()
     mock_fig.colorbar.assert_not_called()
 
 
-@patch("flekspy.amrex.plotting.logger")
-def test_plot_phase_no_particles(mock_logger, mock_plot_components):
+def test_plot_phase_no_particles(mock_plot_components):
     """
-    Tests that plot_phase logs a warning and returns early
-    when there are no particles to plot.
+    Tests that plot_phase returns early when there are no particles.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.rdata = np.empty((0, 5))  # No particles
-    mock_pdata.select_particles_in_region.return_value = np.empty((0, 5))
+    mock_pdata.get_phase_space_density.return_value = None
 
-    AMReXParticleData.plot_phase(
+    result = AMReXParticleData.plot_phase(
         mock_pdata, x_variable="x", y_variable="y", x_range=(0, 1)
     )
 
-    mock_logger.warning.assert_called_once_with("No particles to plot.")
+    assert result is None
     mock_plot_components["subplots"].assert_not_called()
 
 
-@patch("numpy.histogram2d")
-def test_plot_phase_with_hist_range(mock_histogram2d, mock_plot_components):
+def test_plot_phase_with_hist_range(mock_plot_components):
     """
-    Tests that the hist_range parameter is correctly passed to numpy.histogram2d.
+    Tests that the hist_range parameter is correctly passed.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y"]
-    mock_pdata.rdata = np.random.rand(100, 2)
-    mock_histogram2d.return_value = (
+    mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
         np.linspace(0, 1, 11),
+        "Particle Count",
     )
 
     custom_range = [[0.1, 0.9], [0.2, 0.8]]
@@ -215,21 +211,23 @@ def test_plot_phase_with_hist_range(mock_histogram2d, mock_plot_components):
         mock_pdata, x_variable="x", y_variable="y", hist_range=custom_range
     )
 
-    mock_histogram2d.assert_called_once()
-    _, _, kwargs = mock_histogram2d.mock_calls[0]
-    assert "range" in kwargs
-    assert kwargs["range"] == custom_range
+    mock_pdata.get_phase_space_density.assert_called_once()
+    _, kwargs = mock_pdata.get_phase_space_density.call_args
+    assert "hist_range" in kwargs
+    assert kwargs["hist_range"] == custom_range
 
 
 def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components):
     """
     Tests that vmin and vmax are correctly used in log scale.
     """
-    mock_ax = mock_plot_components["ax"]
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y"]
-    mock_pdata.rdata = np.random.rand(100, 2) + 0.1  # Ensure data is > 0 for log
+    mock_pdata.get_phase_space_density.return_value = (
+        np.random.rand(10, 10) + 0.1,
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+        "Particle Count",
+    )
 
     with patch("flekspy.amrex.plotting.colors.LogNorm") as mock_log_norm:
         AMReXParticleData.plot_phase(
@@ -375,138 +373,89 @@ def test_pairplot():
                     ax.imshow.assert_called_once()
 
 
-@patch("numpy.histogram2d")
-def test_plot_phase_with_transform(mock_histogram2d, mock_plot_components):
+def test_plot_phase_with_transform(mock_plot_components):
     """
-    Tests that the transform function is correctly applied and that the
-    new component names are used.
+    Tests that the transform function is correctly applied.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y"]
-    original_data = np.array([[1.0, 2.0], [3.0, 4.0]])
-    mock_pdata.rdata = original_data.copy()
-
-    # Define a transformation function that returns new data and new names
-    def scale_and_rename_transform(data):
-        transformed_data = data * 2
-        new_names = ["x_scaled", "y_scaled"]
-        return transformed_data, new_names
-
-    mock_histogram2d.return_value = (
+    mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
         np.linspace(0, 1, 11),
+        "Particle Count",
     )
+
+    def dummy_transform(data):
+        return data, ["x_new", "y_new"]
 
     AMReXParticleData.plot_phase(
         mock_pdata,
-        x_variable="x_scaled",
-        y_variable="y_scaled",
-        transform=scale_and_rename_transform,
+        x_variable="x_new",
+        y_variable="y_new",
+        transform=dummy_transform,
     )
 
-    # Verify that the data passed to histogram2d is the transformed data
-    mock_histogram2d.assert_called_once()
-    call_args = mock_histogram2d.call_args[0]
-    x_data_passed = call_args[0]
-    y_data_passed = call_args[1]
-
-    expected_x_data = original_data[:, 0] * 2
-    expected_y_data = original_data[:, 1] * 2
-
-    np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
-    np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)
+    mock_pdata.get_phase_space_density.assert_called_once()
+    _, kwargs = mock_pdata.get_phase_space_density.call_args
+    assert "transform" in kwargs
+    assert kwargs["transform"] == dummy_transform
 
 
 def test_plot_phase_with_kde(mock_plot_components):
     """
-    Tests that the KDE functionality is correctly triggered and that the
-    appropriate functions are called, including handling weights.
+    Tests that the KDE parameters are correctly passed.
     """
     mock_fig = mock_plot_components["fig"]
-    mock_ax = mock_plot_components["ax"]
-
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "weight"]
-    mock_pdata.rdata = np.random.rand(100, 3)
-    weights = mock_pdata.rdata[:, 2]
+    mock_pdata.get_phase_space_density.return_value = (
+        np.random.rand(50, 50),
+        np.linspace(0, 1, 51),
+        np.linspace(0, 1, 51),
+        "Weighted Density",
+    )
 
-    with patch("flekspy.amrex.plotting.gaussian_kde") as mock_gaussian_kde, patch(
-        "flekspy.amrex.plotting.np.mgrid"
-    ) as mock_mgrid:
-        # Configure the mock for mgrid's __getitem__
-        mock_X = MagicMock()
-        mock_Y = MagicMock()
-        mock_X.ravel.return_value = np.random.rand(50 * 50)
-        mock_Y.ravel.return_value = np.random.rand(50 * 50)
-        mock_X.shape = (50, 50)  # Set the shape attribute
-        mock_mgrid.__getitem__.return_value = (mock_X, mock_Y)
+    AMReXParticleData.plot_phase(
+        mock_pdata,
+        x_variable="x",
+        y_variable="y",
+        use_kde=True,
+        kde_bandwidth="silverman",
+        kde_grid_size=50,
+    )
 
-        # Mock the KDE object and its result
-        mock_kde_instance = MagicMock()
-        mock_kde_instance.return_value = np.random.rand(50 * 50)
-        mock_gaussian_kde.return_value = mock_kde_instance
-
-        AMReXParticleData.plot_phase(
-            mock_pdata,
-            x_variable="x",
-            y_variable="y",
-            use_kde=True,
-            kde_bandwidth="silverman",
-            kde_grid_size=50,
-        )
-
-        # Assert that gaussian_kde was called with weights
-        mock_gaussian_kde.assert_called_once()
-        _, call_kwargs = mock_gaussian_kde.call_args
-        assert "weights" in call_kwargs
-        np.testing.assert_array_equal(call_kwargs["weights"], weights)
-
-        # Assert that the colorbar label is "Weighted Density"
-        mock_fig.colorbar.assert_called_once()
-        cbar_instance = mock_fig.colorbar.return_value
-        cbar_instance.set_label.assert_called_once_with("Weighted Density")
+    mock_pdata.get_phase_space_density.assert_called_once_with(
+        x_variable="x",
+        y_variable="y",
+        bins=100,
+        hist_range=None,
+        x_range=None,
+        y_range=None,
+        z_range=None,
+        normalize=False,
+        use_kde=True,
+        kde_bandwidth="silverman",
+        kde_grid_size=50,
+        transform=None,
+    )
+    mock_fig.colorbar.assert_called_once()
+    cbar_instance = mock_fig.colorbar.return_value
+    cbar_instance.set_label.assert_called_once_with("Weighted Density")
 
 
-@patch("numpy.histogram2d")
-def test_plot_phase_with_spatial_transform(mock_histogram2d, mock_plot_components):
+def test_plot_phase_with_spatial_transform(mock_plot_components):
     """
-    Tests transforming from 3D spatial coordinates to 2D parallel and
-    perpendicular coordinates relative to a magnetic field.
+    Tests passing a spatial transform function.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "z"]
-    original_data = np.random.rand(100, 3)
-    mock_pdata.rdata = original_data.copy()
-
-    # Define a magnetic field direction
-    B = np.array([1.0, 1.0, 0.0])
-
-    def spatial_transform(data):
-        positions = data[:, 0:3]
-        b_hat = B / np.linalg.norm(B)
-
-        # Project positions onto the B field direction
-        pos_parallel = np.dot(positions, b_hat)
-
-        # Calculate the perpendicular distance
-        vec_parallel = pos_parallel[:, np.newaxis] * b_hat
-        vec_perp = positions - vec_parallel
-        pos_perp = np.linalg.norm(vec_perp, axis=1)
-
-        # The new data array contains only the transformed components
-        transformed_data = np.column_stack([pos_parallel, pos_perp])
-        new_names = ["pos_parallel", "pos_perp"]
-        return transformed_data, new_names
-
-    mock_histogram2d.return_value = (
+    mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
         np.linspace(0, 1, 11),
+        "Particle Count",
     )
+
+    def spatial_transform(data):
+        return data, ["pos_parallel", "pos_perp"]
 
     AMReXParticleData.plot_phase(
         mock_pdata,
@@ -515,71 +464,25 @@ def test_plot_phase_with_spatial_transform(mock_histogram2d, mock_plot_component
         transform=spatial_transform,
     )
 
-    mock_histogram2d.assert_called_once()
-    call_args = mock_histogram2d.call_args[0]
-    x_data_passed = call_args[0]
-    y_data_passed = call_args[1]
-
-    # Calculate the expected transformed data by calling the transform function directly.
-    expected_transformed_data, _ = spatial_transform(original_data)
-    expected_pos_parallel = expected_transformed_data[:, 0]
-    expected_pos_perp = expected_transformed_data[:, 1]
-
-    np.testing.assert_array_almost_equal(x_data_passed, expected_pos_parallel)
-    np.testing.assert_array_almost_equal(y_data_passed, expected_pos_perp)
+    mock_pdata.get_phase_space_density.assert_called_once()
+    _, kwargs = mock_pdata.get_phase_space_density.call_args
+    assert kwargs["transform"] == spatial_transform
 
 
-@patch("numpy.histogram2d")
-def test_plot_phase_with_field_aligned_transform(
-    mock_histogram2d, mock_plot_components
-):
+def test_plot_phase_with_field_aligned_transform(mock_plot_components):
     """
-    Tests the transform functionality with a realistic field-aligned
-    coordinate transformation.
+    Tests passing a field-aligned transform function.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = [
-        "x",
-        "y",
-        "z",
-        "velocity_x",
-        "velocity_y",
-        "velocity_z",
-    ]
-
-    original_data = np.random.rand(100, 6)
-    mock_pdata.rdata = original_data.copy()
-
-    # Define B and E field directions to uniquely determine the field-aligned coordinates.
-    B = np.array([0.0, 1.0, 0.0])
-    E = np.array([0.5, 0.5, 0.0])
-
-    # The parallel direction is along B.
-    b_hat = B / np.linalg.norm(B)
-
-    # The first perpendicular direction is determined by the component of E perpendicular to B.
-    E_perp = E - np.dot(E, b_hat) * b_hat
-    u1_hat = E_perp / np.linalg.norm(E_perp)
-
-    # The second perpendicular direction completes the right-handed system.
-    u2_hat = np.cross(b_hat, u1_hat)
-
-    # Rotation matrix to transform from (vx, vy, vz) to (v_perp2, v_parallel, v_perp1)
-    # The rows are the new basis vectors in the old coordinate system.
-    rotation_matrix = np.array([u2_hat, b_hat, u1_hat])
+    mock_pdata.get_phase_space_density.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+        "Particle Count",
+    )
 
     def field_aligned_transform(data):
-        # Extract velocity components
-        velocities = data[:, 3:6]
-        # Apply rotation
-        transformed_velocities = np.dot(velocities, rotation_matrix.T)
-
-        # Create the new data array with transformed velocities
-        transformed_data = data.copy()
-        transformed_data[:, 3:6] = transformed_velocities
-
-        new_names = [
+        return data, [
             "x",
             "y",
             "z",
@@ -587,13 +490,6 @@ def test_plot_phase_with_field_aligned_transform(
             "v_parallel",
             "v_perp1",
         ]
-        return transformed_data, new_names
-
-    mock_histogram2d.return_value = (
-        np.random.rand(10, 10),
-        np.linspace(0, 1, 11),
-        np.linspace(0, 1, 11),
-    )
 
     AMReXParticleData.plot_phase(
         mock_pdata,
@@ -602,18 +498,141 @@ def test_plot_phase_with_field_aligned_transform(
         transform=field_aligned_transform,
     )
 
-    mock_histogram2d.assert_called_once()
-    call_args = mock_histogram2d.call_args[0]
-    x_data_passed = call_args[0]
-    y_data_passed = call_args[1]
+    mock_pdata.get_phase_space_density.assert_called_once()
+    _, kwargs = mock_pdata.get_phase_space_density.call_args
+    assert kwargs["transform"] == field_aligned_transform
 
-    # Calculate the expected data by calling the transform function and then
-    # selecting the columns based on the new names. This also verifies that
-    # plot_phase correctly uses the new component names.
-    expected_data, new_names = field_aligned_transform(original_data)
-    component_map = {name: i for i, name in enumerate(new_names)}
-    expected_x_data = expected_data[:, component_map["v_parallel"]]
-    expected_y_data = expected_data[:, component_map["v_perp1"]]
 
-    np.testing.assert_array_almost_equal(x_data_passed, expected_x_data)
-    np.testing.assert_array_almost_equal(y_data_passed, expected_y_data)
+def test_get_phase_space_density_basic():
+    """Tests the basic functionality of get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y", "weight"]
+    mock_pdata.rdata = np.random.rand(100, 3)
+    mock_pdata.select_particles_in_region.return_value = mock_pdata.rdata
+
+    with patch("numpy.histogram2d") as mock_histogram2d:
+        mock_histogram2d.return_value = (
+            np.array([[1.0]]),
+            np.array([0.0, 1.0]),
+            np.array([0.0, 1.0]),
+        )
+        H, xedges, yedges, cbar_label = AMReXParticleData.get_phase_space_density(
+            mock_pdata, x_variable="x", y_variable="y"
+        )
+
+        mock_histogram2d.assert_called_once()
+        _, kwargs = mock_histogram2d.call_args
+        assert "weights" in kwargs
+        np.testing.assert_array_equal(kwargs["weights"], mock_pdata.rdata[:, 2])
+        assert cbar_label == "Weighted Particle Density"
+
+
+def test_get_phase_space_density_normalized():
+    """Tests the normalization in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.random.rand(100, 2)
+    # Since select_particles_in_region is not mocked, it will return None,
+    # and get_phase_space_density will use mock_pdata.rdata
+    mock_pdata.select_particles_in_region.return_value = mock_pdata.rdata
+
+    H, _, _, cbar_label = AMReXParticleData.get_phase_space_density(
+        mock_pdata, x_variable="x", y_variable="y", normalize=True
+    )
+
+    assert np.isclose(H.sum(), 1.0)
+    assert cbar_label == "Normalized Density"
+
+
+def test_get_phase_space_density_with_transform():
+    """Tests the transform functionality in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    original_data = np.array([[1.0, 2.0], [3.0, 4.0]])
+    mock_pdata.rdata = original_data.copy()
+
+    def scale_transform(data):
+        return data * 2, ["x_scaled", "y_scaled"]
+
+    with patch("numpy.histogram2d") as mock_histogram2d:
+        mock_histogram2d.return_value = (
+            np.array([[1.0]]),
+            np.array([0.0, 1.0]),
+            np.array([0.0, 1.0]),
+        )
+        AMReXParticleData.get_phase_space_density(
+            mock_pdata,
+            x_variable="x_scaled",
+            y_variable="y_scaled",
+            transform=scale_transform,
+        )
+
+        mock_histogram2d.assert_called_once()
+        call_args, _ = mock_histogram2d.call_args
+        x_data_passed = call_args[0]
+        y_data_passed = call_args[1]
+        expected_x = original_data[:, 0] * 2
+        expected_y = original_data[:, 1] * 2
+        np.testing.assert_array_equal(x_data_passed, expected_x)
+        np.testing.assert_array_equal(y_data_passed, expected_y)
+
+
+def test_get_phase_space_density_with_kde():
+    """Tests the KDE functionality in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y", "weight"]
+    mock_pdata.rdata = np.random.rand(100, 3)
+    weights = mock_pdata.rdata[:, 2]
+
+    with patch("flekspy.amrex.plotting.gaussian_kde") as mock_gaussian_kde:
+        mock_kde_instance = MagicMock()
+        mock_kde_instance.return_value = np.random.rand(10 * 10)
+        mock_gaussian_kde.return_value = mock_kde_instance
+
+        _, _, _, cbar_label = AMReXParticleData.get_phase_space_density(
+            mock_pdata,
+            x_variable="x",
+            y_variable="y",
+            use_kde=True,
+            kde_grid_size=10,
+        )
+
+        mock_gaussian_kde.assert_called_once()
+        _, kwargs = mock_gaussian_kde.call_args
+        assert "weights" in kwargs
+        np.testing.assert_array_equal(kwargs["weights"], weights)
+        assert cbar_label == "Weighted Density"
+
+
+def test_get_phase_space_density_particle_selection():
+    """Tests particle selection in get_phase_space_density."""
+    mock_pdata = MagicMock(spec=AMReXParticleData)
+    mock_pdata.header = MagicMock()
+    mock_pdata.header.real_component_names = ["x", "y"]
+    mock_pdata.rdata = np.array([[0.1, 0.1], [0.5, 0.5], [0.9, 0.9]])
+
+    # Mock select_particles_in_region to filter based on range
+    def mock_select(x_range=None, y_range=None, z_range=None):
+        data = mock_pdata.rdata
+        if x_range:
+            data = data[(data[:, 0] >= x_range[0]) & (data[:, 0] <= x_range[1])]
+        if y_range:
+            data = data[(data[:, 1] >= y_range[0]) & (data[:, 1] <= y_range[1])]
+        return data
+
+    mock_pdata.select_particles_in_region.side_effect = mock_select
+
+    H, _, _, _ = AMReXParticleData.get_phase_space_density(
+        mock_pdata,
+        x_variable="x",
+        y_variable="y",
+        x_range=(0.4, 0.6),
+        bins=1
+    )
+
+    # histogram should be based on 1 particle
+    assert H.sum() == 1
