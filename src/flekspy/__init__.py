@@ -83,19 +83,17 @@ def load(
     basename = filepath.name
 
     if basename == "test_particles":
-        FLEKSTP = getattr(importlib.import_module("flekspy.tp"), "FLEKSTP")
+        FLEKSTP = __getattr__("FLEKSTP")
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
     elif filepath.suffix in [".out", ".outs"]:
-        read_idl = getattr(importlib.import_module("flekspy.idl"), "read_idl")
+        read_idl = __getattr__("read_idl")
         return read_idl(filename)
     elif basename.endswith("_amrex"):
         if use_yt_loader or "particle" not in basename:
-            YtFLEKSData = getattr(importlib.import_module("flekspy.yt"), "YtFLEKSData")
+            YtFLEKSData = __getattr__("YtFLEKSData")
             return YtFLEKSData(filename, readFieldData)
         else:
-            AMReXParticleData = getattr(
-                importlib.import_module("flekspy.amrex"), "AMReXParticleData"
-            )
+            AMReXParticleData = __getattr__("AMReXParticleData")
             return AMReXParticleData(filename)
     else:
         raise Exception("Error: unknown file format!")
