@@ -699,8 +699,8 @@ class AMReXPlottingMixin:
     def plot_gmm_fit(
         self,
         gmm: GaussianMixture,
-        x_variable: str,
-        y_variable: str,
+        x_variable: str = None,
+        y_variable: str = None,
         ax: Optional[Axes] = None,
         **plot_kwargs,
     ) -> Tuple[Figure, Axes]:
@@ -709,8 +709,8 @@ class AMReXPlottingMixin:
 
         Args:
             gmm (sklearn.mixture.GaussianMixture): The fitted GMM model.
-            x_variable (str): The name of the variable for the x-axis.
-            y_variable (str): The name of the variable for the y-axis.
+            x_variable (str, optional): The name of the variable for the x-axis.
+            y_variable (str, optional): The name of the variable for the y-axis.
             ax (matplotlib.axes.Axes, optional): An existing axes object to plot on.
                                                  If None, a new figure and axes are created.
                                                  Defaults to None.
