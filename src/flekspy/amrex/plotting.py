@@ -731,9 +731,8 @@ class AMReXPlottingMixin:
         colors = ["red", "blue", "green", "purple", "orange"]
         for i, (mean, cov) in enumerate(zip(gmm.means_, gmm.covariances_)):
             v, w = np.linalg.eigh(cov)
-            u = w[0] / np.linalg.norm(w[0])
-            angle = np.arctan2(u[1], u[0])
-            angle = 180 * angle / np.pi  # convert to degrees
+            u = w[:, 0]
+            angle = np.degrees(np.arctan2(u[1], u[0]))
             v = 2.0 * np.sqrt(2.0) * np.sqrt(v)
             ell = patches.Ellipse(
                 mean,
