@@ -23,22 +23,22 @@ def __getattr__(name):
     """
     Dynamically import modules and classes upon first access.
     """
-    if name == "YtFLEKSData" or name == "extract_phase":
-        module = importlib.import_module("flekspy.yt")
+    _LAZY_MAPPING = {
+        "YtFLEKSData": "flekspy.yt",
+        "extract_phase": "flekspy.yt",
+        "FLEKSTP": "flekspy.tp",
+        "AMReXParticleData": "flekspy.amrex",
+        "read_idl": "flekspy.idl",
+        "IDLAccessor": "flekspy.idl",
+        "xr": "xarray",
+    }
+    if name in _LAZY_MAPPING:
+        module_path = _LAZY_MAPPING[name]
+        module = importlib.import_module(module_path)
+        if name == "xr":
+            return module
         return getattr(module, name)
-    elif name == "FLEKSTP":
-        module = importlib.import_module("flekspy.tp")
-        return getattr(module, name)
-    elif name == "AMReXParticleData":
-        module = importlib.import_module("flekspy.amrex")
-        return getattr(module, name)
-    elif name == "read_idl" or name == "IDLAccessor":
-        module = importlib.import_module("flekspy.idl")
-        return getattr(module, name)
-    elif name == "xr":
-        return importlib.import_module("xarray")
-    else:
-        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def load(
