@@ -3,18 +3,7 @@ import pytest
 from sklearn.mixture import GaussianMixture
 from unittest.mock import MagicMock
 
-# Create a mock for the AMReXParticleData class to isolate the method
 from flekspy.amrex.particle_data import AMReXParticleData
-
-
-@pytest.fixture
-def mock_amrex_data():
-    """Provides a mock AMReXParticleData instance for testing."""
-    # The AMReXParticleData class requires an output_dir for initialization.
-    # We can provide a dummy path and mock any methods that would interact with the filesystem.
-    mock_data = AMReXParticleData.__new__(AMReXParticleData)
-    mock_data.header = MagicMock()  # Mock the header attribute
-    return mock_data
 
 
 @pytest.fixture
@@ -27,11 +16,11 @@ def fitted_gmm():
     return gmm
 
 
-def test_get_gmm_parameters_isotropic(mock_amrex_data, fitted_gmm):
+def test_get_gmm_parameters_isotropic(fitted_gmm):
     """
     Tests the extraction of isotropic temperature from a GMM.
     """
-    parameters = mock_amrex_data.get_gmm_parameters(fitted_gmm, isotropic=True)
+    parameters = AMReXParticleData.get_gmm_parameters(fitted_gmm, isotropic=True)
 
     assert len(parameters) == 2
 
@@ -50,11 +39,11 @@ def test_get_gmm_parameters_isotropic(mock_amrex_data, fitted_gmm):
     assert parameters[1]["temperature"] == pytest.approx(3.5)
 
 
-def test_get_gmm_parameters_bi_maxwellian(mock_amrex_data, fitted_gmm):
+def test_get_gmm_parameters_bi_maxwellian(fitted_gmm):
     """
     Tests the extraction of Bi-Maxwellian temperatures from a GMM.
     """
-    parameters = mock_amrex_data.get_gmm_parameters(fitted_gmm, isotropic=False)
+    parameters = AMReXParticleData.get_gmm_parameters(fitted_gmm, isotropic=False)
 
     assert len(parameters) == 2
 

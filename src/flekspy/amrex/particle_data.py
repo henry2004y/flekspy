@@ -469,9 +469,8 @@ class AMReXParticleData(AMReXPlottingMixin):
 
         return gmm
 
-    def get_gmm_parameters(
-        self, gmm: GaussianMixture, isotropic: bool = True
-    ) -> List[dict]:
+    @staticmethod
+    def get_gmm_parameters(gmm: GaussianMixture, isotropic: bool = True) -> List[dict]:
         """
         Extracts the physical parameters (centers and temperatures) from a fitted GMM.
 
