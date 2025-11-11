@@ -457,7 +457,7 @@ class AMReXParticleData(AMReXPlottingMixin):
         x_index = component_map[x_variable]
         y_index = component_map[y_variable]
 
-        # --- 4. Extract the relevant data columns ---
+        # --- 5. Extract the relevant data columns ---
         x_data = rdata[:, x_index]
         y_data = rdata[:, y_index]
 
