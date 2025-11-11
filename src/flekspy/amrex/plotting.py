@@ -742,7 +742,7 @@ class AMReXPlottingMixin:
                 mean,
                 v[0],
                 v[1],
-                angle,
+                angle=angle,
                 color=colors[i % len(colors)],
                 fill=False,
                 linewidth=2,
