@@ -104,7 +104,7 @@ class AMReXPlottingMixin:
         # --- 3. Map component names to column indices ---
         component_map = {name: i for i, name in enumerate(component_names)}
 
-        # --- 3. Validate input variable names ---
+        # --- 4. Validate input variable names ---
         if x_variable not in component_map or y_variable not in component_map:
             raise ValueError(
                 f"Invalid variable name. Choose from {list(component_map.keys())}"
