@@ -241,9 +241,13 @@ def test_plot_phase_subplots():
     Tests the plot_phase_subplots function by mocking the plotting backend.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "vx", "vy", "weight"]
-    mock_pdata.select_particles_in_region.return_value = np.random.rand(50, 5)
+    mock_pdata.get_phase_space_density.return_value = (
+        np.random.rand(10, 10),
+        np.linspace(0, 1, 11),
+        np.linspace(0, 1, 11),
+        "Weighted Particle Density",
+    )
+    mock_pdata._get_axis_label.side_effect = lambda x: x
 
     x_ranges = [(-1, 1), (-2, 2)]
     y_ranges = [(-1, 1), (-2, 2)]
@@ -253,19 +257,9 @@ def test_plot_phase_subplots():
     axes_mock[0, 0] = MagicMock()
     axes_mock[0, 1] = MagicMock()
 
-    with (
-        patch(
-            "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
-        ) as mock_subplots,
-        patch(
-            "numpy.histogram2d",
-            return_value=(
-                np.random.rand(10, 10),
-                np.linspace(0, 1, 11),
-                np.linspace(0, 1, 11),
-            ),
-        ) as mock_hist,
-    ):
+    with patch(
+        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+    ) as mock_subplots:
         result_fig, result_axes = AMReXParticleData.plot_phase_subplots(
             mock_pdata,
             x_variable="x",
@@ -277,12 +271,7 @@ def test_plot_phase_subplots():
 
         assert result_fig is fig_mock
         mock_subplots.assert_called_once()
-        assert mock_pdata.select_particles_in_region.call_count == 2
-        assert mock_hist.call_count == 2
-
-        # Check that 'range' is not in kwargs for histogram2d
-        _, _, kwargs = mock_hist.mock_calls[0]
-        assert "range" not in kwargs
+        assert mock_pdata.get_phase_space_density.call_count == 2
 
         # Check that imshow was called on the axes that were used
         for i in range(len(x_ranges)):
@@ -300,14 +289,16 @@ def test_plot_phase_subplots_empty_region():
     Tests that plot_phase_subplots handles an empty region without crashing.
     """
     mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = ["x", "y", "vx", "vy", "weight"]
-
-    # One region with data, one without
-    mock_pdata.select_particles_in_region.side_effect = [
-        np.random.rand(50, 5),
-        np.empty((0, 5)),
+    mock_pdata.get_phase_space_density.side_effect = [
+        (
+            np.random.rand(10, 10),
+            np.linspace(0, 1, 11),
+            np.linspace(0, 1, 11),
+            "Weighted Particle Density",
+        ),
+        None,
     ]
+    mock_pdata._get_axis_label.side_effect = lambda x: x
 
     x_ranges = [(-1, 1), (-2, 2)]
     y_ranges = [(-1, 1), (-2, 2)]

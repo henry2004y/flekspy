@@ -374,49 +374,32 @@ class AMReXPlottingMixin:
         if num_plots == 0:
             return None
 
-        component_map = {
-            name: i for i, name in enumerate(self.header.real_component_names)
-        }
-
-        if x_variable not in component_map or y_variable not in component_map:
-            raise ValueError(
-                f"Invalid variable name. Choose from {list(component_map.keys())}"
-            )
-
-        x_index = component_map[x_variable]
-        y_index = component_map[y_variable]
-
-        weights_present = "weight" in component_map
-        weight_index = component_map.get("weight")
-
         histograms = []
         xedges_list = []
         yedges_list = []
+        cbar_label = "Particle Count"  # Default value
+
         for i in range(num_plots):
-            rdata_region = self.select_particles_in_region(
-                x_range=x_ranges[i], y_range=y_ranges[i]
+            density_data = self.get_phase_space_density(
+                x_variable=x_variable,
+                y_variable=y_variable,
+                x_range=x_ranges[i],
+                y_range=y_ranges[i],
+                bins=bins,
+                normalize=normalize,
             )
 
-            if rdata_region.size == 0:
+            if density_data:
+                H, xedges, yedges, cbar_label_from_call = density_data
+                histograms.append(H)
+                xedges_list.append(xedges)
+                yedges_list.append(yedges)
+                cbar_label = cbar_label_from_call
+            else:
+                # Append empty arrays for regions with no data
                 histograms.append(np.array([[]]))
                 xedges_list.append(np.array([x_ranges[i][0], x_ranges[i][1]]))
                 yedges_list.append(np.array([y_ranges[i][0], y_ranges[i][1]]))
-                continue
-
-            x_data = rdata_region[:, x_index]
-            y_data = rdata_region[:, y_index]
-            weights = rdata_region[:, weight_index] if weights_present else None
-
-            H, xedges, yedges = np.histogram2d(
-                x_data,
-                y_data,
-                bins=bins,
-                weights=weights,
-                density=normalize,
-            )
-            histograms.append(H)
-            xedges_list.append(xedges)
-            yedges_list.append(yedges)
 
         # Determine the global min and max for the color scale
         vmin, vmax = float("inf"), float("-inf")
@@ -492,14 +475,6 @@ class AMReXPlottingMixin:
 
         cbar = fig.colorbar(im, cax=cbar_ax)
 
-        if normalize:
-            cbar_label = "Normalized Density"
-            if weights_present:
-                cbar_label = "Normalized Weighted Density"
-        else:
-            cbar_label = "Particle Count"
-            if weights_present:
-                cbar_label = "Weighted Particle Density"
         cbar.set_label(cbar_label)
 
         if suptitle:
