@@ -47,24 +47,39 @@ class AMReXPlottingMixin:
         for weighting.
 
         Args:
-            x_variable (str): The variable for the x-axis.
-            y_variable (str): The variable for the y-axis.
-            bins (int or tuple, optional): Bins for the histogram. Defaults to 100.
-            hist_range (list, optional): Edges for bins [[xmin, xmax], [ymin, ymax]].
-                                     Defaults to None.
-            x_range (tuple, optional): Boundary for the x-axis (min, max).
-            y_range (tuple, optional): Boundary for the y-axis (min, max).
-            z_range (tuple, optional): Boundary for the z-axis (min, max).
-            normalize (bool, optional): If True, normalize to a probability density.
-                                        Defaults to False.
-            use_kde (bool, optional): If True, use Kernel Density Estimation.
-                                      Defaults to False.
-            kde_bandwidth (str or float, optional): Bandwidth for KDE.
+            x_variable (str): The name of the variable for the x-axis.
+            y_variable (str): The name of the variable for the y-axis.
+            bins (int or tuple, optional): The number of bins. This can be a
+                                           single integer for the same number of
+                                           bins in each dimension, or a two-element
+                                           tuple for different numbers of bins in the
+                                           x and y dimension, respectively.
+                                           Defaults to 100.
+            hist_range (list of lists, optional): The leftmost and rightmost edges of the
+                                             bins along each dimension. It should be
+                                             in the format [[xmin, xmax], [ymin, ymax]].
+                                             Defaults to None.
+            x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
+            y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.
+            z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.
+                                       For 2D data, this is ignored.
+            normalize (bool, optional): If True, the histogram is normalized to
+                                        form a probability density. Defaults to False.
+            use_kde (bool, optional): If True, use Kernel Density Estimation instead
+                                      of a histogram. Defaults to False.
+            kde_bandwidth (str or float, optional): The bandwidth for the KDE.
+                                                    Can be 'scott', 'silverman', a scalar
+                                                    constant or a callable. If None,
+                                                    `gaussian_kde` will use its default.
                                                     Defaults to None.
-            kde_grid_size (int, optional): Grid points for KDE. Defaults to 100.
-            transform (callable, optional): A function to transform particle data.
-                                            Takes `rdata` and returns
-                                            (`transformed_rdata`, `new_component_names`).
+            kde_grid_size (int, optional): The number of grid points in each dimension for
+                                           the KDE. Defaults to 100.
+            transform (callable, optional):
+                A function that takes the particle data (`rdata`, a NumPy array)
+                and returns a tuple: (`transformed_rdata`, `new_component_names`).
+                This allows for plotting derived quantities or changing coordinate systems.
+                If provided, `x_variable` and `y_variable` should refer to names
+                in `new_component_names`. Defaults to None.
 
         Returns:
             tuple: A tuple containing (H, xedges, yedges, cbar_label), where H is the
@@ -176,39 +191,23 @@ class AMReXPlottingMixin:
         """
         Plots the 2D phase space distribution for any two selected variables.
         This function creates a 2D weighted histogram to visualize the particle
-        density. If a 'weight' component is present in the data, it will be
-        used for the histogram weighting. Otherwise, a standard (unweighted)
-        histogram is generated.
+        density. This function first calls `get_phase_space_density` to compute
+        the histogram and then plots the result.
+
         Args:
-            x_variable (str): The name of the variable for the x-axis.
-            y_variable (str): The name of the variable for the y-axis.
-            bins (int or tuple, optional): The number of bins. This can be a
-                                           single integer for the same number of
-                                           bins in each dimension, or a two-element
-                                           tuple for different numbers of bins in the
-                                           x and y dimension, respectively.
-                                           Defaults to 100.
-            hist_range (list of lists, optional): The leftmost and rightmost edges of the
-                                             bins along each dimension. It should be
-                                             in the format [[xmin, xmax], [ymin, ymax]].
-                                             Defaults to None.
-            x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
-            y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.
-            z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.
-                                       For 2D data, this is ignored.
-            normalize (bool, optional): If True, the histogram is normalized to
-                                        form a probability density. Defaults to False.
+            x_variable (str): The variable for the x-axis. See `get_phase_space_density`.
+            y_variable (str): The variable for the y-axis. See `get_phase_space_density`.
+            bins (int or tuple, optional): Bins for the histogram. See `get_phase_space_density`.
+            hist_range (list, optional): Edges for bins. See `get_phase_space_density`.
+            x_range (tuple, optional): Boundary for the x-axis. See `get_phase_space_density`.
+            y_range (tuple, optional): Boundary for the y-axis. See `get_phase_space_density`.
+            z_range (tuple, optional): Boundary for the z-axis. See `get_phase_space_density`.
+            normalize (bool, optional): Normalize the density. See `get_phase_space_density`.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
                                         Defaults to True.
-            use_kde (bool, optional): If True, use Kernel Density Estimation instead
-                                      of a histogram. Defaults to False.
-            kde_bandwidth (str or float, optional): The bandwidth for the KDE.
-                                                    Can be 'scott', 'silverman', a scalar
-                                                    constant or a callable. If None,
-                                                    `gaussian_kde` will use its default.
-                                                    Defaults to None.
-            kde_grid_size (int, optional): The number of grid points in each dimension for
-                                           the KDE. Defaults to 100.
+            use_kde (bool, optional): Use KDE. See `get_phase_space_density`.
+            kde_bandwidth (str or float, optional): Bandwidth for KDE. See `get_phase_space_density`.
+            kde_grid_size (int, optional): Grid points for KDE. See `get_phase_space_density`.
             plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
                                               Defaults to True.
             title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
@@ -219,12 +218,8 @@ class AMReXPlottingMixin:
                                                  Defaults to None.
             add_colorbar (bool, optional): If True, a colorbar is added to the plot.
                                            Defaults to True.
-            transform (callable, optional):
-                A function that takes the particle data (`rdata`, a NumPy array)
-                and returns a tuple: (`transformed_rdata`, `new_component_names`).
-                This allows for plotting derived quantities or changing coordinate systems.
-                If provided, `x_variable` and `y_variable` should refer to names
-                in `new_component_names`. Defaults to None.
+            transform (callable, optional): A function to transform particle data.
+                                            See `get_phase_space_density`.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
         Returns:
