@@ -1,7 +1,9 @@
 import numpy as np
 from pathlib import Path
 import re
-from typing import List, Tuple, Optional, Union, Type
+from typing import List, Tuple, Optional, Union, Type, Callable
+
+from sklearn.mixture import GaussianMixture
 
 from .plotting import AMReXPlottingMixin
 
@@ -397,3 +399,72 @@ class AMReXParticleData(AMReXPlottingMixin):
             else np.empty((0, self.header.num_real), dtype=self.header.real_type)
         )
         return final_rdata
+
+    def fit_gmm(
+        self,
+        n_components: int,
+        x_variable: str,
+        y_variable: str,
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
+    ) -> GaussianMixture:
+        """
+        Fits a Gaussian Mixture Model (GMM) to the phase space distribution.
+
+        Args:
+            n_components (int): The number of mixture components (Gaussian distributions).
+            x_variable (str): The name of the variable for the x-axis.
+            y_variable (str): The name of the variable for the y-axis.
+            x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
+            y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.
+            z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.
+                                       For 2D data, this is ignored.
+            transform (callable, optional):
+                A function that takes the particle data (`rdata`, a NumPy array)
+                and returns a tuple: (`transformed_rdata`, `new_component_names`).
+                This allows for fitting derived quantities or changing coordinate systems.
+                If provided, `x_variable` and `y_variable` should refer to names
+                in `new_component_names`. Defaults to None.
+
+        Returns:
+            sklearn.mixture.GaussianMixture: The fitted GMM model.
+        """
+        # --- 1. Select data ---
+        if x_range or y_range or z_range:
+            rdata = self.select_particles_in_region(x_range, y_range, z_range)
+        else:
+            rdata = self.rdata
+
+        if rdata.size == 0:
+            raise ValueError("No particles to fit GMM.")
+
+        # --- 2. Apply transformation if provided ---
+        component_names = self.header.real_component_names
+        if transform:
+            rdata, component_names = transform(rdata)
+
+        # --- 3. Map component names to column indices ---
+        component_map = {name: i for i, name in enumerate(component_names)}
+
+        # --- 4. Validate input variable names ---
+        if x_variable not in component_map or y_variable not in component_map:
+            raise ValueError(
+                f"Invalid variable name. Choose from {list(component_map.keys())}"
+            )
+
+        x_index = component_map[x_variable]
+        y_index = component_map[y_variable]
+
+        # --- 5. Extract the relevant data columns ---
+        x_data = rdata[:, x_index]
+        y_data = rdata[:, y_index]
+
+        data = np.vstack([x_data, y_data]).T
+
+        # --- 5. Fit GMM ---
+        gmm = GaussianMixture(n_components=n_components, random_state=0)
+        gmm.fit(data)
+
+        return gmm
