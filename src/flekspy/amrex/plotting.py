@@ -149,11 +149,6 @@ class AMReXPlottingMixin:
         else:
             cbar_label = "Particle Count"
         if use_kde:
-            if weights is not None:
-                logger.warning(
-                    "Weights are not supported for KDE. They will be ignored."
-                )
-
             xmin, xmax = (
                 (hist_range[0][0], hist_range[0][1])
                 if hist_range
@@ -169,12 +164,14 @@ class AMReXPlottingMixin:
             X, Y = np.mgrid[xmin:xmax:grid_complex, ymin:ymax:grid_complex]
             positions = np.vstack([X.ravel(), Y.ravel()])
             values = np.vstack([x_data, y_data])
-            kernel = gaussian_kde(values, bw_method=kde_bandwidth)
+            kernel = gaussian_kde(values, bw_method=kde_bandwidth, weights=weights)
             H = np.reshape(kernel(positions).T, X.shape)
             xedges = np.linspace(xmin, xmax, kde_grid_size + 1)
             yedges = np.linspace(ymin, ymax, kde_grid_size + 1)
-            cbar_label = "Density"
-
+            if weights is not None:
+                cbar_label = "Weighted Density"
+            else:
+                cbar_label = "Density"
         else:
             H, xedges, yedges = np.histogram2d(
                 x_data, y_data, bins=bins, range=hist_range, weights=weights
