@@ -6,6 +6,8 @@ import os
 import argparse  # Import argparse for command-line arguments
 from scipy.constants import proton_mass, elementary_charge
 
+ION_TO_ELECTRON_MASS_RATIO = 25
+
 
 # --- Worker Function ---
 # This function is run by each parallel process on a single node.
@@ -16,10 +18,12 @@ def save_chunk_worker(chunk_data):
     (particle_index_chunk, global_chunk_id, dataPath, iSpecies)
     """
     # This 'chunk' is a list of global particle indexes, e.g., [10500, 10501, ...]
-    particle_indexes, global_chunk_id, data_path_local, ispecies_local = chunk_data
+    particle_indexes, global_chunk_id, data_path_local, ispecies_local, output_dir = (
+        chunk_data
+    )
 
     # Use a padded-zero format for easier file sorting
-    output_filename = f"test/trajectories_chunk_{global_chunk_id:05d}.h5"
+    output_filename = f"{output_dir}/trajectories_chunk_{global_chunk_id:05d}.h5"
 
     try:
         # Each process creates its own tp object
@@ -28,7 +32,7 @@ def save_chunk_worker(chunk_data):
         if ispecies_local == 1:
             tp_local = FLEKSTP(data_path_local, iSpecies=ispecies_local)
         elif ispecies_local == 0:
-            mi2me = 25
+            mi2me = ION_TO_ELECTRON_MASS_RATIO
             tp_local = FLEKSTP(
                 data_path_local,
                 iSpecies=ispecies_local,
@@ -80,6 +84,12 @@ if __name__ == "__main__":
         required=True,
         help="Species index (0 for electron, 1 for proton).",
     )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="test",
+        help="Directory to save output HDF5 files.",
+    )
     args = parser.parse_args()
 
     # --- Get SLURM Configuration ---
@@ -91,7 +101,7 @@ if __name__ == "__main__":
     n_chunks = int(os.environ.get("SLURM_CPUS_PER_TASK", 10))
 
     # Ensure the output directory exists
-    os.makedirs("test", exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
 
     print(
         f"[Task {task_id}]: Started. Total tasks = {total_tasks}, My CPUs = {n_chunks}"
@@ -130,7 +140,15 @@ if __name__ == "__main__":
         # Calculate a globally unique chunk ID
         # This prevents file collisions (e.g., node0_chunk0.h5 and node1_chunk0.h5)
         global_chunk_id = (task_id * n_chunks) + i
-        tasks.append((local_chunk, global_chunk_id, args.datapath, args.ispecies))
+        tasks.append(
+            (
+                local_chunk,
+                global_chunk_id,
+                args.datapath,
+                args.ispecies,
+                args.output_dir,
+            )
+        )
 
     # --- Run in Parallel (on this node) ---
     print(

@@ -2,7 +2,7 @@
 #SBATCH -q regular           # Quality of Service/Queue (e.g., debug, regular, shared)
 #SBATCH -C cpu               # Node constraint (e.g., cpu, gpu)
 #SBATCH --nodes=2
-#SBATCH --ntasks-per-node=1  # We want to run 1 task per node (11 tasks total)
+#SBATCH --ntasks-per-node=1  # We want to run 1 task per node (2 tasks total based on --nodes)
 #SBATCH --cpus-per-task=10   # We want each of those tasks to have 10 CPUs available for its multiprocessing pool
 #SBATCH -t 01:00:00          # Wall-clock time limit (HH:MM:SS)
 ###SBATCH -A m9999           # Your NERSC allocation project
@@ -26,7 +26,7 @@ module load python
 conda activate fleks
 
 # --- Run the parallel job ---
-# srun will launch SLURM_NTASKS (11) copies of the command.
+# srun will launch SLURM_NTASKS copies of the command.
 # Each copy will run on a different node (due to --ntasks-per-node=1).
 # Each copy will automatically get the SLURM environment variables
 # (like SLURM_PROCID) it needs to find its correct particle range.
