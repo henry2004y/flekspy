@@ -3,7 +3,6 @@ from typing import List, Tuple, Dict, Union, Callable
 from flekspy.util.logger import get_logger
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
-import h5py
 
 logger = get_logger(name=__name__)
 from matplotlib.colors import Normalize, LogNorm
@@ -402,6 +401,8 @@ class FLEKSTP(object):
         """
         if not pIDs:
             return
+
+        import h5py
 
         with h5py.File(filename, "w") as f:
             # Get the columns from the first particle and save them.

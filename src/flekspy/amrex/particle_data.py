@@ -3,8 +3,6 @@ from pathlib import Path
 import re
 from typing import List, Tuple, Optional, Union, Type, Callable
 
-from sklearn.mixture import GaussianMixture
-
 from .plotting import AMReXPlottingMixin
 
 
@@ -409,7 +407,7 @@ class AMReXParticleData(AMReXPlottingMixin):
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
-    ) -> GaussianMixture:
+    ) -> "GaussianMixture":
         """
         Fits a Gaussian Mixture Model (GMM) to the phase space distribution.
 
@@ -463,6 +461,8 @@ class AMReXParticleData(AMReXPlottingMixin):
 
         data = np.vstack([x_data, y_data]).T
 
+        from sklearn.mixture import GaussianMixture
+
         # --- 5. Fit GMM ---
         gmm = GaussianMixture(n_components=n_components, random_state=0)
         gmm.fit(data)
@@ -470,12 +470,12 @@ class AMReXParticleData(AMReXPlottingMixin):
         return gmm
 
     @staticmethod
-    def get_gmm_parameters(gmm: GaussianMixture, isotropic: bool = True) -> List[dict]:
+    def get_gmm_parameters(gmm: "GaussianMixture", isotropic: bool = True) -> List[dict]:
         """
         Extracts the physical parameters (centers and temperatures) from a fitted GMM.
 
         Args:
-            gmm (sklearn.mixture.GaussianMixture): The fitted GMM model.
+            gmm ("GaussianMixture"): The fitted GMM model.
             isotropic (bool, optional): If True, assumes an isotropic Maxwellian
                                         distribution and returns a single scalar
                                         temperature. If False, assumes a Bi-Maxwellian

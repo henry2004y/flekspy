@@ -5,11 +5,40 @@ flekspy Public API.
 from pathlib import Path
 import errno
 from itertools import islice
-from flekspy.idl import read_idl, IDLAccessor
-from flekspy.yt import YtFLEKSData, extract_phase
-from flekspy.tp import FLEKSTP
-from flekspy.amrex import AMReXParticleData
-import xarray as xr
+import importlib
+
+__all__ = [
+    "load",
+    "read_idl",
+    "IDLAccessor",
+    "YtFLEKSData",
+    "extract_phase",
+    "FLEKSTP",
+    "AMReXParticleData",
+    "xr",
+]
+
+
+def __getattr__(name):
+    """
+    Dynamically import modules and classes upon first access.
+    """
+    if name == "YtFLEKSData" or name == "extract_phase":
+        module = importlib.import_module("flekspy.yt")
+        return getattr(module, name)
+    elif name == "FLEKSTP":
+        module = importlib.import_module("flekspy.tp")
+        return getattr(module, name)
+    elif name == "AMReXParticleData":
+        module = importlib.import_module("flekspy.amrex")
+        return getattr(module, name)
+    elif name == "read_idl" or name == "IDLAccessor":
+        module = importlib.import_module("flekspy.idl")
+        return getattr(module, name)
+    elif name == "xr":
+        return importlib.import_module("xarray")
+    else:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def load(
@@ -54,13 +83,19 @@ def load(
     basename = filepath.name
 
     if basename == "test_particles":
+        FLEKSTP = getattr(importlib.import_module("flekspy.tp"), "FLEKSTP")
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
     elif filepath.suffix in [".out", ".outs"]:
+        read_idl = getattr(importlib.import_module("flekspy.idl"), "read_idl")
         return read_idl(filename)
     elif basename.endswith("_amrex"):
         if use_yt_loader or "particle" not in basename:
+            YtFLEKSData = getattr(importlib.import_module("flekspy.yt"), "YtFLEKSData")
             return YtFLEKSData(filename, readFieldData)
         else:
+            AMReXParticleData = getattr(
+                importlib.import_module("flekspy.amrex"), "AMReXParticleData"
+            )
             return AMReXParticleData(filename)
     else:
         raise Exception("Error: unknown file format!")

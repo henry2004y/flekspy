@@ -18,8 +18,8 @@ def particle_data(setup_test_data):
 def mock_plot_components():
     """Fixture to mock matplotlib components for plotting tests."""
     with (
-        patch("flekspy.amrex.plotting.plt.subplots") as mock_subplots,
-        patch("flekspy.amrex.plotting.make_axes_locatable") as mock_make_axes_locatable,
+        patch("matplotlib.pyplot.subplots") as mock_subplots,
+        patch("mpl_toolkits.axes_grid1.make_axes_locatable") as mock_make_axes_locatable,
     ):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
@@ -229,7 +229,7 @@ def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components):
         "Particle Count",
     )
 
-    with patch("flekspy.amrex.plotting.colors.LogNorm") as mock_log_norm:
+    with patch("matplotlib.colors.LogNorm") as mock_log_norm:
         AMReXParticleData.plot_phase(
             mock_pdata, x_variable="x", y_variable="y", log_scale=True, vmin=1, vmax=10
         )
@@ -258,7 +258,7 @@ def test_plot_phase_subplots():
     axes_mock[0, 1] = MagicMock()
 
     with patch(
-        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+        "matplotlib.pyplot.subplots", return_value=(fig_mock, axes_mock)
     ) as mock_subplots:
         result_fig, result_axes = AMReXParticleData.plot_phase_subplots(
             mock_pdata,
@@ -309,7 +309,7 @@ def test_plot_phase_subplots_empty_region():
     axes_mock[0, 1] = MagicMock()
 
     with patch(
-        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+        "matplotlib.pyplot.subplots", return_value=(fig_mock, axes_mock)
     ):
         # This should execute without raising a ValueError
         AMReXParticleData.plot_phase_subplots(
@@ -344,7 +344,7 @@ def test_pairplot():
             axes_mock[i, j] = MagicMock()
 
     with patch(
-        "flekspy.amrex.plotting.plt.subplots", return_value=(fig_mock, axes_mock)
+        "matplotlib.pyplot.subplots", return_value=(fig_mock, axes_mock)
     ) as mock_subplots:
         result_fig, result_axes = AMReXParticleData.pairplot(mock_pdata)
 
@@ -579,7 +579,7 @@ def test_get_phase_space_density_with_kde():
     mock_pdata.rdata = np.random.rand(100, 3)
     weights = mock_pdata.rdata[:, 2]
 
-    with patch("flekspy.amrex.plotting.gaussian_kde") as mock_gaussian_kde:
+    with patch("scipy.stats.gaussian_kde") as mock_gaussian_kde:
         mock_kde_instance = MagicMock()
         mock_kde_instance.return_value = np.random.rand(10 * 10)
         mock_gaussian_kde.return_value = mock_kde_instance
