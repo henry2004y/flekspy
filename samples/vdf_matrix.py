@@ -53,6 +53,7 @@ def calculate_histograms(particle_file, regions, var_x, var_y, hist_range, hist_
 
     for i, region in enumerate(regions):
         new_region = region.copy()
+        new_region["hist_data"] = None
         try:
             density_data = pd.get_phase_space_density(
                 x_variable=var_x,
@@ -70,15 +71,10 @@ def calculate_histograms(particle_file, regions, var_x, var_y, hist_range, hist_
                 current_max = hist_data.max()
                 if current_max > global_vmax:
                     global_vmax = current_max
-            else:
-                new_region["hist_data"] = None
-
-            processed_regions.append(new_region)
-
         except Exception as e:
             print(f"Warning: Could not process region {i}: {e}")
-            new_region["hist_data"] = None
-            processed_regions.append(new_region)
+
+        processed_regions.append(new_region)
 
     print(f"All histograms calculated. Global max count: {global_vmax}")
     return processed_regions, global_vmax
