@@ -468,3 +468,52 @@ class AMReXParticleData(AMReXPlottingMixin):
         gmm.fit(data)
 
         return gmm
+
+    def get_gmm_parameters(
+        self, gmm: GaussianMixture, isotropic: bool = True
+    ) -> List[dict]:
+        """
+        Extracts the physical parameters (centers and temperatures) from a fitted GMM.
+
+        Args:
+            gmm (sklearn.mixture.GaussianMixture): The fitted GMM model.
+            isotropic (bool, optional): If True, assumes an isotropic Maxwellian
+                                        distribution and returns a single scalar
+                                        temperature. If False, assumes a Bi-Maxwellian
+                                        distribution and returns parallel and
+                                        perpendicular temperatures. Defaults to True.
+
+        Returns:
+            list of dict: A list of dictionaries, where each dictionary contains
+                          the parameters for a single Gaussian component.
+                          For isotropic: {'center': [mean_x, mean_y], 'temperature': T}
+                          For Bi-Maxwellian: {'center': [mean_x, mean_y],
+                                              'T_parallel': T_par, 'T_perpendicular': T_perp}
+        """
+        parameters = []
+        for i in range(gmm.n_components):
+            mean = gmm.means_[i]
+            cov = gmm.covariances_[i]
+
+            if isotropic:
+                # For an isotropic distribution, the temperature is related to the
+                # trace of the covariance matrix (average of variances).
+                # T = (var(vx) + var(vy)) / 2
+                temperature = np.trace(cov) / 2.0
+                parameters.append({"center": mean.tolist(), "temperature": temperature})
+            else:
+                # For a Bi-Maxwellian distribution, we assume the data was transformed
+                # such that the first component is parallel to the magnetic field
+                # and the second is perpendicular.
+                # T_parallel = var(v_parallel)
+                # T_perpendicular = var(v_perpendicular)
+                t_parallel = cov[0, 0]
+                t_perpendicular = cov[1, 1]
+                parameters.append(
+                    {
+                        "center": mean.tolist(),
+                        "T_parallel": t_parallel,
+                        "T_perpendicular": t_perpendicular,
+                    }
+                )
+        return parameters
