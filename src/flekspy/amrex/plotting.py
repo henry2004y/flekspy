@@ -38,7 +38,9 @@ class AMReXPlottingMixin:
         use_kde: bool = False,
         kde_bandwidth: Optional[Union[str, float]] = None,
         kde_grid_size: int = 100,
-        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
+        transform: Optional[
+            Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]
+        ] = None,
     ) -> Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, str]]:
         """
         Calculates the 2D phase space density for any two selected variables.
@@ -186,7 +188,9 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         ax: Optional[Axes] = None,
         add_colorbar: bool = True,
-        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
+        transform: Optional[
+            Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]
+        ] = None,
         **imshow_kwargs: Any,
     ) -> Optional[Tuple[Figure, Axes]]:
         """
@@ -728,7 +732,7 @@ class AMReXPlottingMixin:
             fig = ax.figure
 
         # Overlay the GMM ellipses
-        colors = ["red", "blue", "green", "purple", "orange"]
+        colors = plt.cm.turbo(np.linspace(0, 1, gmm.n_components))
         for i, (mean, cov) in enumerate(zip(gmm.means_, gmm.covariances_)):
             v, w = np.linalg.eigh(cov)
             u = w[:, 0]
@@ -738,7 +742,7 @@ class AMReXPlottingMixin:
                 mean,
                 v[0],
                 v[1],
-                180 + angle,
+                angle,
                 color=colors[i % len(colors)],
                 fill=False,
                 linewidth=2,
