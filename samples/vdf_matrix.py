@@ -3,6 +3,7 @@ import flekspy.amrex
 import glob
 import os  # Added for creating output directory
 import argparse
+import re
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -58,6 +59,7 @@ def calculate_histograms(particle_file, regions, var_x, var_y, hist_range, hist_
         new_region = region.copy()
 
         try:
+            #TODO: this can be improved by extracting the histrogram directly.
             # Use flekspy to plot *onto the dummy axes*
             f, ax_out = pd.plot_phase(
                 var_x,
@@ -269,15 +271,15 @@ def main():
         field_iter_num = -1
         try:
             f_filename = os.path.basename(field_file)
-            parts = f_filename.split("_")
-            field_time_str = parts[4]  # e.g., t00000500
-            iter_str_with_ext = parts[5]  # e.g., n00042888.out
-            field_iter_str = iter_str_with_ext.split(".")[0]  # e.g., n00042888
-            field_iter_num = int(field_iter_str[1:])  # e.g., 42888
-
-            if not field_time_str.startswith("t"):
-                raise ValueError("Time string not found at expected position")
-
+            pattern = re.compile(r"_t(\d+)_n(\d+)\.out")
+            match = pattern.search(f_filename)
+            if match:
+                field_time_str = "t" + match.group(1)
+                field_iter_num = int(match.group(2))
+            else:
+                # handle error
+                print(f"Warning: Could not parse field file {f_filename}. Skipping.")
+                continue
             print(f"  Field:    {f_filename}")
 
         except (IndexError, ValueError) as e:
