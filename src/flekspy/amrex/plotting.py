@@ -5,8 +5,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import List, Tuple, Optional, Any, Union, Callable
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
-from matplotlib import colors
+from matplotlib import colors, patches
 from scipy.stats import gaussian_kde
+from sklearn.mixture import GaussianMixture
 
 logger = logging.getLogger(__name__)
 
@@ -689,6 +690,64 @@ class AMReXPlottingMixin:
         cbar.set_label(cbar_label)
 
         # --- 9. Return the plot objects ---
+        return fig, ax
+
+    def plot_gmm_fit(
+        self,
+        gmm: GaussianMixture,
+        x_variable: str,
+        y_variable: str,
+        ax: Optional[Axes] = None,
+        **plot_kwargs,
+    ) -> Tuple[Figure, Axes]:
+        """
+        Plots the results of a GMM fit.
+
+        Args:
+            gmm (sklearn.mixture.GaussianMixture): The fitted GMM model.
+            x_variable (str): The name of the variable for the x-axis.
+            y_variable (str): The name of the variable for the y-axis.
+            ax (matplotlib.axes.Axes, optional): An existing axes object to plot on.
+                                                 If None, a new figure and axes are created.
+                                                 Defaults to None.
+            **plot_kwargs: Additional keyword arguments to be passed to `plot_phase()`.
+
+        Returns:
+            tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+        """
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            # Plot the phase space density
+            self.plot_phase(
+                x_variable=x_variable,
+                y_variable=y_variable,
+                ax=ax,
+                **plot_kwargs,
+            )
+        else:
+            fig = ax.figure
+
+        # Overlay the GMM ellipses
+        colors = ["red", "blue", "green", "purple", "orange"]
+        for i, (mean, cov) in enumerate(zip(gmm.means_, gmm.covariances_)):
+            v, w = np.linalg.eigh(cov)
+            u = w[0] / np.linalg.norm(w[0])
+            angle = np.arctan2(u[1], u[0])
+            angle = 180 * angle / np.pi  # convert to degrees
+            v = 2.0 * np.sqrt(2.0) * np.sqrt(v)
+            ell = patches.Ellipse(
+                mean,
+                v[0],
+                v[1],
+                180 + angle,
+                color=colors[i % len(colors)],
+                fill=False,
+                linewidth=2,
+            )
+            ell.set_clip_box(ax.bbox)
+            ell.set_alpha(0.9)
+            ax.add_artist(ell)
+
         return fig, ax
 
     def pairplot(
