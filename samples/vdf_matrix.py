@@ -2,12 +2,12 @@ import flekspy
 import flekspy.amrex
 import glob
 import os  # Added for creating output directory
+import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-
 
 def generate_regions_grid(
     x_start, x_end, x_step, y_start, y_end, y_step, box_dx_half, box_dy_half
@@ -215,7 +215,11 @@ def create_plot(
 # --- Main execution block ---
 def main():
     # --- 1. Define Data Paths and Plotting Regions ---
-    topdir = "/global/homes/h/hyzhou/scratch/swmf/pleiades/RESULTS/2d/run_2dXZ_f1_300To950s/PC/"
+    parser = argparse.ArgumentParser(description="Generate VDF matrix plots.")
+    parser.add_argument("datapath", help="Path to the simulation output directory (e.g., PC/).")
+    args = parser.parse_args()
+    topdir = args.datapath
+
     output_dir = "./frames"  # Directory to save output images
 
     # Create output directory if it doesn't exist
