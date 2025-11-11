@@ -24,6 +24,130 @@ class AMReXPlottingMixin:
         """Returns the appropriate axis label for a given variable."""
         return self._AXIS_LABEL_MAP.get(variable_name, variable_name)
 
+    def get_phase_space_density(
+        self,
+        x_variable: str,
+        y_variable: str,
+        bins: Union[int, Tuple[int, int]] = 100,
+        hist_range: Optional[List[List[float]]] = None,
+        x_range: Optional[Tuple[float, float]] = None,
+        y_range: Optional[Tuple[float, float]] = None,
+        z_range: Optional[Tuple[float, float]] = None,
+        normalize: bool = False,
+        use_kde: bool = False,
+        kde_bandwidth: Optional[Union[str, float]] = None,
+        kde_grid_size: int = 100,
+        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
+    ) -> Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, str]]:
+        """
+        Calculates the 2D phase space density for any two selected variables.
+
+        This function produces a 2D weighted histogram (or Kernel Density Estimate)
+        of the particle distribution. If a 'weight' component is present, it's used
+        for weighting.
+
+        Args:
+            x_variable (str): The variable for the x-axis.
+            y_variable (str): The variable for the y-axis.
+            bins (int or tuple, optional): Bins for the histogram. Defaults to 100.
+            hist_range (list, optional): Edges for bins [[xmin, xmax], [ymin, ymax]].
+                                     Defaults to None.
+            x_range (tuple, optional): Boundary for the x-axis (min, max).
+            y_range (tuple, optional): Boundary for the y-axis (min, max).
+            z_range (tuple, optional): Boundary for the z-axis (min, max).
+            normalize (bool, optional): If True, normalize to a probability density.
+                                        Defaults to False.
+            use_kde (bool, optional): If True, use Kernel Density Estimation.
+                                      Defaults to False.
+            kde_bandwidth (str or float, optional): Bandwidth for KDE.
+                                                    Defaults to None.
+            kde_grid_size (int, optional): Grid points for KDE. Defaults to 100.
+            transform (callable, optional): A function to transform particle data.
+                                            Takes `rdata` and returns
+                                            (`transformed_rdata`, `new_component_names`).
+
+        Returns:
+            tuple: A tuple containing (H, xedges, yedges, cbar_label), where H is the
+                   2D histogram, xedges and yedges are the bin edges, and cbar_label
+                   is a suggested label for a colorbar. Returns None if no data.
+        """
+        # --- 1. Select data ---
+        if x_range or y_range or z_range:
+            rdata = self.select_particles_in_region(x_range, y_range, z_range)
+        else:
+            rdata = self.rdata
+
+        if rdata.size == 0:
+            logger.warning("No particles to plot.")
+            return None
+
+        # --- 2. Apply transformation if provided ---
+        component_names = self.header.real_component_names
+        if transform:
+            rdata, component_names = transform(rdata)
+
+        # --- 3. Map component names to column indices ---
+        component_map = {name: i for i, name in enumerate(component_names)}
+
+        # --- 3. Validate input variable names ---
+        if x_variable not in component_map or y_variable not in component_map:
+            raise ValueError(
+                f"Invalid variable name. Choose from {list(component_map.keys())}"
+            )
+
+        x_index = component_map[x_variable]
+        y_index = component_map[y_variable]
+
+        # --- 4. Extract the relevant data columns ---
+        x_data = rdata[:, x_index]
+        y_data = rdata[:, y_index]
+
+        # --- 5. Create the 2D histogram ---
+        weights = None
+        if "weight" in component_map:
+            weight_index = component_map["weight"]
+            weights = rdata[:, weight_index]
+            cbar_label = "Weighted Particle Density"
+        else:
+            cbar_label = "Particle Count"
+        if use_kde:
+            xmin, xmax = (
+                (hist_range[0][0], hist_range[0][1])
+                if hist_range
+                else (x_data.min(), x_data.max())
+            )
+            ymin, ymax = (
+                (hist_range[1][0], hist_range[1][1])
+                if hist_range
+                else (y_data.min(), y_data.max())
+            )
+
+            grid_complex = complex(0, kde_grid_size)
+            X, Y = np.mgrid[xmin:xmax:grid_complex, ymin:ymax:grid_complex]
+            positions = np.vstack([X.ravel(), Y.ravel()])
+            values = np.vstack([x_data, y_data])
+            kernel = gaussian_kde(values, bw_method=kde_bandwidth, weights=weights)
+            H = np.reshape(kernel(positions).T, X.shape)
+            xedges = np.linspace(xmin, xmax, kde_grid_size + 1)
+            yedges = np.linspace(ymin, ymax, kde_grid_size + 1)
+            if weights is not None:
+                cbar_label = "Weighted Density"
+            else:
+                cbar_label = "Density"
+        else:
+            H, xedges, yedges = np.histogram2d(
+                x_data, y_data, bins=bins, range=hist_range, weights=weights
+            )
+            if normalize:
+                total = H.sum()
+                if total > 0:
+                    H /= total
+                if weights is not None:
+                    cbar_label = "Normalized Weighted Density"
+                else:
+                    cbar_label = "Normalized Density"
+        return H, xedges, yedges, cbar_label
+
     def plot_phase(
         self,
         x_variable: str,
@@ -107,84 +231,28 @@ class AMReXPlottingMixin:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
                    This allows for a further customization of the plot after its creation.
         """
-        # --- 1. Select data ---
-        if x_range or y_range or z_range:
-            rdata = self.select_particles_in_region(x_range, y_range, z_range)
-        else:
-            rdata = self.rdata
+        # --- 1. Get phase space density data ---
+        density_data = self.get_phase_space_density(
+            x_variable=x_variable,
+            y_variable=y_variable,
+            bins=bins,
+            hist_range=hist_range,
+            x_range=x_range,
+            y_range=y_range,
+            z_range=z_range,
+            normalize=normalize,
+            use_kde=use_kde,
+            kde_bandwidth=kde_bandwidth,
+            kde_grid_size=kde_grid_size,
+            transform=transform,
+        )
 
-        if rdata.size == 0:
-            logger.warning("No particles to plot.")
+        if density_data is None:
             return None
 
-        # --- 2. Apply transformation if provided ---
-        component_names = self.header.real_component_names
-        if transform:
-            rdata, component_names = transform(rdata)
+        H, xedges, yedges, cbar_label = density_data
 
-        # --- 3. Map component names to column indices ---
-        component_map = {
-            name: i for i, name in enumerate(component_names)
-        }
-
-        # --- 3. Validate input variable names ---
-        if x_variable not in component_map or y_variable not in component_map:
-            raise ValueError(
-                f"Invalid variable name. Choose from {list(component_map.keys())}"
-            )
-
-        x_index = component_map[x_variable]
-        y_index = component_map[y_variable]
-
-        # --- 4. Extract the relevant data columns ---
-        x_data = rdata[:, x_index]
-        y_data = rdata[:, y_index]
-
-        # --- 5. Create the 2D histogram ---
-        weights = None
-        if "weight" in component_map:
-            weight_index = component_map["weight"]
-            weights = rdata[:, weight_index]
-            cbar_label = "Weighted Particle Density"
-        else:
-            cbar_label = "Particle Count"
-        if use_kde:
-            xmin, xmax = (
-                (hist_range[0][0], hist_range[0][1])
-                if hist_range
-                else (x_data.min(), x_data.max())
-            )
-            ymin, ymax = (
-                (hist_range[1][0], hist_range[1][1])
-                if hist_range
-                else (y_data.min(), y_data.max())
-            )
-
-            grid_complex = complex(0, kde_grid_size)
-            X, Y = np.mgrid[xmin:xmax:grid_complex, ymin:ymax:grid_complex]
-            positions = np.vstack([X.ravel(), Y.ravel()])
-            values = np.vstack([x_data, y_data])
-            kernel = gaussian_kde(values, bw_method=kde_bandwidth, weights=weights)
-            H = np.reshape(kernel(positions).T, X.shape)
-            xedges = np.linspace(xmin, xmax, kde_grid_size + 1)
-            yedges = np.linspace(ymin, ymax, kde_grid_size + 1)
-            if weights is not None:
-                cbar_label = "Weighted Density"
-            else:
-                cbar_label = "Density"
-        else:
-            H, xedges, yedges = np.histogram2d(
-                x_data, y_data, bins=bins, range=hist_range, weights=weights
-            )
-            if normalize:
-                total = H.sum()
-                if total > 0:
-                    H /= total
-                if weights is not None:
-                    cbar_label = "Normalized Weighted Density"
-                else:
-                    cbar_label = "Normalized Density"
-        # --- 6. Plot the resulting histogram as a color map ---
+        # --- 2. Plot the resulting histogram as a color map ---
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
         else:
@@ -229,7 +297,7 @@ class AMReXPlottingMixin:
             ax.axhline(0, color="gray", linestyle="--")
             ax.axvline(0, color="gray", linestyle="--")
 
-        # --- 7. Add labels and a color bar for context ---
+        # --- 3. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
         final_xlabel = (
             xlabel if xlabel is not None else self._get_axis_label(x_variable)
@@ -256,7 +324,7 @@ class AMReXPlottingMixin:
             cbar = fig.colorbar(im, cax=cax)
             cbar.set_label(cbar_label)
 
-        # --- 8. Return the plot objects ---
+        # --- 4. Return the plot objects ---
         return fig, ax
 
     def plot_phase_subplots(
