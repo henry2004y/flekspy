@@ -82,3 +82,9 @@
 ## v0.6.10 (2025/11/09)
 
 - Support B and E field velocity transformations.
+
+## v0.6.11 (2025/11/11)
+
+- Add KDE and GMM fit for phase space in the amrex module.
+- Use lazy loading and optional dependency techniques to improve the package loading time from 10s to 0.03s.
+- Separate `get_phase_space_density` from `plot_phase` to make further analysis possible.
