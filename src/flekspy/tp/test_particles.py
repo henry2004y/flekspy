@@ -1,9 +1,7 @@
 from typing import List, Tuple, Dict, Union, Callable
 
 from flekspy.util.logger import get_logger
-import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
-import h5py
 
 logger = get_logger(name=__name__)
 from matplotlib.colors import Normalize, LogNorm
@@ -402,6 +400,8 @@ class FLEKSTP(object):
         """
         if not pIDs:
             return
+
+        import h5py
 
         with h5py.File(filename, "w") as f:
             # Get the columns from the first particle and save them.
@@ -1424,6 +1424,7 @@ class FLEKSTP(object):
             dW_parallel=(pl.col("E_parallel") * pl.col("v_parallel")) * UNIT_FACTOR,
         ).collect()
 
+        import matplotlib.pyplot as plt
         fig, axes = plt.subplots(
             nrows=7, ncols=1, figsize=(12, 12), sharex=True, constrained_layout=True
         )
@@ -1574,6 +1575,7 @@ class FLEKSTP(object):
 
         non_adiabatic_term = dke_dt - dW_total
 
+        import matplotlib.pyplot as plt
         # --- 4. Plotting ---
         fig, axes = plt.subplots(
             nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
@@ -1696,6 +1698,7 @@ class FLEKSTP(object):
         W_integrated = ((d_W + d_W.shift(1)) / 2 * dt).cum_sum().fill_null(0)
         W_integrated = W_integrated.rename("W_integrated")
 
+        import matplotlib.pyplot as plt
         # 4. Plotting
         fig, axes = plt.subplots(
             nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
@@ -1801,6 +1804,7 @@ class FLEKSTP(object):
             ((work_rate + work_rate.shift(1)) / 2 * dt).cum_sum().fill_null(0)
         )
 
+        import matplotlib.pyplot as plt
         # 4. Plotting
         fig, axes = plt.subplots(
             nrows=2, ncols=1, figsize=(12, 8), sharex=True, constrained_layout=True
@@ -2221,6 +2225,7 @@ class FLEKSTP(object):
         e_dot_v_ht_j_per_c = np.sum(e_prime_si * v_prime_si, axis=1)
         e_dot_v_ht = (self.charge / elementary_charge) * e_dot_v_ht_j_per_c
 
+        import matplotlib.pyplot as plt
         # 6. Plotting
         fig, axes = plt.subplots(
             nrows=4, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
@@ -2322,6 +2327,7 @@ class FLEKSTP(object):
         tNorm = (t - t[0]) / (t[-1] - t[0])
 
         if type == "single":
+            import matplotlib.pyplot as plt
             x = t if xaxis == "t" else pt[xaxis]
             y = pt[yaxis]
 
@@ -2332,6 +2338,7 @@ class FLEKSTP(object):
             ax.set_xlabel(xaxis)
             ax.set_ylabel(yaxis)
         elif type == "xv":
+            import matplotlib.pyplot as plt
             if ax == None:
                 f, ax = plt.subplots(
                     2, 1, figsize=(10, 6), constrained_layout=True, sharex=True
@@ -2356,6 +2363,7 @@ class FLEKSTP(object):
                 a.grid()
 
         elif type == "quick":
+            import matplotlib.pyplot as plt
             ncol = 3
             nrow = 3  # Default for X, V
             if self.nReal == 10:  # additional B field
@@ -2399,6 +2407,7 @@ class FLEKSTP(object):
                     4,
                 )
         elif type == "full":
+            import matplotlib.pyplot as plt
             if verbose:
                 logger.info(f"Analyzing particle ID: {pID}")
             if dt is not None:
@@ -2783,6 +2792,7 @@ class FLEKSTP(object):
         py = pData[:, Indices.Y]
         pz = pData[:, Indices.Z]
 
+        import matplotlib.pyplot as plt
         # Create subplot mosaic with different keyword arguments
         skeys = ["A", "B", "C", "D"]
         f, ax = plt.subplot_mosaic(
@@ -2915,6 +2925,7 @@ class FLEKSTP(object):
         pID: Tuple[int, int],
     ):
         """Plots the verification results."""
+        import matplotlib.pyplot as plt
         fig, axes = plt.subplots(
             nrows=3, ncols=1, figsize=(12, 10), sharex=True, constrained_layout=True
         )
@@ -3061,6 +3072,7 @@ def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
                            one or more integrated energy columns.
         outname (str): If not None, save the plot to file.
     """
+    import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(12, 5), constrained_layout=True)
 
     time_data = df["time"].to_numpy()

@@ -5,11 +5,40 @@ flekspy Public API.
 from pathlib import Path
 import errno
 from itertools import islice
-from flekspy.idl import read_idl, IDLAccessor
-from flekspy.yt import YtFLEKSData, extract_phase
-from flekspy.tp import FLEKSTP
-from flekspy.amrex import AMReXParticleData
-import xarray as xr
+import importlib
+
+__all__ = [
+    "load",
+    "read_idl",
+    "IDLAccessor",
+    "YtFLEKSData",
+    "extract_phase",
+    "FLEKSTP",
+    "AMReXParticleData",
+    "xr",
+]
+
+
+def __getattr__(name):
+    """
+    Dynamically import modules and classes upon first access.
+    """
+    _LAZY_MAPPING = {
+        "YtFLEKSData": "flekspy.yt",
+        "extract_phase": "flekspy.yt",
+        "FLEKSTP": "flekspy.tp",
+        "AMReXParticleData": "flekspy.amrex",
+        "read_idl": "flekspy.idl",
+        "IDLAccessor": "flekspy.idl",
+        "xr": "xarray",
+    }
+    if name in _LAZY_MAPPING:
+        module_path = _LAZY_MAPPING[name]
+        module = importlib.import_module(module_path)
+        if name == "xr":
+            return module
+        return getattr(module, name)
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def load(
@@ -54,13 +83,17 @@ def load(
     basename = filepath.name
 
     if basename == "test_particles":
+        FLEKSTP = __getattr__("FLEKSTP")
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
     elif filepath.suffix in [".out", ".outs"]:
+        read_idl = __getattr__("read_idl")
         return read_idl(filename)
     elif basename.endswith("_amrex"):
         if use_yt_loader or "particle" not in basename:
+            YtFLEKSData = __getattr__("YtFLEKSData")
             return YtFLEKSData(filename, readFieldData)
         else:
+            AMReXParticleData = __getattr__("AMReXParticleData")
             return AMReXParticleData(filename)
     else:
         raise Exception("Error: unknown file format!")

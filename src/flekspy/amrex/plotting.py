@@ -1,12 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import logging
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import List, Tuple, Optional, Any, Union, Callable
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
-from matplotlib import colors, patches
-from scipy.stats import gaussian_kde
 from sklearn.mixture import GaussianMixture
 
 logger = logging.getLogger(__name__)
@@ -129,6 +125,8 @@ class AMReXPlottingMixin:
         else:
             cbar_label = "Particle Count"
         if use_kde:
+            from scipy.stats import gaussian_kde
+
             xmin, xmax = (
                 (hist_range[0][0], hist_range[0][1])
                 if hist_range
@@ -192,7 +190,7 @@ class AMReXPlottingMixin:
             Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]
         ] = None,
         **imshow_kwargs: Any,
-    ) -> Optional[Tuple[Figure, Axes]]:
+    ) -> Optional[Tuple["Figure", "Axes"]]:
         """
         Plots the 2D phase space distribution for any two selected variables.
         This function creates a 2D weighted histogram to visualize the particle
@@ -251,6 +249,10 @@ class AMReXPlottingMixin:
             return None
 
         H, xedges, yedges, cbar_label = density_data
+
+        import matplotlib.pyplot as plt
+        from matplotlib import colors
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
 
         # --- 2. Plot the resulting histogram as a color map ---
         if ax is None:
@@ -340,7 +342,7 @@ class AMReXPlottingMixin:
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         **imshow_kwargs: Any,
-    ) -> Optional[Tuple[Figure, np.ndarray]]:
+    ) -> Optional[Tuple["Figure", np.ndarray]]:
         """
         Plots the 2D phase space distribution for multiple regions as subplots.
 
@@ -417,6 +419,9 @@ class AMReXPlottingMixin:
 
         if vmin == float("inf"):  # All histograms were empty or all zeros
             vmin, vmax = (1, 10) if log_scale else (0, 1)  # Dummy range for empty plots
+
+        import matplotlib.pyplot as plt
+        from matplotlib import colors
 
         # Create subplots
         ncols = int(np.ceil(np.sqrt(num_plots)))
@@ -585,7 +590,7 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         zlabel: Optional[str] = None,
         **scatter_kwargs: Any,
-    ) -> Optional[Tuple[Figure, Axes]]:
+    ) -> Optional[Tuple["Figure", "Axes"]]:
         """
         Plots the 3D phase space distribution for any three selected variables.
 
@@ -656,6 +661,9 @@ class AMReXPlottingMixin:
         z_flat = z_flat[non_empty]
         density = density[non_empty]
 
+        import matplotlib.pyplot as plt
+        from matplotlib import colors
+
         # --- 7. Plot the resulting histogram as a 3D scatter plot ---
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection="3d")
@@ -704,12 +712,12 @@ class AMReXPlottingMixin:
         ax: Optional[Axes] = None,
         scale: float = 2.0 * np.sqrt(2.0),
         **plot_kwargs,
-    ) -> Tuple[Figure, Axes]:
+    ) -> Tuple["Figure", "Axes"]:
         """
         Plots the results of a GMM fit.
 
         Args:
-            gmm (sklearn.mixture.GaussianMixture): The fitted GMM model.
+            gmm ("GaussianMixture"): The fitted GMM model.
             x_variable (str, optional): The name of the variable for the x-axis.
             y_variable (str, optional): The name of the variable for the y-axis.
             ax (matplotlib.axes.Axes, optional): An existing axes object to plot on.
@@ -720,6 +728,9 @@ class AMReXPlottingMixin:
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
         """
+        import matplotlib.pyplot as plt
+        from matplotlib import patches
+
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
             # Plot the phase space density
@@ -765,7 +776,7 @@ class AMReXPlottingMixin:
         figsize=(10, 10),
         title: str = "Velocity Space Pairplot",
         **imshow_kwargs: Any,
-    ) -> Optional[Tuple[Figure, np.ndarray]]:
+    ) -> Optional[Tuple["Figure", np.ndarray]]:
         """
         Plots a pairplot of the velocity space distributions (vx, vy, vz).
 
@@ -826,6 +837,9 @@ class AMReXPlottingMixin:
 
         # Get universal ranges
         ranges = [(vel_data[:, k].min(), vel_data[:, k].max()) for k in range(nvar)]
+
+        import matplotlib.pyplot as plt
+        from matplotlib import colors
 
         # --- 3. Create subplot grid ---
         fig, axes = plt.subplots(nvar, nvar, figsize=figsize, constrained_layout=True)
@@ -920,6 +934,7 @@ class AMReXPlottingMixin:
             Z = np.full_like(X, (z_edges[slice_index] + z_edges[slice_index + 1]) / 2)
             plane_data = H[:, :, slice_index]
 
+        from matplotlib import colors
         # Normalize data for coloring
         if isinstance(norm, colors.LogNorm):
             plot_data = np.ma.masked_where(plane_data <= 0, plane_data)
@@ -960,7 +975,7 @@ class AMReXPlottingMixin:
         cmap: str = "turbo",
         opacity: float = 0.8,
         **surface_kwargs: Any,
-    ) -> Optional[Tuple[Figure, Axes]]:
+    ) -> Optional[Tuple["Figure", "Axes"]]:
         """
         Plots the 3D phase space distribution using three intersecting planes.
 
@@ -1008,6 +1023,9 @@ class AMReXPlottingMixin:
         if hist_data is None:
             return None
         H, edges, cbar_label = hist_data
+
+        import matplotlib.pyplot as plt
+        from matplotlib import colors
 
         # --- 6. Plot the intersecting planes ---
         fig = plt.figure(figsize=(10, 8))
