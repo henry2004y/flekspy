@@ -406,7 +406,9 @@ class AMReXParticleData(AMReXPlottingMixin):
         x_range: Optional[Tuple[float, float]] = None,
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
-        transform: Optional[Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]] = None,
+        transform: Optional[
+            Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]
+        ] = None,
     ) -> "GaussianMixture":
         """
         Fits a Gaussian Mixture Model (GMM) to the phase space distribution.
@@ -472,7 +474,9 @@ class AMReXParticleData(AMReXPlottingMixin):
         return gmm
 
     @staticmethod
-    def get_gmm_parameters(gmm: "GaussianMixture", isotropic: bool = True) -> List[dict]:
+    def get_gmm_parameters(
+        gmm: "GaussianMixture", isotropic: bool = True
+    ) -> List[dict]:
         """
         Extracts the physical parameters (centers and temperatures) from a fitted GMM.
 

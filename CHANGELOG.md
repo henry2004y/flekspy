@@ -88,3 +88,9 @@
 - Add KDE and GMM fit for phase space in the amrex module.
 - Use lazy loading and optional dependency techniques to improve the package loading time from 10s to 0.03s.
 - Separate `get_phase_space_density` from `plot_phase` to make further analysis possible.
+- Add `get_gmm_parameters` for extracting center velocity and temperatures from GMM fitting.
+
+## v0.6.12 (2025/11/13)
+
+- Add marginal plot option for `plot_phase` if `marginals == True`.
+- Allow specifying "vx", "vy", "vz" in the phase space analysis.

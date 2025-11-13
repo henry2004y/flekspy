@@ -1006,6 +1006,7 @@ class AMReXPlottingMixin:
             plane_data = H[:, :, slice_index]
 
         from matplotlib import colors
+
         # Normalize data for coloring
         if isinstance(norm, colors.LogNorm):
             plot_data = np.ma.masked_where(plane_data <= 0, plane_data)
