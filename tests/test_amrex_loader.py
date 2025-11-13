@@ -1,8 +1,34 @@
 import pytest
 from flekspy.amrex import AMReXParticleData
+from flekspy.amrex.plotting import AMReXPlottingMixin
 import numpy as np
+import matplotlib.pyplot as plt
 from unittest.mock import patch, MagicMock
 import os
+
+
+# To test the mixin, we need a class that uses it
+class MockAMReXData(AMReXPlottingMixin):
+    def __init__(self, rdata, header):
+        self.rdata = rdata
+        self.header = header
+
+    def select_particles_in_region(self, x_range=None, y_range=None, z_range=None):
+        return self.rdata
+
+
+@pytest.fixture
+def mock_amrex_data():
+    """Creates a mock AMReXParticleData object for testing."""
+    # Mock header
+    header = MagicMock()
+    header.real_component_names = ["x", "y", "z", "velocity_x", "velocity_y", "velocity_z", "weight"]
+
+    # Mock particle data
+    # Create 100 particles with random data
+    rdata = np.random.rand(100, 7)
+
+    return MockAMReXData(rdata, header)
 
 
 @pytest.fixture(scope="module")
@@ -321,22 +347,10 @@ def test_plot_phase_subplots_empty_region():
         )
 
 
-def test_pairplot():
+def test_pairplot(mock_amrex_data):
     """
     Tests the pairplot function.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
-    mock_pdata.header = MagicMock()
-    mock_pdata.header.real_component_names = [
-        "x",
-        "y",
-        "velocity_x",
-        "velocity_y",
-        "velocity_z",
-        "weight",
-    ]
-    mock_pdata.rdata = np.random.rand(100, 6)
-
     fig_mock = MagicMock()
     axes_mock = np.empty((3, 3), dtype=object)
     for i in range(3):
@@ -346,7 +360,7 @@ def test_pairplot():
     with patch(
         "matplotlib.pyplot.subplots", return_value=(fig_mock, axes_mock)
     ) as mock_subplots:
-        result_fig, result_axes = AMReXParticleData.pairplot(mock_pdata)
+        result_fig, result_axes = mock_amrex_data.pairplot()
 
         assert result_fig is fig_mock
         assert np.array_equal(result_axes, axes_mock)
@@ -362,6 +376,36 @@ def test_pairplot():
                     ax.hist.assert_called_once()
                 else:
                     ax.imshow.assert_called_once()
+
+
+@patch("matplotlib.pyplot.show")
+def test_pairplot_corner(mock_show, mock_amrex_data):
+    """
+    Tests that the pairplot method with corner=True only plots the lower
+    triangle of the plot matrix.
+    """
+    fig, axes = mock_amrex_data.pairplot(
+        variables=["velocity_x", "velocity_y", "velocity_z"],
+        corner=True
+    )
+
+    # The axes that should be visible
+    visible_axes = [
+        (0, 0),
+        (1, 0), (1, 1),
+        (2, 0), (2, 1), (2, 2)
+    ]
+
+    nvar = len(axes)
+    for i in range(nvar):
+        for j in range(nvar):
+            ax = axes[i, j]
+            if (i, j) in visible_axes:
+                assert ax.get_visible(), f"Axis ({i}, {j}) should be visible"
+            else:
+                assert not ax.get_visible(), f"Axis ({i}, {j}) should NOT be visible"
+
+    plt.close(fig)
 
 
 def test_plot_phase_with_transform(mock_plot_components):
