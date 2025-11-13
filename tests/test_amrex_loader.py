@@ -671,3 +671,56 @@ def test_get_phase_space_density_particle_selection():
 
     # histogram should be based on 1 particle
     assert H.sum() == 1
+
+
+def test_plot_phase_with_marginals(mock_plot_components):
+    """
+    Tests that plot_phase with marginals=True creates the correct layout.
+    """
+    mock_fig = mock_plot_components["fig"]
+    mock_ax = mock_plot_components["ax"]
+    mock_ax_histx = MagicMock()
+    mock_ax_histy = MagicMock()
+    mock_cax = MagicMock()
+
+    # Mock the gridspec and figure additions
+    with patch("matplotlib.gridspec.GridSpec") as mock_gridspec:
+        gs_instance = mock_gridspec.return_value
+        mock_fig.add_subplot.side_effect = [
+            mock_ax,
+            mock_ax_histx,
+            mock_ax_histy,
+            mock_cax,
+        ]
+
+        mock_pdata = MagicMock(spec=AMReXParticleData)
+        mock_pdata.get_phase_space_density.return_value = (
+            np.random.rand(10, 10),
+            np.linspace(0, 1, 11),
+            np.linspace(0, 1, 11),
+            "Particle Count",
+        )
+
+        with patch("matplotlib.pyplot.figure", return_value=mock_fig):
+            AMReXParticleData.plot_phase(
+                mock_pdata, x_variable="x", y_variable="y", marginals=True
+            )
+
+        # Check for correct layout
+        mock_gridspec.assert_called_once()
+        assert mock_fig.add_subplot.call_count == 4
+
+        # Check that the title is not set
+        mock_ax.set_title.assert_not_called()
+
+        # Check colorbar is at the bottom
+        mock_fig.colorbar.assert_called_once()
+        assert mock_fig.colorbar.call_args.kwargs["cax"] is mock_cax
+        assert mock_fig.colorbar.call_args.kwargs["orientation"] == "horizontal"
+
+        # Check axes visibility
+        # Use assert_called_with because shared axes can cause multiple calls
+        mock_ax.spines["top"].set_visible.assert_called_with(False)
+        mock_ax.spines["right"].set_visible.assert_called_with(False)
+        mock_ax_histx.yaxis.set_visible.assert_called_once_with(False)
+        mock_ax_histy.xaxis.set_visible.assert_called_once_with(False)
