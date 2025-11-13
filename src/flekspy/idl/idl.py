@@ -397,25 +397,14 @@ class IDLAccessor:
                               with the same dimensions as the input data.
         """
 
-        # Construct variable names for pressure tensor and magnetic field
-        pxx_name = f"pXXS{species}"
-        pyy_name = f"pYYS{species}"
-        pzz_name = f"pZZS{species}"
-        pxy_name = f"pXYS{species}"
-        pxz_name = f"pXZS{species}"
-        pyz_name = f"pYZS{species}"
+        # Extract pressure tensor components
+        p_components = ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]
+        pxx, pyy, pzz, pxy, pxz, pyz = (
+            self._obj[f"p{c}S{species}"] for c in p_components
+        )
 
-        # Extract data variables
-        pxx = self._obj[pxx_name]
-        pyy = self._obj[pyy_name]
-        pzz = self._obj[pzz_name]
-        pxy = self._obj[pxy_name]
-        pxz = self._obj[pxz_name]
-        pyz = self._obj[pyz_name]
-
-        bx = self._obj["Bx"]
-        by = self._obj["By"]
-        bz = self._obj["Bz"]
+        # Extract magnetic field components
+        bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
 
         # Calculate magnetic field magnitude and unit vector
         b_mag = np.sqrt(bx**2 + by**2 + bz**2)
