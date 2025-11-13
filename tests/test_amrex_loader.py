@@ -706,10 +706,12 @@ def test_plot_phase_with_marginals(mock_plot_components, mock_pdata):
 
         # Check colorbar is at the bottom using the divider
         mock_plot_components["make_axes_locatable"].assert_called_once_with(mock_ax)
-        mock_divider.append_axes.assert_called_once_with("bottom", size="5%", pad=0.4)
+        mock_divider.append_axes.assert_called_once_with("bottom", size="5%", pad=0.5)
 
         mock_fig.colorbar.assert_called_once()
         assert mock_fig.colorbar.call_args.kwargs["cax"] is mock_cax
+        assert "orientation" in mock_fig.colorbar.call_args.kwargs
+        assert mock_fig.colorbar.call_args.kwargs["orientation"] == "horizontal"
 
         # Check axes visibility
         mock_ax.spines["top"].set_visible.assert_called_with(False)
