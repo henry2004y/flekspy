@@ -186,6 +186,7 @@ class AMReXPlottingMixin:
         ylabel: Optional[str] = None,
         ax: Optional[Axes] = None,
         add_colorbar: bool = True,
+        marginals: bool = False,
         transform: Optional[
             Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]
         ] = None,
@@ -251,12 +252,20 @@ class AMReXPlottingMixin:
         H, xedges, yedges, cbar_label = density_data
 
         import matplotlib.pyplot as plt
-        from matplotlib import colors
+        from matplotlib import colors, gridspec
         from mpl_toolkits.axes_grid1 import make_axes_locatable
 
         # --- 2. Plot the resulting histogram as a color map ---
-        if ax is None:
+        if ax is None and not marginals:
             fig, ax = plt.subplots(figsize=(8, 6))
+        elif marginals:
+            fig = plt.figure(figsize=(8, 8))
+            gs = gridspec.GridSpec(
+                2, 2, width_ratios=[3, 1], height_ratios=[1, 3], hspace=0.0, wspace=0.0
+            )
+            ax = fig.add_subplot(gs[1, 0])
+            ax_histx = fig.add_subplot(gs[0, 0], sharex=ax)
+            ax_histy = fig.add_subplot(gs[1, 1], sharey=ax)
         else:
             fig = ax.figure
 
@@ -298,6 +307,26 @@ class AMReXPlottingMixin:
         if plot_zero_lines:
             ax.axhline(0, color="gray", linestyle="--")
             ax.axvline(0, color="gray", linestyle="--")
+        if marginals:
+            # Calculate and plot the 1D histograms
+            x_hist = np.sum(H, axis=1)
+            y_hist = np.sum(H, axis=0)
+
+            # Top histogram (x-axis)
+            ax_histx.plot(xedges[:-1], x_hist, color="gray")
+            ax_histx.spines["top"].set_visible(False)
+            ax_histx.spines["right"].set_visible(False)
+            ax_histx.spines["left"].set_visible(False)
+            ax_histx.yaxis.set_visible(False)
+            plt.setp(ax_histx.get_xticklabels(), visible=False)
+
+            # Right histogram (y-axis)
+            ax_histy.plot(y_hist, yedges[:-1], color="gray")
+            ax_histy.spines["top"].set_visible(False)
+            ax_histy.spines["right"].set_visible(False)
+            ax_histy.spines["bottom"].set_visible(False)
+            ax_histy.xaxis.set_visible(False)
+            plt.setp(ax_histy.get_yticklabels(), visible=False)
 
         # --- 3. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
@@ -307,8 +336,12 @@ class AMReXPlottingMixin:
         final_ylabel = (
             ylabel if ylabel is not None else self._get_axis_label(y_variable)
         )
+        if not marginals:
+            ax.set_title(final_title, fontsize="x-large")
+        else:
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
 
-        ax.set_title(final_title, fontsize="x-large")
         ax.set_xlabel(final_xlabel, fontsize="x-large")
         ax.set_ylabel(final_ylabel, fontsize="x-large")
         ax.tick_params(top=True, right=True, labeltop=False, labelright=False)
@@ -321,9 +354,14 @@ class AMReXPlottingMixin:
         )
 
         if add_colorbar:
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="3%", pad=0.05)
-            cbar = fig.colorbar(im, cax=cax)
+            if marginals:
+                # Place colorbar at the bottom
+                cax = fig.add_axes([0.15, 0.08, 0.5, 0.03])
+                cbar = fig.colorbar(im, cax=cax, orientation="horizontal")
+            else:
+                divider = make_axes_locatable(ax)
+                cax = divider.append_axes("right", size="3%", pad=0.05)
+                cbar = fig.colorbar(im, cax=cax)
             cbar.set_label(cbar_label)
 
         # --- 4. Return the plot objects ---
