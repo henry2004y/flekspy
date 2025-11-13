@@ -94,3 +94,7 @@
 
 - Add marginal plot option for `plot_phase` if `marginals == True`.
 - Allow specifying "vx", "vy", "vz" in the phase space analysis.
+
+## v0.6.13 (2025/11/13)
+
+- Add `get_pressure_anisotropy` for IDL data.
