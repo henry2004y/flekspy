@@ -15,18 +15,6 @@ matplotlib.use("agg")
 
 
 @pytest.fixture(scope="module")
-def idl_data_files(setup_test_data):
-    """Fixture to provide paths to the IDL test data files."""
-    filenames = (
-        "1d__raw_2_t25.60000_n00000258.out",
-        "z=0_fluid_region0_0_t00001640_n00010142.out",
-        "3d_raw.out",
-        "bx0_mhd_6_t00000100_n00000352.out",
-    )
-    return [os.path.join(setup_test_data, file) for file in filenames]
-
-
-@pytest.fixture(scope="module")
 def amrex_data_files(setup_test_data):
     """Fixture to provide paths to the AMReX test data files."""
     files = ("z=0_fluid_region0_0_t00001640_n00010142.out", "3d*amrex")
