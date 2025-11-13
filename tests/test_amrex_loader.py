@@ -681,11 +681,17 @@ def test_plot_phase_with_marginals(mock_plot_components):
     mock_ax = mock_plot_components["ax"]
     mock_ax_histx = MagicMock()
     mock_ax_histy = MagicMock()
+    mock_cax = MagicMock()
 
     # Mock the gridspec and figure additions
     with patch("matplotlib.gridspec.GridSpec") as mock_gridspec:
         gs_instance = mock_gridspec.return_value
-        mock_fig.add_subplot.side_effect = [mock_ax, mock_ax_histx, mock_ax_histy]
+        mock_fig.add_subplot.side_effect = [
+            mock_ax,
+            mock_ax_histx,
+            mock_ax_histy,
+            mock_cax,
+        ]
 
         mock_pdata = MagicMock(spec=AMReXParticleData)
         mock_pdata.get_phase_space_density.return_value = (
@@ -702,16 +708,14 @@ def test_plot_phase_with_marginals(mock_plot_components):
 
         # Check for correct layout
         mock_gridspec.assert_called_once()
-        assert mock_fig.add_subplot.call_count == 3
+        assert mock_fig.add_subplot.call_count == 4
 
         # Check that the title is not set
         mock_ax.set_title.assert_not_called()
 
         # Check colorbar is at the bottom
-        mock_fig.add_axes.assert_called_once_with([0.15, 0.08, 0.5, 0.03])
-        cax = mock_fig.add_axes.return_value
         mock_fig.colorbar.assert_called_once()
-        assert mock_fig.colorbar.call_args.kwargs["cax"] is cax
+        assert mock_fig.colorbar.call_args.kwargs["cax"] is mock_cax
         assert mock_fig.colorbar.call_args.kwargs["orientation"] == "horizontal"
 
         # Check axes visibility
