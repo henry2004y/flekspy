@@ -17,6 +17,16 @@ class AMReXPlottingMixin:
         "velocity_z": r"$v_z$",
     }
 
+    _ALIAS_MAP = {
+        "vx": "velocity_x",
+        "vy": "velocity_y",
+        "vz": "velocity_z",
+    }
+
+    def _resolve_alias(self, variable_name: str) -> str:
+        """Resolves an alias to its full variable name."""
+        return self._ALIAS_MAP.get(variable_name, variable_name)
+
     def _get_axis_label(self, variable_name: str) -> str:
         """Returns the appropriate axis label for a given variable."""
         return self._AXIS_LABEL_MAP.get(variable_name, variable_name)
@@ -230,6 +240,8 @@ class AMReXPlottingMixin:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
                    This allows for a further customization of the plot after its creation.
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
         # --- 1. Get phase space density data ---
         density_data = self.get_phase_space_density(
             x_variable=x_variable,
@@ -416,6 +428,8 @@ class AMReXPlottingMixin:
             tuple: A tuple containing the matplotlib figure and the array of axes
                    objects (`fig`, `axes`).
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
         if len(x_ranges) != len(y_ranges):
             raise ValueError("x_ranges and y_ranges must have the same length.")
 
@@ -664,6 +678,9 @@ class AMReXPlottingMixin:
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
+        z_variable = self._resolve_alias(z_variable)
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(
             x_variable,
@@ -773,6 +790,11 @@ class AMReXPlottingMixin:
         import matplotlib.pyplot as plt
         from matplotlib import patches
 
+        if x_variable:
+            x_variable = self._resolve_alias(x_variable)
+        if y_variable:
+            y_variable = self._resolve_alias(y_variable)
+
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
             # Plot the phase space density
@@ -850,6 +872,7 @@ class AMReXPlottingMixin:
                    objects (`fig`, `axes`).
         """
         # --- 1. Select data ---
+        variables = [self._resolve_alias(v) for v in variables]
         nvar = len(variables)
         if x_range or y_range or z_range:
             rdata = self.select_particles_in_region(x_range, y_range, z_range)
@@ -1056,6 +1079,9 @@ class AMReXPlottingMixin:
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
+        z_variable = self._resolve_alias(z_variable)
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(
             x_variable,

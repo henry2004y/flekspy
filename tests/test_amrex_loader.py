@@ -66,6 +66,15 @@ def mock_plot_components():
         }
 
 
+@pytest.fixture
+def mock_pdata():
+    """Provides a mock AMReXParticleData object with alias resolution mocked."""
+    pdata = MagicMock(spec=AMReXParticleData)
+    pdata._resolve_alias.side_effect = lambda x: x
+    pdata._get_axis_label.side_effect = lambda x: x
+    return pdata
+
+
 def test_header_properties(particle_data):
     """Tests that the header properties are read correctly."""
     assert particle_data.header.dim == 2
@@ -112,14 +121,13 @@ def test_select_particles_in_region(particle_data):
     assert rdata.shape[0] < particle_data.header.num_particles
 
 
-def test_plot_phase(mock_plot_components):
+def test_plot_phase(mock_plot_components, mock_pdata):
     """
     Tests the plot_phase function by mocking the plotting backend.
     """
     mock_fig = mock_plot_components["fig"]
     mock_ax = mock_plot_components["ax"]
 
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
@@ -157,7 +165,7 @@ def test_plot_phase(mock_plot_components):
     cbar_instance.set_label.assert_called_once_with("Normalized Weighted Density")
 
 
-def test_plot_phase_with_existing_axes(mock_plot_components):
+def test_plot_phase_with_existing_axes(mock_plot_components, mock_pdata):
     """
     Tests that plot_phase can draw on an existing matplotlib axes.
     """
@@ -165,7 +173,6 @@ def test_plot_phase_with_existing_axes(mock_plot_components):
     mock_ax = mock_plot_components["ax"]
     mock_ax.figure = mock_fig
 
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
@@ -183,13 +190,12 @@ def test_plot_phase_with_existing_axes(mock_plot_components):
     assert mock_ax.imshow.called
 
 
-def test_plot_phase_no_colorbar(mock_plot_components):
+def test_plot_phase_no_colorbar(mock_plot_components, mock_pdata):
     """
     Tests that the colorbar is not created when add_colorbar=False.
     """
     mock_fig = mock_plot_components["fig"]
 
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
@@ -205,11 +211,10 @@ def test_plot_phase_no_colorbar(mock_plot_components):
     mock_fig.colorbar.assert_not_called()
 
 
-def test_plot_phase_no_particles(mock_plot_components):
+def test_plot_phase_no_particles(mock_plot_components, mock_pdata):
     """
     Tests that plot_phase returns early when there are no particles.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = None
 
     result = AMReXParticleData.plot_phase(
@@ -220,11 +225,10 @@ def test_plot_phase_no_particles(mock_plot_components):
     mock_plot_components["subplots"].assert_not_called()
 
 
-def test_plot_phase_with_hist_range(mock_plot_components):
+def test_plot_phase_with_hist_range(mock_plot_components, mock_pdata):
     """
     Tests that the hist_range parameter is correctly passed.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
@@ -243,11 +247,10 @@ def test_plot_phase_with_hist_range(mock_plot_components):
     assert kwargs["hist_range"] == custom_range
 
 
-def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components):
+def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components, mock_pdata):
     """
     Tests that vmin and vmax are correctly used in log scale.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10) + 0.1,
         np.linspace(0, 1, 11),
@@ -262,18 +265,16 @@ def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components):
         mock_log_norm.assert_called_once_with(vmin=1, vmax=10)
 
 
-def test_plot_phase_subplots():
+def test_plot_phase_subplots(mock_pdata):
     """
     Tests the plot_phase_subplots function by mocking the plotting backend.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
         np.linspace(0, 1, 11),
         "Weighted Particle Density",
     )
-    mock_pdata._get_axis_label.side_effect = lambda x: x
 
     x_ranges = [(-1, 1), (-2, 2)]
     y_ranges = [(-1, 1), (-2, 2)]
@@ -310,11 +311,10 @@ def test_plot_phase_subplots():
         result_fig.suptitle.assert_called_once_with("Test Subplots", fontsize="x-large")
 
 
-def test_plot_phase_subplots_empty_region():
+def test_plot_phase_subplots_empty_region(mock_pdata):
     """
     Tests that plot_phase_subplots handles an empty region without crashing.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.side_effect = [
         (
             np.random.rand(10, 10),
@@ -324,7 +324,6 @@ def test_plot_phase_subplots_empty_region():
         ),
         None,
     ]
-    mock_pdata._get_axis_label.side_effect = lambda x: x
 
     x_ranges = [(-1, 1), (-2, 2)]
     y_ranges = [(-1, 1), (-2, 2)]
@@ -408,11 +407,10 @@ def test_pairplot_corner(mock_show, mock_amrex_data):
     plt.close(fig)
 
 
-def test_plot_phase_with_transform(mock_plot_components):
+def test_plot_phase_with_transform(mock_plot_components, mock_pdata):
     """
     Tests that the transform function is correctly applied.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
@@ -436,12 +434,11 @@ def test_plot_phase_with_transform(mock_plot_components):
     assert kwargs["transform"] == dummy_transform
 
 
-def test_plot_phase_with_kde(mock_plot_components):
+def test_plot_phase_with_kde(mock_plot_components, mock_pdata):
     """
     Tests that the KDE parameters are correctly passed.
     """
     mock_fig = mock_plot_components["fig"]
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(50, 50),
         np.linspace(0, 1, 51),
@@ -477,11 +474,10 @@ def test_plot_phase_with_kde(mock_plot_components):
     cbar_instance.set_label.assert_called_once_with("Weighted Density")
 
 
-def test_plot_phase_with_spatial_transform(mock_plot_components):
+def test_plot_phase_with_spatial_transform(mock_plot_components, mock_pdata):
     """
     Tests passing a spatial transform function.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
@@ -504,11 +500,10 @@ def test_plot_phase_with_spatial_transform(mock_plot_components):
     assert kwargs["transform"] == spatial_transform
 
 
-def test_plot_phase_with_field_aligned_transform(mock_plot_components):
+def test_plot_phase_with_field_aligned_transform(mock_plot_components, mock_pdata):
     """
     Tests passing a field-aligned transform function.
     """
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.get_phase_space_density.return_value = (
         np.random.rand(10, 10),
         np.linspace(0, 1, 11),
@@ -538,9 +533,8 @@ def test_plot_phase_with_field_aligned_transform(mock_plot_components):
     assert kwargs["transform"] == field_aligned_transform
 
 
-def test_get_phase_space_density_basic():
+def test_get_phase_space_density_basic(mock_pdata):
     """Tests the basic functionality of get_phase_space_density."""
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
     mock_pdata.header.real_component_names = ["x", "y", "weight"]
     mock_pdata.rdata = np.random.rand(100, 3)
@@ -563,9 +557,8 @@ def test_get_phase_space_density_basic():
         assert cbar_label == "Weighted Particle Density"
 
 
-def test_get_phase_space_density_normalized():
+def test_get_phase_space_density_normalized(mock_pdata):
     """Tests the normalization in get_phase_space_density."""
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
     mock_pdata.header.real_component_names = ["x", "y"]
     mock_pdata.rdata = np.random.rand(100, 2)
@@ -581,9 +574,8 @@ def test_get_phase_space_density_normalized():
     assert cbar_label == "Normalized Density"
 
 
-def test_get_phase_space_density_with_transform():
+def test_get_phase_space_density_with_transform(mock_pdata):
     """Tests the transform functionality in get_phase_space_density."""
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
     mock_pdata.header.real_component_names = ["x", "y"]
     original_data = np.array([[1.0, 2.0], [3.0, 4.0]])
@@ -615,9 +607,8 @@ def test_get_phase_space_density_with_transform():
         np.testing.assert_array_equal(y_data_passed, expected_y)
 
 
-def test_get_phase_space_density_with_kde():
+def test_get_phase_space_density_with_kde(mock_pdata):
     """Tests the KDE functionality in get_phase_space_density."""
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
     mock_pdata.header.real_component_names = ["x", "y", "weight"]
     mock_pdata.rdata = np.random.rand(100, 3)
@@ -643,9 +634,8 @@ def test_get_phase_space_density_with_kde():
         assert cbar_label == "Weighted Density"
 
 
-def test_get_phase_space_density_particle_selection():
+def test_get_phase_space_density_particle_selection(mock_pdata):
     """Tests particle selection in get_phase_space_density."""
-    mock_pdata = MagicMock(spec=AMReXParticleData)
     mock_pdata.header = MagicMock()
     mock_pdata.header.real_component_names = ["x", "y"]
     mock_pdata.rdata = np.array([[0.1, 0.1], [0.5, 0.5], [0.9, 0.9]])
@@ -673,7 +663,7 @@ def test_get_phase_space_density_particle_selection():
     assert H.sum() == 1
 
 
-def test_plot_phase_with_marginals(mock_plot_components):
+def test_plot_phase_with_marginals(mock_plot_components, mock_pdata):
     """
     Tests that plot_phase with marginals=True creates the correct layout.
     """
@@ -693,7 +683,6 @@ def test_plot_phase_with_marginals(mock_plot_components):
             mock_cax,
         ]
 
-        mock_pdata = MagicMock(spec=AMReXParticleData)
         mock_pdata.get_phase_space_density.return_value = (
             np.random.rand(10, 10),
             np.linspace(0, 1, 11),
