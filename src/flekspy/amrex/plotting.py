@@ -374,10 +374,9 @@ class AMReXPlottingMixin:
             divider = make_axes_locatable(ax)
             if marginals:
                 cax = divider.append_axes("bottom", size="5%", pad=0.4)
-                cbar = fig.colorbar(im, cax=cax, orientation="horizontal")
             else:
                 cax = divider.append_axes("right", size="3%", pad=0.05)
-                cbar = fig.colorbar(im, cax=cax)
+            cbar = fig.colorbar(im, cax=cax)
             cbar.set_label(cbar_label)
 
         # --- 4. Return the plot objects ---

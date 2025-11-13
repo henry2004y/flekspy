@@ -710,7 +710,6 @@ def test_plot_phase_with_marginals(mock_plot_components, mock_pdata):
 
         mock_fig.colorbar.assert_called_once()
         assert mock_fig.colorbar.call_args.kwargs["cax"] is mock_cax
-        assert mock_fig.colorbar.call_args.kwargs["orientation"] == "horizontal"
 
         # Check axes visibility
         mock_ax.spines["top"].set_visible.assert_called_with(False)
