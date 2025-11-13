@@ -273,10 +273,10 @@ class AMReXPlottingMixin:
         elif marginals:
             fig = plt.figure(figsize=(8, 8))
             gs = gridspec.GridSpec(
-                3,
+                2,
                 2,
                 width_ratios=[3, 1],
-                height_ratios=[1, 3, 0.15],
+                height_ratios=[1, 3],
                 hspace=0.0,
                 wspace=0.0,
             )
@@ -371,13 +371,12 @@ class AMReXPlottingMixin:
         )
 
         if add_colorbar:
+            divider = make_axes_locatable(ax)
             if marginals:
-                cax = fig.add_subplot(gs[2, 0])
-                cbar = fig.colorbar(im, cax=cax, orientation="horizontal")
+                cax = divider.append_axes("bottom", size="5%", pad=0.4)
             else:
-                divider = make_axes_locatable(ax)
                 cax = divider.append_axes("right", size="3%", pad=0.05)
-                cbar = fig.colorbar(im, cax=cax)
+            cbar = fig.colorbar(im, cax=cax)
             cbar.set_label(cbar_label)
 
         # --- 4. Return the plot objects ---

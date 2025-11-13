@@ -669,18 +669,19 @@ def test_plot_phase_with_marginals(mock_plot_components, mock_pdata):
     """
     mock_fig = mock_plot_components["fig"]
     mock_ax = mock_plot_components["ax"]
+    mock_divider = mock_plot_components["divider"]
+    mock_cax = mock_plot_components["cax"]
     mock_ax_histx = MagicMock()
     mock_ax_histy = MagicMock()
-    mock_cax = MagicMock()
 
     # Mock the gridspec and figure additions
     with patch("matplotlib.gridspec.GridSpec") as mock_gridspec:
         gs_instance = mock_gridspec.return_value
+        # The colorbar axis is no longer a subplot
         mock_fig.add_subplot.side_effect = [
             mock_ax,
             mock_ax_histx,
             mock_ax_histy,
-            mock_cax,
         ]
 
         mock_pdata.get_phase_space_density.return_value = (
@@ -697,18 +698,20 @@ def test_plot_phase_with_marginals(mock_plot_components, mock_pdata):
 
         # Check for correct layout
         mock_gridspec.assert_called_once()
-        assert mock_fig.add_subplot.call_count == 4
+        # Should be 3 subplots now: main, hist_x, hist_y
+        assert mock_fig.add_subplot.call_count == 3
 
         # Check that the title is not set
         mock_ax.set_title.assert_not_called()
 
-        # Check colorbar is at the bottom
+        # Check colorbar is at the bottom using the divider
+        mock_plot_components["make_axes_locatable"].assert_called_once_with(mock_ax)
+        mock_divider.append_axes.assert_called_once_with("bottom", size="5%", pad=0.4)
+
         mock_fig.colorbar.assert_called_once()
         assert mock_fig.colorbar.call_args.kwargs["cax"] is mock_cax
-        assert mock_fig.colorbar.call_args.kwargs["orientation"] == "horizontal"
 
         # Check axes visibility
-        # Use assert_called_with because shared axes can cause multiple calls
         mock_ax.spines["top"].set_visible.assert_called_with(False)
         mock_ax.spines["right"].set_visible.assert_called_with(False)
         mock_ax_histx.yaxis.set_visible.assert_called_once_with(False)
