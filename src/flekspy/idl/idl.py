@@ -376,6 +376,67 @@ class IDLAccessor:
         """
         return self._obj.sel({norm: cut_loc}, method="nearest")
 
+    def get_pressure_anisotropy(self, species: int) -> xr.DataArray:
+        """
+        Calculates the pressure anisotropy for a given species.
+
+        The pressure anisotropy is defined as the ratio of perpendicular
+        to parallel pressure, calculated with respect to the local magnetic
+        field direction.
+
+        This method requires the dataset to contain the magnetic field
+        components ('Bx', 'By', 'Bz') and the full pressure tensor for the
+        specified species (e.g., 'pXXS0', 'pYYS0', etc. for species 0).
+
+        Args:
+            species (int): The species index for which to calculate the
+                           pressure anisotropy.
+
+        Returns:
+            xarray.DataArray: A DataArray containing the pressure anisotropy,
+                              with the same dimensions as the input data.
+        """
+
+        # Extract pressure tensor components
+        p_components = ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]
+        pxx, pyy, pzz, pxy, pxz, pyz = (
+            self._obj[f"p{c}S{species}"] for c in p_components
+        )
+
+        # Extract magnetic field components
+        bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
+
+        # Calculate magnetic field magnitude and unit vector
+        b_mag = np.sqrt(bx**2 + by**2 + bz**2)
+        b_hat_x = bx / b_mag
+        b_hat_y = by / b_mag
+        b_hat_z = bz / b_mag
+
+        # Calculate parallel pressure
+        p_parallel = (
+            pxx * b_hat_x**2
+            + pyy * b_hat_y**2
+            + pzz * b_hat_z**2
+            + 2
+            * (
+                pxy * b_hat_x * b_hat_y
+                + pyz * b_hat_y * b_hat_z
+                + pxz * b_hat_x * b_hat_z
+            )
+        )
+
+        # Calculate total pressure (trace of the pressure tensor)
+        p_total = pxx + pyy + pzz
+
+        # Calculate perpendicular pressure
+        p_perp = (p_total - p_parallel) / 2.0
+
+        # Calculate pressure anisotropy
+        anisotropy = p_perp / p_parallel
+        anisotropy.name = f"pressure_anisotropy_S{species}"
+
+        return anisotropy
+
 
 def read_idl(filename):
     """
