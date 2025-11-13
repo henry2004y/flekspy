@@ -447,6 +447,8 @@ class AMReXParticleData(AMReXPlottingMixin):
         component_map = {name: i for i, name in enumerate(component_names)}
 
         # --- 4. Validate input variable names ---
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
         if x_variable not in component_map or y_variable not in component_map:
             raise ValueError(
                 f"Invalid variable name. Choose from {list(component_map.keys())}"

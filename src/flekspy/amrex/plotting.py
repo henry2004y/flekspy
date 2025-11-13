@@ -17,6 +17,16 @@ class AMReXPlottingMixin:
         "velocity_z": r"$v_z$",
     }
 
+    _ALIAS_MAP = {
+        "vx": "velocity_x",
+        "vy": "velocity_y",
+        "vz": "velocity_z",
+    }
+
+    def _resolve_alias(self, variable_name: str) -> str:
+        """Resolves an alias to its full variable name."""
+        return self._ALIAS_MAP.get(variable_name, variable_name)
+
     def _get_axis_label(self, variable_name: str) -> str:
         """Returns the appropriate axis label for a given variable."""
         return self._AXIS_LABEL_MAP.get(variable_name, variable_name)
@@ -104,6 +114,8 @@ class AMReXPlottingMixin:
         component_map = {name: i for i, name in enumerate(component_names)}
 
         # --- 4. Validate input variable names ---
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
         if x_variable not in component_map or y_variable not in component_map:
             raise ValueError(
                 f"Invalid variable name. Choose from {list(component_map.keys())}"
@@ -336,10 +348,14 @@ class AMReXPlottingMixin:
         # --- 3. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
         final_xlabel = (
-            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+            xlabel
+            if xlabel is not None
+            else self._get_axis_label(self._resolve_alias(x_variable))
         )
         final_ylabel = (
-            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+            ylabel
+            if ylabel is not None
+            else self._get_axis_label(self._resolve_alias(y_variable))
         )
         if not marginals:
             ax.set_title(final_title, fontsize="x-large")
@@ -533,10 +549,14 @@ class AMReXPlottingMixin:
             fig.suptitle(suptitle, fontsize="x-large")
 
         final_xlabel = (
-            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+            xlabel
+            if xlabel is not None
+            else self._get_axis_label(self._resolve_alias(x_variable))
         )
         final_ylabel = (
-            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+            ylabel
+            if ylabel is not None
+            else self._get_axis_label(self._resolve_alias(y_variable))
         )
         fig.text(0.5, 0.04, final_xlabel, ha="center", va="center", fontsize="x-large")
         fig.text(
@@ -577,6 +597,9 @@ class AMReXPlottingMixin:
             name: i for i, name in enumerate(self.header.real_component_names)
         }
 
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
+        z_variable = self._resolve_alias(z_variable)
         if (
             x_variable not in component_map
             or y_variable not in component_map
@@ -726,13 +749,19 @@ class AMReXPlottingMixin:
         # --- 8. Add labels and a color bar ---
         final_title = title if title is not None else "3D Phase Space Distribution"
         final_xlabel = (
-            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+            xlabel
+            if xlabel is not None
+            else self._get_axis_label(self._resolve_alias(x_variable))
         )
         final_ylabel = (
-            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+            ylabel
+            if ylabel is not None
+            else self._get_axis_label(self._resolve_alias(y_variable))
         )
         final_zlabel = (
-            zlabel if zlabel is not None else self._get_axis_label(z_variable)
+            zlabel
+            if zlabel is not None
+            else self._get_axis_label(self._resolve_alias(z_variable))
         )
 
         ax.set_title(final_title, fontsize="x-large")
@@ -1097,13 +1126,19 @@ class AMReXPlottingMixin:
             title if title is not None else "Intersecting Planes of Phase Space"
         )
         final_xlabel = (
-            xlabel if xlabel is not None else self._get_axis_label(x_variable)
+            xlabel
+            if xlabel is not None
+            else self._get_axis_label(self._resolve_alias(x_variable))
         )
         final_ylabel = (
-            ylabel if ylabel is not None else self._get_axis_label(y_variable)
+            ylabel
+            if ylabel is not None
+            else self._get_axis_label(self._resolve_alias(y_variable))
         )
         final_zlabel = (
-            zlabel if zlabel is not None else self._get_axis_label(z_variable)
+            zlabel
+            if zlabel is not None
+            else self._get_axis_label(self._resolve_alias(z_variable))
         )
 
         ax.set_title(final_title, fontsize="x-large")
