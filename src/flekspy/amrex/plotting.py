@@ -231,6 +231,7 @@ class AMReXPlottingMixin:
                                                  If None, a new figure and axes are created.
                                                  Defaults to None.
             add_colorbar (bool, optional): If True, a colorbar is added to the plot.
+                                           This parameter is ignored if `marginals` is True.
                                            Defaults to True.
             transform (callable, optional): A function to transform particle data.
                                             See `get_phase_space_density`.
