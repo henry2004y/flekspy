@@ -775,6 +775,7 @@ class AMReXPlottingMixin:
         log_scale: bool = True,
         figsize=(10, 10),
         title: str = "Velocity Space Pairplot",
+        corner: bool = False,
         **imshow_kwargs: Any,
     ) -> Optional[Tuple["Figure", np.ndarray]]:
         """
@@ -798,6 +799,8 @@ class AMReXPlottingMixin:
                                         Defaults to True.
             figsize (tuple, optional): The size of the figure. Defaults to (10, 10).
             title (str, optional): The title for the plot. Defaults to "Velocity Space Pairplot".
+            corner (bool, optional): If True, only the lower triangle of the pairplot is plotted.
+                                     Defaults to False.
             **imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
 
         Returns:
@@ -879,6 +882,9 @@ class AMReXPlottingMixin:
         for i in range(nvar):
             for j in range(nvar):
                 ax = axes[i, j]
+                if corner and j > i:
+                    ax.set_visible(False)
+                    continue
                 if i == j:  # Diagonal: 1D histogram
                     ax.hist(vel_data[:, i], bins=bins, color="gray", range=ranges[i])
                     ax.set_yticklabels([])
@@ -897,7 +903,7 @@ class AMReXPlottingMixin:
                 # --- 5. Set labels ---
                 if i == nvar - 1:
                     ax.set_xlabel(self._get_axis_label(variables[j]))
-                if j == 0:
+                if j == 0 and not (corner and i == 0):
                     ax.set_ylabel(self._get_axis_label(variables[i]))
 
         fig.suptitle(title, fontsize="x-large")
