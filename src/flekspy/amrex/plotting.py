@@ -114,8 +114,6 @@ class AMReXPlottingMixin:
         component_map = {name: i for i, name in enumerate(component_names)}
 
         # --- 4. Validate input variable names ---
-        x_variable = self._resolve_alias(x_variable)
-        y_variable = self._resolve_alias(y_variable)
         if x_variable not in component_map or y_variable not in component_map:
             raise ValueError(
                 f"Invalid variable name. Choose from {list(component_map.keys())}"
@@ -242,6 +240,8 @@ class AMReXPlottingMixin:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
                    This allows for a further customization of the plot after its creation.
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
         # --- 1. Get phase space density data ---
         density_data = self.get_phase_space_density(
             x_variable=x_variable,
@@ -348,14 +348,10 @@ class AMReXPlottingMixin:
         # --- 3. Add labels and a color bar for context ---
         final_title = title if title is not None else "Phase Space Distribution"
         final_xlabel = (
-            xlabel
-            if xlabel is not None
-            else self._get_axis_label(self._resolve_alias(x_variable))
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
         )
         final_ylabel = (
-            ylabel
-            if ylabel is not None
-            else self._get_axis_label(self._resolve_alias(y_variable))
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
         )
         if not marginals:
             ax.set_title(final_title, fontsize="x-large")
@@ -432,6 +428,8 @@ class AMReXPlottingMixin:
             tuple: A tuple containing the matplotlib figure and the array of axes
                    objects (`fig`, `axes`).
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
         if len(x_ranges) != len(y_ranges):
             raise ValueError("x_ranges and y_ranges must have the same length.")
 
@@ -549,14 +547,10 @@ class AMReXPlottingMixin:
             fig.suptitle(suptitle, fontsize="x-large")
 
         final_xlabel = (
-            xlabel
-            if xlabel is not None
-            else self._get_axis_label(self._resolve_alias(x_variable))
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
         )
         final_ylabel = (
-            ylabel
-            if ylabel is not None
-            else self._get_axis_label(self._resolve_alias(y_variable))
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
         )
         fig.text(0.5, 0.04, final_xlabel, ha="center", va="center", fontsize="x-large")
         fig.text(
@@ -597,9 +591,6 @@ class AMReXPlottingMixin:
             name: i for i, name in enumerate(self.header.real_component_names)
         }
 
-        x_variable = self._resolve_alias(x_variable)
-        y_variable = self._resolve_alias(y_variable)
-        z_variable = self._resolve_alias(z_variable)
         if (
             x_variable not in component_map
             or y_variable not in component_map
@@ -687,6 +678,9 @@ class AMReXPlottingMixin:
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
+        z_variable = self._resolve_alias(z_variable)
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(
             x_variable,
@@ -749,19 +743,13 @@ class AMReXPlottingMixin:
         # --- 8. Add labels and a color bar ---
         final_title = title if title is not None else "3D Phase Space Distribution"
         final_xlabel = (
-            xlabel
-            if xlabel is not None
-            else self._get_axis_label(self._resolve_alias(x_variable))
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
         )
         final_ylabel = (
-            ylabel
-            if ylabel is not None
-            else self._get_axis_label(self._resolve_alias(y_variable))
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
         )
         final_zlabel = (
-            zlabel
-            if zlabel is not None
-            else self._get_axis_label(self._resolve_alias(z_variable))
+            zlabel if zlabel is not None else self._get_axis_label(z_variable)
         )
 
         ax.set_title(final_title, fontsize="x-large")
@@ -801,6 +789,11 @@ class AMReXPlottingMixin:
         """
         import matplotlib.pyplot as plt
         from matplotlib import patches
+
+        if x_variable:
+            x_variable = self._resolve_alias(x_variable)
+        if y_variable:
+            y_variable = self._resolve_alias(y_variable)
 
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
@@ -879,6 +872,7 @@ class AMReXPlottingMixin:
                    objects (`fig`, `axes`).
         """
         # --- 1. Select data ---
+        variables = [self._resolve_alias(v) for v in variables]
         nvar = len(variables)
         if x_range or y_range or z_range:
             rdata = self.select_particles_in_region(x_range, y_range, z_range)
@@ -1085,6 +1079,9 @@ class AMReXPlottingMixin:
         Returns:
             tuple: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
         """
+        x_variable = self._resolve_alias(x_variable)
+        y_variable = self._resolve_alias(y_variable)
+        z_variable = self._resolve_alias(z_variable)
         # --- 1. Prepare histogram data ---
         hist_data = self._prepare_3d_histogram_data(
             x_variable,
@@ -1126,19 +1123,13 @@ class AMReXPlottingMixin:
             title if title is not None else "Intersecting Planes of Phase Space"
         )
         final_xlabel = (
-            xlabel
-            if xlabel is not None
-            else self._get_axis_label(self._resolve_alias(x_variable))
+            xlabel if xlabel is not None else self._get_axis_label(x_variable)
         )
         final_ylabel = (
-            ylabel
-            if ylabel is not None
-            else self._get_axis_label(self._resolve_alias(y_variable))
+            ylabel if ylabel is not None else self._get_axis_label(y_variable)
         )
         final_zlabel = (
-            zlabel
-            if zlabel is not None
-            else self._get_axis_label(self._resolve_alias(z_variable))
+            zlabel if zlabel is not None else self._get_axis_label(z_variable)
         )
 
         ax.set_title(final_title, fontsize="x-large")
