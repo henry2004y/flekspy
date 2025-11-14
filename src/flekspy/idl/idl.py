@@ -270,9 +270,9 @@ def _get_file_head(infile, attrs):
         grid = [int(x) for x in infile.readline().split()]
         new_attrs["grid"] = np.array(grid)
         new_attrs["npoints"] = abs(new_attrs["grid"].prod())
-        new_attrs["para"] = np.zeros(new_attrs["nparam"])
+        new_attrs["parameters"] = np.zeros(new_attrs["nparam"])
         if new_attrs["nparam"] > 0:
-            new_attrs["para"][:] = infile.readline().split()
+            new_attrs["parameters"][:] = infile.readline().split()
         names = infile.readline().split()
         new_attrs["dims"] = names[0 : new_attrs["ndim"]]
         new_attrs["variables"] = np.array(names)
@@ -319,10 +319,10 @@ def _read_binary_instance(infile, attrs):
 
 def _read_parameters(infile, attrs):
     new_attrs = {}
-    new_attrs["para"] = np.zeros(attrs["nparam"])
+    new_attrs["parameters"] = np.zeros(attrs["nparam"])
     if attrs["nparam"] > 0:
         (old_len, record_len) = struct.unpack(attrs["end_char"] + "2l", infile.read(8))
-        new_attrs["para"][:] = struct.unpack(
+        new_attrs["parameters"][:] = struct.unpack(
             "{0}{1}{2}".format(attrs["end_char"], attrs["nparam"], attrs["pformat"]),
             infile.read(record_len),
         )
@@ -466,13 +466,13 @@ class IDLAccessor:
         bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
 
         # Get coordinate names and values in the order of the data dimensions
-        param_names = list(self._obj.attrs["variables"])
-        params = self._obj.attrs["para"]
+        param_names = list(self._obj.attrs["param_name"])
+        params = self._obj.attrs["parameters"]
         is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
 
         # Get length conversion from attrs
         if is_planetary:
-            length_index = -(list(reversed(param_names)).index("rPlanet") + 1)
+            length_index = param_names.index("rPlanet")
             length = params[length_index]
         else:
             length = 1.0
@@ -533,7 +533,7 @@ class IDLAccessor:
         the mass density (e.g., 'rhoS0') and velocity components (e.g., 'uxS0',
         'uyS0', 'uzS0') for each species. The particle mass and charge for each
         species are retrieved dynamically from the dataset's 'param_name' and
-        'para' attributes.
+        'parameters' attributes.
 
         If the dataset attribute "unit" is "PLANETARY", it is assumed that the
         mass densities are in [amu/cc], velocities are in [km/s], mass is in
@@ -555,7 +555,7 @@ class IDLAccessor:
         total_jz = None
 
         param_names = list(self._obj.attrs["param_name"])
-        params = self._obj.attrs["para"]
+        params = self._obj.attrs["parameters"]
         is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
 
         for s in species:

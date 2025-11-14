@@ -98,3 +98,8 @@
 ## v0.6.13 (2025/11/13)
 
 - Add `get_pressure_anisotropy` for IDL data.
+
+## v0.6.14 (2025/11/14)
+
+- Add `get_current_density` and `get_current_density_from_definition` for IDL data.
+- Breaking: the IDL data attribute "para" has been renamed to "parameters".
