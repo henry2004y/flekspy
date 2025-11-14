@@ -429,8 +429,11 @@ class IDLAccessor:
         Calculates the current density vector from the curl of the magnetic field.
 
         This method computes the current density J = (1/mu0) * curl(B).
-        It requires the dataset to contain 3D magnetic field components
+        It requires the dataset to contain 2D or 3D magnetic field components
         ('Bx', 'By', 'Bz') on a structured grid.
+
+        For 2D data, it is assumed that the simulation is in a plane (e.g., XY)
+        and the gradients in the missing dimension (e.g., z) are zero.
 
         If the dataset attribute "unit" is "PLANETARY", it is assumed that the
         magnetic field is in nT. The resulting current density is returned in µA/m^2.
@@ -442,7 +445,7 @@ class IDLAccessor:
 
         Raises:
             KeyError: If the magnetic field components are not in the dataset.
-            ValueError: If the data is not 3D.
+            ValueError: If the data is not 2D or 3D.
             NotImplementedError: If the grid is unstructured.
         """
         # Check if magnetic field components are present
@@ -456,14 +459,13 @@ class IDLAccessor:
                 "Current density calculation is not supported for unstructured grids yet."
             )
 
-        if self._obj.attrs["ndim"] != 3:
-            raise ValueError("Current density calculation requires 3D data.")
+        if self._obj.attrs["ndim"] not in [2, 3]:
+            raise ValueError("Current density calculation requires 2D or 3D data.")
 
         bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
 
         # Get coordinate names and values in the order of the data dimensions
         coords = [self._obj[dim].values for dim in bx.dims]
-        x_name, y_name, z_name = self._obj.attrs["dims"]
 
         # Calculate gradients of each magnetic field component
         dbx_d_dims = np.gradient(bx.values, *coords)
@@ -474,14 +476,19 @@ class IDLAccessor:
         grad_by = dict(zip(by.dims, dby_d_dims))
         grad_bz = dict(zip(bz.dims, dbz_d_dims))
 
+        dims = self._obj.attrs["dims"]
+        x_name = dims[0] if len(dims) > 0 else None
+        y_name = dims[1] if len(dims) > 1 else None
+        z_name = dims[2] if len(dims) > 2 else None
+
         # jx = d(Bz)/dy - d(By)/dz
-        jx = grad_bz[y_name] - grad_by[z_name]
+        jx = grad_bz.get(y_name, 0.0) - grad_by.get(z_name, 0.0)
 
         # jy = d(Bx)/dz - d(Bz)/dx
-        jy = grad_bx[z_name] - grad_bz[x_name]
+        jy = grad_bx.get(z_name, 0.0) - grad_bz.get(x_name, 0.0)
 
         # jz = d(By)/dx - d(Bx)/dy
-        jz = grad_by[x_name] - grad_bx[y_name]
+        jz = grad_by.get(x_name, 0.0) - grad_bx.get(y_name, 0.0)
 
         # Handle units and convert to µA/m^2
         if self._obj.attrs.get("unit") == "PLANETARY":
