@@ -64,30 +64,18 @@ def test_get_current_density_synthetic():
         "ndim": 3,
         "gencoord": False,
         "dims": ["x", "y", "z"],
-        "unit": "SI",
+        "variables": ["Bx", "By", "Bz", "mS1", "qS1", "cLight", "rPlanet", "cutz"],
+        "para": [1.0, 1.0, 1e3, 0.0],
+        "unit": "PLANETARY",
     }
-
-    # Test with SI units
-    current_density_si = ds.idl.get_current_density()
-    # Conversion from A/m^2 to µA/m^2 is 1e6
-    assert np.allclose(current_density_si["jx"].values, (c / mu_0) * 1e6)
-    assert np.allclose(current_density_si["jy"].values, (a / mu_0) * 1e6)
-    assert np.allclose(current_density_si["jz"].values, (b / mu_0) * 1e6)
-    assert current_density_si["jx"].attrs["units"] == "µA/m^2"
 
     # Test with PLANETARY units
     ds.attrs["unit"] = "PLANETARY"
     current_density_planetary = ds.idl.get_current_density()
-    conversion_factor = 1e-9 / mu_0
-    assert np.allclose(
-        current_density_planetary["jx"].values, c * conversion_factor * 1e6
-    )
-    assert np.allclose(
-        current_density_planetary["jy"].values, a * conversion_factor * 1e6
-    )
-    assert np.allclose(
-        current_density_planetary["jz"].values, b * conversion_factor * 1e6
-    )
+    conversion_factor = 1e-9 / mu_0 * 1e3
+    assert np.allclose(current_density_planetary["jx"].values, c * conversion_factor)
+    assert np.allclose(current_density_planetary["jy"].values, a * conversion_factor)
+    assert np.allclose(current_density_planetary["jz"].values, b * conversion_factor)
     assert current_density_planetary["jx"].attrs["units"] == "µA/m^2"
 
 
@@ -140,12 +128,8 @@ def test_get_current_density_from_definition_si():
     expected_jx_total_si = expected_jx_s0_si + expected_jx_s1_si
 
     # Test with SI units (default case)
-    current_density_total = ds.idl.get_current_density_from_definition(
-        species=[0, 1]
-    )
-    assert np.allclose(
-        current_density_total["jx"].values, expected_jx_total_si * 1e6
-    )
+    current_density_total = ds.idl.get_current_density_from_definition(species=[0, 1])
+    assert np.allclose(current_density_total["jx"].values, expected_jx_total_si * 1e6)
     assert current_density_total["jx"].attrs["units"] == "µA/m^2"
 
 

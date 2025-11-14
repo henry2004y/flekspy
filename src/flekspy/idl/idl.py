@@ -436,7 +436,8 @@ class IDLAccessor:
         and the gradients in the missing dimension (e.g., z) are zero.
 
         If the dataset attribute "unit" is "PLANETARY", it is assumed that the
-        magnetic field is in nT. The resulting current density is returned in µA/m^2.
+        magnetic field is in nT, and the length unit is "rPlanet". The resulting
+        current density is returned in µA/m^2.
         Otherwise, the magnetic field is assumed to be in Tesla.
 
         Returns:
@@ -465,7 +466,18 @@ class IDLAccessor:
         bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
 
         # Get coordinate names and values in the order of the data dimensions
-        coords = [self._obj[dim].values for dim in bx.dims]
+        param_names = list(self._obj.attrs["variables"])
+        params = self._obj.attrs["para"]
+        is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
+
+        # Get length conversion from attrs
+        if is_planetary:
+            length_index = -(list(reversed(param_names)).index("rPlanet") + 1)
+            length = params[length_index]
+        else:
+            length = 1.0
+
+        coords = [self._obj[dim].values * length for dim in bx.dims]  # [m]
 
         # Calculate gradients of each magnetic field component
         dbx_d_dims = np.gradient(bx.values, *coords)
@@ -512,9 +524,7 @@ class IDLAccessor:
 
         return current_density
 
-    def get_current_density_from_definition(
-        self, species: list[int]
-    ) -> xr.Dataset:
+    def get_current_density_from_definition(self, species: list[int]) -> xr.Dataset:
         """
         Calculates the current density from its definition J = n * q * v.
 
