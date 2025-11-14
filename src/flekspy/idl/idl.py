@@ -476,19 +476,14 @@ class IDLAccessor:
         grad_by = dict(zip(by.dims, dby_d_dims))
         grad_bz = dict(zip(bz.dims, dbz_d_dims))
 
-        dims = self._obj.attrs["dims"]
-        x_name = dims[0] if len(dims) > 0 else None
-        y_name = dims[1] if len(dims) > 1 else None
-        z_name = dims[2] if len(dims) > 2 else None
-
         # jx = d(Bz)/dy - d(By)/dz
-        jx = grad_bz.get(y_name, 0.0) - grad_by.get(z_name, 0.0)
+        jx = grad_bz.get("y", 0.0) - grad_by.get("z", 0.0)
 
         # jy = d(Bx)/dz - d(Bz)/dx
-        jy = grad_bx.get(z_name, 0.0) - grad_bz.get(x_name, 0.0)
+        jy = grad_bx.get("z", 0.0) - grad_bz.get("x", 0.0)
 
         # jz = d(By)/dx - d(Bx)/dy
-        jz = grad_by.get(x_name, 0.0) - grad_bx.get(y_name, 0.0)
+        jz = grad_by.get("x", 0.0) - grad_bx.get("y", 0.0)
 
         # Handle units and convert to µA/m^2
         if self._obj.attrs.get("unit") == "PLANETARY":
