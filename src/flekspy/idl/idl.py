@@ -318,7 +318,7 @@ def _read_parameters(infile, attrs, end_char):
     new_attrs = {}
     new_attrs["parameters"] = np.zeros(attrs["nparam"])
     if attrs["nparam"] > 0:
-        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
+        (_, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
         new_attrs["parameters"][:] = struct.unpack(
             f"{end_char}{attrs['nparam']}{attrs['pformat']}",
             infile.read(record_len),
