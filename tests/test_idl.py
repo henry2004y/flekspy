@@ -91,8 +91,8 @@ def test_get_current_density_synthetic():
     assert current_density_planetary["jx"].attrs["units"] == "µA/m^2"
 
 
-def test_get_current_density_from_definition_synthetic():
-    """Test current density calculation from definition with synthetic data."""
+def test_get_current_density_from_definition_si():
+    """Test current density calculation from definition with synthetic SI data."""
     # Create a synthetic dataset
     rhoS0 = np.ones((10, 10, 10))
     uxS0 = np.full((10, 10, 10), 0.1)
@@ -148,12 +148,69 @@ def test_get_current_density_from_definition_synthetic():
     )
     assert current_density_total["jx"].attrs["units"] == "µA/m^2"
 
-    # Test with PLANETARY units
-    ds.attrs["unit"] = "PLANETARY"
-    current_density_planetary = ds.idl.get_current_density_from_definition(
-        species=[0, 1]
+
+def test_get_current_density_from_definition_planetary():
+    """Test current density calculation with synthetic PLANETARY data."""
+    # Create a synthetic dataset with PLANETARY units
+    # rhoS0 in amu/cc, uxS0 in km/s
+    rhoS0 = np.ones((10, 10, 10)) * 1.0  # 1 amu/cc
+    uxS0 = np.full((10, 10, 10), 1000.0)  # 1000 km/s
+    uyS0 = np.zeros((10, 10, 10))
+    uzS0 = np.zeros((10, 10, 10))
+
+    rhoS1 = np.ones((10, 10, 10)) * 2.0  # 2 amu/cc
+    uxS1 = np.full((10, 10, 10), 500.0)  # 500 km/s
+    uyS1 = np.zeros((10, 10, 10))
+    uzS1 = np.zeros((10, 10, 10))
+
+    ds = xr.Dataset(
+        {
+            "rhoS0": (("x", "y", "z"), rhoS0),
+            "uxS0": (("x", "y", "z"), uxS0),
+            "uyS0": (("x", "y", "z"), uyS0),
+            "uzS0": (("x", "y", "z"), uzS0),
+            "rhoS1": (("x", "y", "z"), rhoS1),
+            "uxS1": (("x", "y", "z"), uxS1),
+            "uyS1": (("x", "y", "z"), uyS1),
+            "uzS1": (("x", "y", "z"), uzS1),
+        },
+        coords={
+            "x": np.linspace(-1, 1, 10),
+            "y": np.linspace(-1, 1, 10),
+            "z": np.linspace(-1, 1, 10),
+        },
     )
-    assert np.allclose(
-        current_density_planetary["jx"].values, expected_jx_total_si * 1e15
-    )
-    assert current_density_planetary["jx"].attrs["units"] == "µA/m^2"
+    # mS in amu, qS normalized to elementary charge
+    ds.attrs = {
+        "param_name": ["mS0", "qS0", "mS1", "qS1"],
+        "para": [0.00054858, -1.0, 1.0, 1.0],
+        "unit": "PLANETARY",
+    }
+
+    # Manually calculate the expected current density in µA/m^2
+    amu_to_kg = 1.66053906660e-27
+    e_charge = 1.602176634e-19
+    cc_to_m3 = 1e6
+    km_to_m = 1e3
+    A_to_uA = 1e6
+
+    # Species 0 (electron)
+    n0_si = (rhoS0 / ds.attrs["para"][0]) * cc_to_m3
+    q0_si = ds.attrs["para"][1] * e_charge
+    v0_si = uxS0 * km_to_m
+    jx0_si = n0_si * q0_si * v0_si * A_to_uA
+
+    # Species 1 (proton)
+    n1_si = (rhoS1 / ds.attrs["para"][2]) * cc_to_m3
+    q1_si = ds.attrs["para"][3] * e_charge
+    v1_si = uxS1 * km_to_m
+    jx1_si = n1_si * q1_si * v1_si * A_to_uA
+
+    expected_jx_total = jx0_si + jx1_si
+
+    # Get current density from the method
+    current_density = ds.idl.get_current_density_from_definition(species=[0, 1])
+
+    # The method should return values in µA/m^2
+    assert np.allclose(current_density["jx"].values, expected_jx_total)
+    assert current_density["jx"].attrs["units"] == "µA/m^2"

@@ -1,7 +1,7 @@
 import numpy as np
 import struct
 import xarray as xr
-from scipy.constants import mu_0
+from scipy.constants import mu_0, e
 import xugrid as xu
 from scipy.spatial import Delaunay
 from flekspy.util.logger import get_logger
@@ -526,9 +526,10 @@ class IDLAccessor:
         'para' attributes.
 
         If the dataset attribute "unit" is "PLANETARY", it is assumed that the
-        mass densities are in [amu/cc] and velocities are in [km/s]. The
-        resulting current density is returned in µA/m^2. Otherwise, SI units
-        are assumed and the result is also returned in µA/m^2.
+        mass densities are in [amu/cc], velocities are in [km/s], mass is in
+        [amu] and charge is normalized to the elementary charge. The resulting
+        current density is returned in µA/m^2. Otherwise, SI units are
+        assumed and the result is also returned in µA/m^2.
 
         Args:
             species (list[int]): A list of species indices for which to
@@ -545,20 +546,7 @@ class IDLAccessor:
 
         param_names = list(self._obj.attrs["param_name"])
         params = self._obj.attrs["para"]
-
-        # Handle units
-        conversion_factor = 1.0
-        if self._obj.attrs.get("unit") == "PLANETARY":
-            # mass density [amu/cc] -> number density [1/cc]
-            # velocity [km/s] -> [m/s] -> factor 1e3
-            # number density [1/cc] -> [1/m^3] -> factor 1e6
-            # Total conversion for A/m^2 = 1e9
-            # For µA/m^2, factor is 1e9 * 1e6 = 1e15
-            conversion_factor = 1e15
-        else:
-            # SI units are assumed. n[1/m^3], q[C], v[m/s] -> J[A/m^2]
-            # To get to µA/m^2, multiply by 1e6
-            conversion_factor = 1e6
+        is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
 
         for s in species:
             # Get mass density and velocity for the species
@@ -572,6 +560,9 @@ class IDLAccessor:
             charge_index = param_names.index(f"qS{s}")
             particle_mass = params[mass_index]
             charge = params[charge_index]
+
+            if is_planetary:
+                charge *= e
 
             # Calculate number density
             number_density = mass_density / particle_mass
@@ -590,7 +581,17 @@ class IDLAccessor:
                 total_jy += jy
                 total_jz += jz
 
-        # Apply conversion factor
+        # Apply conversion factors to get to µA/m^2
+        if is_planetary:
+            # j_raw has units (1/cc) * C * (km/s)
+            # convert to A/m^2: (1e6/m^3) * C * (1e3 m/s) -> factor 1e9
+            # convert to uA/m^2: factor 1e9 * 1e6 = 1e15
+            conversion_factor = 1e15
+        else:  # SI
+            # j_raw has units (1/m^3) * C * (m/s) = A/m^2
+            # convert to uA/m^2: factor 1e6
+            conversion_factor = 1e6
+
         total_jx *= conversion_factor
         total_jy *= conversion_factor
         total_jz *= conversion_factor
