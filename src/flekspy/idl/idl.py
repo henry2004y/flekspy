@@ -512,6 +512,100 @@ class IDLAccessor:
 
         return current_density
 
+    def get_current_density_from_definition(
+        self, species: list[int]
+    ) -> xr.Dataset:
+        """
+        Calculates the current density from its definition J = n * q * v.
+
+        This method computes the current density by summing the contributions
+        from the specified particle species. It requires the dataset to contain
+        the mass density (e.g., 'rhoS0') and velocity components (e.g., 'uxS0',
+        'uyS0', 'uzS0') for each species. The particle mass and charge for each
+        species are retrieved dynamically from the dataset's 'param_name' and
+        'para' attributes.
+
+        If the dataset attribute "unit" is "PLANETARY", it is assumed that the
+        mass densities are in [amu/cc] and velocities are in [km/s]. The
+        resulting current density is returned in µA/m^2. Otherwise, SI units
+        are assumed and the result is also returned in µA/m^2.
+
+        Args:
+            species (list[int]): A list of species indices for which to
+                                 calculate the current density.
+
+        Returns:
+            xarray.Dataset: A Dataset containing the three components of the
+                            total current density ('jx', 'jy', 'jz'), with
+                            units attribute set to 'µA/m^2'.
+        """
+        total_jx = None
+        total_jy = None
+        total_jz = None
+
+        param_names = list(self._obj.attrs["param_name"])
+        params = self._obj.attrs["para"]
+
+        # Handle units
+        conversion_factor = 1.0
+        if self._obj.attrs.get("unit") == "PLANETARY":
+            # mass density [amu/cc] -> number density [1/cc]
+            # velocity [km/s] -> [m/s] -> factor 1e3
+            # number density [1/cc] -> [1/m^3] -> factor 1e6
+            # Total conversion for A/m^2 = 1e9
+            # For µA/m^2, factor is 1e9 * 1e6 = 1e15
+            conversion_factor = 1e15
+        else:
+            # SI units are assumed. n[1/m^3], q[C], v[m/s] -> J[A/m^2]
+            # To get to µA/m^2, multiply by 1e6
+            conversion_factor = 1e6
+
+        for s in species:
+            # Get mass density and velocity for the species
+            mass_density = self._obj[f"rhoS{s}"]
+            ux = self._obj[f"uxS{s}"]
+            uy = self._obj[f"uyS{s}"]
+            uz = self._obj[f"uzS{s}"]
+
+            # Get particle mass and charge from attrs
+            mass_index = param_names.index(f"mS{s}")
+            charge_index = param_names.index(f"qS{s}")
+            particle_mass = params[mass_index]
+            charge = params[charge_index]
+
+            # Calculate number density
+            number_density = mass_density / particle_mass
+
+            # Calculate current density for the species
+            jx = number_density * charge * ux
+            jy = number_density * charge * uy
+            jz = number_density * charge * uz
+
+            if total_jx is None:
+                total_jx = jx
+                total_jy = jy
+                total_jz = jz
+            else:
+                total_jx += jx
+                total_jy += jy
+                total_jz += jz
+
+        # Apply conversion factor
+        total_jx *= conversion_factor
+        total_jy *= conversion_factor
+        total_jz *= conversion_factor
+
+        current_density = xr.Dataset(
+            {
+                "jx": (total_jx.dims, total_jx.values, {"units": "µA/m^2"}),
+                "jy": (total_jy.dims, total_jy.values, {"units": "µA/m^2"}),
+                "jz": (total_jz.dims, total_jz.values, {"units": "µA/m^2"}),
+            },
+            coords=self._obj.coords,
+        )
+
+        return current_density
+
 
 def read_idl(filename):
     """
