@@ -437,6 +437,104 @@ class IDLAccessor:
 
         return anisotropy
 
+    def get_current_density(self) -> xr.Dataset:
+        """
+        Calculates the current density vector from the curl of the magnetic field.
+
+        This method computes the current density J = (1/mu0) * curl(B).
+        It requires the dataset to contain 3D magnetic field components
+        ('Bx', 'By', 'Bz') on a structured grid.
+
+        If the dataset attribute "unit" is "PLANETARY", it is assumed that the
+        magnetic field is in nT. The resulting current density is returned in A/m^2.
+        Otherwise, the magnetic field is assumed to be in Tesla.
+
+        Returns:
+            xarray.Dataset: A Dataset containing the three components of the
+                            current density ('jx', 'jy', 'jz').
+
+        Raises:
+            KeyError: If the magnetic field components are not in the dataset.
+            ValueError: If the data is not 3D.
+            NotImplementedError: If the grid is unstructured.
+        """
+        # Check if magnetic field components are present
+        if not all(c in self._obj for c in ["Bx", "By", "Bz"]):
+            raise KeyError(
+                "Magnetic field components ('Bx', 'By', 'Bz') not found in the dataset."
+            )
+
+        if self._obj.attrs.get("gencoord", False):
+            raise NotImplementedError(
+                "Current density calculation is not supported for unstructured grids yet."
+            )
+
+        if self._obj.attrs["ndim"] != 3:
+            raise ValueError("Current density calculation requires 3D data.")
+
+        bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
+
+        # Get coordinate names and values in the order of the data dimensions
+        coords = [self._obj[dim].values for dim in bx.dims]
+        x_name, y_name, z_name = self._obj.attrs["dims"]
+
+        # Calculate gradients of each magnetic field component
+        dbx_d_dims = np.gradient(bx.values, *coords)
+        dby_d_dims = np.gradient(by.values, *coords)
+        dbz_d_dims = np.gradient(bz.values, *coords)
+
+        def get_deriv(grad_list, dims, target_dim):
+            idx = dims.index(target_dim)
+            return grad_list[idx]
+
+        # jx = d(Bz)/dy - d(By)/dz
+        dbz_dy = get_deriv(dbz_d_dims, bz.dims, y_name)
+        dby_dz = get_deriv(dby_d_dims, by.dims, z_name)
+        jx = dbz_dy - dby_dz
+
+        # jy = d(Bx)/dz - d(Bz)/dx
+        dbx_dz = get_deriv(dbx_d_dims, bx.dims, z_name)
+        dbz_dx = get_deriv(dbz_d_dims, bz.dims, x_name)
+        jy = dbx_dz - dbz_dx
+
+        # jz = d(By)/dx - d(Bx)/dy
+        dby_dx = get_deriv(dby_d_dims, by.dims, x_name)
+        dbx_dy = get_deriv(dbx_d_dims, bx.dims, y_name)
+        jz = dby_dx - dbx_dy
+
+        mu0 = 4.0 * np.pi * 1e-7  # T*m/A
+
+        # Handle units if necessary
+        if self._obj.attrs.get("unit") == "PLANETARY":
+            # B is in nT, curl(B) is in nT/m. Convert to T/m by 1e-9.
+            # J = curl(B_T) / mu0 = curl(B_nT * 1e-9) / mu0
+            conversion_factor = 1e-9 / mu0
+            jx *= conversion_factor
+            jy *= conversion_factor
+            jz *= conversion_factor
+        else:
+            # Assuming B is in T, curl(B) is in T/m
+            # J = curl(B) / mu0
+            jx /= mu0
+            jy /= mu0
+            jz /= mu0
+
+        # Convert from A/m^2 to µA/m^2
+        jx *= 1e6
+        jy *= 1e6
+        jz *= 1e6
+
+        current_density = xr.Dataset(
+            {
+                "jx": (bx.dims, jx, {"units": "µA/m^2"}),
+                "jy": (by.dims, jy, {"units": "µA/m^2"}),
+                "jz": (bz.dims, jz, {"units": "µA/m^2"}),
+            },
+            coords=self._obj.coords,
+        )
+
+        return current_density
+
 
 def read_idl(filename):
     """
