@@ -16,10 +16,9 @@ def _read_and_process_data(filename):
     attrs["nInstance"] = None if attrs["isOuts"] else 1
 
     with open(filename, "rb") as f:
-        EndChar = "<"  # Endian marker (default: little.)
-        RecLenRaw = f.read(4)
-        RecLen = (struct.unpack(EndChar + "l", RecLenRaw))[0]
-        if RecLen != 79 and RecLen != 500:
+        rec_len_raw = f.read(4)
+        rec_len = struct.unpack("<l", rec_len_raw)[0]
+        if rec_len != 79 and rec_len != 500:
             attrs["fileformat"] = "ascii"
         else:
             attrs["fileformat"] = "binary"
@@ -145,7 +144,7 @@ def _read_ascii(filename, attrs):
 
 
 def _read_ascii_instance(infile, attrs):
-    new_attrs = _get_file_head(infile, attrs)
+    new_attrs, _ = _get_file_head(infile, attrs)
     attrs.update(new_attrs)
     nrow = attrs["ndim"] + attrs["nvar"]
     ncol = attrs["npoints"]
@@ -198,21 +197,23 @@ def _read_binary_slow(filename, attrs):
 
 def _get_file_head(infile, attrs):
     new_attrs = {}
+    end_char = ""
     if attrs["fileformat"] == "binary":
-        new_attrs["end_char"] = "<"
-        new_attrs["endian"] = "little"
         record_len_raw = infile.read(4)
+        record_len = struct.unpack("<l", record_len_raw)[0]
 
-        record_len = (struct.unpack(new_attrs["end_char"] + "l", record_len_raw))[0]
         if (record_len > 10000) or (record_len < 0):
-            new_attrs["end_char"] = ">"
+            end_char = ">"
             new_attrs["endian"] = "big"
-            record_len = (struct.unpack(new_attrs["end_char"] + "l", record_len_raw))[0]
+            record_len = struct.unpack(">l", record_len_raw)[0]
+        else:
+            end_char = "<"
+            new_attrs["endian"] = "little"
 
         headline = (
             (
                 struct.unpack(
-                    "{0}{1}s".format(new_attrs["end_char"], record_len),
+                    f"{end_char}{record_len}s",
                     infile.read(record_len),
                 )
             )[0]
@@ -221,9 +222,7 @@ def _get_file_head(infile, attrs):
         )
         new_attrs["unit"] = headline.split()[0]
 
-        (old_len, record_len) = struct.unpack(
-            new_attrs["end_char"] + "2l", infile.read(8)
-        )
+        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
         new_attrs["pformat"] = "f"
         if record_len > 20:
             new_attrs["pformat"] = "d"
@@ -234,27 +233,25 @@ def _get_file_head(infile, attrs):
             new_attrs["nparam"],
             new_attrs["nvar"],
         ) = struct.unpack(
-            "{0}l{1}3l".format(new_attrs["end_char"], new_attrs["pformat"]),
+            f"{end_char}l{new_attrs['pformat']}3l",
             infile.read(record_len),
         )
         new_attrs["gencoord"] = new_attrs["ndim"] < 0
         new_attrs["ndim"] = abs(new_attrs["ndim"])
-        (old_len, record_len) = struct.unpack(
-            new_attrs["end_char"] + "2l", infile.read(8)
-        )
+        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
 
         new_attrs["grid"] = np.array(
             struct.unpack(
-                "{0}{1}l".format(new_attrs["end_char"], new_attrs["ndim"]),
+                f"{end_char}{new_attrs['ndim']}l",
                 infile.read(record_len),
             )
         )
         new_attrs["npoints"] = abs(new_attrs["grid"].prod())
 
-        para_attrs = _read_parameters(infile, new_attrs)
+        para_attrs = _read_parameters(infile, new_attrs, end_char)
         new_attrs.update(para_attrs)
 
-        var_attrs = _read_variable_names(infile, new_attrs)
+        var_attrs = _read_variable_names(infile, new_attrs, end_char)
         new_attrs.update(var_attrs)
     else:
         headline = infile.readline().strip()
@@ -279,12 +276,12 @@ def _get_file_head(infile, attrs):
         new_attrs["strtime"] = (
             f"{int(new_attrs['time'] // 3600):04d}h{int(new_attrs['time'] % 3600 // 60):02d}m{new_attrs['time'] % 60:06.3f}s"
         )
-    return new_attrs
+    return new_attrs, end_char
 
 
 def _read_binary_instance(infile, attrs):
     n_bytes_start = infile.tell()
-    new_attrs = _get_file_head(infile, attrs)
+    new_attrs, end_char = _get_file_head(infile, attrs)
     attrs.update(new_attrs)
 
     nrow = attrs["ndim"] + attrs["nvar"]
@@ -295,9 +292,9 @@ def _read_binary_instance(infile, attrs):
         dtype = np.float64
 
     array = np.empty((nrow, attrs["npoints"]), dtype=dtype)
-    dtype_str = f"{attrs['end_char']}{attrs['pformat']}"
+    dtype_str = f"{end_char}{attrs['pformat']}"
 
-    (old_len, record_len) = struct.unpack(attrs["end_char"] + "2l", infile.read(8))
+    (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
     buffer = infile.read(record_len)
     grid_data = np.frombuffer(
         buffer, dtype=dtype_str, count=attrs["npoints"] * attrs["ndim"]
@@ -305,7 +302,7 @@ def _read_binary_instance(infile, attrs):
     array[0 : attrs["ndim"], :] = grid_data.reshape((attrs["ndim"], attrs["npoints"]))
 
     for i in range(attrs["ndim"], attrs["nvar"] + attrs["ndim"]):
-        (old_len, record_len) = struct.unpack(attrs["end_char"] + "2l", infile.read(8))
+        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
         buffer = infile.read(record_len)
         array[i, :] = np.frombuffer(buffer, dtype=dtype_str, count=attrs["npoints"])
     infile.read(4)
@@ -317,25 +314,23 @@ def _read_binary_instance(infile, attrs):
     return array, n_bytes_end - n_bytes_start, attrs
 
 
-def _read_parameters(infile, attrs):
+def _read_parameters(infile, attrs, end_char):
     new_attrs = {}
     new_attrs["parameters"] = np.zeros(attrs["nparam"])
     if attrs["nparam"] > 0:
-        (old_len, record_len) = struct.unpack(attrs["end_char"] + "2l", infile.read(8))
+        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
         new_attrs["parameters"][:] = struct.unpack(
-            "{0}{1}{2}".format(attrs["end_char"], attrs["nparam"], attrs["pformat"]),
+            f"{end_char}{attrs['nparam']}{attrs['pformat']}",
             infile.read(record_len),
         )
     return new_attrs
 
 
-def _read_variable_names(infile, attrs):
+def _read_variable_names(infile, attrs, end_char):
     new_attrs = {}
-    (old_len, record_len) = struct.unpack(attrs["end_char"] + "2l", infile.read(8))
+    (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
     names = (
-        struct.unpack(
-            "{0}{1}s".format(attrs["end_char"], record_len), infile.read(record_len)
-        )
+        struct.unpack(f"{end_char}{record_len}s", infile.read(record_len))
     )[0]
     names = names.decode()
     names.strip()
