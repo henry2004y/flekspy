@@ -328,7 +328,7 @@ def _read_parameters(infile, attrs, end_char):
 
 def _read_variable_names(infile, attrs, end_char):
     new_attrs = {}
-    (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
+    (_, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
     names = (
         struct.unpack(f"{end_char}{record_len}s", infile.read(record_len))
     )[0]
