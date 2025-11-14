@@ -238,7 +238,7 @@ def _get_file_head(infile, attrs):
         )
         new_attrs["gencoord"] = new_attrs["ndim"] < 0
         new_attrs["ndim"] = abs(new_attrs["ndim"])
-        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
+        (_, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
 
         new_attrs["grid"] = np.array(
             struct.unpack(
