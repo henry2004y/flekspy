@@ -1,7 +1,7 @@
 import numpy as np
 import struct
-import yt
 import xarray as xr
+from scipy.constants import mu_0
 import xugrid as xu
 from scipy.spatial import Delaunay
 from flekspy.util.logger import get_logger
@@ -116,7 +116,7 @@ def _read_and_process_data(filename):
 
         dataset = xr.Dataset(data_vars, coords=coords)
     dataset.attrs = attrs
-    _post_process_param(dataset)
+    # TODO: Implement a more robust unit handling system.
     return dataset
 
 
@@ -349,19 +349,6 @@ def _read_variable_names(infile, attrs):
     return new_attrs
 
 
-def _post_process_param(ds):
-    planet_radius = 1.0
-    # Not always correct.
-    if "param_name" in ds.attrs and "para" in ds.attrs:
-        for var, val in zip(ds.attrs["param_name"], ds.attrs["para"]):
-            if var == "xSI":
-                planet_radius = float(100 * val)
-
-    registry = yt.units.unit_registry.UnitRegistry()
-    registry.add("Planet_Radius", planet_radius, yt.units.dimensions.length)
-    ds.attrs["registry"] = registry
-
-
 @xr.register_dataset_accessor("idl")
 class IDLAccessor:
     def __init__(self, xarray_obj):
@@ -446,7 +433,7 @@ class IDLAccessor:
         ('Bx', 'By', 'Bz') on a structured grid.
 
         If the dataset attribute "unit" is "PLANETARY", it is assumed that the
-        magnetic field is in nT. The resulting current density is returned in A/m^2.
+        magnetic field is in nT. The resulting current density is returned in µA/m^2.
         Otherwise, the magnetic field is assumed to be in Tesla.
 
         Returns:
@@ -483,46 +470,34 @@ class IDLAccessor:
         dby_d_dims = np.gradient(by.values, *coords)
         dbz_d_dims = np.gradient(bz.values, *coords)
 
-        def get_deriv(grad_list, dims, target_dim):
-            idx = dims.index(target_dim)
-            return grad_list[idx]
+        grad_bx = dict(zip(bx.dims, dbx_d_dims))
+        grad_by = dict(zip(by.dims, dby_d_dims))
+        grad_bz = dict(zip(bz.dims, dbz_d_dims))
 
         # jx = d(Bz)/dy - d(By)/dz
-        dbz_dy = get_deriv(dbz_d_dims, bz.dims, y_name)
-        dby_dz = get_deriv(dby_d_dims, by.dims, z_name)
-        jx = dbz_dy - dby_dz
+        jx = grad_bz[y_name] - grad_by[z_name]
 
         # jy = d(Bx)/dz - d(Bz)/dx
-        dbx_dz = get_deriv(dbx_d_dims, bx.dims, z_name)
-        dbz_dx = get_deriv(dbz_d_dims, bz.dims, x_name)
-        jy = dbx_dz - dbz_dx
+        jy = grad_bx[z_name] - grad_bz[x_name]
 
         # jz = d(By)/dx - d(Bx)/dy
-        dby_dx = get_deriv(dby_d_dims, by.dims, x_name)
-        dbx_dy = get_deriv(dbx_d_dims, bx.dims, y_name)
-        jz = dby_dx - dbx_dy
+        jz = grad_by[x_name] - grad_bx[y_name]
 
-        mu0 = 4.0 * np.pi * 1e-7  # T*m/A
-
-        # Handle units if necessary
+        # Handle units and convert to µA/m^2
         if self._obj.attrs.get("unit") == "PLANETARY":
             # B is in nT, curl(B) is in nT/m. Convert to T/m by 1e-9.
             # J = curl(B_T) / mu0 = curl(B_nT * 1e-9) / mu0
-            conversion_factor = 1e-9 / mu0
-            jx *= conversion_factor
-            jy *= conversion_factor
-            jz *= conversion_factor
+            # Final conversion to µA/m^2
+            conversion_factor = (1e-9 / mu_0) * 1e6
         else:
             # Assuming B is in T, curl(B) is in T/m
             # J = curl(B) / mu0
-            jx /= mu0
-            jy /= mu0
-            jz /= mu0
+            # Final conversion to µA/m^2
+            conversion_factor = (1.0 / mu_0) * 1e6
 
-        # Convert from A/m^2 to µA/m^2
-        jx *= 1e6
-        jy *= 1e6
-        jz *= 1e6
+        jx *= conversion_factor
+        jy *= conversion_factor
+        jz *= conversion_factor
 
         current_density = xr.Dataset(
             {

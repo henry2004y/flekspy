@@ -2,6 +2,7 @@ import pytest
 import flekspy as fs
 import numpy as np
 import xarray as xr
+from scipy.constants import mu_0
 
 
 def test_get_pressure_anisotropy(idl_data_files):
@@ -68,17 +69,16 @@ def test_get_current_density_synthetic():
 
     # Test with SI units
     current_density_si = ds.idl.get_current_density()
-    mu0 = 4.0 * np.pi * 1e-7
     # Conversion from A/m^2 to µA/m^2 is 1e6
-    assert np.allclose(current_density_si["jx"].values, (c / mu0) * 1e6)
-    assert np.allclose(current_density_si["jy"].values, (a / mu0) * 1e6)
-    assert np.allclose(current_density_si["jz"].values, (b / mu0) * 1e6)
+    assert np.allclose(current_density_si["jx"].values, (c / mu_0) * 1e6)
+    assert np.allclose(current_density_si["jy"].values, (a / mu_0) * 1e6)
+    assert np.allclose(current_density_si["jz"].values, (b / mu_0) * 1e6)
     assert current_density_si["jx"].attrs["units"] == "µA/m^2"
 
     # Test with PLANETARY units
     ds.attrs["unit"] = "PLANETARY"
     current_density_planetary = ds.idl.get_current_density()
-    conversion_factor = 1e-9 / mu0
+    conversion_factor = 1e-9 / mu_0
     assert np.allclose(
         current_density_planetary["jx"].values, c * conversion_factor * 1e6
     )
