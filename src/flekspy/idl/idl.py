@@ -302,7 +302,7 @@ def _read_binary_instance(infile, attrs):
     array[0 : attrs["ndim"], :] = grid_data.reshape((attrs["ndim"], attrs["npoints"]))
 
     for i in range(attrs["ndim"], attrs["nvar"] + attrs["ndim"]):
-        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
+        (_, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
         buffer = infile.read(record_len)
         array[i, :] = np.frombuffer(buffer, dtype=dtype_str, count=attrs["npoints"])
     infile.read(4)
