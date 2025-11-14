@@ -222,7 +222,7 @@ def _get_file_head(infile, attrs):
         )
         new_attrs["unit"] = headline.split()[0]
 
-        (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
+        (_, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
         new_attrs["pformat"] = "f"
         if record_len > 20:
             new_attrs["pformat"] = "d"
