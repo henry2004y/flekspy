@@ -294,7 +294,7 @@ def _read_binary_instance(infile, attrs):
     array = np.empty((nrow, attrs["npoints"]), dtype=dtype)
     dtype_str = f"{end_char}{attrs['pformat']}"
 
-    (old_len, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
+    (_, record_len) = struct.unpack(f"{end_char}2l", infile.read(8))
     buffer = infile.read(record_len)
     grid_data = np.frombuffer(
         buffer, dtype=dtype_str, count=attrs["npoints"] * attrs["ndim"]
