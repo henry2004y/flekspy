@@ -40,8 +40,28 @@ def _read_and_process_data(filename):
     attrs.update(new_attrs)
 
     nsize = attrs["ndim"] + attrs["nvar"]
-    varnames = tuple(attrs["variables"])[0:nsize]
-    attrs["param_name"] = attrs["variables"][nsize:]
+    variables = attrs["variables"]
+    varnames = tuple(variables)[:nsize]
+    param_names = tuple(variables)[nsize:]
+
+    # Create a dictionary for parameters
+    if "parameters" in attrs and len(param_names) == len(attrs["parameters"]):
+        attrs["parameters"] = dict(zip(param_names, attrs["parameters"]))
+    else:
+        if "parameters" in attrs:
+            logger.warning(
+                "Mismatch in parameter names/values length (%d vs %d); parameters cleared.",
+                len(param_names),
+                len(attrs["parameters"]),
+            )
+        attrs["parameters"] = {}
+
+    # Update variables to only contain variable names
+    attrs["variables"] = list(varnames)
+
+    # Remove the now-redundant param_name attribute
+    if "param_name" in attrs:
+        del attrs["param_name"]
 
     # Reshape data if ndim < 3
     shape = list(array.shape) + [1] * (4 - array.ndim)
@@ -461,15 +481,12 @@ class DerivedAccessor:
 
         bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
 
-        # Get coordinate names and values in the order of the data dimensions
-        param_names = list(self._obj.attrs["param_name"])
         params = self._obj.attrs["parameters"]
         is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
 
         # Get length conversion from attrs
         if is_planetary:
-            length_index = param_names.index("rPlanet")
-            length = params[length_index]
+            length = params.get("rPlanet", 1.0)
         else:
             length = 1.0
 
@@ -547,7 +564,6 @@ class DerivedAccessor:
         """
         total_jx, total_jy, total_jz = 0.0, 0.0, 0.0
 
-        param_names = list(self._obj.attrs["param_name"])
         params = self._obj.attrs["parameters"]
         is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
 
@@ -559,8 +575,8 @@ class DerivedAccessor:
                 self._obj[f"uzS{s}"],
             )
 
-            mass = params[param_names.index(f"mS{s}")]
-            charge = params[param_names.index(f"qS{s}")]
+            mass = params[f"mS{s}"]
+            charge = params[f"qS{s}"]
 
             if is_planetary:
                 charge *= e

@@ -64,8 +64,15 @@ def test_get_current_density_synthetic():
         "ndim": 3,
         "gencoord": False,
         "dims": ["x", "y", "z"],
-        "param_name": ["mS0", "qS0", "mS1", "qS1", "cLight", "rPlanet", "cutz"],
-        "parameters": [1.0, 1.0, 1e3, 0.0, 3e8, 1e3, 0.0],
+        "parameters": {
+            "mS0": 1.0,
+            "qS0": 1.0,
+            "mS1": 1e3,
+            "qS1": 0.0,
+            "cLight": 3e8,
+            "rPlanet": 1e3,
+            "cutz": 0.0,
+        },
         "unit": "PLANETARY",
     }
 
@@ -111,18 +118,22 @@ def test_get_current_density_from_definition_si():
     )
     # electron mass, proton mass
     ds.attrs = {
-        "param_name": ["mS0", "qS0", "mS1", "qS1"],
-        "parameters": [9.10938356e-31, -1.60217663e-19, 1.67262192e-27, 1.60217663e-19],
+        "parameters": {
+            "mS0": 9.10938356e-31,
+            "qS0": -1.60217663e-19,
+            "mS1": 1.67262192e-27,
+            "qS1": 1.60217663e-19,
+        },
         "unit": "SI",
     }
 
     # Calculate expected current densities in A/m^2 (before conversion)
-    n0 = rhoS0 / ds.attrs["parameters"][0]
-    q0 = ds.attrs["parameters"][1]
+    n0 = rhoS0 / ds.attrs["parameters"]["mS0"]
+    q0 = ds.attrs["parameters"]["qS0"]
     expected_jx_s0_si = n0 * q0 * uxS0
 
-    n1 = rhoS1 / ds.attrs["parameters"][2]
-    q1 = ds.attrs["parameters"][3]
+    n1 = rhoS1 / ds.attrs["parameters"]["mS1"]
+    q1 = ds.attrs["parameters"]["qS1"]
     expected_jx_s1_si = n1 * q1 * uxS1
 
     expected_jx_total_si = expected_jx_s0_si + expected_jx_s1_si
@@ -166,8 +177,7 @@ def test_get_current_density_from_definition_planetary():
     )
     # mS in amu, qS normalized to elementary charge
     ds.attrs = {
-        "param_name": ["mS0", "qS0", "mS1", "qS1"],
-        "parameters": [0.00054858, -1.0, 1.0, 1.0],
+        "parameters": {"mS0": 0.00054858, "qS0": -1.0, "mS1": 1.0, "qS1": 1.0},
         "unit": "PLANETARY",
     }
 
@@ -179,14 +189,14 @@ def test_get_current_density_from_definition_planetary():
     A_to_uA = 1e6
 
     # Species 0 (electron)
-    n0_si = (rhoS0 / ds.attrs["parameters"][0]) * cc_to_m3
-    q0_si = ds.attrs["parameters"][1] * e_charge
+    n0_si = (rhoS0 / ds.attrs["parameters"]["mS0"]) * cc_to_m3
+    q0_si = ds.attrs["parameters"]["qS0"] * e_charge
     v0_si = uxS0 * km_to_m
     jx0_si = n0_si * q0_si * v0_si * A_to_uA
 
     # Species 1 (proton)
-    n1_si = (rhoS1 / ds.attrs["parameters"][2]) * cc_to_m3
-    q1_si = ds.attrs["parameters"][3] * e_charge
+    n1_si = (rhoS1 / ds.attrs["parameters"]["mS1"]) * cc_to_m3
+    q1_si = ds.attrs["parameters"]["qS1"] * e_charge
     v1_si = uxS1 * km_to_m
     jx1_si = n1_si * q1_si * v1_si * A_to_uA
 
