@@ -495,14 +495,13 @@ class IDLAccessor:
         # Handle units and convert to µA/m^2
         if self._obj.attrs.get("unit") == "PLANETARY":
             # B is in nT, curl(B) is in nT/m. Convert to T/m by 1e-9.
-            # J = curl(B_T) / mu0 = curl(B_nT * 1e-9) / mu0
-            # Final conversion to µA/m^2
-            conversion_factor = (1e-9 / mu_0) * 1e6
+            b_field_factor = 1e-9
         else:
-            # Assuming B is in T, curl(B) is in T/m
-            # J = curl(B) / mu0
-            # Final conversion to µA/m^2
-            conversion_factor = (1.0 / mu_0) * 1e6
+            # Assuming B is in T.
+            b_field_factor = 1.0
+
+        # J = curl(B_T) / mu0. Final conversion to µA/m^2
+        conversion_factor = (b_field_factor / mu_0) * 1e6
 
         jx *= conversion_factor
         jy *= conversion_factor
@@ -545,48 +544,31 @@ class IDLAccessor:
                             total current density ('jx', 'jy', 'jz'), with
                             units attribute set to 'µA/m^2'.
         """
-        total_jx = None
-        total_jy = None
-        total_jz = None
+        total_jx, total_jy, total_jz = 0.0, 0.0, 0.0
 
         param_names = list(self._obj.attrs["param_name"])
         params = self._obj.attrs["parameters"]
         is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
 
         for s in species:
-            # Get mass density and velocity for the species
             mass_density = self._obj[f"rhoS{s}"]
-            ux = self._obj[f"uxS{s}"]
-            uy = self._obj[f"uyS{s}"]
-            uz = self._obj[f"uzS{s}"]
+            ux, uy, uz = (
+                self._obj[f"uxS{s}"],
+                self._obj[f"uyS{s}"],
+                self._obj[f"uzS{s}"],
+            )
 
-            # Get particle mass and charge from attrs
-            mass_index = param_names.index(f"mS{s}")
-            charge_index = param_names.index(f"qS{s}")
-            particle_mass = params[mass_index]
-            charge = params[charge_index]
+            mass = params[param_names.index(f"mS{s}")]
+            charge = params[param_names.index(f"qS{s}")]
 
             if is_planetary:
                 charge *= e
 
-            # Calculate number density
-            number_density = mass_density / particle_mass
+            number_density = mass_density / mass
+            total_jx += number_density * charge * ux
+            total_jy += number_density * charge * uy
+            total_jz += number_density * charge * uz
 
-            # Calculate current density for the species
-            jx = number_density * charge * ux
-            jy = number_density * charge * uy
-            jz = number_density * charge * uz
-
-            if total_jx is None:
-                total_jx = jx
-                total_jy = jy
-                total_jz = jz
-            else:
-                total_jx += jx
-                total_jy += jy
-                total_jz += jz
-
-        # Apply conversion factors to get to µA/m^2
         if is_planetary:
             # j_raw has units (1/cc) * C * (km/s)
             # convert to A/m^2: (1e6/m^3) * C * (1e3 m/s) -> factor 1e9
