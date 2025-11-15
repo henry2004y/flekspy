@@ -10,7 +10,7 @@ import importlib
 __all__ = [
     "load",
     "read_idl",
-    "IDLAccessor",
+    "DerivedAccessor",
     "YtFLEKSData",
     "extract_phase",
     "FLEKSTP",
@@ -29,7 +29,7 @@ def __getattr__(name):
         "FLEKSTP": "flekspy.tp",
         "AMReXParticleData": "flekspy.amrex",
         "read_idl": "flekspy.idl",
-        "IDLAccessor": "flekspy.idl",
+        "DerivedAccessor": "flekspy.idl",
         "xr": "xarray",
     }
     if name in _LAZY_MAPPING:

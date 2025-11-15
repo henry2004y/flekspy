@@ -346,7 +346,7 @@ def _read_variable_names(infile, attrs, end_char):
 
 
 @xr.register_dataset_accessor("derived")
-class IDLAccessor:
+class DerivedAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
 
