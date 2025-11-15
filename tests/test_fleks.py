@@ -52,7 +52,7 @@ class TestIDL:
 
     def test_slice(self, idl_data_files):
         ds = fs.load(idl_data_files[2])
-        slice_data = ds.idl.get_slice("z", 0.0)
+        slice_data = ds.derived.get_slice("z", 0.0)
         assert isinstance(slice_data, xr.Dataset)
         assert len(slice_data) == 14
         assert slice_data.sizes["x"] == 8

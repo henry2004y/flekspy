@@ -7,7 +7,7 @@ from scipy.constants import mu_0
 
 def test_get_pressure_anisotropy(idl_data_files):
     ds = fs.load(idl_data_files[1])
-    anisotropy = ds.idl.get_pressure_anisotropy(species=1)
+    anisotropy = ds.derived.get_pressure_anisotropy(species=1)
     assert anisotropy.name == "pressure_anisotropy_S1"
     assert anisotropy.shape == (601, 2)
     assert np.isclose(anisotropy.isel(x=0, y=0), 1.2906302, atol=1e-5)
@@ -21,7 +21,7 @@ def test_get_current_density(idl_data_files):
     if ds.attrs["ndim"] != 3:
         pytest.skip("Test file is not 3D, skipping.")
 
-    current = ds.idl.get_current_density()
+    current = ds.derived.get_current_density()
     assert "jx" in current
     assert "jy" in current
     assert "jz" in current
@@ -71,7 +71,7 @@ def test_get_current_density_synthetic():
 
     # Test with PLANETARY units
     ds.attrs["unit"] = "PLANETARY"
-    current_density_planetary = ds.idl.get_current_density()
+    current_density_planetary = ds.derived.get_current_density()
     conversion_factor = 1e-9 / mu_0 * 1e3
     assert np.allclose(current_density_planetary["jx"].values, c * conversion_factor)
     assert np.allclose(current_density_planetary["jy"].values, a * conversion_factor)
@@ -128,7 +128,7 @@ def test_get_current_density_from_definition_si():
     expected_jx_total_si = expected_jx_s0_si + expected_jx_s1_si
 
     # Test with SI units (default case)
-    current_density_total = ds.idl.get_current_density_from_definition(species=[0, 1])
+    current_density_total = ds.derived.get_current_density_from_definition(species=[0, 1])
     assert np.allclose(current_density_total["jx"].values, expected_jx_total_si * 1e6)
     assert current_density_total["jx"].attrs["units"] == "µA/m^2"
 
@@ -193,7 +193,7 @@ def test_get_current_density_from_definition_planetary():
     expected_jx_total = jx0_si + jx1_si
 
     # Get current density from the method
-    current_density = ds.idl.get_current_density_from_definition(species=[0, 1])
+    current_density = ds.derived.get_current_density_from_definition(species=[0, 1])
 
     # The method should return values in µA/m^2
     assert np.allclose(current_density["jx"].values, expected_jx_total)

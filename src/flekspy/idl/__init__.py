@@ -1,1 +1,1 @@
-from .idl import read_idl, IDLAccessor
+from .idl import read_idl, DerivedAccessor
