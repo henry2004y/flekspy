@@ -103,3 +103,8 @@
 
 - Add `get_current_density` and `get_current_density_from_definition` for IDL data.
 - Breaking: the IDL data attribute "para" has been renamed to "parameters".
+
+## v0.6.15 (2025/11/15)
+
+- XArray DataSet for IDL format now contains cleaner "parameters" and "variables" attributes for access.
+- The `IDLAccessor` class has been renamed to `DerivedAccessor` and registered as `ds.derived`.
