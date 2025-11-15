@@ -48,6 +48,12 @@ def _read_and_process_data(filename):
     if "parameters" in attrs and len(param_names) == len(attrs["parameters"]):
         attrs["parameters"] = dict(zip(param_names, attrs["parameters"]))
     else:
+        if "parameters" in attrs:
+            logger.warning(
+                "Mismatch in parameter names/values length (%d vs %d); parameters cleared.",
+                len(param_names),
+                len(attrs["parameters"]),
+            )
         attrs["parameters"] = {}
 
     # Update variables to only contain variable names
