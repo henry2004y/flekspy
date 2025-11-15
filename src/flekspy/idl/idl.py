@@ -202,13 +202,12 @@ def _get_file_head(infile, attrs):
         record_len_raw = infile.read(4)
         record_len = struct.unpack("<l", record_len_raw)[0]
 
+        # Check for endianness.
         if (record_len > 10000) or (record_len < 0):
             end_char = ">"
-            new_attrs["endian"] = "big"
             record_len = struct.unpack(">l", record_len_raw)[0]
         else:
             end_char = "<"
-            new_attrs["endian"] = "little"
 
         headline = (
             (
