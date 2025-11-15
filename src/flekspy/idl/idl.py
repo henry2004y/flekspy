@@ -134,6 +134,8 @@ def _read_and_process_data(filename):
                 data_vars[var_name] = (dims, np.squeeze(data_slice))
 
         dataset = xr.Dataset(data_vars, coords=coords)
+    if "pformat" in attrs:
+        del attrs["pformat"]
     dataset.attrs = attrs
     # TODO: Implement a more robust unit handling system.
     return dataset
