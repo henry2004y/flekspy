@@ -202,13 +202,14 @@ def _get_file_head(infile, attrs):
         record_len_raw = infile.read(4)
         record_len = struct.unpack("<l", record_len_raw)[0]
 
+        # Heuristic check for file endianness. Assumes little-endian, but if the
+        # first record length is unreasonably large or negative, it switches to
+        # big-endian. This is a common pattern for FORTRAN-style binary files.
         if (record_len > 10000) or (record_len < 0):
             end_char = ">"
-            new_attrs["endian"] = "big"
             record_len = struct.unpack(">l", record_len_raw)[0]
         else:
             end_char = "<"
-            new_attrs["endian"] = "little"
 
         headline = (
             (
