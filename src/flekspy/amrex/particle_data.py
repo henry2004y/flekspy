@@ -2,6 +2,7 @@ import numpy as np
 from pathlib import Path
 import re
 from typing import List, Tuple, Optional, Union, Type, Callable
+from scipy import constants as const
 
 from .plotting import AMReXPlottingMixin
 
@@ -475,13 +476,16 @@ class AMReXParticleData(AMReXPlottingMixin):
 
     @staticmethod
     def get_gmm_parameters(
-        gmm: "GaussianMixture", isotropic: bool = True
+        gmm: "GaussianMixture", particle_mass: float = 1.0, isotropic: bool = True
     ) -> List[dict]:
         """
         Extracts the physical parameters (centers and temperatures) from a fitted GMM.
+        Converts thermal velocities to temperatures.
 
         Args:
             gmm ("GaussianMixture"): The fitted GMM model.
+            particle_mass (float): The mass of the particle species in atomic mass units (amu).
+                                   Defaults to 1.0.
             isotropic (bool, optional): If True, assumes an isotropic Maxwellian
                                         distribution and returns a single scalar
                                         temperature. If False, assumes a Bi-Maxwellian
@@ -495,6 +499,7 @@ class AMReXParticleData(AMReXPlottingMixin):
                           For Bi-Maxwellian: {'center': [mean_x, mean_y],
                                               'T_parallel': T_par, 'T_perpendicular': T_perp}
         """
+        mass_in_kg = particle_mass * const.m_u
         parameters = []
         for i in range(gmm.n_components):
             mean = gmm.means_[i]
@@ -503,17 +508,19 @@ class AMReXParticleData(AMReXPlottingMixin):
             if isotropic:
                 # For an isotropic distribution, the temperature is related to the
                 # trace of the covariance matrix (average of variances).
-                # T = (var(vx) + var(vy)) / 2
-                temperature = np.trace(cov) / 2.0
+                # T = m * v_th^2 / k_B
+                # v_th^2 = (var(vx) + var(vy)) / 2
+                v_th_sq = np.trace(cov) / 2.0
+                temperature = mass_in_kg * v_th_sq / const.k
                 parameters.append({"center": mean.tolist(), "temperature": temperature})
             else:
                 # For a Bi-Maxwellian distribution, we assume the data was transformed
                 # such that the first component is parallel to the magnetic field
                 # and the second is perpendicular.
-                # T_parallel = var(v_parallel)
-                # T_perpendicular = var(v_perpendicular)
-                t_parallel = cov[0, 0]
-                t_perpendicular = cov[1, 1]
+                # T_parallel = m * var(v_parallel) / k_B
+                # T_perpendicular = m * var(v_perpendicular) / k_B
+                t_parallel = mass_in_kg * cov[0, 0] / const.k
+                t_perpendicular = mass_in_kg * cov[1, 1] / const.k
                 parameters.append(
                     {
                         "center": mean.tolist(),
