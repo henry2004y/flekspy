@@ -1,5 +1,0 @@
-myst-nb
-sphinx-autoapi
-sphinx-rtd-theme
-sphinx-rtd-theme
-sphinx-jupyterbook-latex
