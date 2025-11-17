@@ -108,3 +108,7 @@
 
 - XArray DataSet for IDL format now contains cleaner "parameters" and "variables" attributes for access.
 - The `IDLAccessor` class has been renamed to `DerivedAccessor` and registered as `ds.derived`.
+
+## v0.6.16 (2025/11/17)
+
+- Separate `get_gmm_temperatures` and `get_gmm_parameters` for covariance unit conversions in GMM fitting.
