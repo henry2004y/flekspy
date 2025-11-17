@@ -497,28 +497,23 @@ class AMReXParticleData(AMReXPlottingMixin):
                           - Isotropic: {'center': [mx, my], 'v_th_sq': v_sq}
                           - Bi-Maxwellian: {'center': [mx, my], 'v_parallel_sq': v_par_sq, 'v_perp_sq': v_perp_sq}
         """
-        parameters = []
-        for i in range(gmm.n_components):
-            mean = gmm.means_[i]
-            cov = gmm.covariances_[i]
-
-            if isotropic:
-                # v_th^2 = (var(vx) + var(vy)) / 2
-                v_th_sq = np.trace(cov) / 2.0
-                parameters.append({"center": mean.tolist(), "v_th_sq": v_th_sq})
-            else:
-                # v_parallel^2 = var(v_parallel)
-                # v_perp^2 = var(v_perpendicular)
-                v_parallel_sq = cov[0, 0]
-                v_perp_sq = cov[1, 1]
-                parameters.append(
-                    {
-                        "center": mean.tolist(),
-                        "v_parallel_sq": v_parallel_sq,
-                        "v_perp_sq": v_perp_sq,
-                    }
-                )
-        return parameters
+        if isotropic:
+            return [
+                {
+                    "center": mean.tolist(),
+                    "v_th_sq": np.trace(cov) / 2.0,
+                }
+                for mean, cov in zip(gmm.means_, gmm.covariances_)
+            ]
+        else:
+            return [
+                {
+                    "center": mean.tolist(),
+                    "v_parallel_sq": cov[0, 0],
+                    "v_perp_sq": cov[1, 1],
+                }
+                for mean, cov in zip(gmm.means_, gmm.covariances_)
+            ]
 
     @staticmethod
     def get_gmm_temperatures(
@@ -547,25 +542,20 @@ class AMReXParticleData(AMReXPlottingMixin):
         parameters = AMReXParticleData.get_gmm_parameters(gmm, isotropic=isotropic)
         mass_in_kg = particle_mass * const.m_u
 
-        temp_parameters = []
-        for params in parameters:
-            center = params["center"]
-            if isotropic:
-                v_th_sq = params["v_th_sq"]
-                temperature = mass_in_kg * v_th_sq / const.k
-                temp_parameters.append(
-                    {"center": center, "temperature": temperature}
-                )
-            else:
-                v_parallel_sq = params["v_parallel_sq"]
-                v_perp_sq = params["v_perp_sq"]
-                t_parallel = mass_in_kg * v_parallel_sq / const.k
-                t_perpendicular = mass_in_kg * v_perp_sq / const.k
-                temp_parameters.append(
-                    {
-                        "center": center,
-                        "T_parallel": t_parallel,
-                        "T_perpendicular": t_perpendicular,
-                    }
-                )
-        return temp_parameters
+        if isotropic:
+            return [
+                {
+                    "center": p["center"],
+                    "temperature": mass_in_kg * p["v_th_sq"] / const.k,
+                }
+                for p in parameters
+            ]
+        else:
+            return [
+                {
+                    "center": p["center"],
+                    "T_parallel": mass_in_kg * p["v_parallel_sq"] / const.k,
+                    "T_perpendicular": mass_in_kg * p["v_perp_sq"] / const.k,
+                }
+                for p in parameters
+            ]
