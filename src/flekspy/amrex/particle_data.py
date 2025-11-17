@@ -476,56 +476,96 @@ class AMReXParticleData(AMReXPlottingMixin):
 
     @staticmethod
     def get_gmm_parameters(
-        gmm: "GaussianMixture", particle_mass: float = 1.0, isotropic: bool = True
+        gmm: "GaussianMixture", isotropic: bool = True
     ) -> List[dict]:
         """
-        Extracts the physical parameters (centers and temperatures) from a fitted GMM.
-        Converts thermal velocities to temperatures.
+        Extracts physical parameters from a fitted GMM.
+
+        This method returns the squared thermal velocities (variances) from the
+        covariance matrix of the GMM components. It does not perform any unit
+        conversions.
 
         Args:
             gmm ("GaussianMixture"): The fitted GMM model.
-            particle_mass (float): The mass of the particle species in atomic mass units (amu).
-                                   Defaults to 1.0.
             isotropic (bool, optional): If True, assumes an isotropic Maxwellian
-                                        distribution and returns a single scalar
-                                        temperature. If False, assumes a Bi-Maxwellian
-                                        distribution and returns parallel and
-                                        perpendicular temperatures. Defaults to True.
+                                        distribution and returns a single scalar v_th_sq.
+                                        If False, assumes a Bi-Maxwellian distribution and returns
+                                        parallel and perpendicular components. Defaults to True.
 
         Returns:
-            list of dict: A list of dictionaries, where each dictionary contains
-                          the parameters for a single Gaussian component.
-                          For isotropic: {'center': [mean_x, mean_y], 'temperature': T}
-                          For Bi-Maxwellian: {'center': [mean_x, mean_y],
-                                              'T_parallel': T_par, 'T_perpendicular': T_perp}
+            list of dict: A list of dictionaries, one for each Gaussian component.
+                          - Isotropic: {'center': [mx, my], 'v_th_sq': v_sq}
+                          - Bi-Maxwellian: {'center': [mx, my], 'v_parallel_sq': v_par_sq, 'v_perp_sq': v_perp_sq}
         """
-        mass_in_kg = particle_mass * const.m_u
         parameters = []
         for i in range(gmm.n_components):
             mean = gmm.means_[i]
             cov = gmm.covariances_[i]
 
             if isotropic:
-                # For an isotropic distribution, the temperature is related to the
-                # trace of the covariance matrix (average of variances).
-                # T = m * v_th^2 / k_B
                 # v_th^2 = (var(vx) + var(vy)) / 2
                 v_th_sq = np.trace(cov) / 2.0
-                temperature = mass_in_kg * v_th_sq / const.k
-                parameters.append({"center": mean.tolist(), "temperature": temperature})
+                parameters.append({"center": mean.tolist(), "v_th_sq": v_th_sq})
             else:
-                # For a Bi-Maxwellian distribution, we assume the data was transformed
-                # such that the first component is parallel to the magnetic field
-                # and the second is perpendicular.
-                # T_parallel = m * var(v_parallel) / k_B
-                # T_perpendicular = m * var(v_perpendicular) / k_B
-                t_parallel = mass_in_kg * cov[0, 0] / const.k
-                t_perpendicular = mass_in_kg * cov[1, 1] / const.k
+                # v_parallel^2 = var(v_parallel)
+                # v_perp^2 = var(v_perpendicular)
+                v_parallel_sq = cov[0, 0]
+                v_perp_sq = cov[1, 1]
                 parameters.append(
                     {
                         "center": mean.tolist(),
+                        "v_parallel_sq": v_parallel_sq,
+                        "v_perp_sq": v_perp_sq,
+                    }
+                )
+        return parameters
+
+    @staticmethod
+    def get_gmm_temperatures(
+        gmm: "GaussianMixture", particle_mass: float = 1.0, isotropic: bool = True
+    ) -> List[dict]:
+        """
+        Extracts physical temperatures from a fitted GMM.
+
+        This method calls `get_gmm_parameters` to get the squared thermal
+        velocities and then converts them to temperatures in Kelvin.
+
+        Args:
+            gmm ("GaussianMixture"): The fitted GMM model.
+            particle_mass (float): The mass of the particle species in atomic mass units (amu).
+                                   Defaults to 1.0.
+            isotropic (bool, optional): If True, assumes an isotropic Maxwellian
+                                        distribution and returns a single scalar temperature.
+                                        If False, assumes a Bi-Maxwellian distribution and returns
+                                        parallel and perpendicular temperatures. Defaults to True.
+
+        Returns:
+            list of dict: A list of dictionaries, one for each Gaussian component.
+                          - Isotropic: {'center': [mx, my], 'temperature': T}
+                          - Bi-Maxwellian: {'center': [mx, my], 'T_parallel': T_par, 'T_perpendicular': T_perp}
+        """
+        parameters = AMReXParticleData.get_gmm_parameters(gmm, isotropic=isotropic)
+        mass_in_kg = particle_mass * const.m_u
+
+        temp_parameters = []
+        for params in parameters:
+            center = params["center"]
+            if isotropic:
+                v_th_sq = params["v_th_sq"]
+                temperature = mass_in_kg * v_th_sq / const.k
+                temp_parameters.append(
+                    {"center": center, "temperature": temperature}
+                )
+            else:
+                v_parallel_sq = params["v_parallel_sq"]
+                v_perp_sq = params["v_perp_sq"]
+                t_parallel = mass_in_kg * v_parallel_sq / const.k
+                t_perpendicular = mass_in_kg * v_perp_sq / const.k
+                temp_parameters.append(
+                    {
+                        "center": center,
                         "T_parallel": t_parallel,
                         "T_perpendicular": t_perpendicular,
                     }
                 )
-        return parameters
+        return temp_parameters
