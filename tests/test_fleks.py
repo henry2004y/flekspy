@@ -131,6 +131,14 @@ class TestAMReX:
         dc.fleks.plot("Bx")
         assert True
 
+    def test_amrex_plot_2(self, amrex_data_files):
+        ds = fs.load(amrex_data_files[1], use_yt_loader=True)
+        dc = ds.get_slice("z", 0.5)
+        f, axes = dc.fleks.plot("Bx")
+        dc.fleks.add_contour(axes[0], "By")
+        dc.fleks.add_stream(axes[0], "Bx", "By")
+        assert True
+
     def test_amrex_particle_loader_default(self, setup_test_data):
         ds = fs.load(os.path.join(setup_test_data, "3d_particle*amrex"))
         assert isinstance(ds, fs.amrex.AMReXParticleData)

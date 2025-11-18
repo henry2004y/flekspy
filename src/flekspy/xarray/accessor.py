@@ -59,9 +59,7 @@ class FleksAccessor:
                 varUnit = get_unit("b", unit) + "**2"
             elif var[0:2] == "ps":
                 ss = var[2:3]
-                expression = (
-                    "({pxxs" + ss + "}+" + "{pyys" + ss + "}+" + "{pzzs" + ss + "})/3"
-                )
+                expression = f"({{pxxs{ss}}} + {{pyys{ss}}} + {{pzzs{ss}}}) / 3"
                 varUnit = get_unit("p", unit)
             elif var == "pb":
                 coef = 0.5 / (yt.units.mu_0.value)
@@ -214,6 +212,105 @@ class FleksAccessor:
             ax.set_title(title)
 
         if "cut_norm" in self._obj.attrs and "cut_loc" in self._obj.attrs:
-            plt.figtext(0.01, 0.01, f"Plots at {self._obj.attrs['cut_norm']} = {self._obj.attrs['cut_loc']}", ha="left")
+            s = f"Plots at {self._obj.attrs['cut_norm']} = {self._obj.attrs['cut_loc']}"
+        else:
+            s = ""
+
+        if bottomline > 0 and "time" in self._obj.attrs:
+            s += f" time = {self._obj.attrs['time']}"
+        if bottomline > 1 and "nstep" in self._obj.attrs:
+            s += f" nstep = {self._obj.attrs['nstep']}"
+        if bottomline > 2 and "filename" in self._obj.attrs:
+            s += f" {self._obj.attrs['filename']}"
+
+        if s:
+            plt.figtext(0.01, 0.01, s, ha="left")
 
         return f, axes
+
+    def add_contour(self, ax, var, unit="planet", rmask=None, *args, **kwargs):
+        vname, vmin, vmax = self.analyze_variable_string(var)
+
+        ytVar = self.evaluate_expression(vname, unit)
+        v = ytVar
+        if isinstance(ytVar, yt.units.yt_array.YTArray):
+            v = ytVar.value
+
+        vmin = v.min() if vmin is None else vmin
+        vmax = v.max() if vmin is None else vmax
+        v = np.clip(v, vmin, vmax)
+
+        coords = list(self._obj.coords.keys())
+        x, y = self._obj[coords[0]], self._obj[coords[1]]
+
+        if self._obj.attrs.get("gencoord", False):
+            triang = tri.Triangulation(x, y)
+            if rmask is not None:
+                r = np.sqrt(x**2 + y**2)
+                isbad = np.less(r, 1.2)
+                mask = np.all(np.where(isbad[triang.triangles], True, False), axis=1)
+                triang.set_mask(mask)
+            ax.tricontour(triang, v.T, *args, **kwargs)
+        else:
+            ax.contour(x, y, v.T, *args, **kwargs)
+
+    def add_stream(
+        self,
+        ax,
+        var1,
+        var2,
+        density=1,
+        nx=400,
+        ny=400,
+        xmin=None,
+        xmax=None,
+        ymin=None,
+        ymax=None,
+        rmask=None,
+        *args,
+        **kwargs,
+    ):
+        v1 = self.evaluate_expression(var1).value
+        v2 = self.evaluate_expression(var2).value
+        if isinstance(v1, yt.units.yt_array.YTArray):
+            v1 = v1.value
+        if isinstance(v2, yt.units.yt_array.YTArray):
+            v2 = v2.value
+
+        coords = list(self._obj.coords.keys())
+        x, y = self._obj[coords[0]], self._obj[coords[1]]
+
+        if self._obj.attrs.get("gencoord", False):
+            if xmin is None:
+                xmin = x.min().item()
+            if xmax is None:
+                xmax = x.max().item()
+            if ymin is None:
+                ymin = y.min().item()
+            if ymax is None:
+                ymax = y.max().item()
+
+            gridx, gridy = np.mgrid[0 : nx + 1, 0 : ny + 1]
+            gridx = gridx * (xmax - xmin) / nx + xmin
+            gridy = gridy * (ymax - ymin) / ny + ymin
+            xy = np.zeros((len(x), 2))
+            xy[:, 0] = x.values
+            xy[:, 1] = y.values
+            vect1 = griddata(xy, v1, (gridx, gridy), method="linear")[1:-1, 1:-1]
+            vect2 = griddata(xy, v2, (gridx, gridy), method="linear")[1:-1, 1:-1]
+            xx = gridx[1:-1, 0]
+            yy = gridy[0, 1:-1]
+        else:
+            xx, yy = x.values, y.values
+            vect1, vect2 = v1, v2
+
+        if rmask is not None:
+            mask = np.zeros(vect1.shape, dtype=bool)
+            r2 = rmask**2
+            for i in range(len(xx)):
+                for j in range(len(yy)):
+                    if xx[i] ** 2 + yy[j] ** 2 < r2:
+                        vect1[i, j] = np.nan
+                        vect2[i, j] = np.nan
+
+        streamplot(ax, xx, yy, vect1.T, vect2.T, density=density, *args, **kwargs)

@@ -281,6 +281,9 @@ class YtFLEKSData(BoxlibDataset):
 
         ds.attrs["cut_norm"] = norm
         ds.attrs["cut_loc"] = cut_loc
+        ds.attrs["time"] = self.current_time
+        ds.attrs["nstep"] = self.parameters.get("nstep", -1)
+        ds.attrs["filename"] = self.output_dir
         return ds
 
     def get_domain(self) -> xr.Dataset:
@@ -314,7 +317,11 @@ class YtFLEKSData(BoxlibDataset):
             value = domain[var_tuple]
             data_vars[var_name] = (dims, value)
 
-        return xr.Dataset(data_vars, coords=coords)
+        ds = xr.Dataset(data_vars, coords=coords)
+        ds.attrs["time"] = self.current_time
+        ds.attrs["nstep"] = self.parameters.get("nstep", -1)
+        ds.attrs["filename"] = self.output_dir
+        return ds
 
     def plot_slice(self, norm, cut_loc, vars, unit="planet", *args, **kwargs):
         """Plot 2D slice
