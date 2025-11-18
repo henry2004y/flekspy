@@ -207,21 +207,22 @@ class AMReXPlottingMixin:
         This function creates a 2D weighted histogram to visualize the particle
         density. This function first calls `get_phase_space_density` to compute
         the histogram and then plots the result.
+        See more about the args in `get_phase_space_density`
 
         Args:
-            x_variable (str): The variable for the x-axis. See `get_phase_space_density`.
-            y_variable (str): The variable for the y-axis. See `get_phase_space_density`.
-            bins (int or tuple, optional): Bins for the histogram. See `get_phase_space_density`.
-            hist_range (list, optional): Edges for bins. See `get_phase_space_density`.
-            x_range (tuple, optional): Boundary for the x-axis. See `get_phase_space_density`.
-            y_range (tuple, optional): Boundary for the y-axis. See `get_phase_space_density`.
-            z_range (tuple, optional): Boundary for the z-axis. See `get_phase_space_density`.
-            normalize (bool, optional): Normalize the density. See `get_phase_space_density`.
+            x_variable (str): The variable for the x-axis.
+            y_variable (str): The variable for the y-axis.
+            bins (int or tuple, optional): Bins for the histogram.
+            hist_range (list, optional): Edges for bins.
+            x_range (tuple, optional): Boundary for the x-axis.
+            y_range (tuple, optional): Boundary for the y-axis.
+            z_range (tuple, optional): Boundary for the z-axis.
+            normalize (bool, optional): Normalize the density.
             log_scale (bool, optional): If True, the colorbar is plotted in log scale.
                                         Defaults to True.
-            use_kde (bool, optional): Use KDE. See `get_phase_space_density`.
-            kde_bandwidth (str or float, optional): Bandwidth for KDE. See `get_phase_space_density`.
-            kde_grid_size (int, optional): Grid points for KDE. See `get_phase_space_density`.
+            use_kde (bool, optional): Use KDE.
+            kde_bandwidth (str or float, optional): Bandwidth for KDE.
+            kde_grid_size (int, optional): Grid points for KDE.
             plot_zero_lines (bool, optional): If True, plot dashed lines at x=0 and y=0.
                                               Defaults to True.
             title (str, optional): The title for the plot. Defaults to "Phase Space Distribution".
@@ -234,7 +235,6 @@ class AMReXPlottingMixin:
                                            This parameter is ignored if `marginals` is True.
                                            Defaults to True.
             transform (callable, optional): A function to transform particle data.
-                                            See `get_phase_space_density`.
             **imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
                              This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
         Returns:
