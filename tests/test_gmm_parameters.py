@@ -3,6 +3,7 @@ import pytest
 from sklearn.mixture import GaussianMixture
 from unittest.mock import MagicMock
 
+from flekspy.util.gmm import get_gmm_parameters
 from flekspy.amrex.particle_data import AMReXParticleData
 
 
@@ -20,7 +21,7 @@ def test_get_gmm_parameters_isotropic(fitted_gmm):
     """
     Tests the extraction of isotropic squared thermal velocities from a GMM.
     """
-    parameters = AMReXParticleData.get_gmm_parameters(fitted_gmm, isotropic=True)
+    parameters = get_gmm_parameters(fitted_gmm, isotropic=True)
 
     assert len(parameters) == 2
     # v_th_sq_1 = (1.0 + 2.0) / 2.0 = 1.5
@@ -33,7 +34,7 @@ def test_get_gmm_parameters_bi_maxwellian(fitted_gmm):
     """
     Tests the extraction of Bi-Maxwellian squared thermal velocities from a GMM.
     """
-    parameters = AMReXParticleData.get_gmm_parameters(fitted_gmm, isotropic=False)
+    parameters = get_gmm_parameters(fitted_gmm, isotropic=False)
 
     assert len(parameters) == 2
     # v_parallel_sq_1 = 1.0

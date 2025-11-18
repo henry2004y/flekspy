@@ -1,10 +1,4 @@
-#-*- coding: utf-8 -*-
-"""
-Created on Mon July 22 13:05:00 2024
-
-@author: author
-
-"""
+"""GMM-related utility functions."""
 import numpy as np
 from sklearn.mixture import GaussianMixture
 from typing import Dict, List, Any
@@ -77,8 +71,6 @@ def compare_gmm_results(original_params: List[Dict[str, Any]],
         anisotropic parameters.
 
     """
-    from flekspy.amrex import AMReXParticleData
-
     print("--- Original Synthetic Data Parameters ---")
     for i, params in enumerate(original_params):
         if isotropic:
@@ -90,7 +82,7 @@ def compare_gmm_results(original_params: List[Dict[str, Any]],
                   f"Temp Perp = {params['temp_perp']}")
 
     print("\n--- GMM Extracted Parameters ---")
-    extracted_params = AMReXParticleData.get_gmm_parameters(
+    extracted_params = get_gmm_parameters(
         gmm_fit, isotropic=isotropic
     )
 
@@ -105,3 +97,43 @@ def compare_gmm_results(original_params: List[Dict[str, Any]],
             print(f"  Component {i+1}: Center = {center}, "
                   f"v_th_sq_parallel = {v_th_sq_par}, "
                   f"v_th_sq_perp = {v_th_sq_per}")
+
+def get_gmm_parameters(gmm: "GaussianMixture",
+                       isotropic: bool = True) -> List[dict]:
+    """
+    Extracts physical parameters from a fitted GMM.
+
+    This method returns the squared thermal velocities (variances) from the
+    covariance matrix of the GM
+    M components. It does not perform any unit
+    conversions.
+
+    Args:
+        gmm ("GaussianMixture"): The fitted GMM model.
+        isotropic (bool, optional): If True, assumes an isotropic Maxwellian
+                                    distribution and returns a single scalar v_th_sq.
+                                    If False, assumes a Bi-Maxwellian distribution and returns
+                                    parallel and perpendicular components. Defaults to True.
+
+    Returns:
+        list of dict: A list of dictionaries, one for each Gaussian component.
+                      - Isotropic: {'center': [mx, my], 'v_th_sq': v_sq}
+                      - Bi-Maxwellian: {'center': [mx, my], 'v_parallel_sq': v_par_sq, 'v_perp_sq': v_perp_sq}
+    """
+    if isotropic:
+        return [
+            {
+                "center": mean.tolist(),
+                "v_th_sq": np.trace(cov) / 2.0,
+            }
+            for mean, cov in zip(gmm.means_, gmm.covariances_)
+        ]
+    else:
+        return [
+            {
+                "center": mean.tolist(),
+                "v_parallel_sq": cov[0, 0],
+                "v_perp_sq": cov[1, 1],
+            }
+            for mean, cov in zip(gmm.means_, gmm.covariances_)
+        ]
