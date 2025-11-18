@@ -81,8 +81,8 @@ class TestAMReX:
         ds = fs.load(amrex_data_files[1], use_yt_loader=True)
         assert ds.domain_left_edge[0].v == -0.016
         dc = ds.get_slice("z", 0.5)
-        assert dc.data["particle_id"][0].value == 216050.0
-        assert dc.__repr__().startswith("variables")
+        assert dc["particle_id"][0].item() == 216050.0
+        assert "particle_id" in dc.data_vars
 
     def test_phase(self, amrex_data_files):
         ds = fs.load(amrex_data_files[1], use_yt_loader=True)
@@ -125,6 +125,14 @@ class TestAMReX:
         )
         f = fs.extract_phase(pp)
         assert f[0].size == 16 and f[2].shape == (16, 16)
+
+    def test_amrex_plot(self, amrex_data_files):
+        ds = fs.load(amrex_data_files[1], use_yt_loader=True)
+        dc = ds.get_slice("z", 0.5)
+        f, axes = dc.fleks.plot("Bx")
+        dc.fleks.add_contour(axes[0], "By")
+        dc.fleks.add_stream(axes[0], "Bx", "By")
+        assert True
 
     def test_amrex_particle_loader_default(self, setup_test_data):
         ds = fs.load(os.path.join(setup_test_data, "3d_particle*amrex"))

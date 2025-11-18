@@ -4,9 +4,3 @@ from .utilities import (
     get_unit,
     get_ticks,
 )
-from .data_container import (
-    DataContainer,
-    DataContainer1D,
-    DataContainer2D,
-    DataContainer3D,
-)

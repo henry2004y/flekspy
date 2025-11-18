@@ -10,9 +10,10 @@ from yt.data_objects.selection_objects.data_selection_objects import (
 )
 from yt.visualization.profile_plotter import PhasePlot
 
-from flekspy.util import DataContainer2D, DataContainer3D
-from flekspy.util import get_unit
+import xarray as xr
 
+from flekspy.util import get_unit
+import flekspy.xarray
 
 class FLEKSFieldInfo(FieldInfoContainer):
     l_units = "code_length"
@@ -203,9 +204,9 @@ class YtFLEKSData(BoxlibDataset):
     def pvar(self, var):
         return (self.particle_types[0], var)
 
-    def get_slice(self, norm, cut_loc) -> DataContainer2D:
+    def get_slice(self, norm: str, cut_loc: float) -> xr.Dataset:
         r"""
-        Returns a DataContainer2D object that contains a slice along the normal direction.
+        Returns a xarray.Dataset object that contains a slice along the normal direction.
 
         Args:
             norm (str): slice normal direction in "x", "y" or "z"
@@ -215,7 +216,7 @@ class YtFLEKSData(BoxlibDataset):
         axDir = {"X": 0, "Y": 1, "Z": 2}
         idir = axDir[norm.upper()]
 
-        if type(cut_loc) != yt.units.yt_array.YTArray:
+        if not isinstance(cut_loc, yt.units.yt_array.YTArray):
             cut_loc = self.arr(cut_loc, "code_length")
 
         # Define the slice range
@@ -231,94 +232,93 @@ class YtFLEKSData(BoxlibDataset):
 
         abArr = self.arbitrary_grid(left_edge, right_edge, slice_dim)
 
-        dataSets = {}
+        data_vars = {}
         for var in self.field_list:
             if abArr[var].size != 0:  # remove empty sliced particle output
-                dataSets[var[1]] = np.squeeze(abArr[var])
+                data_vars[var[1]] = np.squeeze(abArr[var])
 
         axLabes = {0: ("Y", "Z"), 1: ("X", "Z"), 2: ("X", "Y")}
+        ax_names = axLabes[idir]
 
-        axes = []
-        for axis_label in axLabes[idir]:
+        coords = {}
+        for axis_label in ax_names:
             ax_dir = axDir[axis_label]
-            axes.append(
-                np.linspace(
-                    self.domain_left_edge[ax_dir],
-                    self.domain_right_edge[ax_dir],
-                    self.domain_dimensions[ax_dir],
-                )
+            coords[axis_label] = np.linspace(
+                self.domain_left_edge[ax_dir],
+                self.domain_right_edge[ax_dir],
+                self.domain_dimensions[ax_dir],
             )
 
-        return DataContainer2D(
-            dataSets,
-            axes[0],
-            axes[1],
-            axLabes[idir][0],
-            axLabes[idir][1],
-            norm,
-            cut_loc,
+        # Process grid data (2D) and particle data (1D) separately
+        grid_vars = {}
+        particle_vars = {}
+
+        for key, value in data_vars.items():
+            if value.ndim == 2:
+                grid_vars[key] = value
+            elif value.ndim == 1:
+                particle_vars[key] = (("particle_index",), value)
+
+        # The arbitrary_grid returns data in (X, Y) order, so no transpose is needed.
+        ds_grid = xr.Dataset(
+            {key: (ax_names, value) for key, value in grid_vars.items()},
+            coords=coords,
         )
 
-    def get_domain(self) -> DataContainer3D:
+        ds_particle = xr.Dataset(particle_vars)
+
+        # Merge datasets and set particle positions as coordinates
+        ds = xr.merge([ds_grid, ds_particle])
+        particle_coords = [
+            "particle_position_x",
+            "particle_position_y",
+            "particle_position_z",
+        ]
+        for coord_name in particle_coords:
+            if coord_name in ds:
+                ds = ds.set_coords(coord_name)
+
+        ds.attrs["cut_norm"] = norm
+        ds.attrs["cut_loc"] = cut_loc
+        ds.attrs["time"] = self.current_time
+        ds.attrs["nstep"] = self.parameters.get("nstep", -1)
+        ds.attrs["filename"] = self.output_dir
+        return ds
+
+    def get_domain(self) -> xr.Dataset:
         """
         Read all the simulation data into a 3D box.
+        This method only reads grid data, not particle data.
         """
         domain = self.covering_grid(
             level=0, left_edge=self.domain_left_edge, dims=self.domain_dimensions
         )
 
-        dataSets = {}
-        for var in self.field_list:
-            dataSets[var[1]] = domain[var]
-
-        axes = []
-        for idim in range(self.dimensionality):
-            axes.append(
-                np.linspace(
-                    self.domain_left_edge[idim],
-                    self.domain_right_edge[idim],
-                    self.domain_dimensions[idim],
-                )
+        ax_names = ["X", "Y", "Z"]
+        dims = ax_names[: self.dimensionality]
+        coords = {
+            ax_names[idim]: np.linspace(
+                self.domain_left_edge[idim],
+                self.domain_right_edge[idim],
+                self.domain_dimensions[idim],
             )
+            for idim in range(self.dimensionality)
+        }
 
-        return DataContainer3D(dataSets, axes[0], axes[1], axes[2])
+        data_vars = {}
+        # Filter for non-particle fields as covering_grid does not support them
+        grid_fields = [f for f in self.field_list if f[0] not in self.particle_types]
 
-    def plot_slice(self, norm, cut_loc, vars, unit_type="planet", *args, **kwargs):
-        """Plot 2D slice
+        for var_tuple in grid_fields:
+            var_name = var_tuple[1]
+            value = domain[var_tuple]
+            data_vars[var_name] = (dims, value)
 
-        Args:
-            norm: str
-                Normal direction of the slice in "x", "y" or "z".
-            cut_loc: float
-                The location of the slice.
-
-            vars: a list or string of plotting variables.
-                Example: "Bx rhos0" or ["Bx", "rhos0"]
-
-        unit_type: The unit system of the plots. "planet" or "si".
-
-        Examples:
-            >>> vars = ["rhos0", "uzs0", "Bz", "pxxs1", "Ex"]
-            >>> splt = ds.plot_slice("y", 0.0, vars)
-            >>> splt.display()
-        """
-
-        if type(vars) == str:
-            vars = vars.split()
-
-        center = self.domain_center
-        idir = "xyz".find(norm.lower())
-        center[idir] = cut_loc
-        splt = yt.SlicePlot(
-            self, norm, fields=vars, center=center, origin="native", *args, **kwargs
-        )
-        for var in vars:
-            splt.set_log(var, False)
-            splt.set_unit(var, get_unit(var, unit_type))
-
-        splt.set_axes_unit(get_unit("X", unit_type))
-
-        return splt
+        ds = xr.Dataset(data_vars, coords=coords)
+        ds.attrs["time"] = self.current_time
+        ds.attrs["nstep"] = self.parameters.get("nstep", -1)
+        ds.attrs["filename"] = self.output_dir
+        return ds
 
     def _get_profile(
         self,
