@@ -22,23 +22,21 @@ def amrex_dataset(setup_test_data):
 class TestEvaluateExpression:
     def test_simple_expression(self, amrex_dataset):
         """Test a simple arithmetic expression."""
-        result = amrex_dataset.evaluate_expression("{Bx} + {By}")
+        result = amrex_dataset.fleks.evaluate_expression("{Bx} + {By}")
         assert isinstance(result, yt.units.yt_array.YTArray)
-        assert result.shape == amrex_dataset.data["Bx"].shape
-        expected = amrex_dataset.data["Bx"] + amrex_dataset.data["By"]
-        np.testing.assert_allclose(result.value, expected.value)
+        assert result.shape == amrex_dataset["Bx"].shape
+        expected = amrex_dataset["Bx"] + amrex_dataset["By"]
+        np.testing.assert_allclose(result.value, expected.values)
 
     def test_function_call_expression(self, amrex_dataset):
         """Test an expression involving a NumPy function."""
-        result = amrex_dataset.evaluate_expression("np.sqrt({Bx}**2+{By}**2)")
+        result = amrex_dataset.fleks.evaluate_expression("np.sqrt({Bx}**2+{By}**2)")
         assert isinstance(result, yt.units.yt_array.YTArray)
-        assert result.shape == amrex_dataset.data["Bx"].shape
-        expected = np.sqrt(
-            amrex_dataset.data["Bx"] ** 2 + amrex_dataset.data["By"] ** 2
-        )
-        np.testing.assert_allclose(result.value, expected.value)
+        assert result.shape == amrex_dataset["Bx"].shape
+        expected = np.sqrt(amrex_dataset["Bx"] ** 2 + amrex_dataset["By"] ** 2)
+        np.testing.assert_allclose(result.value, expected.values)
 
     def test_non_existent_variable(self, amrex_dataset):
         """Test that a KeyError is raised for a non-existent variable."""
         with pytest.raises(KeyError):
-            amrex_dataset.evaluate_expression("{non_existent_var}")
+            amrex_dataset.fleks.evaluate_expression("{non_existent_var}")
