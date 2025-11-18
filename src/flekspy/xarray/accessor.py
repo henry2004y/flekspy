@@ -175,14 +175,14 @@ class FleksAccessor:
             x, y = self._obj[coords[0]], self._obj[coords[1]]
 
             if self._obj.attrs.get("gencoord", False):
-                if pcolor or abs(vmin - vmax) < 1e-20 * abs(vmax):
+                if pcolor or np.isclose(vmin, vmax):
                     cs = ax.tripcolor(x.values, y.values, v.T, cmap=cmap, *args, **kwargs)
                 else:
                     cs = ax.tricontourf(
                         x.values, y.values, v.T, levels=levels, cmap=cmap, extend="both", *args, **kwargs
                     )
             else:
-                if pcolor or abs(vmin - vmax) < 1e-20 * abs(vmax):
+                if pcolor or np.isclose(vmin, vmax):
                     cs = ax.pcolormesh(x.values, y.values, v.T, cmap=cmap, *args, **kwargs)
                 else:
                     cs = ax.contourf(
