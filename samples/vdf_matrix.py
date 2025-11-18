@@ -101,11 +101,7 @@ def create_plot(
     inset_norm = mcolors.LogNorm(vmin=1e-7, vmax=max(global_vmax, 1e-10))
 
     # --- 5. Create the Main Background Plot ---
-    try:
-        ds = flekspy.load(field_file)
-    except Exception as e:
-        print(f"Error loading field data {field_file}: {e}")
-        return  # Skip this plot
+    ds = flekspy.load(field_file)
 
     fig, ax = plt.subplots(1, 1, figsize=(12, 15), constrained_layout=True)
 
@@ -156,7 +152,7 @@ def create_plot(
         if region.get("hist_data") is None:
             continue  # Skip if histogram calculation failed
 
-        hist_data = region["hist_data"]
+        hist_data = region["hist_data"].T
 
         # Calculate the center of the region for the anchor point
         x_center = (region["x_range"][0] + region["x_range"][1]) / 2.0
