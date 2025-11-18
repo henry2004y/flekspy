@@ -61,12 +61,13 @@ class TestIDL:
 
     def test_plot(self, idl_data_files):
         ds = fs.load(idl_data_files[0])
-        ds.fleks.plot("p")
+        ds.p.plot()
         ds = fs.load(idl_data_files[1])
-        ds.fleks.plot("rhoS0")
-        ds.fleks.plot("Bx")
+        ds.rhoS0.plot.pcolormesh(x="x", y="y")
+        ds["Bx"].plot.pcolormesh(x="x", y="y")
+        ds.plot.streamplot(x="x", y="y", u="Bx", v="By", color="w")
         ds = fs.load(idl_data_files[3])
-        ds.fleks.plot("Rho")
+        ds.Rho.ugrid.plot.contourf()
         assert True
 
 
@@ -126,12 +127,6 @@ class TestAMReX:
         assert f[0].size == 16 and f[2].shape == (16, 16)
 
     def test_amrex_plot(self, amrex_data_files):
-        ds = fs.load(amrex_data_files[1], use_yt_loader=True)
-        dc = ds.get_slice("z", 0.5)
-        dc.fleks.plot("Bx")
-        assert True
-
-    def test_amrex_plot_2(self, amrex_data_files):
         ds = fs.load(amrex_data_files[1], use_yt_loader=True)
         dc = ds.get_slice("z", 0.5)
         f, axes = dc.fleks.plot("Bx")

@@ -9,6 +9,7 @@ from flekspy.util.utilities import get_unit
 from flekspy.plot.streamplot import streamplot
 import yt
 
+
 @xr.register_dataset_accessor("fleks")
 class FleksAccessor:
     def __init__(self, ds):
@@ -125,9 +126,9 @@ class FleksAccessor:
         axes=None,
         pcolor=False,
         logscale=False,
-        addgrid=False,
-        bottomline=10,
-        showcolorbar: bool = True,
+        add_grid=False,
+        add_colorbar: bool = True,
+        verbose=True,
         *args,
         **kwargs,
     ):
@@ -176,19 +177,37 @@ class FleksAccessor:
 
             if self._obj.attrs.get("gencoord", False):
                 if pcolor or np.isclose(vmin, vmax):
-                    cs = ax.tripcolor(x.values, y.values, v.T, cmap=cmap, *args, **kwargs)
+                    cs = ax.tripcolor(
+                        x.values, y.values, v.T, cmap=cmap, *args, **kwargs
+                    )
                 else:
                     cs = ax.tricontourf(
-                        x.values, y.values, v.T, levels=levels, cmap=cmap, extend="both", *args, **kwargs
+                        x.values,
+                        y.values,
+                        v.T,
+                        levels=levels,
+                        cmap=cmap,
+                        extend="both",
+                        *args,
+                        **kwargs,
                     )
             else:
                 if pcolor or np.isclose(vmin, vmax):
-                    cs = ax.pcolormesh(x.values, y.values, v.T, cmap=cmap, *args, **kwargs)
+                    cs = ax.pcolormesh(
+                        x.values, y.values, v.T, cmap=cmap, *args, **kwargs
+                    )
                 else:
                     cs = ax.contourf(
-                        x.values, y.values, v.T, levels=levels, cmap=cmap, extend="both", *args, **kwargs
+                        x.values,
+                        y.values,
+                        v.T,
+                        levels=levels,
+                        cmap=cmap,
+                        extend="both",
+                        *args,
+                        **kwargs,
                     )
-            if addgrid:
+            if add_grid:
                 if self._obj.attrs.get("gencoord", False):
                     gx, gy = x.values, y.values
                 else:
@@ -196,7 +215,7 @@ class FleksAccessor:
                     gx, gy = np.reshape(gg[0], -1), np.reshape(gg[1], -1)
                 ax.plot(gx, gy, "x")
 
-            if showcolorbar:
+            if add_colorbar:
                 cb = f.colorbar(cs, ax=ax, pad=0.01)
                 cb.formatter.set_powerlimits((0, 0))
 
@@ -209,19 +228,18 @@ class FleksAccessor:
                 title += f" [{varUnit}]"
             if logscale:
                 title = f"$log_{{10}}$({title})"
+            if "cut_norm" in self._obj.attrs and "cut_loc" in self._obj.attrs:
+                title += (
+                    f" at {self._obj.attrs['cut_norm']} = {self._obj.attrs['cut_loc']}"
+                )
             ax.set_title(title)
 
-        if "cut_norm" in self._obj.attrs and "cut_loc" in self._obj.attrs:
-            s = f"Plots at {self._obj.attrs['cut_norm']} = {self._obj.attrs['cut_loc']}"
-        else:
-            s = ""
-
-        if bottomline > 0 and "time" in self._obj.attrs:
-            s += f" time = {self._obj.attrs['time']}"
-        if bottomline > 1 and "nstep" in self._obj.attrs:
-            s += f" nstep = {self._obj.attrs['nstep']}"
-        if bottomline > 2 and "filename" in self._obj.attrs:
-            s += f" {self._obj.attrs['filename']}"
+        s = ""
+        if verbose:
+            if "time" in self._obj.attrs:
+                s += f" time = {self._obj.attrs['time']}"
+            if "nstep" in self._obj.attrs:
+                s += f" nstep = {self._obj.attrs['nstep']}"
 
         if s:
             plt.figtext(0.01, 0.01, s, ha="left")
@@ -259,9 +277,8 @@ class FleksAccessor:
         ax,
         var1,
         var2,
-        density=1,
-        nx=400,
-        ny=400,
+        nx=100,
+        ny=100,
         xmin=None,
         xmax=None,
         ymin=None,
@@ -305,7 +322,6 @@ class FleksAccessor:
             vect1, vect2 = v1, v2
 
         if rmask is not None:
-            mask = np.zeros(vect1.shape, dtype=bool)
             r2 = rmask**2
             for i in range(len(xx)):
                 for j in range(len(yy)):
@@ -313,4 +329,4 @@ class FleksAccessor:
                         vect1[i, j] = np.nan
                         vect2[i, j] = np.nan
 
-        streamplot(ax, xx, yy, vect1.T, vect2.T, density=density, *args, **kwargs)
+        streamplot(ax, xx, yy, vect1.T, vect2.T, *args, **kwargs)

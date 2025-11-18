@@ -13,8 +13,7 @@ from yt.visualization.profile_plotter import PhasePlot
 import xarray as xr
 
 from flekspy.util import get_unit
-import flekspy.xarray  # noqa: F401
-
+import flekspy.xarray
 
 class FLEKSFieldInfo(FieldInfoContainer):
     l_units = "code_length"
@@ -308,9 +307,7 @@ class YtFLEKSData(BoxlibDataset):
 
         data_vars = {}
         # Filter for non-particle fields as covering_grid does not support them
-        grid_fields = [
-            f for f in self.field_list if f[0] not in self.particle_types
-        ]
+        grid_fields = [f for f in self.field_list if f[0] not in self.particle_types]
 
         for var_tuple in grid_fields:
             var_name = var_tuple[1]
@@ -322,27 +319,6 @@ class YtFLEKSData(BoxlibDataset):
         ds.attrs["nstep"] = self.parameters.get("nstep", -1)
         ds.attrs["filename"] = self.output_dir
         return ds
-
-    def plot_slice(self, norm, cut_loc, vars, unit="planet", *args, **kwargs):
-        """Plot 2D slice
-
-        Args:
-            norm: str
-                Normal direction of the slice in "x", "y" or "z".
-            cut_loc: float
-                The location of the slice.
-
-            vars: a list or string of plotting variables.
-                Example: "Bx rhos0" or ["Bx", "rhos0"]
-
-        unit: The unit system of the plots. "planet" or "si".
-
-        Examples:
-            >>> vars = ["rhos0", "uzs0", "Bz", "pxxs1", "Ex"]
-            >>> f, axes = ds.plot_slice("y", 0.0, vars)
-        """
-        dc = self.get_slice(norm, cut_loc)
-        return dc.fleks.plot(vars, unit=unit, *args, **kwargs)
 
     def _get_profile(
         self,

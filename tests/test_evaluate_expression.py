@@ -2,13 +2,7 @@ import pytest
 import os
 import numpy as np
 import yt
-
 import flekspy as fs
-from flekspy.util import download_testfile
-
-import matplotlib
-
-matplotlib.use("agg")
 
 
 @pytest.fixture(scope="module")
