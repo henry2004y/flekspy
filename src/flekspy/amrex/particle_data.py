@@ -475,47 +475,6 @@ class AMReXParticleData(AMReXPlottingMixin):
         return gmm
 
     @staticmethod
-    def get_gmm_parameters(
-        gmm: "GaussianMixture", isotropic: bool = True
-    ) -> List[dict]:
-        """
-        Extracts physical parameters from a fitted GMM.
-
-        This method returns the squared thermal velocities (variances) from the
-        covariance matrix of the GMM components. It does not perform any unit
-        conversions.
-
-        Args:
-            gmm ("GaussianMixture"): The fitted GMM model.
-            isotropic (bool, optional): If True, assumes an isotropic Maxwellian
-                                        distribution and returns a single scalar v_th_sq.
-                                        If False, assumes a Bi-Maxwellian distribution and returns
-                                        parallel and perpendicular components. Defaults to True.
-
-        Returns:
-            list of dict: A list of dictionaries, one for each Gaussian component.
-                          - Isotropic: {'center': [mx, my], 'v_th_sq': v_sq}
-                          - Bi-Maxwellian: {'center': [mx, my], 'v_parallel_sq': v_par_sq, 'v_perp_sq': v_perp_sq}
-        """
-        if isotropic:
-            return [
-                {
-                    "center": mean.tolist(),
-                    "v_th_sq": np.trace(cov) / 2.0,
-                }
-                for mean, cov in zip(gmm.means_, gmm.covariances_)
-            ]
-        else:
-            return [
-                {
-                    "center": mean.tolist(),
-                    "v_parallel_sq": cov[0, 0],
-                    "v_perp_sq": cov[1, 1],
-                }
-                for mean, cov in zip(gmm.means_, gmm.covariances_)
-            ]
-
-    @staticmethod
     def get_gmm_temperatures(
         gmm: "GaussianMixture", particle_mass: float = 1.0, isotropic: bool = True
     ) -> List[dict]:
@@ -539,7 +498,9 @@ class AMReXParticleData(AMReXPlottingMixin):
                           - Isotropic: {'center': [mx, my], 'temperature': T}
                           - Bi-Maxwellian: {'center': [mx, my], 'T_parallel': T_par, 'T_perpendicular': T_perp}
         """
-        parameters = AMReXParticleData.get_gmm_parameters(gmm, isotropic=isotropic)
+        from ..util.gmm import get_gmm_parameters
+
+        parameters = get_gmm_parameters(gmm, isotropic=isotropic)
         mass_in_kg = particle_mass * const.m_u
 
         if isotropic:
