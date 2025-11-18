@@ -33,7 +33,7 @@ def generate_synthetic_gmm_data(components: List[Dict[str, Any]],
         The shape of the array will be (total_samples, n_features).
 
     """
-    rng = np.random.RandomState(random_state)
+    rng = np.random.default_rng(random_state)
     all_data = []
 
     for comp in components:
