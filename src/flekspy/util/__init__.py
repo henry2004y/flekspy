@@ -4,3 +4,4 @@ from .utilities import (
     get_unit,
     get_ticks,
 )
+from .exosphere import Exosphere
