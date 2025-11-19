@@ -1,4 +1,4 @@
-# flekspy
+# flekspy: FLEKS Python toolkit
 
 <p align="center">
   <a href="https://badge.fury.io/py/flekspy">
