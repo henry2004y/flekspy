@@ -1,5 +1,5 @@
 """Exosphere models."""
-
+import typing
 import numpy as np
 from scipy.constants import G, k as k_B, m_p
 
@@ -9,13 +9,12 @@ class Exosphere:
 
     def __init__(
         self,
-        neutral_profile: str = "exponential",
+        neutral_profile: typing.Literal["exponential", "power_law", "chamberlain"] = "exponential",
         n0: float = 1.0e10,
         H0: float = 100.0e3,
         T0: float = 1000.0,
         k0: float = 2.0,
         exobase_radius: float = 6371.0e3,
-        total_production_rate: float = 1.0e28,
         M_planet: float = 5.972e24,  # Mass of Earth in kg
         m_neutral: float = 1.008 * m_p,  # Mass of Hydrogen in kg
     ):
@@ -37,9 +36,8 @@ class Exosphere:
         k0 : float, optional
             Power-law exponents. The default is 2.0.
         exobase_radius : float, optional
-            Altitude below which neutral density is zero [m]. The default is 6371.0e3.
-        total_production_rate : float, optional
-            Total photoionization rate [#/s]. The default is 1.0e28.
+            Radius of the exobase [m]. Neutral density is zero below this
+            radius. The default is 6371.0e3.
         M_planet : float, optional
             Mass of the planet [kg]. The default is Earth's mass.
         m_neutral : float, optional
@@ -51,11 +49,8 @@ class Exosphere:
         self.T0 = T0
         self.k0 = k0
         self.exobase_radius = exobase_radius
-        self.total_production_rate = total_production_rate
         self.M_planet = M_planet
         self.m_neutral = m_neutral
-        self.G = G
-        self.k_B = k_B
 
     def get_neutral_density(self, r: np.ndarray) -> np.ndarray:
         """
@@ -77,10 +72,10 @@ class Exosphere:
             density = self.n0 * (self.exobase_radius / r) ** self.k0
         elif self.neutral_profile == "chamberlain":
             lambda_c = (
-                self.G
+                G
                 * self.M_planet
                 * self.m_neutral
-                / (self.k_B * self.T0 * self.exobase_radius)
+                / (k_B * self.T0 * self.exobase_radius)
             )
             density = self.n0 * np.exp(lambda_c * (self.exobase_radius / r - 1))
         else:
