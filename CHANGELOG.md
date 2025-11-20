@@ -113,8 +113,12 @@
 
 - Separate `get_gmm_temperatures` and `get_gmm_parameters` for covariance unit conversions in GMM fitting.
 
-## v0.7.0 (2025/11/20)
+## v0.7.0 (2025/11/18)
 
 - Deprecate customized `DataContainer` class and replace with xarray accessor.
 - Move GMM utilities to a separate module.
 - Use PyData template for documentation.
+
+## v0.7.1 (2025/11/19)
+
+- Add an analytical exosphere module.
