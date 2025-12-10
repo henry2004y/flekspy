@@ -46,6 +46,7 @@ def load(
     iDomain: int = 0,
     iSpecies: int = 0,
     iFile: int = 0,
+    npict: int = 1,
     readFieldData: bool = False,
     use_yt_loader: bool = False,
 ):
@@ -57,6 +58,7 @@ def load(
         iSpecies (int, optional): Test particle species index. Defaults to 0.
         iFile (int, optional): The index of the file to load if the pattern
             matches multiple files. Defaults to 0.
+        npict (int, optional): The index of snapshot in *.outs IDL file. Defaults to 1.
         readFieldData (bool, optional): Whether or not to read field data for test particles. Defaults to False.
         use_yt_loader (bool, optional): If True, forces the use of the yt loader for AMReX data. Defaults to False.
 
@@ -87,7 +89,7 @@ def load(
         return FLEKSTP(filename, iDomain=iDomain, iSpecies=iSpecies)
     elif filepath.suffix in [".out", ".outs"]:
         read_idl = __getattr__("read_idl")
-        return read_idl(filename)
+        return read_idl(filename, npict=npict)
     elif basename.endswith("_amrex"):
         if use_yt_loader or "particle" not in basename:
             YtFLEKSData = __getattr__("YtFLEKSData")
