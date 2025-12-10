@@ -9,10 +9,10 @@ from flekspy.util.logger import get_logger
 logger = get_logger(name=__name__)
 
 
-def _read_and_process_data(filename):
+def _read_and_process_data(filename, npict=1):
     attrs = {"filename": filename}
     attrs["isOuts"] = filename.endswith("outs")
-    attrs["npict"] = 1
+    attrs["npict"] = npict
     attrs["nInstance"] = None if attrs["isOuts"] else 1
 
     with open(filename, "rb") as f:
@@ -613,8 +613,8 @@ class DerivedAccessor:
         return current_density
 
 
-def read_idl(filename):
+def read_idl(filename, npict=1):
     """
     Read IDL format file.
     """
-    return _read_and_process_data(filename)
+    return _read_and_process_data(filename, npict=npict)
