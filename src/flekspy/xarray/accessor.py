@@ -113,6 +113,32 @@ class FleksAccessor:
 
         return varName, vMin, vMax
 
+    def _get_2d_coords(self):
+        """Helper to get coordinate values and names for 2D plots."""
+        is_unstructured = self._obj.attrs.get("gencoord", False)
+        coords = list(self._obj.coords.keys())
+
+        if is_unstructured and hasattr(self._obj, "grid") and hasattr(self._obj.grid, "node_x"):
+            x_vals = self._obj.grid.node_x
+            y_vals = self._obj.grid.node_y
+            x_name, y_name = "x", "y"
+        elif is_unstructured and "dims" in self._obj.attrs:
+            # Fallback for when xugrid's grid is not available on the object
+            dims = self._obj.attrs["dims"]
+            x_name, y_name = dims[0], dims[1]
+            x_vals = self._obj[x_name].values
+            y_vals = self._obj[y_name].values
+        else:  # structured
+            if len(coords) < 2:
+                raise ValueError("2D coordinates not found for structured grid.")
+            x = self._obj[coords[0]]
+            y = self._obj[coords[1]]
+            x_vals = x.values
+            y_vals = y.values
+            x_name, y_name = x.name, y.name
+
+        return x_vals, y_vals, x_name, y_name, is_unstructured
+
     def plot(
         self,
         vars,
@@ -169,28 +195,14 @@ class FleksAccessor:
 
             is_unstructured = self._obj.attrs.get("gencoord", False)
 
-            if is_unstructured and hasattr(self._obj, "grid") and hasattr(self._obj.grid, "node_x"):
-                x_vals = self._obj.grid.node_x
-                y_vals = self._obj.grid.node_y
-                x_name, y_name = "x", "y"
-            elif is_unstructured and "dims" in self._obj.attrs:
-                # Fallback for when xugrid's grid is not available on the object
-                dims = self._obj.attrs["dims"]
-                x_name, y_name = dims[0], dims[1]
-                x_vals = self._obj[x_name].values
-                y_vals = self._obj[y_name].values
-            elif len(coords) == 1:
+            if len(coords) == 1 and not is_unstructured:
                 x = self._obj[coords[0]]
                 ax.plot(x, v)
                 ax.set_xlabel(x.name)
                 ax.set_title(varNames[isub])
                 continue
-            else:
-                x = self._obj[coords[0]]
-                y = self._obj[coords[1]]
-                x_vals = x.values
-                y_vals = y.values
-                x_name, y_name = x.name, y.name
+
+            x_vals, y_vals, x_name, y_name, is_unstructured = self._get_2d_coords()
 
             if is_unstructured:
                 if pcolor or np.isclose(vmin, vmax):
@@ -216,7 +228,7 @@ class FleksAccessor:
                 else:
                     cs = ax.contourf(
                         x_vals,
-                        y.values,
+                        y_vals,
                         v.T,
                         levels=levels,
                         cmap=cmap,
@@ -275,19 +287,7 @@ class FleksAccessor:
         vmax = v.max() if vmin is None else vmax
         v = np.clip(v, vmin, vmax)
 
-        coords = list(self._obj.coords.keys())
-        is_unstructured = self._obj.attrs.get("gencoord", False)
-
-        if is_unstructured and hasattr(self._obj, "grid") and hasattr(self._obj.grid, "node_x"):
-            x_vals = self._obj.grid.node_x
-            y_vals = self._obj.grid.node_y
-        elif is_unstructured and "dims" in self._obj.attrs:
-            dims = self._obj.attrs["dims"]
-            x_vals = self._obj[dims[0]].values
-            y_vals = self._obj[dims[1]].values
-        else:
-            x_vals = self._obj[coords[0]].values
-            y_vals = self._obj[coords[1]].values
+        x_vals, y_vals, _, _, is_unstructured = self._get_2d_coords()
 
         if is_unstructured:
             triang = tri.Triangulation(x_vals, y_vals)
@@ -322,19 +322,7 @@ class FleksAccessor:
         if isinstance(v2, yt.units.yt_array.YTArray):
             v2 = v2.value
 
-        coords = list(self._obj.coords.keys())
-        is_unstructured = self._obj.attrs.get("gencoord", False)
-
-        if is_unstructured and hasattr(self._obj, "grid") and hasattr(self._obj.grid, "node_x"):
-            x_vals = self._obj.grid.node_x
-            y_vals = self._obj.grid.node_y
-        elif is_unstructured and "dims" in self._obj.attrs:
-            dims = self._obj.attrs["dims"]
-            x_vals = self._obj[dims[0]].values
-            y_vals = self._obj[dims[1]].values
-        else:
-            x_vals = self._obj[coords[0]].values
-            y_vals = self._obj[coords[1]].values
+        x_vals, y_vals, _, _, is_unstructured = self._get_2d_coords()
 
         if is_unstructured:
             if xmin is None:
@@ -346,7 +334,7 @@ class FleksAccessor:
             if ymax is None:
                 ymax = y_vals.max()
 
-            gridx, gridy = np.mgrid[0 : nx + 1, 0 : ny + 1]
+            gridy, gridx = np.mgrid[0 : ny + 1, 0 : nx + 1]
             gridx = gridx * (xmax - xmin) / nx + xmin
             gridy = gridy * (ymax - ymin) / ny + ymin
             xy = np.zeros((len(x_vals), 2))
@@ -354,18 +342,18 @@ class FleksAccessor:
             xy[:, 1] = y_vals
             vect1 = griddata(xy, v1, (gridx, gridy), method="linear")[1:-1, 1:-1]
             vect2 = griddata(xy, v2, (gridx, gridy), method="linear")[1:-1, 1:-1]
-            xx = gridx[1:-1, 0]
-            yy = gridy[0, 1:-1]
+            xx = gridx[0, 1:-1]
+            yy = gridy[1:-1, 0]
         else:
             xx, yy = x_vals, y_vals
-            vect1, vect2 = v1, v2
+            vect1, vect2 = v1.T, v2.T
 
         if rmask is not None:
             r2 = rmask**2
             for i in range(len(xx)):
                 for j in range(len(yy)):
                     if xx[i] ** 2 + yy[j] ** 2 < r2:
-                        vect1[i, j] = np.nan
-                        vect2[i, j] = np.nan
+                        vect1[j, i] = np.nan
+                        vect2[j, i] = np.nan
 
-        streamplot(ax, xx, yy, vect1.T, vect2.T, *args, **kwargs)
+        streamplot(ax, xx, yy, vect1, vect2, *args, **kwargs)
