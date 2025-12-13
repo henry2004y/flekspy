@@ -166,24 +166,41 @@ class FleksAccessor:
 
             levels = np.linspace(vmin, vmax, nlevels)
             coords = list(self._obj.coords.keys())
-            if len(coords) == 1:
+
+            is_unstructured = self._obj.attrs.get("gencoord", False)
+
+            if is_unstructured and hasattr(self._obj, "grid") and hasattr(self._obj.grid, "node_x"):
+                x_vals = self._obj.grid.node_x
+                y_vals = self._obj.grid.node_y
+                x_name, y_name = "x", "y"
+            elif is_unstructured and "dims" in self._obj.attrs:
+                # Fallback for when xugrid's grid is not available on the object
+                dims = self._obj.attrs["dims"]
+                x_name, y_name = dims[0], dims[1]
+                x_vals = self._obj[x_name].values
+                y_vals = self._obj[y_name].values
+            elif len(coords) == 1:
                 x = self._obj[coords[0]]
                 ax.plot(x, v)
                 ax.set_xlabel(x.name)
                 ax.set_title(varNames[isub])
                 continue
+            else:
+                x = self._obj[coords[0]]
+                y = self._obj[coords[1]]
+                x_vals = x.values
+                y_vals = y.values
+                x_name, y_name = x.name, y.name
 
-            x, y = self._obj[coords[0]], self._obj[coords[1]]
-
-            if self._obj.attrs.get("gencoord", False):
+            if is_unstructured:
                 if pcolor or np.isclose(vmin, vmax):
                     cs = ax.tripcolor(
-                        x.values, y.values, v.T, cmap=cmap, *args, **kwargs
+                        x_vals, y_vals, v.T, cmap=cmap, *args, **kwargs
                     )
                 else:
                     cs = ax.tricontourf(
-                        x.values,
-                        y.values,
+                        x_vals,
+                        y_vals,
                         v.T,
                         levels=levels,
                         cmap=cmap,
@@ -194,11 +211,11 @@ class FleksAccessor:
             else:
                 if pcolor or np.isclose(vmin, vmax):
                     cs = ax.pcolormesh(
-                        x.values, y.values, v.T, cmap=cmap, *args, **kwargs
+                        x_vals, y_vals, v.T, cmap=cmap, *args, **kwargs
                     )
                 else:
                     cs = ax.contourf(
-                        x.values,
+                        x_vals,
                         y.values,
                         v.T,
                         levels=levels,
@@ -208,10 +225,10 @@ class FleksAccessor:
                         **kwargs,
                     )
             if add_grid:
-                if self._obj.attrs.get("gencoord", False):
-                    gx, gy = x.values, y.values
+                if is_unstructured:
+                    gx, gy = x_vals, y_vals
                 else:
-                    gg = np.meshgrid(x.values, y.values)
+                    gg = np.meshgrid(x_vals, y_vals)
                     gx, gy = np.reshape(gg[0], -1), np.reshape(gg[1], -1)
                 ax.plot(gx, gy, "x")
 
@@ -221,8 +238,8 @@ class FleksAccessor:
 
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
-            ax.set_xlabel(x.name)
-            ax.set_ylabel(y.name)
+            ax.set_xlabel(x_name)
+            ax.set_ylabel(y_name)
             title = varNames[isub]
             if varUnit != "dimensionless":
                 title += f" [{varUnit}]"
@@ -259,18 +276,29 @@ class FleksAccessor:
         v = np.clip(v, vmin, vmax)
 
         coords = list(self._obj.coords.keys())
-        x, y = self._obj[coords[0]], self._obj[coords[1]]
+        is_unstructured = self._obj.attrs.get("gencoord", False)
 
-        if self._obj.attrs.get("gencoord", False):
-            triang = tri.Triangulation(x, y)
+        if is_unstructured and hasattr(self._obj, "grid") and hasattr(self._obj.grid, "node_x"):
+            x_vals = self._obj.grid.node_x
+            y_vals = self._obj.grid.node_y
+        elif is_unstructured and "dims" in self._obj.attrs:
+            dims = self._obj.attrs["dims"]
+            x_vals = self._obj[dims[0]].values
+            y_vals = self._obj[dims[1]].values
+        else:
+            x_vals = self._obj[coords[0]].values
+            y_vals = self._obj[coords[1]].values
+
+        if is_unstructured:
+            triang = tri.Triangulation(x_vals, y_vals)
             if rmask is not None:
-                r = np.sqrt(x**2 + y**2)
+                r = np.sqrt(x_vals**2 + y_vals**2)
                 isbad = np.less(r, 1.2)
                 mask = np.all(np.where(isbad[triang.triangles], True, False), axis=1)
                 triang.set_mask(mask)
             ax.tricontour(triang, v.T, *args, **kwargs)
         else:
-            ax.contour(x, y, v.T, *args, **kwargs)
+            ax.contour(x_vals, y_vals, v.T, *args, **kwargs)
 
     def add_stream(
         self,
@@ -295,30 +323,41 @@ class FleksAccessor:
             v2 = v2.value
 
         coords = list(self._obj.coords.keys())
-        x, y = self._obj[coords[0]], self._obj[coords[1]]
+        is_unstructured = self._obj.attrs.get("gencoord", False)
 
-        if self._obj.attrs.get("gencoord", False):
+        if is_unstructured and hasattr(self._obj, "grid") and hasattr(self._obj.grid, "node_x"):
+            x_vals = self._obj.grid.node_x
+            y_vals = self._obj.grid.node_y
+        elif is_unstructured and "dims" in self._obj.attrs:
+            dims = self._obj.attrs["dims"]
+            x_vals = self._obj[dims[0]].values
+            y_vals = self._obj[dims[1]].values
+        else:
+            x_vals = self._obj[coords[0]].values
+            y_vals = self._obj[coords[1]].values
+
+        if is_unstructured:
             if xmin is None:
-                xmin = x.min().item()
+                xmin = x_vals.min()
             if xmax is None:
-                xmax = x.max().item()
+                xmax = x_vals.max()
             if ymin is None:
-                ymin = y.min().item()
+                ymin = y_vals.min()
             if ymax is None:
-                ymax = y.max().item()
+                ymax = y_vals.max()
 
             gridx, gridy = np.mgrid[0 : nx + 1, 0 : ny + 1]
             gridx = gridx * (xmax - xmin) / nx + xmin
             gridy = gridy * (ymax - ymin) / ny + ymin
-            xy = np.zeros((len(x), 2))
-            xy[:, 0] = x.values
-            xy[:, 1] = y.values
+            xy = np.zeros((len(x_vals), 2))
+            xy[:, 0] = x_vals
+            xy[:, 1] = y_vals
             vect1 = griddata(xy, v1, (gridx, gridy), method="linear")[1:-1, 1:-1]
             vect2 = griddata(xy, v2, (gridx, gridy), method="linear")[1:-1, 1:-1]
             xx = gridx[1:-1, 0]
             yy = gridy[0, 1:-1]
         else:
-            xx, yy = x.values, y.values
+            xx, yy = x_vals, y_vals
             vect1, vect2 = v1, v2
 
         if rmask is not None:
