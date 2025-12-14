@@ -96,7 +96,15 @@ def _read_and_process_data(filename, npict=1):
                     data_slice = np.squeeze(array[i, ...])
                     # Data is located at the nodes of the grid.
                     data_vars[var_name] = (grid.node_dimension, data_slice)
-            dataset = xu.UgridDataset(xr.Dataset(data_vars), grids=[grid])
+
+            # Add explicit coordinates to the dataset so that accessors can find them
+            # without relying on xugrid's grid attribute which is not exposed
+            # when accessing the underlying xarray dataset.
+            dataset_raw = xr.Dataset(data_vars)
+            dataset_raw.coords[x_coord_name] = (grid.node_dimension, node_x)
+            dataset_raw.coords[y_coord_name] = (grid.node_dimension, node_y)
+
+            dataset = xu.UgridDataset(dataset_raw, grids=[grid])
         else:
             # Fallback to old behavior for 1D or 3D unstructured grids.
             data_vars = {}
