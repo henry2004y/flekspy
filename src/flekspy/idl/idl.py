@@ -1,7 +1,7 @@
 import numpy as np
 import struct
 import xarray as xr
-import flekspy.xarray.accessor
+import flekspy.xarray.accessor  # noqa: F401  # Register the accessor
 from scipy.constants import mu_0, e
 import xugrid as xu
 from scipy.spatial import Delaunay
