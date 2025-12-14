@@ -1,0 +1,61 @@
+flekspy.xarray.accessor
+=======================
+
+.. py:module:: flekspy.xarray.accessor
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.xarray.accessor.FleksAccessor
+
+
+Module Contents
+---------------
+
+.. py:class:: FleksAccessor(ds)
+
+   .. py:attribute:: _obj
+
+
+   .. py:method:: evaluate_expression(expression: str, unit: str = 'planet')
+
+      Evaluates the variable expression and return the result of an YTArray.
+
+      :param expression: Python codes to be executed
+      :type expression: str
+      :param Example: expression = "np.log({rhos0}+{rhos1})"
+
+
+
+   .. py:method:: get_variable(var, unit='planet')
+
+      Return raw variables or calculate derived variables.
+
+      :param var: variable name
+      :type var: str
+
+      Return: YTArray
+
+
+
+   .. py:method:: analyze_variable_string(var: str)
+
+
+   .. py:method:: _get_2d_coords()
+
+      Helper to get coordinate values and names for 2D plots.
+
+
+
+   .. py:method:: plot(vars, xlim=None, ylim=None, unit: str = 'planet', nlevels: int = 200, cmap: str = 'turbo', figsize=(10, 6), f=None, axes=None, pcolor=False, logscale=False, add_grid=False, add_colorbar: bool = True, verbose=True, *args, **kwargs)
+
+
+   .. py:method:: add_contour(ax, var, unit='planet', rmask=None, *args, **kwargs)
+
+
+   .. py:method:: add_stream(ax, var1, var2, nx=100, ny=100, xmin=None, xmax=None, ymin=None, ymax=None, rmask=None, *args, **kwargs)
+
+

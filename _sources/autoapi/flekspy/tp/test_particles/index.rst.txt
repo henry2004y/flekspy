@@ -1,0 +1,776 @@
+flekspy.tp.test_particles
+=========================
+
+.. py:module:: flekspy.tp.test_particles
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.tp.test_particles.logger
+   flekspy.tp.test_particles.EARTH_RADIUS_KM
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.tp.test_particles.Indices
+   flekspy.tp.test_particles.FLEKSTP
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.tp.test_particles.interpolate_at_times
+   flekspy.tp.test_particles.plot_integrated_energy
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: EARTH_RADIUS_KM
+   :value: 6378
+
+
+.. py:class:: Indices
+
+   Bases: :py:obj:`enum.IntEnum`
+
+
+   Defines constant indices for test particles.
+
+
+   .. py:attribute:: TIME
+      :value: 0
+
+
+
+   .. py:attribute:: X
+      :value: 1
+
+
+
+   .. py:attribute:: Y
+      :value: 2
+
+
+
+   .. py:attribute:: Z
+      :value: 3
+
+
+
+   .. py:attribute:: VX
+      :value: 4
+
+
+
+   .. py:attribute:: VY
+      :value: 5
+
+
+
+   .. py:attribute:: VZ
+      :value: 6
+
+
+
+   .. py:attribute:: BX
+      :value: 7
+
+
+
+   .. py:attribute:: BY
+      :value: 8
+
+
+
+   .. py:attribute:: BZ
+      :value: 9
+
+
+
+   .. py:attribute:: EX
+      :value: 10
+
+
+
+   .. py:attribute:: EY
+      :value: 11
+
+
+
+   .. py:attribute:: EZ
+      :value: 12
+
+
+
+   .. py:attribute:: DBXDX
+      :value: 13
+
+
+
+   .. py:attribute:: DBXDY
+      :value: 14
+
+
+
+   .. py:attribute:: DBXDZ
+      :value: 15
+
+
+
+   .. py:attribute:: DBYDX
+      :value: 16
+
+
+
+   .. py:attribute:: DBYDY
+      :value: 17
+
+
+
+   .. py:attribute:: DBYDZ
+      :value: 18
+
+
+
+   .. py:attribute:: DBZDX
+      :value: 19
+
+
+
+   .. py:attribute:: DBZDY
+      :value: 20
+
+
+
+   .. py:attribute:: DBZDZ
+      :value: 21
+
+
+
+.. py:class:: FLEKSTP(dirs: str, iDomain: int = 0, iSpecies: int = 0, unit: str = 'planetary', mass: float = proton_mass, charge: float = elementary_charge, iListStart: int = 0, iListEnd: int = -1, use_cache: bool = False)
+
+   Bases: :py:obj:`object`
+
+
+   A class that is used to read and plot test particles. Each particle ID consists of
+   a CPU index, a particle index on each CPU, and a location index.
+   By default, 7 real numbers saved for each step: time + position + velocity.
+   Additional field information are also stored if available.
+
+   This class is a lazy, iterable container. It avoids loading all data into memory
+   at once, making it efficient for large datasets. You can access particle
+   trajectories using standard container operations.
+
+   :param dirs: the path to the test particle dataset.
+   :type dirs: str
+
+   Examples:
+   >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
+   >>> len(tp)
+   10240
+   >>> trajectory = tp[0]
+   >>> tp.plot_trajectory(tp.IDs[3])
+   >>> tp.save_trajectory(tp.IDs[5], format="csv")
+   >>> tp.save_trajectory(tp.IDs[5], format="parquet")
+   >>> ids, pData = tp.read_particles_at_time(0.0, doSave=False)
+   >>> f = tp.plot_location(pData)
+
+
+   .. py:attribute:: use_cache
+      :value: False
+
+
+
+   .. py:attribute:: unit
+      :value: 'planetary'
+
+
+
+   .. py:attribute:: _trajectory_cache
+
+
+   .. py:attribute:: mass
+
+
+   .. py:attribute:: charge
+
+
+   .. py:attribute:: iSpecies
+      :value: 0
+
+
+
+   .. py:attribute:: pfiles
+      :value: []
+
+
+
+   .. py:attribute:: particle_locations
+      :type:  Dict[Tuple[int, int], List[Tuple[str, int]]]
+
+
+   .. py:attribute:: IDs
+
+
+   .. py:attribute:: filetime
+      :value: []
+
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __len__()
+
+
+   .. py:method:: __iter__()
+
+
+   .. py:method:: __getitem__(key)
+
+
+   .. py:method:: getIDs()
+
+
+   .. py:method:: read_particle_list(filename: str) -> Dict[Tuple[int, int], int]
+
+      Read and return a list of the particle IDs.
+
+
+
+   .. py:method:: _read_the_first_record(filename: str) -> Union[List[float], None]
+
+      Get the first record stored in one file.
+
+
+
+   .. py:method:: read_particles_at_time(time: float, doSave: bool = False) -> Tuple[numpy.ndarray, numpy.ndarray]
+
+      Get the information of all the particles at a given time.
+      If doSave, save to a CSV file with the name "particles_t***.csv".
+
+      Note that the time tags in filetime do not include the last saved time.
+
+      :returns: a numpy array of tuples contains the particle IDs.
+                pData: a numpy real array with the particle weight, location and velocity.
+      :rtype: ids
+
+      Examples:
+      >>> ids, pData = pt.read_particles_at_time(3700, doSave=True)
+
+
+
+   .. py:method:: save_trajectory(pID: Tuple[int, int], filename: str = None, shiftTime: bool = False, scaleTime: bool = False, format: str = 'csv') -> None
+
+      Save the trajectory of a particle to a file.
+      :param pID: particle ID.
+      :param filename: The name of the file to save the trajectory to.
+                       If None, a default name will be generated.
+      :type filename: str, optional
+      :param shiftTime: If set to True, set the initial time to be 0.
+      :type shiftTime: bool
+      :param scaleTime: If set to True, scale the time into [0,1] range.
+      :type scaleTime: bool
+      :param format: The output format, either "csv" or "parquet".
+      :type format: str
+
+      Example:
+      >>> tp.save_trajectory((3,15), format="parquet")
+
+
+
+   .. py:method:: save_trajectories(pIDs: Union[List[Tuple[int, int]], List[int]], filename: str = 'trajectories.h5') -> None
+
+      Save the trajectories of multiple particles to a single HDF5 file.
+
+      :param pIDs: A list of particle IDs to save. This can be a list of tuples
+                   (cpu, id) or a list of integer indices.
+      :param filename: The name of the HDF5 file to save the trajectories to.
+      :type filename: str
+
+
+
+   .. py:method:: _get_particle_raw_data(pID: Tuple[int, int]) -> numpy.ndarray
+
+      Reads all raw trajectory data for a particle across multiple files.
+
+
+
+   .. py:method:: _read_particle_record(pID: Tuple[int, int], index: int = -1) -> Union[list, None]
+
+      Return a specific record of a test particle given its ID.
+
+      :param pID: particle ID
+      :param index: The index of the record to be returned.
+                    0: first record.
+                    -1: last record (default).
+
+
+
+   .. py:method:: read_particle_trajectory(pID: Tuple[int, int]) -> polars.LazyFrame
+
+      Return the trajectory of a test particle as a polars LazyFrame.
+
+
+
+   .. py:method:: read_initial_condition(pID: Tuple[int, int]) -> Union[list, None]
+
+      Return the initial conditions of a test particle.
+
+
+
+   .. py:method:: read_final_condition(pID: Tuple[int, int]) -> Union[list, None]
+
+      Return the final conditions of a test particle.
+
+
+
+   .. py:method:: select_particles(f_select: Callable = None) -> List[Tuple[int, int]]
+
+      Return the test particles whose initial conditions satisfy the requirement
+      set by the user defined function f_select. The first argument of f_select is the
+      particle ID, and the second argument is the ID of a particle.
+
+      Examples:
+      >>> from flekspy.tp import Indices
+      >>> def f_select(tp, pid):
+      >>>     pData = tp.read_initial_condition(pid)
+      >>>     inTime = pData[Indices.TIME] < 3601
+      >>>     inRegion = pData[Indices.X] > 20
+      >>>     return inTime and inRegion
+      >>>
+      >>> pselected = tp.select_particles(f_select)
+      >>> tp.plot_trajectory(list(pselected.keys())[1])
+
+
+
+   .. py:method:: get_kinetic_energy(vx, vy, vz)
+
+
+   .. py:method:: get_kinetic_energy_change_rate(pt_lazy: polars.LazyFrame) -> polars.Series
+
+      Calculates the rate of change of kinetic energy in [eV/s].
+
+
+
+   .. py:method:: get_pitch_angle(pID)
+
+
+   .. py:method:: _get_pitch_angle_lazy(lf: polars.LazyFrame) -> polars.Series
+      :staticmethod:
+
+
+      Calculates the pitch angle from a LazyFrame.
+
+
+
+   .. py:method:: get_pitch_angle_from_v_b(vx, vy, vz, bx, by, bz)
+      :staticmethod:
+
+
+
+   .. py:method:: get_first_adiabatic_invariant(pt_lazy: polars.LazyFrame) -> polars.Series
+
+      Calculates the 1st adiabatic invariant of a particle.
+      The output units depend on the input data's units:
+      - "planetary" (e.g., velocity in km/s, B-field in nT): result is in [1e9 J/T].
+      - "SI" (e.g., velocity in m/s, B-field in T): result is in [J/T].
+
+
+
+   .. py:method:: _calculate_bmag(df: Union[polars.DataFrame, polars.LazyFrame]) -> Union[polars.DataFrame, polars.LazyFrame]
+      :staticmethod:
+
+
+      Calculates the magnetic field magnitude.
+
+
+
+   .. py:method:: _calculate_curvature(df: Union[polars.DataFrame, polars.LazyFrame]) -> Union[polars.DataFrame, polars.LazyFrame]
+      :staticmethod:
+
+
+      Calculates the magnetic field curvature vector and adds it to the DataFrame.
+      κ = (b ⋅ ∇)b
+      Depending on the selected units, output curvature may be
+      - "planetary": [1/RE]
+      - "SI": [1/m]
+
+
+
+   .. py:method:: get_ExB_drift(pt_lazy: polars.LazyFrame) -> polars.DataFrame
+
+      Calculates the convection drift velocity for a particle.
+      v_exb = E x B / (B^2)
+      Assuming Earth's planetary units, output drift velocity in [km/s].
+
+
+
+   .. py:method:: get_curvature_drift(pt_lazy: polars.LazyFrame) -> polars.DataFrame
+
+      Calculates the curvature drift velocity for a particle.
+      v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ)
+      Depending on the selected units, output drift velocity may be
+      - "planetary": [km/s]
+      - "SI": [m/s]
+
+
+
+   .. py:method:: get_adiabaticity_parameter(pt_lazy: polars.LazyFrame) -> polars.Series
+
+      Calculates the adiabaticity parameter, defined as the ratio of the
+      magnetic field's radius of curvature to the particle's gyroradius.
+      When this parameter is >> 1, the motion is adiabatic.
+
+
+
+   .. py:method:: _calculate_gradient_b_magnitude(df: Union[polars.DataFrame, polars.LazyFrame]) -> Union[polars.DataFrame, polars.LazyFrame]
+      :staticmethod:
+
+
+      Calculates the gradient of the magnetic field magnitude.
+
+
+
+   .. py:method:: get_gradient_drift(pt_lazy: polars.LazyFrame) -> polars.DataFrame
+
+      Calculates the gradient drift velocity for a particle.
+      v_g = (μ / (q * B^2)) * (B x ∇|B|)
+      Depending on the selected units, output drift velocity may be
+      - "planetary": [km/s]
+      - "SI": [m/s]
+
+
+
+   .. py:method:: get_polarization_drift(pt_lazy: polars.LazyFrame) -> polars.DataFrame
+
+      Calculates the polarization drift velocity for a particle.
+      v_p = (m / (q * B^2)) * (dE_perp / dt)
+      Depending on the selected units, output drift velocity may be
+      - "planetary": [km/s]
+      - "SI": [m/s]
+
+
+
+   .. py:method:: get_betatron_acceleration(pt, mu)
+
+      Calculates the Betatron acceleration term from particle trajectory data.
+
+      The calculation follows the formula: dW/dt = μ * (∂B/∂t)
+      where the partial derivative is found using: ∂B/∂t = dB/dt - v ⋅ ∇B
+
+      :param pt: A Polars LazyFrame containing the particle trajectory.
+                 It must include columns for time, velocity (vx, vy, vz),
+                 magnetic field (bx, by, bz), and the magnetic field
+                 gradient tensor (e.g., 'dbxdx', 'dbydx', etc.).
+      :param mu: A Polars Series containing the magnetic moment (first adiabatic invariant)
+                 of the particle.
+
+      :returns: A new Polars LazyFrame with added intermediate columns and the
+                final 'dW_betatron' column representing the rate of energy change in [eV/s].
+
+
+
+   .. py:method:: get_energy_change_guiding_center(pID: Tuple[int, int]) -> polars.DataFrame
+
+      Computes the change of energy of a single particle based on the guiding center theory.
+
+      The formula is given by:
+      dW/dt = q*E_parallel*v_parallel + mu*(∂B/∂t + u_E.∇B) + m*v_parallel^2*(u_E.κ)
+
+      where W is the particle energy, B is the magnetic field magnitude,
+      u_E is the E cross B drift, and κ is the magnetic field curvature.
+      The first term on the right hand side is the parallel acceleration,
+      the second term is the Betatron acceleration, and the third term
+      is one type of Fermi acceleration.
+
+      :param pID: The particle ID (cpu, id).
+      :type pID: Tuple[int, int]
+
+      :returns: A Polars DataFrame with the time, the three energy change components,
+                and the total, in [eV/s].
+
+
+
+   .. py:method:: integrate_drift_accelerations(pid: tuple[int, int])
+
+      Compute plasma drift velocities and the associated rate of energy change in [eV/s].
+
+
+
+   .. py:method:: analyze_drifts(pid: tuple[int, int], outname=None, switchYZ=False)
+
+      Compute plasma drift velocities and the associated rate of energy change in [eV/s].
+
+
+
+   .. py:method:: analyze_drifts_energy_change(pID: Tuple[int, int], outname=None)
+
+      Analyzes and plots the energy changes for each term in the guiding center
+      approximation.
+
+      This method computes the parallel, Betatron, and Fermi accelerations using
+      `get_energy_change_guiding_center`. It also calculates the total kinetic
+      energy change and treats the difference between the kinetic energy change
+      and the sum of the guiding center terms (dW_total) as the non-adiabatic term.
+
+      The method generates a plot with four subplots:
+      1. dW_parallel: Energy change due to parallel electric fields.
+      2. dW_betatron: Energy change due to the Betatron effect.
+      3. dW_fermi: Energy change due to Fermi acceleration.
+      4. dW_total and Non-adiabatic term: The sum of the above terms compared
+         with the non-adiabatic heating component.
+
+      :param pID: The particle ID (cpu, id).
+      :type pID: Tuple[int, int]
+      :param outname: If provided, the plot is saved to this
+                      filename instead of being shown. Defaults to None.
+      :type outname: str, optional
+
+
+
+   .. py:method:: analyze_drift(pID: tuple[int, int], drift_type: str, outname=None)
+
+      Analyzes a specific drift for a particle, plotting its velocity, the
+      electric field, the energy change rate, and the integrated energy change.
+
+      :param pID: The particle ID (cpu, id).
+      :type pID: tuple[int, int]
+      :param drift_type: The type of drift to analyze. Supported options are:
+                         'ExB', 'gradient', 'curvature', 'polarization'.
+      :type drift_type: str
+      :param outname: If provided, the plot is saved to this
+                      filename instead of being shown. Defaults to None.
+      :type outname: str, optional
+
+
+
+   .. py:method:: plot_work_energy_verification(pID: Tuple[int, int], outname=None)
+
+      Verifies the work-energy theorem for a particle by plotting the rate of
+      change of kinetic energy against the work rate done by the electric field.
+      It also plots the integrated change in kinetic energy versus the total
+      work done.
+
+      :param pID: The particle ID (cpu, id).
+      :type pID: Tuple[int, int]
+      :param outname: If provided, the plot is saved to this
+                      filename. Defaults to None (displays plot).
+      :type outname: str, optional
+
+
+
+   .. py:method:: find_shock_crossing_time(pid, b_threshold_factor=2.5, verbose=False)
+
+      Finds the shock crossing time for a single particle.
+
+      The shock is identified by finding the first rate of change in the
+      magnetic field magnitude that exceeds a threshold, which signifies a
+      rapid transition between the upstream and downstream regions.
+
+      :param pid: particle index.
+      :param b_threshold_factor: A multiplier for the standard deviation of
+                                 the B-field derivative. A larger value makes
+                                 the detection less sensitive to minor
+                                 fluctuations. Defaults to 2.5.
+      :type b_threshold_factor: float
+      :param verbose: If True, prints diagnostic information. Defaults to False.
+      :type verbose: bool
+
+      :returns:
+
+                The time of the shock crossing in seconds. Returns None if
+                            no significant crossing is detected based on the criteria.
+      :rtype: float or None
+
+
+
+   .. py:method:: get_shock_up_down_states(pids, delta_t_up=20.0, delta_t_down=40.0, b_threshold_factor=2.5, verbose=False)
+
+      Analyzes particles to find their state upstream and downstream of a shock.
+
+      This function iterates through a list of particle IDs. For each particle, it
+      first identifies the shock crossing time. It then calculates specific upstream
+      and downstream time points based on this crossing. Finally, it interpolates
+      the particle's full state (position, velocity, fields) at these two points
+      and collects the results.
+
+      :param pids: A list of particle IDs (e.g., [(0, 1), (0, 2), ...]) to process.
+      :type pids: list
+      :param delta_t_up: The time in seconds *before* the shock crossing to define
+                         the upstream point. Defaults to 20.0.
+      :type delta_t_up: float
+      :param delta_t_down: The time in seconds *after* the shock crossing to define
+                           the downstream point. Defaults to 40.0.
+      :type delta_t_down: float
+      :param b_threshold_factor: The sensitivity factor for shock detection, passed to
+                                 `find_shock_crossing_time`. Defaults to 2.5.
+      :type b_threshold_factor: float
+      :param verbose: If True, prints progress and individual shock detection times.
+                      Defaults to False.
+      :type verbose: bool
+
+      :returns:
+
+                A tuple containing two Polars DataFrames:
+                    - The first DataFrame contains the states of all valid particles at their
+                      respective upstream times.
+                    - The second DataFrame contains the states of all valid particles at their
+                      respective downstream times.
+                Each DataFrame includes the original particle ID (`pid_rank`, `pid_idx`), the
+                shock crossing time (`t_cross`), and the interpolated physical quantities.
+                Returns (None, None) if no particles with a valid shock crossing are found.
+      :rtype: tuple[pl.DataFrame, pl.DataFrame]
+
+
+
+   .. py:method:: _get_HT_frame(upstream_df: polars.DataFrame, downstream_df: polars.DataFrame) -> tuple[numpy.ndarray | None, numpy.ndarray | None]
+
+      Finds the de Hoffmann-Teller frame velocity and the shock normal vector
+      using the method from Sonnerup et al. [2006], which minimizes the
+      residual electric field.
+
+      :param upstream_df: DataFrame with upstream particle states.
+      :type upstream_df: pl.DataFrame
+      :param downstream_df: DataFrame with downstream particle states.
+      :type downstream_df: pl.DataFrame
+
+      :returns:
+
+                A tuple containing:
+                    - V_HT (np.ndarray | None): The de Hoffmann-Teller velocity vector
+                      in [km/s] if successful, otherwise None.
+                    - shock_normal (np.ndarray | None): The estimated shock normal
+                      vector if successful, otherwise None.
+      :rtype: tuple[np.ndarray | None, np.ndarray | None]
+
+
+
+   .. py:method:: analyze_in_HT_frame(pID: Tuple[int, int], outname: str = None, verbose: bool = False)
+
+      Analyzes a particle's trajectory in the de Hoffmann-Teller (HT) frame.
+
+      This method performs the following steps:
+      1. Finds the shock crossing and determines the upstream and downstream states.
+      2. Calculates the de Hoffmann-Teller velocity (V_HT) and the shock normal.
+      3. Transforms the particle's velocity and the electric/magnetic fields
+         into the HT frame.
+      4. In this frame, the energy gain is a direct measure of non-ideal
+         acceleration. It calculates and plots this energy gain.
+      5. Generates a summary plot of the analysis.
+
+      :param pID: The particle ID (cpu, id) to analyze.
+      :type pID: Tuple[int, int]
+      :param outname: If provided, the plot is saved to this
+                      filename. Defaults to None (displays plot).
+      :type outname: str, optional
+      :param verbose: If True, prints diagnostic information.
+                      Defaults to False.
+      :type verbose: bool, optional
+
+
+
+   .. py:method:: plot_trajectory(pID: Tuple[int, int], *, fscaling=1, smoothing_window=None, t_start=None, t_end=None, dt=None, outname=None, shock_time=None, type='quick', xaxis='t', yaxis='x', switchYZ=False, splitYZ=False, ax=None, verbose=True, **kwargs)
+
+      Plots the trajectory and velocities of the particle pID.
+
+      Example:
+      >>> tp.plot_trajectory((3,15))
+
+
+
+   .. py:method:: plot_location(pData: numpy.ndarray)
+
+      Plot the location of particles pData.
+
+      Examples:
+      >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
+      >>> f = tp.plot_location(pData)
+
+
+
+   .. py:method:: _calculate_true_gc_trajectory(pt: polars.DataFrame, smoothing_gyro_periods: float) -> polars.DataFrame
+
+      Calculates the 'true' guiding center trajectory by smoothing.
+
+
+
+   .. py:method:: _integrate_velocity(v_series: polars.Series, initial_pos_series: polars.Series, dt_series: polars.Series) -> polars.Series
+      :staticmethod:
+
+
+      Integrates a velocity series using the trapezoidal rule.
+
+
+
+   .. py:method:: _calculate_predicted_gc_trajectory(pt: polars.DataFrame, pID: Tuple[int, int]) -> Tuple[polars.Series, polars.Series, polars.Series]
+
+      Calculates the predicted guiding center trajectory from theory.
+
+
+
+   .. py:method:: _plot_gc_verification(pt: polars.DataFrame, pos_gc_true: polars.DataFrame, pos_gc_pred: Tuple[polars.Series, polars.Series, polars.Series], pID: Tuple[int, int])
+
+      Plots the verification results.
+
+
+
+   .. py:method:: verify_guiding_center_model(pID: Tuple[int, int], smoothing_gyro_periods=1.0)
+
+      Verifies the guiding center model by comparing it against the full
+      particle trajectory.
+
+      This method performs the following steps:
+      1. Calculates a "true" guiding center trajectory by applying a low-pass
+         filter (moving average) to the full particle trajectory, smoothing
+         out the gyromotion.
+      2. Calculates a "predicted" guiding center trajectory by numerically
+         integrating the guiding center velocity, which is the sum of the
+         parallel velocity and all perpendicular drift velocities (E x B,
+         gradient, curvature, and polarization).
+      3. Generates a plot comparing the full trajectory, the "true" GC
+         trajectory, and the "predicted" GC trajectory for each coordinate (X, Y, Z).
+
+      A close overlap between the "true" and "predicted" trajectories
+      validates the guiding center approximation and the drift calculations.
+
+      :param pID: The ID of the particle to analyze.
+      :type pID: Tuple[int, int]
+      :param smoothing_gyro_periods: The size of the moving average window
+                                     in units of gyro-periods. Defaults to 1.0.
+      :type smoothing_gyro_periods: float
+
+
+
+.. py:function:: interpolate_at_times(df: Union[polars.DataFrame, polars.LazyFrame], times_to_interpolate: list[float]) -> polars.DataFrame
+
+   Interpolates multiple numeric columns of a DataFrame at specified time points.
+
+   :param df: The input Polars DataFrame or LazyFrame.
+   :param times_to_interpolate: A list of time points (floats or ints) at which to interpolate.
+
+   :returns: A new DataFrame containing the interpolated rows for each specified time.
+
+
+.. py:function:: plot_integrated_energy(df: polars.DataFrame, outname=None, **kwargs)
+
+   Plots integrated energy quantities as a function of time.
+
+   :param df: A Polars DataFrame containing a time column and
+              one or more integrated energy columns.
+   :type df: pl.DataFrame
+   :param outname: If not None, save the plot to file.
+   :type outname: str
+
+

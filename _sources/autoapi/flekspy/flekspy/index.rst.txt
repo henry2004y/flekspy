@@ -1,0 +1,19 @@
+flekspy.flekspy
+===============
+
+.. py:module:: flekspy.flekspy
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.flekspy.logger
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+

@@ -1,0 +1,62 @@
+Traceback (most recent call last):
+  File "/home/runner/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/home/runner/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/nbclient/client.py", line 1319, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/runner/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/home/runner/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/home/runner/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+import matplotlib.pyplot as plt
+
+# Load unstructured data
+file = "data/bx0_mhd_6_t00000100_n00000352.out"
+dsu = flekspy.load(file)
+
+fig, ax = plt.subplots(figsize=(8, 6))
+
+# Plot density contour
+dsu.fleks.add_contour(ax, "Rho", colors="k", linewidths=0.5)
+
+# Add streamlines for velocity (Ux, Uy)
+dsu.fleks.add_stream(ax, "Ux", "Uy", color="r", density=1.5)
+
+ax.set_title("Density Contours and Velocity Streamlines (Unstructured)")
+plt.show()
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mAttributeError[39m                            Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[17][39m[32m, line 10[39m
+[32m      7[39m fig, ax = plt.subplots(figsize=([32m8[39m, [32m6[39m))
+[32m      9[39m [38;5;66;03m# Plot density contour[39;00m
+[32m---> [39m[32m10[39m [43mdsu[49m[43m.[49m[43mfleks[49m.add_contour(ax, [33m"[39m[33mRho[39m[33m"[39m, colors=[33m"[39m[33mk[39m[33m"[39m, linewidths=[32m0.5[39m)
+[32m     12[39m [38;5;66;03m# Add streamlines for velocity (Ux, Uy)[39;00m
+[32m     13[39m dsu.fleks.add_stream(ax, [33m"[39m[33mUx[39m[33m"[39m, [33m"[39m[33mUy[39m[33m"[39m, color=[33m"[39m[33mr[39m[33m"[39m, density=[32m1.5[39m)
+
+[36mFile [39m[32m~/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/xugrid/core/wrap.py:451[39m, in [36mUgridDataset.__getattr__[39m[34m(self, attr)[39m
+[32m    450[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34m__getattr__[39m([38;5;28mself[39m, attr):
+[32m--> [39m[32m451[39m     result = [38;5;28;43mgetattr[39;49m[43m([49m[38;5;28;43mself[39;49m[43m.[49m[43mobj[49m[43m,[49m[43m [49m[43mattr[49m[43m)[49m
+[32m    452[39m     [38;5;28;01mreturn[39;00m maybe_xugrid(result, [38;5;28mself[39m.grids)
+
+[36mFile [39m[32m~/work/flekspy/flekspy/.venv/lib/python3.12/site-packages/xarray/core/common.py:306[39m, in [36mAttrAccessMixin.__getattr__[39m[34m(self, name)[39m
+[32m    304[39m         [38;5;28;01mwith[39;00m suppress([38;5;167;01mKeyError[39;00m):
+[32m    305[39m             [38;5;28;01mreturn[39;00m source[name]
+[32m--> [39m[32m306[39m [38;5;28;01mraise[39;00m [38;5;167;01mAttributeError[39;00m(
+[32m    307[39m     [33mf[39m[33m"[39m[38;5;132;01m{[39;00m[38;5;28mtype[39m([38;5;28mself[39m).[34m__name__[39m[38;5;132;01m!r}[39;00m[33m object has no attribute [39m[38;5;132;01m{[39;00mname[38;5;132;01m!r}[39;00m[33m"[39m
+[32m    308[39m )
+
+[31mAttributeError[39m: 'Dataset' object has no attribute 'fleks'
+
