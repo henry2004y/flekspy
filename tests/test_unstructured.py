@@ -2,7 +2,6 @@ import pytest
 import matplotlib.pyplot as plt
 import flekspy as fs
 import os
-import flekspy.xarray.accessor  # Register the accessor
 
 
 def test_unstructured_plots(idl_data_files):
