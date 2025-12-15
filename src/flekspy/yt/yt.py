@@ -84,8 +84,9 @@ class FLEKSFieldInfo(FieldInfoContainer):
             fname = field[0]
             self.alias(("mesh", fname), ("boxlib", fname))
 
-        # This function is required by yt to correctly handle magnetic field units and set up aliases.
-        # See: https://yt-project.org/doc/developing/creating_frontend.html#creating-aliases-for-magnetic-fields
+        # This function is required by yt to correctly handle magnetic field
+        # units and set up aliases. See:
+        # https://yt-project.org/doc/developing/creating_frontend.html#creating-aliases-for-magnetic-fields
         setup_magnetic_field_aliases(self, "FLEKS", ["B%s" % ax for ax in "xyz"])
 
     def setup_fluid_aliases(self):
