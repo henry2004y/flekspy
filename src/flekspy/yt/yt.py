@@ -24,8 +24,7 @@ class FLEKSFieldInfo(FieldInfoContainer):
     rho_units = "code_density"
     mass_units = "code_mass"
 
-    # TODO: find a way to avoid repeating s0, s1...
-    known_other_fields = (
+    _base_fields = (
         ("Bx", (b_units, ["magnetic_field_x"], r"B_x")),
         ("By", (b_units, ["magnetic_field_y"], r"B_y")),
         ("Bz", (b_units, ["magnetic_field_z"], r"B_z")),
@@ -35,27 +34,22 @@ class FLEKSFieldInfo(FieldInfoContainer):
         ("X", (l_units, [], r"X")),
         ("Y", (l_units, [], r"Y")),
         ("Z", (l_units, [], r"Z")),
-        ("rhos0", (rho_units, [], r"\rho")),
-        ("uxs0", (v_units, [], r"u_x")),
-        ("uys0", (v_units, [], r"u_y")),
-        ("uzs0", (v_units, [], r"u_z")),
-        ("pxxs0", (p_units, [], r"P_{xx}")),
-        ("pyys0", (p_units, [], r"P_{yy}")),
-        ("pzzs0", (p_units, [], r"P_{zz}")),
-        ("pxys0", (p_units, [], r"P_{xy}")),
-        ("pxzs0", (p_units, [], r"P_{xz}")),
-        ("pyzs0", (p_units, [], r"P_{yz}")),
-        ("rhos1", (rho_units, [], r"\rho")),
-        ("uxs1", (v_units, [], r"u_x")),
-        ("uys1", (v_units, [], r"u_y")),
-        ("uzs1", (v_units, [], r"u_z")),
-        ("pxxs1", (p_units, [], r"P_{xx}")),
-        ("pyys1", (p_units, [], r"P_{yy}")),
-        ("pzzs1", (p_units, [], r"P_{zz}")),
-        ("pxys1", (p_units, [], r"P_{xy}")),
-        ("pxzs1", (p_units, [], r"P_{xz}")),
-        ("pyzs1", (p_units, [], r"P_{yz}")),
     )
+
+    _species_fields_template = (
+        ("rho", (rho_units, [], r"\rho")),
+        ("ux", (v_units, [], r"u_x")),
+        ("uy", (v_units, [], r"u_y")),
+        ("uz", (v_units, [], r"u_z")),
+        ("pxx", (p_units, [], r"P_{xx}")),
+        ("pyy", (p_units, [], r"P_{yy}")),
+        ("pzz", (p_units, [], r"P_{zz}")),
+        ("pxy", (p_units, [], r"P_{xy}")),
+        ("pxz", (p_units, [], r"P_{xz}")),
+        ("pyz", (p_units, [], r"P_{yz}")),
+    )
+
+    known_other_fields = _base_fields
 
     known_particle_fields = (
         ("particle_weight", (mass_units, ["p_w"], r"weight")),
@@ -78,11 +72,56 @@ class FLEKSFieldInfo(FieldInfoContainer):
             finfo.nodal_flag = ds.nodal_flags[field]
 
     def setup_fluid_fields(self):
+        import re
+
         from yt.fields.magnetic_field import setup_magnetic_field_aliases
 
         for field in self.known_other_fields:
             fname = field[0]
-            self.alias(("mesh", fname), ("boxlib", fname))
+            # Try to alias to boxlib first, then raw
+            original_name = ("boxlib", fname)
+            if original_name not in self:
+                original_name = ("raw", fname)
+
+            self.alias(("mesh", fname), original_name)
+
+        # Dynamically alias species fields from the input dataset
+        # Use field_list instead of index.raw_fields to avoid forcing index construction
+        species_regex = re.compile(r"^(?P<base>.*)s(?P<idx>\d+)$")
+
+        # field_list typically contains tuples like ('boxlib', 'varname') or ('raw', 'varname')
+        # We need to scan for on-disk fields.
+        for ftype, fname in self.ds.field_list:
+            # We are interested in fields that might be raw fluid fields
+            if ftype not in ("boxlib", "raw"):
+                continue
+
+            match = species_regex.match(fname)
+            if match:
+                base = match.group("base")
+                for template_field, props in self._species_fields_template:
+                    if base == template_field:
+                        # Construct proper LaTeX display name merging subscripts
+                        base_display = props[2]
+                        suffix = f"s{match.group('idx')}"
+                        if "_" in base_display:
+                            name_part, sub_part = base_display.split("_", 1)
+                            if sub_part.startswith("{") and sub_part.endswith("}"):
+                                sub_content = sub_part[1:-1]
+                                display_name = f"{name_part}_{{{sub_content},{suffix}}}"
+                            else:
+                                display_name = f"{name_part}_{{{sub_part},{suffix}}}"
+                        else:
+                            display_name = f"{base_display}_{{{suffix}}}"
+
+                        # Alias ("mesh", fname) to the found field
+                        self.alias(
+                            ("mesh", fname), (ftype, fname), units=props[0]
+                        )
+
+                        if ("mesh", fname) in self:
+                            self[("mesh", fname)].display_name = display_name
+                        break
 
         # TODO: Yuxi: I do not know the purpose of the following function call.
         setup_magnetic_field_aliases(self, "FLEKS", ["B%s" % ax for ax in "xyz"])
