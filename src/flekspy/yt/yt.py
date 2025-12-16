@@ -91,7 +91,8 @@ class FLEKSFieldInfo(FieldInfoContainer):
 
         # field_list typically contains tuples like ('boxlib', 'varname') or ('raw', 'varname')
         # We need to scan for on-disk fields.
-        for ftype, fname in self.ds.field_list:
+        # Use self.field_list instead of self.ds.field_list to be robust against incomplete ds mocks in tests
+        for ftype, fname in self.field_list:
             # We are interested in fields that might be raw fluid fields
             if ftype not in ("boxlib", "raw"):
                 continue
