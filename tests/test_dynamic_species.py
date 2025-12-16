@@ -45,11 +45,12 @@ class TestDynamicFields(unittest.TestCase):
 
         self.assertIn(("mesh", "rhos99"), fi)
         self.assertEqual(fi[("mesh", "rhos99")].units, "code_density")
-        self.assertIn("_{s99}", fi[("mesh", "rhos99")].display_name)
+        self.assertIn(r"\rho_{s99}", fi[("mesh", "rhos99")].display_name)
 
         self.assertIn(("mesh", "uxs99"), fi)
         self.assertEqual(fi[("mesh", "uxs99")].units, "code_velocity")
-        self.assertIn("_{s99}", fi[("mesh", "uxs99")].display_name)
+        # u_x + s99 -> u_{x,s99}
+        self.assertIn(r"u_{x,s99}", fi[("mesh", "uxs99")].display_name)
 
         # Check that unknown patterns are not registered blindly (though regular fields loop handles aliases for known_other_fields)
         # Bx is in known_other_fields
