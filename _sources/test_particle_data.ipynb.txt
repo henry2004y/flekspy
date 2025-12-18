@@ -1,0 +1,378 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Test Particle Data\n",
+    "\n",
+    "This notebook focuses on handling test particle data from FLEKS."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Downloading demo data\n",
+    "\n",
+    "Example test particle data can be downloaded as follows:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from flekspy.util import download_testfile\n",
+    "\n",
+    "url = \"https://raw.githubusercontent.com/henry2004y/batsrus_data/master/test_particles_PBEG.tar.gz\"\n",
+    "download_testfile(url, \"data\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Plotting Test Particle Trajectories"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Loading particle data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from flekspy import FLEKSTP\n",
+    "\n",
+    "tp = FLEKSTP(\"data/test_particles_PBEG\", iSpecies=1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Obtaining particle IDs\n",
+    "\n",
+    "Test particle IDs consists of a CPU index and a particle index attached to the CPU."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tp.getIDs()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Reading particle trajectory"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tp[0].collect()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Getting initial location"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "x = tp.read_initial_condition(tp.getIDs()[0])\n",
+    "print(\"time, X, Y, Z, Vx, Vy, Vz\")\n",
+    "print(\n",
+    "    f\"{x[0]:.2e}, {x[1]:.2e}, {x[2]:.2e}, {x[3]:.2e}, {x[4]:.2e}, {x[5]:.2e}, {x[6]:.2e}\"\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Interpolate particles trajectory at selected times"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from flekspy.tp import interpolate_at_times\n",
+    "\n",
+    "interpolate_at_times(tp[0], [1.0])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Plotting trajectory"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "tp.plot_trajectory(tp.getIDs()[0])\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Reading and visualizing all particle's location at a given snapshot"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ids, pData = tp.read_particles_at_time(0.0, doSave=False)\n",
+    "tp.plot_location(pData)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Selecting particles starting in a region"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from flekspy.tp import Indices\n",
+    "\n",
+    "\n",
+    "def f_select(tp, pid):\n",
+    "    pData = tp.read_initial_condition(pid)\n",
+    "    inRegion = pData[Indices.X] > 0 and pData[Indices.Y] > 0\n",
+    "    return inRegion\n",
+    "\n",
+    "\n",
+    "pSelected = tp.select_particles(f_select)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Saving trajectories\n",
+    "\n",
+    "Saving trajectories to CSV"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tp.save_trajectory(tp.getIDs()[0], format=\"csv\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Saving trajectories to Parquet"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tp.save_trajectory(tp.getIDs()[0], format=\"parquet\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Saving trajectories to HDF5"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tp.save_trajectories([0, 1], filename=\"my_tp.h5\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Writing large amount of data to a single HDF5 file is slow. For parallel writing to a series of HDF5 files in chunks, see the sample job script together with the conversion script."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Calculating drifts\n",
+    "\n",
+    "With the $\\mathbf{E}, \\mathbf{B}$, and $\\nabla \\mathbf{B}$ saved along the trajectory, we can compute various drifts:\n",
+    "- Convection drift velocity: `tp.get_ExB_drift(pid)`\n",
+    "- Curvature drift velocity: `tp.get_curvature_drift(pid)`\n",
+    "- Gradient drift velocity: `tp.get_gradient_drift(pid)`\n",
+    "- Polarization drift velocity: `tp.get_polarization_drift(pid)`\n",
+    "\n",
+    "The first adiabatic assumption can be checked by comparing the ratio between the curvature length and the gyroradius $r_c / r_L$ via `get_adiabaticity_parameter`. If $r_c / r_L \\gg 1$, then the gyromotion can be savely ignored.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The Betatron acceleration $\\mu \\partial B/\\partial t$ can be indirectly computed with the knowledge of total derivative $\\mathrm{d}B/\\mathrm{d}t$ and $\\mathbf{v}\\nabla B$ along the trajectory:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pid = tp.getIDs()[0]\n",
+    "pt = tp[pid]\n",
+    "mu = tp.get_first_adiabatic_invariant(pt)\n",
+    "pt = tp.get_betatron_acceleration(pt, mu)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To analyze a specific drift:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tp.analyze_drift(pid, \"gradient\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "By combining all these together, we come up with time series of various terms:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tp.analyze_drifts(pid)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We can the track the energy change from drift and EM field variations:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from flekspy.tp import plot_integrated_energy\n",
+    "\n",
+    "df = tp.integrate_drift_accelerations(tp.getIDs()[0])\n",
+    "plot_integrated_energy(df)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Alternatively, the energy change can be decomposed into three terms: the parallel acceleration, Betatron acceleration, and the Fermi acceleration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = tp.get_energy_change_guiding_center(tp.getIDs()[0])\n",
+    "\n",
+    "df"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3.9.7 64-bit",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.6"
+  },
+  "vscode": {
+   "interpreter": {
+    "hash": "f22a20af907fde35ff19e1e892fdb271353fb19b11c7ebd774491472e685293c"
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
