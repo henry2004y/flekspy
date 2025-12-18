@@ -122,3 +122,9 @@
 ## v0.7.1 (2025/11/19)
 
 - Add an analytical exosphere module.
+
+## v0.7.2 (2025/12/18)
+
+- Recover support for stream and contour plotting in unstructured grids.
+- Recover support for selecting snapshots (npict) for IDL *.outs files.
+- Refactor FLEKS species identification.
