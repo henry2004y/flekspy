@@ -399,25 +399,106 @@ class AMReXParticleData(AMReXPlottingMixin):
         )
         return final_rdata
 
+    def extract_core_population(
+        self,
+        velocity_columns: List[str],
+        v_dim: int = 3,
+        v_th: Optional[float] = None,
+        cutoff: float = 3.0,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Extracts the core population from the suprathermal population.
+
+        The core population is approximated by a Maxwellian distribution centered at
+        the peak phase space density location. Particles within a certain distance
+        (defined by `cutoff * v_th`) from the center are considered part of the core.
+
+        Args:
+            velocity_columns (List[str]): The names of the velocity components to use.
+            v_dim (int, optional): The dimension of the velocity space. Defaults to 3.
+            v_th (float, optional): The thermal velocity of the core population.
+                                    If not provided, it is estimated using a GMM fit.
+            cutoff (float, optional): The cutoff factor for defining the core boundary
+                                      in units of thermal velocity. Defaults to 3.0.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: A tuple containing two boolean masks:
+                                           (core_mask, suprathermal_mask).
+        """
+        if len(velocity_columns) != v_dim:
+            raise ValueError(
+                f"Length of 'velocity_columns' ({len(velocity_columns)}) "
+                f"must match 'v_dim' ({v_dim})."
+            )
+
+        # 1. Fit GMM to find center and potentially v_th
+        # We always run GMM to find the center (peak density location).
+        # We use n_components=2 to allow for a core + halo/beam structure,
+        # which helps in robustly identifying the core.
+        gmm = self.fit_gmm(n_components=2, variables=velocity_columns)
+
+        # Identify the core component as the one with the highest weight (density)
+        core_idx = np.argmax(gmm.weights_)
+        center = gmm.means_[core_idx]
+
+        if v_th is None:
+            # Estimate v_th from the core component's covariance
+            # Assuming isotropy for the core definition radius
+            cov = gmm.covariances_[core_idx]
+            v_th_sq = np.trace(cov) / len(center)
+            v_th = np.sqrt(v_th_sq)
+
+        # 2. Calculate distance from center for all particles
+        # We need to extract the raw data again to compute distances
+        # Note: fit_gmm might have operated on a subset if ranges were passed,
+        # but here we operate on the currently loaded data (self.rdata).
+        # To ensure consistency, we should extract columns from self.rdata directly.
+        # If fit_gmm was called without ranges (which it is here), the GMM is valid for self.rdata.
+
+        component_map = {name: i for i, name in enumerate(self.header.real_component_names)}
+        data_columns = []
+        for var in velocity_columns:
+            var = self._resolve_alias(var)
+            if var not in component_map:
+                raise ValueError(
+                    f"Invalid variable name '{var}'. Choose from {list(component_map.keys())}"
+                )
+            data_columns.append(self.rdata[:, component_map[var]])
+
+        v_data = np.vstack(data_columns).T
+
+        # Calculate Euclidean distance from center
+        diff = v_data - center
+        dist = np.linalg.norm(diff, axis=1)
+
+        # 3. Create masks
+        core_mask = dist <= (cutoff * v_th)
+        suprathermal_mask = ~core_mask
+
+        return core_mask, suprathermal_mask
+
     def fit_gmm(
         self,
         n_components: int,
-        x_variable: str,
-        y_variable: str,
+        x_variable: Optional[str] = None,
+        y_variable: Optional[str] = None,
         x_range: Optional[Tuple[float, float]] = None,
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
         transform: Optional[
             Callable[[np.ndarray], Tuple[np.ndarray, List[str]]]
         ] = None,
+        variables: Optional[List[str]] = None,
     ) -> "GaussianMixture":
         """
         Fits a Gaussian Mixture Model (GMM) to the phase space distribution.
 
         Args:
             n_components (int): The number of mixture components (Gaussian distributions).
-            x_variable (str): The name of the variable for the x-axis.
-            y_variable (str): The name of the variable for the y-axis.
+            x_variable (str, optional): The name of the variable for the x-axis.
+                                        Retained for backward compatibility.
+            y_variable (str, optional): The name of the variable for the y-axis.
+                                        Retained for backward compatibility.
             x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
             y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.
             z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.
@@ -428,10 +509,21 @@ class AMReXParticleData(AMReXPlottingMixin):
                 This allows for fitting derived quantities or changing coordinate systems.
                 If provided, `x_variable` and `y_variable` should refer to names
                 in `new_component_names`. Defaults to None.
+            variables (List[str], optional): The names of the variables to fit.
+                                             If provided, this takes precedence over
+                                             x_variable and y_variable.
 
         Returns:
             sklearn.mixture.GaussianMixture: The fitted GMM model.
         """
+        if variables is None:
+            if x_variable is not None and y_variable is not None:
+                variables = [x_variable, y_variable]
+            else:
+                raise ValueError(
+                    "Either 'variables' or both 'x_variable' and 'y_variable' must be provided."
+                )
+
         # --- 1. Select data ---
         if x_range or y_range or z_range:
             rdata = self.select_particles_in_region(x_range, y_range, z_range)
@@ -449,22 +541,17 @@ class AMReXParticleData(AMReXPlottingMixin):
         # --- 3. Map component names to column indices ---
         component_map = {name: i for i, name in enumerate(component_names)}
 
-        # --- 4. Validate input variable names ---
-        x_variable = self._resolve_alias(x_variable)
-        y_variable = self._resolve_alias(y_variable)
-        if x_variable not in component_map or y_variable not in component_map:
-            raise ValueError(
-                f"Invalid variable name. Choose from {list(component_map.keys())}"
-            )
+        # --- 4. Validate input variable names and extract columns ---
+        data_columns = []
+        for var in variables:
+            var = self._resolve_alias(var)
+            if var not in component_map:
+                raise ValueError(
+                    f"Invalid variable name '{var}'. Choose from {list(component_map.keys())}"
+                )
+            data_columns.append(rdata[:, component_map[var]])
 
-        x_index = component_map[x_variable]
-        y_index = component_map[y_variable]
-
-        # --- 5. Extract the relevant data columns ---
-        x_data = rdata[:, x_index]
-        y_data = rdata[:, y_index]
-
-        data = np.vstack([x_data, y_data]).T
+        data = np.vstack(data_columns).T
 
         from sklearn.mixture import GaussianMixture
 
