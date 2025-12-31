@@ -9,12 +9,12 @@ authors = [
 requires-python = ">=3.10, <3.15"
 readme = "README.md"
 dependencies = [
+    "numba>=0.60.0",
     "numpy>=1.26.4",
+    "polars>=0.20.21,<1",
     "requests>=2.32.3,<3",
     "xarray>=2024.6.0",
-    "polars>=0.20.21,<1",
-    "xugrid>=0.14.2,<1",
-    "numba>=0.60.0",
+    "xugrid>=0.14.2,<1"
 ]
 
 [project.optional-dependencies]
