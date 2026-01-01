@@ -399,6 +399,40 @@ class AMReXParticleData(AMReXPlottingMixin):
         )
         return final_rdata
 
+    def _extract_variable_columns(
+        self,
+        rdata: np.ndarray,
+        variables: List[str],
+        component_names: Optional[List[str]] = None,
+    ) -> np.ndarray:
+        """
+        Helper method to extract specific columns from the particle data array.
+
+        Args:
+            rdata (np.ndarray): The particle data array.
+            variables (List[str]): The names of the variables to extract.
+            component_names (List[str], optional): The list of component names corresponding
+                                                   to the columns of rdata. If None, it defaults
+                                                   to self.header.real_component_names.
+
+        Returns:
+            np.ndarray: A stacked array containing the extracted columns (n_particles, n_vars).
+        """
+        if component_names is None:
+            component_names = self.header.real_component_names
+
+        component_map = {name: i for i, name in enumerate(component_names)}
+        data_columns = []
+        for var in variables:
+            var = self._resolve_alias(var)
+            if var not in component_map:
+                raise ValueError(
+                    f"Invalid variable name '{var}'. Choose from {list(component_map.keys())}"
+                )
+            data_columns.append(rdata[:, component_map[var]])
+
+        return np.vstack(data_columns).T
+
     def extract_core_population(
         self,
         velocity_columns: List[str],
@@ -455,17 +489,7 @@ class AMReXParticleData(AMReXPlottingMixin):
         # To ensure consistency, we should extract columns from self.rdata directly.
         # If fit_gmm was called without ranges (which it is here), the GMM is valid for self.rdata.
 
-        component_map = {name: i for i, name in enumerate(self.header.real_component_names)}
-        data_columns = []
-        for var in velocity_columns:
-            var = self._resolve_alias(var)
-            if var not in component_map:
-                raise ValueError(
-                    f"Invalid variable name '{var}'. Choose from {list(component_map.keys())}"
-                )
-            data_columns.append(self.rdata[:, component_map[var]])
-
-        v_data = np.vstack(data_columns).T
+        v_data = self._extract_variable_columns(self.rdata, velocity_columns)
 
         # Calculate Euclidean distance from center
         diff = v_data - center
@@ -538,20 +562,8 @@ class AMReXParticleData(AMReXPlottingMixin):
         if transform:
             rdata, component_names = transform(rdata)
 
-        # --- 3. Map component names to column indices ---
-        component_map = {name: i for i, name in enumerate(component_names)}
-
-        # --- 4. Validate input variable names and extract columns ---
-        data_columns = []
-        for var in variables:
-            var = self._resolve_alias(var)
-            if var not in component_map:
-                raise ValueError(
-                    f"Invalid variable name '{var}'. Choose from {list(component_map.keys())}"
-                )
-            data_columns.append(rdata[:, component_map[var]])
-
-        data = np.vstack(data_columns).T
+        # --- 3 & 4. Extract data columns ---
+        data = self._extract_variable_columns(rdata, variables, component_names)
 
         from sklearn.mixture import GaussianMixture
 
