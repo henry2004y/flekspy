@@ -124,7 +124,7 @@ def get_gmm_parameters(gmm: "GaussianMixture",
         return [
             {
                 "center": mean.tolist(),
-                "v_th_sq": np.trace(cov) / 2.0,
+                "v_th_sq": np.trace(cov) / len(mean),
             }
             for mean, cov in zip(gmm.means_, gmm.covariances_)
         ]
