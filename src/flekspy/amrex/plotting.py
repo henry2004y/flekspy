@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class AMReXPlottingMixin:
-    """A mixin class for AMReXParticleData plotting functionalities."""
+    """A mixin class for AMReXParticle plotting functionalities."""
 
     _AXIS_LABEL_MAP = {
         "velocity_x": r"$v_x$",

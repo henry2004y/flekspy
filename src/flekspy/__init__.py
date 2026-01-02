@@ -14,7 +14,7 @@ __all__ = [
     "YtFLEKSData",
     "extract_phase",
     "FLEKSTP",
-    "AMReXParticleData",
+    "AMReXParticle",
     "xr",
 ]
 
@@ -27,7 +27,7 @@ def __getattr__(name):
         "YtFLEKSData": "flekspy.yt",
         "extract_phase": "flekspy.yt",
         "FLEKSTP": "flekspy.tp",
-        "AMReXParticleData": "flekspy.amrex",
+        "AMReXParticle": "flekspy.amrex",
         "read_idl": "flekspy.idl",
         "DerivedAccessor": "flekspy.idl",
         "xr": "xarray",
@@ -95,7 +95,7 @@ def load(
             YtFLEKSData = __getattr__("YtFLEKSData")
             return YtFLEKSData(filename, readFieldData)
         else:
-            AMReXParticleData = __getattr__("AMReXParticleData")
-            return AMReXParticleData(filename)
+            AMReXParticle = __getattr__("AMReXParticle")
+            return AMReXParticle(filename)
     else:
         raise Exception("Error: unknown file format!")

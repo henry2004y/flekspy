@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 import matplotlib.pyplot as plt
-from flekspy.amrex import AMReXParticleData
+from flekspy.amrex import AMReXParticle
 from pathlib import Path
 
 @pytest.mark.parametrize(
@@ -18,7 +18,7 @@ def test_3d_plots(setup_test_data, data_file, plot_method_name):
     a matplotlib figure and axes.
     """
     data_dir = Path(setup_test_data)
-    ds = AMReXParticleData(data_dir / data_file)
+    ds = AMReXParticle(data_dir / data_file)
     plot_func = getattr(ds, plot_method_name)
 
     with patch("matplotlib.pyplot.show"):

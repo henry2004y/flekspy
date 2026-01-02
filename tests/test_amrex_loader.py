@@ -1,5 +1,5 @@
 import pytest
-from flekspy.amrex import AMReXParticleData
+from flekspy.amrex import AMReXParticle
 from flekspy.amrex.plotting import AMReXPlottingMixin
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ class MockAMReXData(AMReXPlottingMixin):
 
 @pytest.fixture
 def mock_amrex_data():
-    """Creates a mock AMReXParticleData object for testing."""
+    """Creates a mock AMReXParticle object for testing."""
     # Mock header
     header = MagicMock()
     header.real_component_names = ["x", "y", "z", "velocity_x", "velocity_y", "velocity_z", "weight"]
@@ -37,7 +37,7 @@ def particle_data(setup_test_data):
     plotfile_directory = os.path.join(
         setup_test_data, "3d_particle_region0_1_t00000002_n00000007_amrex"
     )
-    return AMReXParticleData(plotfile_directory)
+    return AMReXParticle(plotfile_directory)
 
 
 @pytest.fixture
@@ -68,8 +68,8 @@ def mock_plot_components():
 
 @pytest.fixture
 def mock_pdata():
-    """Provides a mock AMReXParticleData object with alias resolution mocked."""
-    pdata = MagicMock(spec=AMReXParticleData)
+    """Provides a mock AMReXParticle object with alias resolution mocked."""
+    pdata = MagicMock(spec=AMReXParticle)
     pdata._resolve_alias.side_effect = lambda x: x
     pdata._get_axis_label.side_effect = lambda x: x
     return pdata
@@ -135,7 +135,7 @@ def test_plot_phase(mock_plot_components, mock_pdata):
         "Normalized Weighted Density",
     )
 
-    result_fig, result_ax = AMReXParticleData.plot_phase(
+    result_fig, result_ax = AMReXParticle.plot_phase(
         mock_pdata,
         x_variable="x",
         y_variable="vy",
@@ -180,7 +180,7 @@ def test_plot_phase_with_existing_axes(mock_plot_components, mock_pdata):
         "Particle Count",
     )
 
-    result_fig, result_ax = AMReXParticleData.plot_phase(
+    result_fig, result_ax = AMReXParticle.plot_phase(
         mock_pdata, x_variable="x", y_variable="y", ax=mock_ax
     )
 
@@ -203,7 +203,7 @@ def test_plot_phase_no_colorbar(mock_plot_components, mock_pdata):
         "Particle Count",
     )
 
-    AMReXParticleData.plot_phase(
+    AMReXParticle.plot_phase(
         mock_pdata, x_variable="x", y_variable="y", add_colorbar=False
     )
 
@@ -217,7 +217,7 @@ def test_plot_phase_no_particles(mock_plot_components, mock_pdata):
     """
     mock_pdata.get_phase_space_density.return_value = None
 
-    result = AMReXParticleData.plot_phase(
+    result = AMReXParticle.plot_phase(
         mock_pdata, x_variable="x", y_variable="y", x_range=(0, 1)
     )
 
@@ -237,7 +237,7 @@ def test_plot_phase_with_hist_range(mock_plot_components, mock_pdata):
     )
 
     custom_range = [[0.1, 0.9], [0.2, 0.8]]
-    AMReXParticleData.plot_phase(
+    AMReXParticle.plot_phase(
         mock_pdata, x_variable="x", y_variable="y", hist_range=custom_range
     )
 
@@ -259,7 +259,7 @@ def test_plot_phase_log_scale_with_vmin_vmax(mock_plot_components, mock_pdata):
     )
 
     with patch("matplotlib.colors.LogNorm") as mock_log_norm:
-        AMReXParticleData.plot_phase(
+        AMReXParticle.plot_phase(
             mock_pdata, x_variable="x", y_variable="y", log_scale=True, vmin=1, vmax=10
         )
         mock_log_norm.assert_called_once_with(vmin=1, vmax=10)
@@ -287,7 +287,7 @@ def test_plot_phase_subplots(mock_pdata):
     with patch(
         "matplotlib.pyplot.subplots", return_value=(fig_mock, axes_mock)
     ) as mock_subplots:
-        result_fig, result_axes = AMReXParticleData.plot_phase_subplots(
+        result_fig, result_axes = AMReXParticle.plot_phase_subplots(
             mock_pdata,
             x_variable="x",
             y_variable="vy",
@@ -337,7 +337,7 @@ def test_plot_phase_subplots_empty_region(mock_pdata):
         "matplotlib.pyplot.subplots", return_value=(fig_mock, axes_mock)
     ):
         # This should execute without raising a ValueError
-        AMReXParticleData.plot_phase_subplots(
+        AMReXParticle.plot_phase_subplots(
             mock_pdata,
             x_variable="x",
             y_variable="vy",
@@ -421,7 +421,7 @@ def test_plot_phase_with_transform(mock_plot_components, mock_pdata):
     def dummy_transform(data):
         return data, ["x_new", "y_new"]
 
-    AMReXParticleData.plot_phase(
+    AMReXParticle.plot_phase(
         mock_pdata,
         x_variable="x_new",
         y_variable="y_new",
@@ -446,7 +446,7 @@ def test_plot_phase_with_kde(mock_plot_components, mock_pdata):
         "Weighted Density",
     )
 
-    AMReXParticleData.plot_phase(
+    AMReXParticle.plot_phase(
         mock_pdata,
         x_variable="x",
         y_variable="y",
@@ -488,7 +488,7 @@ def test_plot_phase_with_spatial_transform(mock_plot_components, mock_pdata):
     def spatial_transform(data):
         return data, ["pos_parallel", "pos_perp"]
 
-    AMReXParticleData.plot_phase(
+    AMReXParticle.plot_phase(
         mock_pdata,
         x_variable="pos_parallel",
         y_variable="pos_perp",
@@ -521,7 +521,7 @@ def test_plot_phase_with_field_aligned_transform(mock_plot_components, mock_pdat
             "v_perp1",
         ]
 
-    AMReXParticleData.plot_phase(
+    AMReXParticle.plot_phase(
         mock_pdata,
         x_variable="v_parallel",
         y_variable="v_perp1",
@@ -546,7 +546,7 @@ def test_get_phase_space_density_basic(mock_pdata):
             np.array([0.0, 1.0]),
             np.array([0.0, 1.0]),
         )
-        H, xedges, yedges, cbar_label = AMReXParticleData.get_phase_space_density(
+        H, xedges, yedges, cbar_label = AMReXParticle.get_phase_space_density(
             mock_pdata, x_variable="x", y_variable="y"
         )
 
@@ -566,7 +566,7 @@ def test_get_phase_space_density_normalized(mock_pdata):
     # and get_phase_space_density will use mock_pdata.rdata
     mock_pdata.select_particles_in_region.return_value = mock_pdata.rdata
 
-    H, _, _, cbar_label = AMReXParticleData.get_phase_space_density(
+    H, _, _, cbar_label = AMReXParticle.get_phase_space_density(
         mock_pdata, x_variable="x", y_variable="y", normalize=True
     )
 
@@ -590,7 +590,7 @@ def test_get_phase_space_density_with_transform(mock_pdata):
             np.array([0.0, 1.0]),
             np.array([0.0, 1.0]),
         )
-        AMReXParticleData.get_phase_space_density(
+        AMReXParticle.get_phase_space_density(
             mock_pdata,
             x_variable="x_scaled",
             y_variable="y_scaled",
@@ -619,7 +619,7 @@ def test_get_phase_space_density_with_kde(mock_pdata):
         mock_kde_instance.return_value = np.random.rand(10 * 10)
         mock_gaussian_kde.return_value = mock_kde_instance
 
-        _, _, _, cbar_label = AMReXParticleData.get_phase_space_density(
+        _, _, _, cbar_label = AMReXParticle.get_phase_space_density(
             mock_pdata,
             x_variable="x",
             y_variable="y",
@@ -651,7 +651,7 @@ def test_get_phase_space_density_particle_selection(mock_pdata):
 
     mock_pdata.select_particles_in_region.side_effect = mock_select
 
-    H, _, _, _ = AMReXParticleData.get_phase_space_density(
+    H, _, _, _ = AMReXParticle.get_phase_space_density(
         mock_pdata,
         x_variable="x",
         y_variable="y",
@@ -689,7 +689,7 @@ def test_plot_phase_with_marginals(mock_plot_components, mock_pdata):
         )
 
         with patch("matplotlib.pyplot.figure", return_value=mock_fig):
-            AMReXParticleData.plot_phase(
+            AMReXParticle.plot_phase(
                 mock_pdata, x_variable="x", y_variable="y", marginals=True
             )
 

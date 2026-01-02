@@ -42,7 +42,7 @@ def calculate_histograms(particle_file, regions, var_x, var_y, hist_range, hist_
     """
     print(f"Loading particle data from: {particle_file}")
     try:
-        pd = flekspy.amrex.AMReXParticleData(particle_file)
+        pd = flekspy.amrex.AMReXParticle(particle_file)
     except Exception as e:
         print(f"Error loading particle data: {e}")
         return [], 0.0  # Return empty list and zero max
