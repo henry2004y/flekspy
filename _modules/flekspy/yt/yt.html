@@ -1,0 +1,1134 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>flekspy.yt.yt &#8212; flekspy  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/flekspy/yt/yt';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">flekspy  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../flekspy.html" class="nav-link">flekspy</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">flekspy.yt.yt</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for flekspy.yt.yt</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">yt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yt.funcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">setdefaultattr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yt.frontends.boxlib.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">BoxlibHierarchy</span><span class="p">,</span> <span class="n">BoxlibDataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yt.fields.field_info_container</span><span class="w"> </span><span class="kn">import</span> <span class="n">FieldInfoContainer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yt.data_objects.selection_objects.data_selection_objects</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">YTSelectionContainer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yt.visualization.profile_plotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhasePlot</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">flekspy.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_unit</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">flekspy.xarray</span>
+
+<div class="viewcode-block" id="FLEKSFieldInfo">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.FLEKSFieldInfo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FLEKSFieldInfo</span><span class="p">(</span><span class="n">FieldInfoContainer</span><span class="p">):</span>
+    <span class="n">l_units</span> <span class="o">=</span> <span class="s2">&quot;code_length&quot;</span>
+    <span class="n">v_units</span> <span class="o">=</span> <span class="s2">&quot;code_velocity&quot;</span>
+    <span class="n">p_units</span> <span class="o">=</span> <span class="s2">&quot;code_pressure&quot;</span>
+    <span class="n">b_units</span> <span class="o">=</span> <span class="s2">&quot;code_magnetic&quot;</span>
+    <span class="n">e_units</span> <span class="o">=</span> <span class="s2">&quot;code_magnetic * code_velocity&quot;</span>
+    <span class="n">rho_units</span> <span class="o">=</span> <span class="s2">&quot;code_density&quot;</span>
+    <span class="n">mass_units</span> <span class="o">=</span> <span class="s2">&quot;code_mass&quot;</span>
+
+    <span class="n">_base_fields</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;Bx&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">b_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;magnetic_field_x&quot;</span><span class="p">],</span> <span class="sa">r</span><span class="s2">&quot;B_x&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;By&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">b_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;magnetic_field_y&quot;</span><span class="p">],</span> <span class="sa">r</span><span class="s2">&quot;B_y&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;Bz&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">b_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;magnetic_field_z&quot;</span><span class="p">],</span> <span class="sa">r</span><span class="s2">&quot;B_z&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;Ex&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">e_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;E_x&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;Ey&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">e_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;E_y&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;Ez&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">e_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;E_z&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">l_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;X&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">l_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;Y&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">l_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;Z&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">_species_fields_template</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;rho&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">rho_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;\rho&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;ux&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;u_x&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;uy&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;u_y&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;uz&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;u_z&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;pxx&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">p_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;P_</span><span class="si">{xx}</span><span class="s2">&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;pyy&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">p_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;P_</span><span class="si">{yy}</span><span class="s2">&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;pzz&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">p_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;P_</span><span class="si">{zz}</span><span class="s2">&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;pxy&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">p_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;P_</span><span class="si">{xy}</span><span class="s2">&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;pxz&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">p_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;P_</span><span class="si">{xz}</span><span class="s2">&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;pyz&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">p_units</span><span class="p">,</span> <span class="p">[],</span> <span class="sa">r</span><span class="s2">&quot;P_</span><span class="si">{yz}</span><span class="s2">&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">known_other_fields</span> <span class="o">=</span> <span class="n">_base_fields</span>
+
+    <span class="n">known_particle_fields</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;particle_weight&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">mass_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;p_w&quot;</span><span class="p">],</span> <span class="sa">r</span><span class="s2">&quot;weight&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;particle_position_x&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">l_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;p_x&quot;</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;particle_position_y&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">l_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;p_y&quot;</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;particle_position_z&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">l_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;p_z&quot;</span><span class="p">],</span> <span class="s2">&quot;z&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;particle_velocity_x&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;p_ux&quot;</span><span class="p">],</span> <span class="sa">r</span><span class="s2">&quot;u_x&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;particle_velocity_y&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;p_uy&quot;</span><span class="p">],</span> <span class="sa">r</span><span class="s2">&quot;u_y&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;particle_velocity_z&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v_units</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;p_uz&quot;</span><span class="p">],</span> <span class="sa">r</span><span class="s2">&quot;u_z&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">extra_union_fields</span> <span class="o">=</span> <span class="p">((</span><span class="n">mass_units</span><span class="p">,</span> <span class="s2">&quot;particle_mass&quot;</span><span class="p">),)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">field_list</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FLEKSFieldInfo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">field_list</span><span class="p">)</span>
+
+        <span class="c1"># setup nodal flag information</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">raw_fields</span><span class="p">:</span>
+            <span class="n">finfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">((</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">field</span><span class="p">))</span>
+            <span class="n">finfo</span><span class="o">.</span><span class="n">nodal_flag</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">nodal_flags</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+<div class="viewcode-block" id="FLEKSFieldInfo.setup_fluid_fields">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.FLEKSFieldInfo.setup_fluid_fields">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_fluid_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">yt.fields.magnetic_field</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_magnetic_field_aliases</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">known_other_fields</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Try to alias to boxlib first, then raw</span>
+            <span class="n">original_name</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;boxlib&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">original_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">original_name</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="p">((</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="n">original_name</span><span class="p">)</span>
+
+        <span class="c1"># Dynamically alias species fields from the input dataset</span>
+        <span class="c1"># Use field_list instead of index.raw_fields to avoid forcing index construction</span>
+        <span class="n">species_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(?P&lt;base&gt;.*)s(?P&lt;idx&gt;\d+)$&quot;</span><span class="p">)</span>
+
+        <span class="c1"># field_list typically contains tuples like (&#39;boxlib&#39;, &#39;varname&#39;) or (&#39;raw&#39;, &#39;varname&#39;)</span>
+        <span class="c1"># We need to scan for on-disk fields.</span>
+        <span class="c1"># Use self.field_list instead of self.ds.field_list to be robust against incomplete ds mocks in tests</span>
+        <span class="k">for</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_list</span><span class="p">:</span>
+            <span class="c1"># We are interested in fields that might be raw fluid fields</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;boxlib&quot;</span><span class="p">,</span> <span class="s2">&quot;raw&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">match</span> <span class="o">=</span> <span class="n">species_regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;base&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">template_field</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_species_fields_template</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">base</span> <span class="o">==</span> <span class="n">template_field</span><span class="p">:</span>
+                        <span class="c1"># Construct proper LaTeX display name merging subscripts</span>
+                        <span class="n">base_display</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                        <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;s</span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;idx&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="k">if</span> <span class="s2">&quot;_&quot;</span> <span class="ow">in</span> <span class="n">base_display</span><span class="p">:</span>
+                            <span class="n">name_part</span><span class="p">,</span> <span class="n">sub_part</span> <span class="o">=</span> <span class="n">base_display</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">sub_part</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sub_part</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;}&quot;</span><span class="p">):</span>
+                                <span class="n">sub_content</span> <span class="o">=</span> <span class="n">sub_part</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                                <span class="n">display_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_part</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">sub_content</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">display_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_part</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">sub_part</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">display_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_display</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+
+                        <span class="c1"># Alias (&quot;mesh&quot;, fname) to the found field</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span>
+                            <span class="p">(</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="p">(</span><span class="n">ftype</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="n">props</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="p">)</span>
+
+                        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="p">[(</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)]</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="n">display_name</span>
+                        <span class="k">break</span>
+
+        <span class="c1"># This function is required by yt to correctly handle magnetic field</span>
+        <span class="c1"># units and set up aliases. See:</span>
+        <span class="c1"># https://yt-project.org/doc/developing/creating_frontend.html#creating-aliases-for-magnetic-fields</span>
+        <span class="n">setup_magnetic_field_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;FLEKS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;B</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ax</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s2">&quot;xyz&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="FLEKSFieldInfo.setup_fluid_aliases">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.FLEKSFieldInfo.setup_fluid_aliases">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_fluid_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FLEKSFieldInfo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setup_fluid_aliases</span><span class="p">(</span><span class="s2">&quot;mesh&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FLEKSFieldInfo.setup_particle_fields">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.FLEKSFieldInfo.setup_particle_fields">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_particle_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ptype</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FLEKSFieldInfo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setup_particle_fields</span><span class="p">(</span><span class="n">ptype</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FLEKSHierarchy">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.FLEKSHierarchy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FLEKSHierarchy</span><span class="p">(</span><span class="n">BoxlibHierarchy</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dataset_type</span><span class="o">=</span><span class="s2">&quot;boxlib_native&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FLEKSHierarchy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">dataset_type</span><span class="p">)</span>
+
+        <span class="n">is_checkpoint</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">ptype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">particle_types</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_particles</span><span class="p">(</span><span class="n">ptype</span><span class="p">,</span> <span class="n">is_checkpoint</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FLEKSHierarchy._detect_output_fields">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.FLEKSHierarchy._detect_output_fields">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_output_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FLEKSHierarchy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_detect_output_fields</span><span class="p">()</span>
+
+        <span class="c1"># now detect the optional, non-cell-centered fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">+</span> <span class="s2">&quot;/raw_fields/&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_list</span> <span class="o">+=</span> <span class="p">[(</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_fields</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_field_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">nodal_flags</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_field_nghost</span> <span class="o">=</span> <span class="p">{}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="YtFLEKSData">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">YtFLEKSData</span><span class="p">(</span><span class="n">BoxlibDataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read and plot the AMReX format output from FLEKS.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        output_dir (str): the path to the data.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import flekspy</span>
+<span class="sd">        &gt;&gt;&gt; ds = flekspy.YtFLEKSData(&quot;3d_particle*n00004750_amrex&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_index_class</span> <span class="o">=</span> <span class="n">FLEKSHierarchy</span>
+    <span class="n">_field_info_class</span> <span class="o">=</span> <span class="n">FLEKSFieldInfo</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">,</span>
+        <span class="n">read_field_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">cparam_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">fparam_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dataset_type</span><span class="o">=</span><span class="s2">&quot;boxlib_native&quot;</span><span class="p">,</span>
+        <span class="n">storage_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">units_override</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">unit_system</span><span class="o">=</span><span class="s2">&quot;mks&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_fluid_type</span> <span class="o">=</span> <span class="s2">&quot;mesh&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_field</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;density&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fluid_types</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;raw&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_field_data</span> <span class="o">=</span> <span class="n">read_field_data</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">YtFLEKSData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">,</span>
+            <span class="n">cparam_filename</span><span class="p">,</span>
+            <span class="n">fparam_filename</span><span class="p">,</span>
+            <span class="n">dataset_type</span><span class="p">,</span>
+            <span class="n">storage_filename</span><span class="p">,</span>
+            <span class="n">units_override</span><span class="p">,</span>
+            <span class="n">unit_system</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="YtFLEKSData._parse_parameter_file">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData._parse_parameter_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_parameter_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">YtFLEKSData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_parse_parameter_file</span><span class="p">()</span>
+
+        <span class="n">fleks_header</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;FLEKSHeader&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fleks_header</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">plot_string</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>  <span class="c1"># should be in unit [m]</span>
+
+        <span class="c1"># It seems the second argument should be in the unit of [cm].</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_registry</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="s2">&quot;Planet_Radius&quot;</span><span class="p">,</span> <span class="mi">100</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="n">yt</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">dimensions</span><span class="o">.</span><span class="n">length</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plot_string</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;si&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fleks_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;si&quot;</span>
+        <span class="k">elif</span> <span class="n">plot_string</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;planet&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fleks_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;planet&quot;</span>
+        <span class="k">elif</span> <span class="n">plot_string</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;pic&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fleks_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;pic&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fleks_unit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+
+        <span class="n">output_dir_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="n">header_paths_generator</span> <span class="o">=</span> <span class="n">output_dir_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*/Header&quot;</span><span class="p">)</span>
+        <span class="n">particle_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">header_paths_generator</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">particle_types</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_field_data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;particles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">particle_types</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">particle_types</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">particle_types_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">particle_types</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">particle_types</span> <span class="o">=</span> <span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">particle_types_raw</span> <span class="o">=</span> <span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData._set_code_unit_attributes">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData._set_code_unit_attributes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_code_unit_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fleks_unit&quot;</span><span class="p">]</span>
+
+        <span class="n">setdefaultattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;time_unit&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quan</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_unit</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)))</span>
+        <span class="n">setdefaultattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;length_unit&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quan</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_unit</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)))</span>
+        <span class="n">setdefaultattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;mass_unit&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quan</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_unit</span><span class="p">(</span><span class="s2">&quot;mass&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)))</span>
+        <span class="n">setdefaultattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;velocity_unit&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quan</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_unit</span><span class="p">(</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)))</span>
+        <span class="n">setdefaultattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;magnetic_unit&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quan</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_unit</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)))</span>
+        <span class="n">setdefaultattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;density_unit&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quan</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_unit</span><span class="p">(</span><span class="s2">&quot;rho&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)))</span>
+        <span class="n">setdefaultattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pressure_unit&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">quan</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_unit</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData.pvar">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData.pvar">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pvar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particle_types</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">var</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData.get_slice">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData.get_slice">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cut_loc</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a xarray.Dataset object that contains a slice along the normal direction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            norm (str): slice normal direction in &quot;x&quot;, &quot;y&quot; or &quot;z&quot;</span>
+<span class="sd">            cut_loc (float): cut location along the normal direction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">axDir</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+        <span class="n">idir</span> <span class="o">=</span> <span class="n">axDir</span><span class="p">[</span><span class="n">norm</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cut_loc</span><span class="p">,</span> <span class="n">yt</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">yt_array</span><span class="o">.</span><span class="n">YTArray</span><span class="p">):</span>
+            <span class="n">cut_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arr</span><span class="p">(</span><span class="n">cut_loc</span><span class="p">,</span> <span class="s2">&quot;code_length&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Define the slice range</span>
+        <span class="n">slice_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_dimensions</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">slice_dim</span><span class="p">[</span><span class="n">idir</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">left_edge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_left_edge</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">right_edge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_right_edge</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">dd</span> <span class="o">=</span> <span class="p">(</span><span class="n">right_edge</span><span class="p">[</span><span class="n">idir</span><span class="p">]</span> <span class="o">-</span> <span class="n">left_edge</span><span class="p">[</span><span class="n">idir</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="n">left_edge</span><span class="p">[</span><span class="n">idir</span><span class="p">]</span> <span class="o">=</span> <span class="n">cut_loc</span> <span class="o">-</span> <span class="n">dd</span>
+        <span class="n">right_edge</span><span class="p">[</span><span class="n">idir</span><span class="p">]</span> <span class="o">=</span> <span class="n">cut_loc</span> <span class="o">+</span> <span class="n">dd</span>
+
+        <span class="n">abArr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arbitrary_grid</span><span class="p">(</span><span class="n">left_edge</span><span class="p">,</span> <span class="n">right_edge</span><span class="p">,</span> <span class="n">slice_dim</span><span class="p">)</span>
+
+        <span class="n">data_vars</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">abArr</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># remove empty sliced particle output</span>
+                <span class="n">data_vars</span><span class="p">[</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">abArr</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+
+        <span class="n">axLabes</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">),</span> <span class="mi">2</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">)}</span>
+        <span class="n">ax_names</span> <span class="o">=</span> <span class="n">axLabes</span><span class="p">[</span><span class="n">idir</span><span class="p">]</span>
+
+        <span class="n">coords</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">axis_label</span> <span class="ow">in</span> <span class="n">ax_names</span><span class="p">:</span>
+            <span class="n">ax_dir</span> <span class="o">=</span> <span class="n">axDir</span><span class="p">[</span><span class="n">axis_label</span><span class="p">]</span>
+            <span class="n">coords</span><span class="p">[</span><span class="n">axis_label</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">domain_left_edge</span><span class="p">[</span><span class="n">ax_dir</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">domain_right_edge</span><span class="p">[</span><span class="n">ax_dir</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">domain_dimensions</span><span class="p">[</span><span class="n">ax_dir</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Process grid data (2D) and particle data (1D) separately</span>
+        <span class="n">grid_vars</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">particle_vars</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">grid_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">particle_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;particle_index&quot;</span><span class="p">,),</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># The arbitrary_grid returns data in (X, Y) order, so no transpose is needed.</span>
+        <span class="n">ds_grid</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="n">ax_names</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">grid_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">ds_particle</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">particle_vars</span><span class="p">)</span>
+
+        <span class="c1"># Merge datasets and set particle positions as coordinates</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">merge</span><span class="p">([</span><span class="n">ds_grid</span><span class="p">,</span> <span class="n">ds_particle</span><span class="p">])</span>
+        <span class="n">particle_coords</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;particle_position_x&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;particle_position_y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;particle_position_z&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">coord_name</span> <span class="ow">in</span> <span class="n">particle_coords</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">coord_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">set_coords</span><span class="p">(</span><span class="n">coord_name</span><span class="p">)</span>
+
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;cut_norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">norm</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;cut_loc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cut_loc</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_time</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;nstep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nstep&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+        <span class="k">return</span> <span class="n">ds</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData.get_domain">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData.get_domain">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read all the simulation data into a 3D box.</span>
+<span class="sd">        This method only reads grid data, not particle data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">covering_grid</span><span class="p">(</span>
+            <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">left_edge</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_left_edge</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_dimensions</span>
+        <span class="p">)</span>
+
+        <span class="n">ax_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="n">ax_names</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">]</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">ax_names</span><span class="p">[</span><span class="n">idim</span><span class="p">]:</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">domain_left_edge</span><span class="p">[</span><span class="n">idim</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">domain_right_edge</span><span class="p">[</span><span class="n">idim</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">domain_dimensions</span><span class="p">[</span><span class="n">idim</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">idim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="n">data_vars</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Filter for non-particle fields as covering_grid does not support them</span>
+        <span class="n">grid_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_list</span> <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particle_types</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">var_tuple</span> <span class="ow">in</span> <span class="n">grid_fields</span><span class="p">:</span>
+            <span class="n">var_name</span> <span class="o">=</span> <span class="n">var_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">domain</span><span class="p">[</span><span class="n">var_tuple</span><span class="p">]</span>
+            <span class="n">data_vars</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_vars</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_time</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;nstep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nstep&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+        <span class="k">return</span> <span class="n">ds</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData._get_profile">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData._get_profile">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_profile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_field</span><span class="p">,</span>
+        <span class="n">y_field</span><span class="p">,</span>
+        <span class="n">z_field</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="n">YTSelectionContainer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">x_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">y_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">domain_size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_left_edge</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_right_edge</span><span class="p">)</span>
+
+        <span class="c1"># The bins should be uniform instead of logarithmic</span>
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">x_field</span><span class="p">):</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">y_field</span><span class="p">):</span> <span class="kc">False</span><span class="p">}</span>
+
+        <span class="n">bin_fields</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">x_field</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">y_field</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">domain_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">extrema</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">x_field</span><span class="p">):</span> <span class="p">(</span><span class="n">domain_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">y_field</span><span class="p">):</span> <span class="p">(</span><span class="n">domain_size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">domain_size</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">extrema</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="n">yt</span><span class="o">.</span><span class="n">create_profile</span><span class="p">(</span>
+            <span class="n">data_source</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
+            <span class="n">bin_fields</span><span class="o">=</span><span class="n">bin_fields</span><span class="p">,</span>
+            <span class="n">fields</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">z_field</span><span class="p">),</span>
+            <span class="n">n_bins</span><span class="o">=</span><span class="p">[</span><span class="n">x_bins</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">],</span>
+            <span class="n">weight_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">extrema</span><span class="o">=</span><span class="n">extrema</span><span class="p">,</span>
+            <span class="n">logs</span><span class="o">=</span><span class="n">logs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">profile</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData.get_phase">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData.get_phase">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_phase</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_field</span><span class="p">,</span>
+        <span class="n">y_field</span><span class="p">,</span>
+        <span class="n">z_field</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="n">YTSelectionContainer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">x_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">y_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">domain_size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get particle phase space distribution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            region: YTSelectionContainer</span>
+<span class="sd">                Spatial region to be selected, such as all_data, box, region, or sphere.</span>
+
+<span class="sd">            x_field &amp; y_field: string</span>
+<span class="sd">                The x-/y- axes, from &quot;p_ux&quot;, &quot;p_uy&quot;, &quot;p_uz&quot;, &quot;p_x&quot;, &quot;p_y&quot; or &quot;p_z&quot;.</span>
+
+<span class="sd">            z_field: string</span>
+<span class="sd">                It is usually the particle weight: &quot;p_w&quot;.</span>
+
+<span class="sd">            domain_size: tuple</span>
+<span class="sd">                Axis range of 4 elements: x_min, x_max, y_min, y_max</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; x, y, w = ds.get_phase(&quot;p_ux&quot;, &quot;p_uy&quot;, &quot;p_w&quot;, domain_size=(-1, 1, -1, 1))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_profile</span><span class="p">(</span>
+            <span class="n">x_field</span><span class="p">,</span>
+            <span class="n">y_field</span><span class="p">,</span>
+            <span class="n">z_field</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
+            <span class="n">x_bins</span><span class="o">=</span><span class="n">x_bins</span><span class="p">,</span>
+            <span class="n">y_bins</span><span class="o">=</span><span class="n">y_bins</span><span class="p">,</span>
+            <span class="n">domain_size</span><span class="o">=</span><span class="n">domain_size</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">ndarray_view</span><span class="p">(),</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">ndarray_view</span><span class="p">(),</span>
+            <span class="n">profile</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">z_field</span><span class="p">)]</span><span class="o">.</span><span class="n">ndarray_view</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData.plot_phase">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData.plot_phase">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_phase</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_field</span><span class="p">,</span>
+        <span class="n">y_field</span><span class="p">,</span>
+        <span class="n">z_field</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="n">YTSelectionContainer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">unit_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;planet&quot;</span><span class="p">,</span>
+        <span class="n">x_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">y_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">domain_size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">font_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">18</span><span class="p">,</span>
+        <span class="n">figure_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="n">customized</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhasePlot</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot particle phase space distribution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            region: YTSelectionContainer</span>
+<span class="sd">                Spatial region to be selected, such as all_data, box, region, or sphere.</span>
+
+<span class="sd">            x_field &amp; y_field: string</span>
+<span class="sd">                The x-/y- axes, from &quot;p_ux&quot;, &quot;p_uy&quot;, &quot;p_uz&quot;, &quot;p_x&quot;, &quot;p_y&quot; or &quot;p_z&quot;.</span>
+
+<span class="sd">            z_field: string</span>
+<span class="sd">                It is usually the particle weight: &quot;p_w&quot;.</span>
+
+<span class="sd">            unit_type: string</span>
+<span class="sd">                The unit system of the plots. &quot;planet&quot; or &quot;si&quot;.</span>
+
+<span class="sd">            domain_size: tuple</span>
+<span class="sd">                Axis range of 4 elements: x_min, x_max, y_min, y_max</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; pp = ds.plot_phase(&quot;p_ux&quot;, &quot;p_uy&quot;, &quot;p_w&quot;, domain_size=(-1, 1, -1, 1))</span>
+<span class="sd">            &gt;&gt;&gt; pp.show()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_profile</span><span class="p">(</span>
+            <span class="n">x_field</span><span class="p">,</span>
+            <span class="n">y_field</span><span class="p">,</span>
+            <span class="n">z_field</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
+            <span class="n">x_bins</span><span class="o">=</span><span class="n">x_bins</span><span class="p">,</span>
+            <span class="n">y_bins</span><span class="o">=</span><span class="n">y_bins</span><span class="p">,</span>
+            <span class="n">domain_size</span><span class="o">=</span><span class="n">domain_size</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">yt</span><span class="o">.</span><span class="n">PhasePlot</span><span class="o">.</span><span class="n">from_profile</span><span class="p">(</span>
+            <span class="n">profile</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">font_size</span><span class="p">,</span> <span class="n">figure_size</span><span class="o">=</span><span class="n">figure_size</span>
+        <span class="p">)</span>
+        <span class="n">pp</span><span class="o">.</span><span class="n">set_log</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">pp</span><span class="o">.</span><span class="n">set_unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">x_field</span><span class="p">),</span> <span class="n">get_unit</span><span class="p">(</span><span class="n">x_field</span><span class="p">,</span> <span class="n">unit_type</span><span class="p">))</span>
+        <span class="n">pp</span><span class="o">.</span><span class="n">set_unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">y_field</span><span class="p">),</span> <span class="n">get_unit</span><span class="p">(</span><span class="n">y_field</span><span class="p">,</span> <span class="n">unit_type</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">customized</span><span class="p">:</span>
+            <span class="n">pp</span><span class="o">.</span><span class="n">set_cmap</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;turbo&quot;</span><span class="p">)</span>
+            <span class="n">pp</span><span class="o">.</span><span class="n">set_font</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;DejaVu Sans&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">pp</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">plots</span><span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">axes</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s2">&quot;minor&quot;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:gray&quot;</span><span class="p">)</span>
+            <span class="n">vl</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+            <span class="n">hl</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">vl</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">hl</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">]:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pp</span></div>
+
+
+<div class="viewcode-block" id="YtFLEKSData.plot_particles">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.YtFLEKSData.plot_particles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_particles</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_field</span><span class="p">,</span>
+        <span class="n">y_field</span><span class="p">,</span>
+        <span class="n">z_field</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="n">YTSelectionContainer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">unit_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;planet&quot;</span><span class="p">,</span>
+        <span class="n">x_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">y_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Plot the particle position of particles inside a box.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x_field &amp; y_field: str</span>
+<span class="sd">                The x- y- axes, from &quot;p_x&quot;, &quot;p_y&quot;, &quot;p_z&quot;.</span>
+
+<span class="sd">            z_field: str</span>
+<span class="sd">                color variable, usually the particle weight &quot;p_w&quot;.</span>
+
+<span class="sd">            region: YTSelectionContainer</span>
+<span class="sd">                Spatial region to be selected, such as all_data, box, region, or sphere.</span>
+
+<span class="sd">            unit_type: str</span>
+<span class="sd">                The unit system of the plots. &quot;planet&quot; or &quot;si&quot;.</span>
+
+<span class="sd">        See more at https://yt-project.org/doc/reference/api/yt.visualization.particle_plots.html#yt.visualization.particle_plots.ParticlePlot</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; pp = ds.plot_particles([8, -1, -1], [10, 0, 0], &quot;p_x&quot;, &quot;p_y&quot;, &quot;p_w&quot;, unit_type=&quot;planet&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; pp.show()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_left_edge</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_right_edge</span><span class="p">)</span>
+
+        <span class="n">nmap</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;p_x&quot;</span><span class="p">:</span> <span class="s2">&quot;particle_position_x&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;p_y&quot;</span><span class="p">:</span> <span class="s2">&quot;particle_position_y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;p_z&quot;</span><span class="p">:</span> <span class="s2">&quot;particle_position_z&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">yt</span><span class="o">.</span><span class="n">ParticlePlot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">nmap</span><span class="p">[</span><span class="n">x_field</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">nmap</span><span class="p">[</span><span class="n">y_field</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pvar</span><span class="p">(</span><span class="n">z_field</span><span class="p">),</span>
+            <span class="n">data_source</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pp</span><span class="o">.</span><span class="n">set_axes_unit</span><span class="p">((</span><span class="n">get_unit</span><span class="p">(</span><span class="n">x_field</span><span class="p">,</span> <span class="n">unit_type</span><span class="p">),</span> <span class="n">get_unit</span><span class="p">(</span><span class="n">y_field</span><span class="p">,</span> <span class="n">unit_type</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">pp</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="extract_phase">
+<a class="viewcode-back" href="../../../autoapi/flekspy/yt/yt/index.html#flekspy.yt.extract_phase">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_phase</span><span class="p">(</span><span class="n">pp</span><span class="p">:</span> <span class="n">PhasePlot</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract phase space distribution from PhasePlot object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pp (PhasePlot): YT PhasePlot object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        x, y, f: Horizontal, vertical coordinates of the plot, and phase space density.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">field_data</span><span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">y</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Yuxi Chen, Hongyang Zhou.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

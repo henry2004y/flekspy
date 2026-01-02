@@ -1,0 +1,1545 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>flekspy.tp &#8212; flekspy  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/flekspy/tp/index';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="flekspy.tp.test_particles" href="test_particles/index.html" />
+    <link rel="prev" title="flekspy.plot.streamplot" href="../plot/streamplot/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">flekspy  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">flekspy</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../amrex/index.html">flekspy.amrex</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../amrex/particle_data/index.html">flekspy.amrex.particle_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../amrex/plotting/index.html">flekspy.amrex.plotting</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../flekspy/index.html">flekspy.flekspy</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../idl/index.html">flekspy.idl</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../idl/idl/index.html">flekspy.idl.idl</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../plot/index.html">flekspy.plot</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../plot/streamplot/index.html">flekspy.plot.streamplot</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">flekspy.tp</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="test_particles/index.html">flekspy.tp.test_particles</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../util/index.html">flekspy.util</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../util/exosphere/index.html">flekspy.util.exosphere</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/gmm/index.html">flekspy.util.gmm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/logger/index.html">flekspy.util.logger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/safe_eval/index.html">flekspy.util.safe_eval</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/transformations/index.html">flekspy.util.transformations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/utilities/index.html">flekspy.util.utilities</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../xarray/index.html">flekspy.xarray</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../xarray/accessor/index.html">flekspy.xarray.accessor</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../yt/index.html">flekspy.yt</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../yt/yt/index.html">flekspy.yt.yt</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BATSRUSReader/index.html">BATSRUSReader</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">flekspy</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">flekspy.tp</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-flekspy.tp">
+<span id="flekspy-tp"></span><h1>flekspy.tp<a class="headerlink" href="#module-flekspy.tp" title="Link to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="test_particles/index.html">flekspy.tp.test_particles</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.tp.FLEKSTP" title="flekspy.tp.FLEKSTP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FLEKSTP</span></code></a></p></td>
+<td><p>A class that is used to read and plot test particles. Each particle ID consists of</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.tp.Indices" title="flekspy.tp.Indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Indices</span></code></a></p></td>
+<td><p>Defines constant indices for test particles.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.tp.interpolate_at_times" title="flekspy.tp.interpolate_at_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_at_times</span></code></a>(→ polars.DataFrame)</p></td>
+<td><p>Interpolates multiple numeric columns of a DataFrame at specified time points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.tp.plot_integrated_energy" title="flekspy.tp.plot_integrated_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_integrated_energy</span></code></a>(df[, outname])</p></td>
+<td><p>Plots integrated energy quantities as a function of time.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flekspy.tp.</span></span><span class="sig-name descname"><span class="pre">FLEKSTP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iDomain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iSpecies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'planetary'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">proton_mass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">elementary_charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iListStart</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iListEnd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class that is used to read and plot test particles. Each particle ID consists of
+a CPU index, a particle index on each CPU, and a location index.
+By default, 7 real numbers saved for each step: time + position + velocity.
+Additional field information are also stored if available.</p>
+<p>This class is a lazy, iterable container. It avoids loading all data into memory
+at once, making it efficient for large datasets. You can access particle
+trajectories using standard container operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dirs</strong> (<em>str</em>) – the path to the test particle dataset.</p>
+</dd>
+</dl>
+<p>Examples:
+&gt;&gt;&gt; tp = FLEKSTP(“res/run1/PC/test_particles”, iSpecies=1)
+&gt;&gt;&gt; len(tp)
+10240
+&gt;&gt;&gt; trajectory = tp[0]
+&gt;&gt;&gt; tp.plot_trajectory(tp.IDs[3])
+&gt;&gt;&gt; tp.save_trajectory(tp.IDs[5], format=”csv”)
+&gt;&gt;&gt; tp.save_trajectory(tp.IDs[5], format=”parquet”)
+&gt;&gt;&gt; ids, pData = tp.read_particles_at_time(0.0, doSave=False)
+&gt;&gt;&gt; f = tp.plot_location(pData)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.use_cache">
+<span class="sig-name descname"><span class="pre">use_cache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.use_cache" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.unit">
+<span class="sig-name descname"><span class="pre">unit</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'planetary'</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.unit" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._trajectory_cache">
+<span class="sig-name descname"><span class="pre">_trajectory_cache</span></span><a class="headerlink" href="#flekspy.tp.FLEKSTP._trajectory_cache" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.mass">
+<span class="sig-name descname"><span class="pre">mass</span></span><a class="headerlink" href="#flekspy.tp.FLEKSTP.mass" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.charge">
+<span class="sig-name descname"><span class="pre">charge</span></span><a class="headerlink" href="#flekspy.tp.FLEKSTP.charge" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.iSpecies">
+<span class="sig-name descname"><span class="pre">iSpecies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.iSpecies" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.pfiles">
+<span class="sig-name descname"><span class="pre">pfiles</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.pfiles" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.particle_locations">
+<span class="sig-name descname"><span class="pre">particle_locations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.particle_locations" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.IDs">
+<span class="sig-name descname"><span class="pre">IDs</span></span><a class="headerlink" href="#flekspy.tp.FLEKSTP.IDs" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.filetime">
+<span class="sig-name descname"><span class="pre">filetime</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#flekspy.tp.FLEKSTP.filetime" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__repr__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__len__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__len__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__iter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__iter__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.__getitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.__getitem__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.getIDs">
+<span class="sig-name descname"><span class="pre">getIDs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.getIDs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.getIDs" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_particle_list">
+<span class="sig-name descname"><span class="pre">read_particle_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_particle_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_particle_list" title="Link to this definition">#</a></dt>
+<dd><p>Read and return a list of the particle IDs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._read_the_first_record">
+<span class="sig-name descname"><span class="pre">_read_the_first_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._read_the_first_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._read_the_first_record" title="Link to this definition">#</a></dt>
+<dd><p>Get the first record stored in one file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_particles_at_time">
+<span class="sig-name descname"><span class="pre">read_particles_at_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doSave</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_particles_at_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_particles_at_time" title="Link to this definition">#</a></dt>
+<dd><p>Get the information of all the particles at a given time.
+If doSave, save to a CSV file with the name “particles_t***.csv”.</p>
+<p>Note that the time tags in filetime do not include the last saved time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a numpy array of tuples contains the particle IDs.
+pData: a numpy real array with the particle weight, location and velocity.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ids</p>
+</dd>
+</dl>
+<p>Examples:
+&gt;&gt;&gt; ids, pData = pt.read_particles_at_time(3700, doSave=True)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.save_trajectory">
+<span class="sig-name descname"><span class="pre">save_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shiftTime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaleTime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'csv'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.save_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.save_trajectory" title="Link to this definition">#</a></dt>
+<dd><p>Save the trajectory of a particle to a file.
+:param pID: particle ID.
+:param filename: The name of the file to save the trajectory to.</p>
+<blockquote>
+<div><p>If None, a default name will be generated.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shiftTime</strong> (<em>bool</em>) – If set to True, set the initial time to be 0.</p></li>
+<li><p><strong>scaleTime</strong> (<em>bool</em>) – If set to True, scale the time into [0,1] range.</p></li>
+<li><p><strong>format</strong> (<em>str</em>) – The output format, either “csv” or “parquet”.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:
+&gt;&gt;&gt; tp.save_trajectory((3,15), format=”parquet”)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.save_trajectories">
+<span class="sig-name descname"><span class="pre">save_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pIDs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'trajectories.h5'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.save_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.save_trajectories" title="Link to this definition">#</a></dt>
+<dd><p>Save the trajectories of multiple particles to a single HDF5 file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pIDs</strong> – A list of particle IDs to save. This can be a list of tuples
+(cpu, id) or a list of integer indices.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – The name of the HDF5 file to save the trajectories to.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._get_particle_raw_data">
+<span class="sig-name descname"><span class="pre">_get_particle_raw_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._get_particle_raw_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._get_particle_raw_data" title="Link to this definition">#</a></dt>
+<dd><p>Reads all raw trajectory data for a particle across multiple files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._read_particle_record">
+<span class="sig-name descname"><span class="pre">_read_particle_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._read_particle_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._read_particle_record" title="Link to this definition">#</a></dt>
+<dd><p>Return a specific record of a test particle given its ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> – particle ID</p></li>
+<li><p><strong>index</strong> – The index of the record to be returned.
+0: first record.
+-1: last record (default).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_particle_trajectory">
+<span class="sig-name descname"><span class="pre">read_particle_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_particle_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_particle_trajectory" title="Link to this definition">#</a></dt>
+<dd><p>Return the trajectory of a test particle as a polars LazyFrame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_initial_condition">
+<span class="sig-name descname"><span class="pre">read_initial_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_initial_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_initial_condition" title="Link to this definition">#</a></dt>
+<dd><p>Return the initial conditions of a test particle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.read_final_condition">
+<span class="sig-name descname"><span class="pre">read_final_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.read_final_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.read_final_condition" title="Link to this definition">#</a></dt>
+<dd><p>Return the final conditions of a test particle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.select_particles">
+<span class="sig-name descname"><span class="pre">select_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.select_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.select_particles" title="Link to this definition">#</a></dt>
+<dd><p>Return the test particles whose initial conditions satisfy the requirement
+set by the user defined function f_select. The first argument of f_select is the
+particle ID, and the second argument is the ID of a particle.</p>
+<p>Examples:
+&gt;&gt;&gt; from flekspy.tp import Indices
+&gt;&gt;&gt; def f_select(tp, pid):
+&gt;&gt;&gt;     pData = tp.read_initial_condition(pid)
+&gt;&gt;&gt;     inTime = pData[Indices.TIME] &lt; 3601
+&gt;&gt;&gt;     inRegion = pData[Indices.X] &gt; 20
+&gt;&gt;&gt;     return inTime and inRegion
+&gt;&gt;&gt;
+&gt;&gt;&gt; pselected = tp.select_particles(f_select)
+&gt;&gt;&gt; tp.plot_trajectory(list(pselected.keys())[1])</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_kinetic_energy">
+<span class="sig-name descname"><span class="pre">get_kinetic_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_kinetic_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_kinetic_energy" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_kinetic_energy_change_rate">
+<span class="sig-name descname"><span class="pre">get_kinetic_energy_change_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt_lazy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.Series</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_kinetic_energy_change_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_kinetic_energy_change_rate" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the rate of change of kinetic energy in [eV/s].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_pitch_angle">
+<span class="sig-name descname"><span class="pre">get_pitch_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_pitch_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_pitch_angle" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._get_pitch_angle_lazy">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_pitch_angle_lazy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.Series</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._get_pitch_angle_lazy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._get_pitch_angle_lazy" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the pitch angle from a LazyFrame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_pitch_angle_from_v_b">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_pitch_angle_from_v_b</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_pitch_angle_from_v_b"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_pitch_angle_from_v_b" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_first_adiabatic_invariant">
+<span class="sig-name descname"><span class="pre">get_first_adiabatic_invariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt_lazy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.Series</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_first_adiabatic_invariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_first_adiabatic_invariant" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the 1st adiabatic invariant of a particle.
+The output units depend on the input data’s units:
+- “planetary” (e.g., velocity in km/s, B-field in nT): result is in [1e9 J/T].
+- “SI” (e.g., velocity in m/s, B-field in T): result is in [J/T].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._calculate_bmag">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_calculate_bmag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._calculate_bmag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._calculate_bmag" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the magnetic field magnitude.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._calculate_curvature">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_calculate_curvature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._calculate_curvature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._calculate_curvature" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the magnetic field curvature vector and adds it to the DataFrame.
+κ = (b ⋅ ∇)b
+Depending on the selected units, output curvature may be
+- “planetary”: [1/RE]
+- “SI”: [1/m]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_ExB_drift">
+<span class="sig-name descname"><span class="pre">get_ExB_drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt_lazy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_ExB_drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_ExB_drift" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the convection drift velocity for a particle.
+v_exb = E x B / (B^2)
+Assuming Earth’s planetary units, output drift velocity in [km/s].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_curvature_drift">
+<span class="sig-name descname"><span class="pre">get_curvature_drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt_lazy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_curvature_drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_curvature_drift" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the curvature drift velocity for a particle.
+v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ)
+Depending on the selected units, output drift velocity may be
+- “planetary”: [km/s]
+- “SI”: [m/s]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_adiabaticity_parameter">
+<span class="sig-name descname"><span class="pre">get_adiabaticity_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt_lazy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.Series</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_adiabaticity_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_adiabaticity_parameter" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the adiabaticity parameter, defined as the ratio of the
+magnetic field’s radius of curvature to the particle’s gyroradius.
+When this parameter is &gt;&gt; 1, the motion is adiabatic.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._calculate_gradient_b_magnitude">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_calculate_gradient_b_magnitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._calculate_gradient_b_magnitude"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._calculate_gradient_b_magnitude" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the gradient of the magnetic field magnitude.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_gradient_drift">
+<span class="sig-name descname"><span class="pre">get_gradient_drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt_lazy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_gradient_drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_gradient_drift" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the gradient drift velocity for a particle.
+v_g = (μ / (q * B^2)) * (B x ∇|B|)
+Depending on the selected units, output drift velocity may be
+- “planetary”: [km/s]
+- “SI”: [m/s]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_polarization_drift">
+<span class="sig-name descname"><span class="pre">get_polarization_drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt_lazy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_polarization_drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_polarization_drift" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the polarization drift velocity for a particle.
+v_p = (m / (q * B^2)) * (dE_perp / dt)
+Depending on the selected units, output drift velocity may be
+- “planetary”: [km/s]
+- “SI”: [m/s]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_betatron_acceleration">
+<span class="sig-name descname"><span class="pre">get_betatron_acceleration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_betatron_acceleration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_betatron_acceleration" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the Betatron acceleration term from particle trajectory data.</p>
+<p>The calculation follows the formula: dW/dt = μ * (∂B/∂t)
+where the partial derivative is found using: ∂B/∂t = dB/dt - v ⋅ ∇B</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pt</strong> – A Polars LazyFrame containing the particle trajectory.
+It must include columns for time, velocity (vx, vy, vz),
+magnetic field (bx, by, bz), and the magnetic field
+gradient tensor (e.g., ‘dbxdx’, ‘dbydx’, etc.).</p></li>
+<li><p><strong>mu</strong> – A Polars Series containing the magnetic moment (first adiabatic invariant)
+of the particle.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new Polars LazyFrame with added intermediate columns and the
+final ‘dW_betatron’ column representing the rate of energy change in [eV/s].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_energy_change_guiding_center">
+<span class="sig-name descname"><span class="pre">get_energy_change_guiding_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_energy_change_guiding_center"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_energy_change_guiding_center" title="Link to this definition">#</a></dt>
+<dd><p>Computes the change of energy of a single particle based on the guiding center theory.</p>
+<p>The formula is given by:
+dW/dt = q*E_parallel*v_parallel + mu*(∂B/∂t + u_E.∇B) + m*v_parallel^2*(u_E.κ)</p>
+<p>where W is the particle energy, B is the magnetic field magnitude,
+u_E is the E cross B drift, and κ is the magnetic field curvature.
+The first term on the right hand side is the parallel acceleration,
+the second term is the Betatron acceleration, and the third term
+is one type of Fermi acceleration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pID</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The particle ID (cpu, id).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Polars DataFrame with the time, the three energy change components,
+and the total, in [eV/s].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.integrate_drift_accelerations">
+<span class="sig-name descname"><span class="pre">integrate_drift_accelerations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.integrate_drift_accelerations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.integrate_drift_accelerations" title="Link to this definition">#</a></dt>
+<dd><p>Compute plasma drift velocities and the associated rate of energy change in [eV/s].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.analyze_drifts">
+<span class="sig-name descname"><span class="pre">analyze_drifts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">switchYZ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.analyze_drifts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.analyze_drifts" title="Link to this definition">#</a></dt>
+<dd><p>Compute plasma drift velocities and the associated rate of energy change in [eV/s].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.analyze_drifts_energy_change">
+<span class="sig-name descname"><span class="pre">analyze_drifts_energy_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.analyze_drifts_energy_change"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.analyze_drifts_energy_change" title="Link to this definition">#</a></dt>
+<dd><p>Analyzes and plots the energy changes for each term in the guiding center
+approximation.</p>
+<p>This method computes the parallel, Betatron, and Fermi accelerations using
+<cite>get_energy_change_guiding_center</cite>. It also calculates the total kinetic
+energy change and treats the difference between the kinetic energy change
+and the sum of the guiding center terms (dW_total) as the non-adiabatic term.</p>
+<p>The method generates a plot with four subplots:
+1. dW_parallel: Energy change due to parallel electric fields.
+2. dW_betatron: Energy change due to the Betatron effect.
+3. dW_fermi: Energy change due to Fermi acceleration.
+4. dW_total and Non-adiabatic term: The sum of the above terms compared</p>
+<blockquote>
+<div><p>with the non-adiabatic heating component.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The particle ID (cpu, id).</p></li>
+<li><p><strong>outname</strong> (<em>str</em><em>, </em><em>optional</em>) – If provided, the plot is saved to this
+filename instead of being shown. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.analyze_drift">
+<span class="sig-name descname"><span class="pre">analyze_drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drift_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.analyze_drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.analyze_drift" title="Link to this definition">#</a></dt>
+<dd><p>Analyzes a specific drift for a particle, plotting its velocity, the
+electric field, the energy change rate, and the integrated energy change.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The particle ID (cpu, id).</p></li>
+<li><p><strong>drift_type</strong> (<em>str</em>) – The type of drift to analyze. Supported options are:
+‘ExB’, ‘gradient’, ‘curvature’, ‘polarization’.</p></li>
+<li><p><strong>outname</strong> (<em>str</em><em>, </em><em>optional</em>) – If provided, the plot is saved to this
+filename instead of being shown. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.plot_work_energy_verification">
+<span class="sig-name descname"><span class="pre">plot_work_energy_verification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.plot_work_energy_verification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.plot_work_energy_verification" title="Link to this definition">#</a></dt>
+<dd><p>Verifies the work-energy theorem for a particle by plotting the rate of
+change of kinetic energy against the work rate done by the electric field.
+It also plots the integrated change in kinetic energy versus the total
+work done.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The particle ID (cpu, id).</p></li>
+<li><p><strong>outname</strong> (<em>str</em><em>, </em><em>optional</em>) – If provided, the plot is saved to this
+filename. Defaults to None (displays plot).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.find_shock_crossing_time">
+<span class="sig-name descname"><span class="pre">find_shock_crossing_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_threshold_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.find_shock_crossing_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.find_shock_crossing_time" title="Link to this definition">#</a></dt>
+<dd><p>Finds the shock crossing time for a single particle.</p>
+<p>The shock is identified by finding the first rate of change in the
+magnetic field magnitude that exceeds a threshold, which signifies a
+rapid transition between the upstream and downstream regions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> – particle index.</p></li>
+<li><p><strong>b_threshold_factor</strong> (<em>float</em>) – A multiplier for the standard deviation of
+the B-field derivative. A larger value makes
+the detection less sensitive to minor
+fluctuations. Defaults to 2.5.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – If True, prints diagnostic information. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The time of the shock crossing in seconds. Returns None if</dt><dd><p>no significant crossing is detected based on the criteria.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.get_shock_up_down_states">
+<span class="sig-name descname"><span class="pre">get_shock_up_down_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_t_up</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_t_down</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_threshold_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.get_shock_up_down_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.get_shock_up_down_states" title="Link to this definition">#</a></dt>
+<dd><p>Analyzes particles to find their state upstream and downstream of a shock.</p>
+<p>This function iterates through a list of particle IDs. For each particle, it
+first identifies the shock crossing time. It then calculates specific upstream
+and downstream time points based on this crossing. Finally, it interpolates
+the particle’s full state (position, velocity, fields) at these two points
+and collects the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pids</strong> (<em>list</em>) – A list of particle IDs (e.g., [(0, 1), (0, 2), …]) to process.</p></li>
+<li><p><strong>delta_t_up</strong> (<em>float</em>) – The time in seconds <em>before</em> the shock crossing to define
+the upstream point. Defaults to 20.0.</p></li>
+<li><p><strong>delta_t_down</strong> (<em>float</em>) – The time in seconds <em>after</em> the shock crossing to define
+the downstream point. Defaults to 40.0.</p></li>
+<li><p><strong>b_threshold_factor</strong> (<em>float</em>) – The sensitivity factor for shock detection, passed to
+<cite>find_shock_crossing_time</cite>. Defaults to 2.5.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – If True, prints progress and individual shock detection times.
+Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing two Polars DataFrames:</dt><dd><ul class="simple">
+<li><p>The first DataFrame contains the states of all valid particles at their
+respective upstream times.</p></li>
+<li><p>The second DataFrame contains the states of all valid particles at their
+respective downstream times.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Each DataFrame includes the original particle ID (<cite>pid_rank</cite>, <cite>pid_idx</cite>), the
+shock crossing time (<cite>t_cross</cite>), and the interpolated physical quantities.
+Returns (None, None) if no particles with a valid shock crossing are found.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[pl.DataFrame, pl.DataFrame]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._get_HT_frame">
+<span class="sig-name descname"><span class="pre">_get_HT_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">upstream_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downstream_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._get_HT_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._get_HT_frame" title="Link to this definition">#</a></dt>
+<dd><p>Finds the de Hoffmann-Teller frame velocity and the shock normal vector
+using the method from Sonnerup et al. [2006], which minimizes the
+residual electric field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upstream_df</strong> (<em>pl.DataFrame</em>) – DataFrame with upstream particle states.</p></li>
+<li><p><strong>downstream_df</strong> (<em>pl.DataFrame</em>) – DataFrame with downstream particle states.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>V_HT (np.ndarray | None): The de Hoffmann-Teller velocity vector
+in [km/s] if successful, otherwise None.</p></li>
+<li><p>shock_normal (np.ndarray | None): The estimated shock normal
+vector if successful, otherwise None.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[np.ndarray | None, np.ndarray | None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.analyze_in_HT_frame">
+<span class="sig-name descname"><span class="pre">analyze_in_HT_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.analyze_in_HT_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.analyze_in_HT_frame" title="Link to this definition">#</a></dt>
+<dd><p>Analyzes a particle’s trajectory in the de Hoffmann-Teller (HT) frame.</p>
+<p>This method performs the following steps:
+1. Finds the shock crossing and determines the upstream and downstream states.
+2. Calculates the de Hoffmann-Teller velocity (V_HT) and the shock normal.
+3. Transforms the particle’s velocity and the electric/magnetic fields</p>
+<blockquote>
+<div><p>into the HT frame.</p>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li><p>In this frame, the energy gain is a direct measure of non-ideal
+acceleration. It calculates and plots this energy gain.</p></li>
+<li><p>Generates a summary plot of the analysis.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The particle ID (cpu, id) to analyze.</p></li>
+<li><p><strong>outname</strong> (<em>str</em><em>, </em><em>optional</em>) – If provided, the plot is saved to this
+filename. Defaults to None (displays plot).</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints diagnostic information.
+Defaults to False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.plot_trajectory">
+<span class="sig-name descname"><span class="pre">plot_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">fscaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shock_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'quick'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xaxis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaxis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">switchYZ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splitYZ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.plot_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.plot_trajectory" title="Link to this definition">#</a></dt>
+<dd><p>Plots the trajectory and velocities of the particle pID.</p>
+<p>Example:
+&gt;&gt;&gt; tp.plot_trajectory((3,15))</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.plot_location">
+<span class="sig-name descname"><span class="pre">plot_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.plot_location"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.plot_location" title="Link to this definition">#</a></dt>
+<dd><p>Plot the location of particles pData.</p>
+<p>Examples:
+&gt;&gt;&gt; ids, pData = tp.read_particles_at_time(3700, doSave=True)
+&gt;&gt;&gt; f = tp.plot_location(pData)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._calculate_true_gc_trajectory">
+<span class="sig-name descname"><span class="pre">_calculate_true_gc_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_gyro_periods</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._calculate_true_gc_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._calculate_true_gc_trajectory" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the ‘true’ guiding center trajectory by smoothing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._integrate_velocity">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_integrate_velocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_pos_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.Series</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.Series</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._integrate_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._integrate_velocity" title="Link to this definition">#</a></dt>
+<dd><p>Integrates a velocity series using the trapezoidal rule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._calculate_predicted_gc_trajectory">
+<span class="sig-name descname"><span class="pre">_calculate_predicted_gc_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">polars.Series</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">polars.Series</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">polars.Series</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._calculate_predicted_gc_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._calculate_predicted_gc_trajectory" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the predicted guiding center trajectory from theory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP._plot_gc_verification">
+<span class="sig-name descname"><span class="pre">_plot_gc_verification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_gc_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_gc_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">polars.Series</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">polars.Series</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">polars.Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP._plot_gc_verification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP._plot_gc_verification" title="Link to this definition">#</a></dt>
+<dd><p>Plots the verification results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.tp.FLEKSTP.verify_guiding_center_model">
+<span class="sig-name descname"><span class="pre">verify_guiding_center_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_gyro_periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#FLEKSTP.verify_guiding_center_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.FLEKSTP.verify_guiding_center_model" title="Link to this definition">#</a></dt>
+<dd><p>Verifies the guiding center model by comparing it against the full
+particle trajectory.</p>
+<p>This method performs the following steps:
+1. Calculates a “true” guiding center trajectory by applying a low-pass</p>
+<blockquote>
+<div><p>filter (moving average) to the full particle trajectory, smoothing
+out the gyromotion.</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Calculates a “predicted” guiding center trajectory by numerically
+integrating the guiding center velocity, which is the sum of the
+parallel velocity and all perpendicular drift velocities (E x B,
+gradient, curvature, and polarization).</p></li>
+<li><p>Generates a plot comparing the full trajectory, the “true” GC
+trajectory, and the “predicted” GC trajectory for each coordinate (X, Y, Z).</p></li>
+</ol>
+<p>A close overlap between the “true” and “predicted” trajectories
+validates the guiding center approximation and the drift calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pID</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The ID of the particle to analyze.</p></li>
+<li><p><strong>smoothing_gyro_periods</strong> (<em>float</em>) – The size of the moving average window
+in units of gyro-periods. Defaults to 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flekspy.tp.Indices">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flekspy.tp.</span></span><span class="sig-name descname"><span class="pre">Indices</span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#Indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.Indices" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<p>Defines constant indices for test particles.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.TIME">
+<span class="sig-name descname"><span class="pre">TIME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#flekspy.tp.Indices.TIME" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.X">
+<span class="sig-name descname"><span class="pre">X</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#flekspy.tp.Indices.X" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.Y">
+<span class="sig-name descname"><span class="pre">Y</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#flekspy.tp.Indices.Y" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.Z">
+<span class="sig-name descname"><span class="pre">Z</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#flekspy.tp.Indices.Z" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.VX">
+<span class="sig-name descname"><span class="pre">VX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#flekspy.tp.Indices.VX" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.VY">
+<span class="sig-name descname"><span class="pre">VY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#flekspy.tp.Indices.VY" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.VZ">
+<span class="sig-name descname"><span class="pre">VZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#flekspy.tp.Indices.VZ" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.BX">
+<span class="sig-name descname"><span class="pre">BX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#flekspy.tp.Indices.BX" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.BY">
+<span class="sig-name descname"><span class="pre">BY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#flekspy.tp.Indices.BY" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.BZ">
+<span class="sig-name descname"><span class="pre">BZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></em><a class="headerlink" href="#flekspy.tp.Indices.BZ" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.EX">
+<span class="sig-name descname"><span class="pre">EX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#flekspy.tp.Indices.EX" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.EY">
+<span class="sig-name descname"><span class="pre">EY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">11</span></em><a class="headerlink" href="#flekspy.tp.Indices.EY" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.EZ">
+<span class="sig-name descname"><span class="pre">EZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#flekspy.tp.Indices.EZ" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBXDX">
+<span class="sig-name descname"><span class="pre">DBXDX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">13</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBXDX" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBXDY">
+<span class="sig-name descname"><span class="pre">DBXDY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">14</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBXDY" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBXDZ">
+<span class="sig-name descname"><span class="pre">DBXDZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBXDZ" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBYDX">
+<span class="sig-name descname"><span class="pre">DBYDX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBYDX" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBYDY">
+<span class="sig-name descname"><span class="pre">DBYDY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">17</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBYDY" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBYDZ">
+<span class="sig-name descname"><span class="pre">DBYDZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">18</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBYDZ" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBZDX">
+<span class="sig-name descname"><span class="pre">DBZDX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">19</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBZDX" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBZDY">
+<span class="sig-name descname"><span class="pre">DBZDY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBZDY" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.tp.Indices.DBZDZ">
+<span class="sig-name descname"><span class="pre">DBZDZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">21</span></em><a class="headerlink" href="#flekspy.tp.Indices.DBZDZ" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.tp.interpolate_at_times">
+<span class="sig-prename descclassname"><span class="pre">flekspy.tp.</span></span><span class="sig-name descname"><span class="pre">interpolate_at_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times_to_interpolate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#interpolate_at_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.interpolate_at_times" title="Link to this definition">#</a></dt>
+<dd><p>Interpolates multiple numeric columns of a DataFrame at specified time points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – The input Polars DataFrame or LazyFrame.</p></li>
+<li><p><strong>times_to_interpolate</strong> – A list of time points (floats or ints) at which to interpolate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new DataFrame containing the interpolated rows for each specified time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flekspy.tp.plot_integrated_energy">
+<span class="sig-prename descclassname"><span class="pre">flekspy.tp.</span></span><span class="sig-name descname"><span class="pre">plot_integrated_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/tp/test_particles.html#plot_integrated_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.tp.plot_integrated_energy" title="Link to this definition">#</a></dt>
+<dd><p>Plots integrated energy quantities as a function of time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pl.DataFrame</em>) – A Polars DataFrame containing a time column and
+one or more integrated energy columns.</p></li>
+<li><p><strong>outname</strong> (<em>str</em>) – If not None, save the plot to file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../plot/streamplot/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">flekspy.plot.streamplot</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="test_particles/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">flekspy.tp.test_particles</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP"><code class="docutils literal notranslate"><span class="pre">FLEKSTP</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.use_cache"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.use_cache</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.unit"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.unit</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._trajectory_cache"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._trajectory_cache</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.mass"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.mass</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.charge"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.charge</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.iSpecies"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.iSpecies</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.pfiles"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.pfiles</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.particle_locations"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.particle_locations</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.IDs"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.IDs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.filetime"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.filetime</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.__repr__"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.__len__"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.__len__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.__iter__"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.__iter__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.__getitem__"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.__getitem__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.getIDs"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.getIDs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.read_particle_list"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.read_particle_list()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._read_the_first_record"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._read_the_first_record()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.read_particles_at_time"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.read_particles_at_time()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.save_trajectory"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.save_trajectory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.save_trajectories"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.save_trajectories()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._get_particle_raw_data"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._get_particle_raw_data()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._read_particle_record"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._read_particle_record()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.read_particle_trajectory"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.read_particle_trajectory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.read_initial_condition"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.read_initial_condition()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.read_final_condition"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.read_final_condition()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.select_particles"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.select_particles()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_kinetic_energy"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_kinetic_energy()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_kinetic_energy_change_rate"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_kinetic_energy_change_rate()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_pitch_angle"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_pitch_angle()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._get_pitch_angle_lazy"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._get_pitch_angle_lazy()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_pitch_angle_from_v_b"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_pitch_angle_from_v_b()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_first_adiabatic_invariant"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_first_adiabatic_invariant()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._calculate_bmag"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._calculate_bmag()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._calculate_curvature"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._calculate_curvature()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_ExB_drift"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_ExB_drift()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_curvature_drift"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_curvature_drift()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_adiabaticity_parameter"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_adiabaticity_parameter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._calculate_gradient_b_magnitude"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._calculate_gradient_b_magnitude()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_gradient_drift"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_gradient_drift()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_polarization_drift"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_polarization_drift()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_betatron_acceleration"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_betatron_acceleration()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_energy_change_guiding_center"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_energy_change_guiding_center()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.integrate_drift_accelerations"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.integrate_drift_accelerations()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.analyze_drifts"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.analyze_drifts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.analyze_drifts_energy_change"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.analyze_drifts_energy_change()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.analyze_drift"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.analyze_drift()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.plot_work_energy_verification"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.plot_work_energy_verification()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.find_shock_crossing_time"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.find_shock_crossing_time()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.get_shock_up_down_states"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.get_shock_up_down_states()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._get_HT_frame"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._get_HT_frame()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.analyze_in_HT_frame"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.analyze_in_HT_frame()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.plot_trajectory"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.plot_trajectory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.plot_location"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.plot_location()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._calculate_true_gc_trajectory"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._calculate_true_gc_trajectory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._integrate_velocity"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._integrate_velocity()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._calculate_predicted_gc_trajectory"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._calculate_predicted_gc_trajectory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP._plot_gc_verification"><code class="docutils literal notranslate"><span class="pre">FLEKSTP._plot_gc_verification()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.FLEKSTP.verify_guiding_center_model"><code class="docutils literal notranslate"><span class="pre">FLEKSTP.verify_guiding_center_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices"><code class="docutils literal notranslate"><span class="pre">Indices</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.TIME"><code class="docutils literal notranslate"><span class="pre">Indices.TIME</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.X"><code class="docutils literal notranslate"><span class="pre">Indices.X</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.Y"><code class="docutils literal notranslate"><span class="pre">Indices.Y</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.Z"><code class="docutils literal notranslate"><span class="pre">Indices.Z</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.VX"><code class="docutils literal notranslate"><span class="pre">Indices.VX</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.VY"><code class="docutils literal notranslate"><span class="pre">Indices.VY</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.VZ"><code class="docutils literal notranslate"><span class="pre">Indices.VZ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.BX"><code class="docutils literal notranslate"><span class="pre">Indices.BX</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.BY"><code class="docutils literal notranslate"><span class="pre">Indices.BY</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.BZ"><code class="docutils literal notranslate"><span class="pre">Indices.BZ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.EX"><code class="docutils literal notranslate"><span class="pre">Indices.EX</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.EY"><code class="docutils literal notranslate"><span class="pre">Indices.EY</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.EZ"><code class="docutils literal notranslate"><span class="pre">Indices.EZ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBXDX"><code class="docutils literal notranslate"><span class="pre">Indices.DBXDX</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBXDY"><code class="docutils literal notranslate"><span class="pre">Indices.DBXDY</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBXDZ"><code class="docutils literal notranslate"><span class="pre">Indices.DBXDZ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBYDX"><code class="docutils literal notranslate"><span class="pre">Indices.DBYDX</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBYDY"><code class="docutils literal notranslate"><span class="pre">Indices.DBYDY</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBYDZ"><code class="docutils literal notranslate"><span class="pre">Indices.DBYDZ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBZDX"><code class="docutils literal notranslate"><span class="pre">Indices.DBZDX</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBZDY"><code class="docutils literal notranslate"><span class="pre">Indices.DBZDY</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.Indices.DBZDZ"><code class="docutils literal notranslate"><span class="pre">Indices.DBZDZ</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.interpolate_at_times"><code class="docutils literal notranslate"><span class="pre">interpolate_at_times()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.tp.plot_integrated_energy"><code class="docutils literal notranslate"><span class="pre">plot_integrated_energy()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/autoapi/flekspy/tp/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Yuxi Chen, Hongyang Zhou.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

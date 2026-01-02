@@ -1,0 +1,352 @@
+flekspy.amrex.particle_data
+===========================
+
+.. py:module:: flekspy.amrex.particle_data
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.amrex.particle_data.AMReXParticleHeader
+   flekspy.amrex.particle_data.AMReXParticle
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.amrex.particle_data.read_amrex_binary_particle_file
+
+
+Module Contents
+---------------
+
+.. py:class:: AMReXParticleHeader(header_filename: Union[str, pathlib.Path])
+
+   This class is designed to parse and store the information
+   contained in an AMReX particle header file.
+
+
+   .. py:attribute:: version_string
+      :type:  str
+
+
+   .. py:attribute:: real_type
+      :type:  Union[Type[numpy.float64], Type[numpy.float32]]
+
+
+   .. py:attribute:: int_type
+      :type:  Type[numpy.int32]
+
+
+   .. py:attribute:: dim
+      :type:  int
+
+
+   .. py:attribute:: num_int_base
+      :type:  int
+
+
+   .. py:attribute:: num_real_base
+      :type:  int
+
+
+   .. py:attribute:: real_component_names
+      :type:  List[str]
+
+
+   .. py:attribute:: int_component_names
+      :type:  List[str]
+
+
+   .. py:attribute:: num_real_extra
+      :type:  int
+
+
+   .. py:attribute:: num_int_extra
+      :type:  int
+
+
+   .. py:attribute:: num_int
+      :type:  int
+
+
+   .. py:attribute:: num_real
+      :type:  int
+
+
+   .. py:attribute:: is_checkpoint
+      :type:  bool
+
+
+   .. py:attribute:: num_particles
+      :type:  int
+
+
+   .. py:attribute:: max_next_id
+      :type:  int
+
+
+   .. py:attribute:: finest_level
+      :type:  int
+
+
+   .. py:attribute:: num_levels
+      :type:  int
+
+
+   .. py:attribute:: grids_per_level
+      :type:  numpy.ndarray
+
+
+   .. py:attribute:: grids
+      :type:  List[List[Tuple[int, Ellipsis]]]
+
+
+   .. py:method:: __repr__() -> str
+
+      Returns a string representation of the header contents.
+
+
+
+   .. py:property:: idtype_str
+      :type: str
+
+
+
+   .. py:property:: rdtype_str
+      :type: str
+
+
+
+.. py:function:: read_amrex_binary_particle_file(fn: Union[str, pathlib.Path], header: AMReXParticleHeader) -> Tuple[numpy.ndarray, numpy.ndarray]
+
+   This function returns the particle data stored in a particular
+   plot file. It returns two numpy arrays, the
+   first containing the particle integer data, and the second the
+   particle real data.
+
+
+.. py:class:: AMReXParticle(output_dir: Union[str, pathlib.Path])
+
+   Bases: :py:obj:`flekspy.amrex.plotting.AMReXPlottingMixin`
+
+
+   This class provides an interface to the particle data in a plotfile.
+   Data is loaded lazily upon first access to `idata` or `rdata`.
+
+
+   .. py:attribute:: output_dir
+      :type:  pathlib.Path
+
+
+   .. py:attribute:: ptype
+      :type:  str
+
+
+   .. py:attribute:: _idata
+      :type:  Optional[numpy.ndarray]
+
+
+   .. py:attribute:: _rdata
+      :type:  Optional[numpy.ndarray]
+
+
+   .. py:attribute:: level_boxes
+      :type:  List[List[Tuple[Tuple[int, Ellipsis], Tuple[int, Ellipsis]]]]
+
+
+   .. py:attribute:: header
+      :type:  AMReXParticleHeader
+
+
+   .. py:attribute:: dim
+      :type:  int
+
+
+   .. py:attribute:: time
+      :type:  float
+
+
+   .. py:attribute:: left_edge
+      :type:  List[float]
+
+
+   .. py:attribute:: right_edge
+      :type:  List[float]
+
+
+   .. py:attribute:: domain_dimensions
+      :type:  List[int]
+
+
+   .. py:method:: _load_data() -> None
+
+      Loads the particle data from disk if it has not been loaded yet.
+
+
+
+   .. py:property:: idata
+      :type: numpy.ndarray
+
+
+      Lazily loads and returns the integer particle data.
+
+
+   .. py:property:: rdata
+      :type: numpy.ndarray
+
+
+      Lazily loads and returns the real particle data.
+
+
+   .. py:method:: _parse_main_header() -> None
+
+
+   .. py:method:: _parse_particle_h_files() -> None
+
+      Parses the Particle_H files to get the box arrays for each level.
+
+
+
+   .. py:method:: __repr__() -> str
+
+
+   .. py:method:: select_particles_in_region(x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None) -> numpy.ndarray
+
+      Selectively loads real component data for particles that fall within a
+      specified rectangular region.
+
+      This method first converts the physical range into an index-based range,
+      then identifies which grid files intersect with that range, and finally
+      reads only the necessary data. This avoids loading the entire dataset
+      into memory. Integer data is skipped for efficiency.
+
+      :param x_range: A tuple (min, max) for the x-axis boundary.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for the y-axis boundary.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for the z-axis boundary.
+                      For 2D data, this is ignored.
+      :type z_range: tuple, optional
+
+      :returns:
+
+                A numpy array containing the real data for the
+                            selected particles.
+      :rtype: np.ndarray
+
+
+
+   .. py:method:: _extract_variable_columns(rdata: numpy.ndarray, variables: List[str], component_names: Optional[List[str]] = None) -> numpy.ndarray
+
+      Helper method to extract specific columns from the particle data array.
+
+      :param rdata: The particle data array.
+      :type rdata: np.ndarray
+      :param variables: The names of the variables to extract.
+      :type variables: List[str]
+      :param component_names: The list of component names corresponding
+                              to the columns of rdata. If None, it defaults
+                              to self.header.real_component_names.
+      :type component_names: List[str], optional
+
+      :returns: A stacked array containing the extracted columns (n_particles, n_vars).
+      :rtype: np.ndarray
+
+
+
+   .. py:method:: extract_core_population(velocity_columns: List[str], v_dim: int = 3, v_th: Optional[float] = None, cutoff: float = 3.0) -> Tuple[numpy.ndarray, numpy.ndarray]
+
+      Extracts the core population from the suprathermal population.
+
+      The core population is approximated by a Maxwellian distribution centered at
+      the peak phase space density location. Particles within a certain distance
+      (defined by `cutoff * v_th`) from the center are considered part of the core.
+
+      :param velocity_columns: The names of the velocity components to use.
+      :type velocity_columns: List[str]
+      :param v_dim: The dimension of the velocity space. Defaults to 3.
+      :type v_dim: int, optional
+      :param v_th: The thermal velocity of the core population.
+                   If not provided, it is estimated using a GMM fit.
+      :type v_th: float, optional
+      :param cutoff: The cutoff factor for defining the core boundary
+                     in units of thermal velocity. Defaults to 3.0.
+      :type cutoff: float, optional
+
+      :returns:
+
+                A tuple containing two boolean masks:
+                                               (core_mask, suprathermal_mask).
+      :rtype: Tuple[np.ndarray, np.ndarray]
+
+
+
+   .. py:method:: fit_gmm(n_components: int, x_variable: Optional[str] = None, y_variable: Optional[str] = None, x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None, transform: Optional[Callable[[numpy.ndarray], Tuple[numpy.ndarray, List[str]]]] = None, variables: Optional[List[str]] = None) -> sklearn.mixture.GaussianMixture
+
+      Fits a Gaussian Mixture Model (GMM) to the phase space distribution.
+
+      :param n_components: The number of mixture components (Gaussian distributions).
+      :type n_components: int
+      :param x_variable: The name of the variable for the x-axis.
+                         Retained for backward compatibility.
+      :type x_variable: str, optional
+      :param y_variable: The name of the variable for the y-axis.
+                         Retained for backward compatibility.
+      :type y_variable: str, optional
+      :param x_range: A tuple (min, max) for the x-axis boundary.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for the y-axis boundary.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for the z-axis boundary.
+                      For 2D data, this is ignored.
+      :type z_range: tuple, optional
+      :param transform: A function that takes the particle data (`rdata`, a NumPy array)
+                        and returns a tuple: (`transformed_rdata`, `new_component_names`).
+                        This allows for fitting derived quantities or changing coordinate systems.
+                        If provided, `x_variable` and `y_variable` should refer to names
+                        in `new_component_names`. Defaults to None.
+      :type transform: callable, optional
+      :param variables: The names of the variables to fit.
+                        If provided, this takes precedence over
+                        x_variable and y_variable.
+      :type variables: List[str], optional
+
+      :returns: The fitted GMM model.
+      :rtype: sklearn.mixture.GaussianMixture
+
+
+
+   .. py:method:: get_gmm_temperatures(gmm: GaussianMixture, particle_mass: float = 1.0, isotropic: bool = True) -> List[dict]
+      :staticmethod:
+
+
+      Extracts physical temperatures from a fitted GMM.
+
+      This method calls `get_gmm_parameters` to get the squared thermal
+      velocities and then converts them to temperatures in Kelvin.
+
+      :param gmm: The fitted GMM model.
+      :type gmm: "GaussianMixture"
+      :param particle_mass: The mass of the particle species in atomic mass units (amu).
+                            Defaults to 1.0.
+      :type particle_mass: float
+      :param isotropic: If True, assumes an isotropic Maxwellian
+                        distribution and returns a single scalar temperature.
+                        If False, assumes a Bi-Maxwellian distribution and returns
+                        parallel and perpendicular temperatures. Defaults to True.
+      :type isotropic: bool, optional
+
+      :returns:
+
+                A list of dictionaries, one for each Gaussian component.
+                              - Isotropic: {'center': [mx, my], 'temperature': T}
+                              - Bi-Maxwellian: {'center': [mx, my], 'T_parallel': T_par, 'T_perpendicular': T_perp}
+      :rtype: list of dict
+
+
+
