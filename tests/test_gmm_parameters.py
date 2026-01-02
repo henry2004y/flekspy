@@ -4,7 +4,7 @@ from sklearn.mixture import GaussianMixture
 from unittest.mock import MagicMock
 
 from flekspy.util.gmm import get_gmm_parameters
-from flekspy.amrex.particle_data import AMReXParticleData
+from flekspy.amrex.particle_data import AMReXParticle
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ def test_get_gmm_temperatures_isotropic(fitted_gmm):
     from scipy.constants import m_u, k
 
     # Test with explicit particle_mass in amu
-    parameters = AMReXParticleData.get_gmm_temperatures(
+    parameters = AMReXParticle.get_gmm_temperatures(
         fitted_gmm, particle_mass=2.0, isotropic=True
     )
 
@@ -68,7 +68,7 @@ def test_get_gmm_temperatures_isotropic(fitted_gmm):
     assert parameters[1]["temperature"] == pytest.approx(expected_temp_2)
 
     # Test with default particle_mass (should be 1.0 amu)
-    parameters_default = AMReXParticleData.get_gmm_temperatures(
+    parameters_default = AMReXParticle.get_gmm_temperatures(
         fitted_gmm, isotropic=True
     )
     expected_temp_1_default = 1.0 * m_u * 1.5 / k
@@ -87,7 +87,7 @@ def test_get_gmm_temperatures_bi_maxwellian(fitted_gmm):
     """
     from scipy.constants import m_u, k
 
-    parameters = AMReXParticleData.get_gmm_temperatures(
+    parameters = AMReXParticle.get_gmm_temperatures(
         fitted_gmm, particle_mass=2.0, isotropic=False
     )
 

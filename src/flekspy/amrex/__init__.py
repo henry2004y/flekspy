@@ -1,3 +1,3 @@
-from .particle_data import AMReXParticleData, AMReXParticleHeader
+from .particle_data import AMReXParticle, AMReXParticleHeader
 
-__all__ = ["AMReXParticleData", "AMReXParticleHeader"]
+__all__ = ["AMReXParticle", "AMReXParticleHeader"]

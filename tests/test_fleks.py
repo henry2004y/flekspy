@@ -136,7 +136,7 @@ class TestAMReX:
 
     def test_amrex_particle_loader_default(self, setup_test_data):
         ds = fs.load(os.path.join(setup_test_data, "3d_particle*amrex"))
-        assert isinstance(ds, fs.amrex.AMReXParticleData)
+        assert isinstance(ds, fs.amrex.AMReXParticle)
 
 
 @pytest.fixture(scope="class")

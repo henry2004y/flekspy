@@ -165,7 +165,7 @@ def read_amrex_binary_particle_file(
     return idata, rdata
 
 
-class AMReXParticleData(AMReXPlottingMixin):
+class AMReXParticle(AMReXPlottingMixin):
     """
     This class provides an interface to the particle data in a plotfile.
     Data is loaded lazily upon first access to `idata` or `rdata`.
@@ -279,7 +279,7 @@ class AMReXParticleData(AMReXPlottingMixin):
 
     def __repr__(self) -> str:
         repr_str = (
-            f"AMReXParticleData from {self.output_dir}\n"
+            f"AMReXParticle from {self.output_dir}\n"
             f"Time: {self.time}\n"
             f"Dimensions: {self.dim}\n"
             f"Domain Dimensions: {self.domain_dimensions}\n"
