@@ -557,6 +557,17 @@ class AMReXParticle(AMReXPlottingMixin):
         if rdata.size == 0:
             raise ValueError("No particles to fit GMM.")
 
+        # Check for weights and resample if necessary
+        resample_indices = None
+        if "weight" in self.header.real_component_names:
+            weight_idx = self.header.real_component_names.index("weight")
+            weights = rdata[:, weight_idx]
+            # Normalize weights to sum to 1
+            total_weight = np.sum(weights)
+            if total_weight > 0:
+                p = weights / total_weight
+                resample_indices = np.random.choice(len(rdata), size=len(rdata), p=p)
+
         # --- 2. Apply transformation if provided ---
         component_names = self.header.real_component_names
         if transform:
@@ -564,6 +575,9 @@ class AMReXParticle(AMReXPlottingMixin):
 
         # --- 3 & 4. Extract data columns ---
         data = self._extract_variable_columns(rdata, variables, component_names)
+
+        if resample_indices is not None:
+            data = data[resample_indices]
 
         from sklearn.mixture import GaussianMixture
 
