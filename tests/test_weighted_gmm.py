@@ -40,14 +40,15 @@ def mock_weighted_data():
     2. Center 10, Weight 100
     Equal number of particles.
     """
+    rng = np.random.default_rng(42)
     n_per_group = 1000
 
     # Group 1: Center 0, weight 1
-    g1_x = np.random.normal(0, 0.1, n_per_group)
+    g1_x = rng.normal(0, 0.1, n_per_group)
     g1_w = np.ones(n_per_group)
 
     # Group 2: Center 10, weight 100
-    g2_x = np.random.normal(10, 0.1, n_per_group)
+    g2_x = rng.normal(10, 0.1, n_per_group)
     g2_w = np.full(n_per_group, 100.0)
 
     x = np.concatenate([g1_x, g2_x])
