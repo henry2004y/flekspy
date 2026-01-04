@@ -1,0 +1,516 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# IDL Data\n",
+    "\n",
+    "This notebook focuses on handling data in the IDL format."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Importing the package"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:15.152839Z",
+     "iopub.status.busy": "2025-11-14T18:46:15.152526Z",
+     "iopub.status.idle": "2025-11-14T18:46:15.158848Z",
+     "shell.execute_reply": "2025-11-14T18:46:15.157149Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import flekspy\n",
+    "\n",
+    "# Set display for XArrays\n",
+    "import xarray as xr\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "xr.set_options(\n",
+    "    display_expand_coords=False,\n",
+    "    display_expand_data=False,\n",
+    "    display_expand_data_vars=False,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Downloading demo data\n",
+    "\n",
+    "If you don't have FLEKS data to start with, you can download demo field data with the following:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:15.162840Z",
+     "iopub.status.busy": "2025-11-14T18:46:15.162527Z",
+     "iopub.status.idle": "2025-11-14T18:46:17.807682Z",
+     "shell.execute_reply": "2025-11-14T18:46:17.806243Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "from flekspy.util import download_testfile\n",
+    "\n",
+    "url = \"https://raw.githubusercontent.com/henry2004y/batsrus_data/master/batsrus_data.tar.gz\"\n",
+    "download_testfile(url, \"data\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Loading data\n",
+    "\n",
+    "`flekspy.load` is the interface to read files of all formats. It returns a different object for different formats. IDL format data are processed into XArray data structures:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:17.812904Z",
+     "iopub.status.busy": "2025-11-14T18:46:17.812315Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.086767Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.085247Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "file = \"data/1d__raw_2_t25.60000_n00000258.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "ds"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The coordinates can be accessed via"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.150818Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.149889Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.158736Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.157152Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "ds.coords"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The variables can be accessed via"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.162347Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.161886Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.179169Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.177129Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "ds.var"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "and individual variables can be accessed through keys or properties:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.182736Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.182406Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.205388Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.203013Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "ds[\"p\"]\n",
+    "ds.p"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Unstructured data\n",
+    "\n",
+    "Unstructured data is handled with [Xugrid](https://deltares.github.io/xugrid/index.html), with support of regridding and partitioning."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.209948Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.209504Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.259644Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.257914Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "file = \"data/bx0_mhd_6_t00000100_n00000352.out\"\n",
+    "dsu = flekspy.load(file)\n",
+    "dsu\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Streamlines and Contours with `FleksAccessor`\n",
+    "\n",
+    "The `FleksAccessor` provides convenient methods for adding streamlines and contours, which supports both structured and unstructured data. For unstructured data, `add_stream` automatically interpolates the vector field onto a regular grid."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, ax = plt.subplots(figsize=(8, 6))\n",
+    "\n",
+    "# Plot density contour\n",
+    "dsu.fleks.add_contour(ax, \"Rho\", colors=\"grey\", linewidths=0.5)\n",
+    "\n",
+    "# Add streamlines for velocity (Ux, Uy)\n",
+    "dsu.fleks.add_stream(ax, \"Ux\", \"Uy\", color=\"tab:blue\", density=1.5)\n",
+    "\n",
+    "ax.set_title(\"Density Contours and Velocity Streamlines (Unstructured)\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Interpolating data\n",
+    "\n",
+    "Variable interpolation is supported via [XArray](https://docs.xarray.dev/en/stable/user-guide/interpolation.html). For 1D data, simply provide the coordinate:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.263260Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.262884Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.282060Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.279931Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "ds[\"Rho\"].interp(x=100)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "For multidimensional interpolation, it can be easily extended as"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.286757Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.286349Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.309474Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.307609Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "file = \"data/z=0_fluid_region0_0_t00001640_n00010142.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "ds[\"rhoS0\"].interp(x=-28000.0, y =0.0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If you want to interpolate for all variables at a single location,"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.313336Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.312964Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.422420Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.420841Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "ds.interp(x=-28000.0, y =0.0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Visualizing fields\n",
+    "\n",
+    "Thanks to XArray's Matplotlib wrapper, all Matplotlib's plotting functionalities are directly supported."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.425697Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.425385Z",
+     "iopub.status.idle": "2025-11-14T18:46:19.709717Z",
+     "shell.execute_reply": "2025-11-14T18:46:19.708502Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "file = \"data/1d__raw_2_t25.60000_n00000258.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "\n",
+    "fig, axs = plt.subplots(2, 1, constrained_layout=True, sharex=True, sharey=True)\n",
+    "ds.p.plot(ax=axs[0])\n",
+    "ds.Bx.plot(ax=axs[1])\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "By default, XArray's 2D plotting functions map the first dimension to the vertical y-axis and the second dimension to the horizontal x-axis. To overwrite this default behavior, we can explicitly set the `x` and `y` arguments:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:19.714188Z",
+     "iopub.status.busy": "2025-11-14T18:46:19.713757Z",
+     "iopub.status.idle": "2025-11-14T18:46:20.494128Z",
+     "shell.execute_reply": "2025-11-14T18:46:20.492372Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "file = \"data/z=0_fluid_region0_0_t00001640_n00010142.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "fig, axs = plt.subplots(\n",
+    "    3, 1, figsize=(10, 6), constrained_layout=True, sharex=True, sharey=True\n",
+    ")\n",
+    "ds.Bx.plot.pcolormesh(ax=axs[0], x=\"x\", y=\"y\")\n",
+    "ds.By.plot.pcolormesh(ax=axs[1], x=\"x\", y=\"y\")\n",
+    "ds.Bz.plot.pcolormesh(ax=axs[2], x=\"x\", y=\"y\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Unstructured IDL format output plotting is supported directly by [Xugrid](https://deltares.github.io/xugrid/examples/plotting.html). Note that here we need an additional level `ugrid` compared to direct plotting via `xarray`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:20.497477Z",
+     "iopub.status.busy": "2025-11-14T18:46:20.497149Z",
+     "iopub.status.idle": "2025-11-14T18:46:20.708159Z",
+     "shell.execute_reply": "2025-11-14T18:46:20.706538Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "dsu.Rho.ugrid.plot.contourf()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Derived Variables"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Pressure Anisotropy\n",
+    "\n",
+    "In this demo, the ion pressure anisotropy can be as large as 60 because in a 1D quasi-perpendicular shock simulation, there is no parallel heating."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:20.712614Z",
+     "iopub.status.busy": "2025-11-14T18:46:20.712237Z",
+     "iopub.status.idle": "2025-11-14T18:46:20.962284Z",
+     "shell.execute_reply": "2025-11-14T18:46:20.960312Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "file = \"data/z=0_fluid_region0_0_t00001640_n00010142.out\"\n",
+    "ds = flekspy.load(file)\n",
+    "anisotropy = ds.derived.get_pressure_anisotropy(species=1)\n",
+    "fig, ax = plt.subplots(1, 1, figsize=(8, 2), constrained_layout=True)\n",
+    "anisotropy.plot.pcolormesh(\n",
+    "    ax=ax,\n",
+    "    x=\"x\",\n",
+    "    y=\"y\",\n",
+    "    cmap=\"GnBu\",\n",
+    "    vmin=0,\n",
+    "    vmax=60,\n",
+    "    cbar_kwargs=dict(label=r\"$P_{i\\perp}/P_{i\\parallel}$\", pad=0.0, aspect=25),\n",
+    ")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Current density"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Current density can be calculated in two ways: from the curl of the magnetic field or from the definition $J = \\sum_\\alpha n_\\alpha q_\\alpha \\vec{v}_\\alpha$. Both methods are available in the IDL accessor. As can be seen below, the current density results may not be identical."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:20.965915Z",
+     "iopub.status.busy": "2025-11-14T18:46:20.965548Z",
+     "iopub.status.idle": "2025-11-14T18:46:21.223559Z",
+     "shell.execute_reply": "2025-11-14T18:46:21.221667Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import matplotlib.colors as colors\n",
+    "\n",
+    "current = ds.derived.get_current_density()\n",
+    "\n",
+    "norm = colors.SymLogNorm(0.1, linscale=0.4, vmin=-0.03, vmax=0.03)\n",
+    "fig, ax = plt.subplots(figsize=(8,2), constrained_layout=True)\n",
+    "current[\"jy\"].plot.pcolormesh(x=\"x\", y=\"y\", cmap=\"RdBu_r\", norm=norm, cbar_kwargs=dict(label=r\"$J_y\\,[\\mu A/m]$\", pad=0.0, aspect=40))\n",
+    "ax.set_xlabel(r\"x [km]\", fontsize=14)\n",
+    "ax.set_ylabel(r\"y [km]\", fontsize=14)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-14T18:46:21.227909Z",
+     "iopub.status.busy": "2025-11-14T18:46:21.227514Z",
+     "iopub.status.idle": "2025-11-14T18:46:21.485115Z",
+     "shell.execute_reply": "2025-11-14T18:46:21.483400Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "current = ds.derived.get_current_density_from_definition(species=[0, 1])\n",
+    "\n",
+    "fig, ax = plt.subplots(figsize=(8,2), constrained_layout=True)\n",
+    "current[\"jy\"].plot.pcolormesh(ax=ax, x=\"x\", y=\"y\", cmap=\"RdBu_r\", vmax=0.03, cbar_kwargs=dict(label=r\"$J_y\\,[\\mu A/m]$\", pad=0.0, aspect=40))\n",
+    "ax.set_xlabel(r\"x [km]\", fontsize=14)\n",
+    "ax.set_ylabel(r\"y [km]\", fontsize=14)\n",
+    "plt.show()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3.9.7 64-bit",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.12"
+  },
+  "vscode": {
+   "interpreter": {
+    "hash": "f22a20af907fde35ff19e1e892fdb271353fb19b11c7ebd774491472e685293c"
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

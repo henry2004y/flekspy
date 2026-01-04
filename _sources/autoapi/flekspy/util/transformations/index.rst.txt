@@ -1,0 +1,43 @@
+flekspy.util.transformations
+============================
+
+.. py:module:: flekspy.util.transformations
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.transformations.create_field_transform
+
+
+Module Contents
+---------------
+
+.. py:function:: create_field_transform(b_field: numpy.ndarray, original_component_names: List[str], e_field: Optional[numpy.ndarray] = None) -> Callable[[numpy.ndarray], Tuple[numpy.ndarray, List[str]]]
+
+   Creates a transformation function to align velocity coordinates with E and B fields.
+
+   This function returns a new transformation function that can be passed to plotter methods.
+   The returned function takes a data array and calculates new velocity components.
+
+   - If only `b_field` is provided, it calculates velocity components parallel and
+     perpendicular to the magnetic field (`v_parallel`, `v_perp`).
+   - If both `b_field` and `e_field` are provided, it creates an orthonormal basis
+     (v_B, v_E, v_BxE) and projects the velocity onto it.
+
+   The function returns a new data array containing the original data *without* the
+   old velocity components, but with the new field-aligned components appended.
+
+   :param b_field: The magnetic field vector (3 components).
+   :type b_field: np.ndarray
+   :param original_component_names: The list of component names for the input data array.
+   :type original_component_names: List[str]
+   :param e_field: The electric field vector (3 components).
+   :type e_field: np.ndarray, optional
+
+   :returns: A transformation function that takes a NumPy array and returns a tuple containing
+             the transformed data array and the new list of component names.
+
+

@@ -1,0 +1,93 @@
+flekspy.util.gmm
+================
+
+.. py:module:: flekspy.util.gmm
+
+.. autoapi-nested-parse::
+
+   GMM-related utility functions.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.gmm.generate_synthetic_gmm_data
+   flekspy.util.gmm.compare_gmm_results
+   flekspy.util.gmm.get_gmm_parameters
+
+
+Module Contents
+---------------
+
+.. py:function:: generate_synthetic_gmm_data(components: List[Dict[str, Any]], shuffle: bool = True, random_state: int = 0) -> numpy.ndarray
+
+   Generates synthetic data for a Gaussian Mixture Model (GMM).
+
+   This function creates a dataset composed of multiple Gaussian distributions,
+   each defined by a set of parameters.
+
+   :param components: A list of dictionaries, where each dictionary defines a Gaussian
+                      component and must contain the following keys:
+                      - 'n_samples': The number of samples to generate for this component.
+                      - 'mean': A NumPy array representing the mean of the distribution.
+                      - 'cov': A NumPy array representing the covariance matrix.
+   :type components: List[Dict[str, Any]]
+   :param shuffle: If True (default), the generated data from all components will be
+                   shuffled to mix the populations.
+   :type shuffle: bool, optional
+   :param random_state: A seed for the random number generator to ensure reproducibility.
+                        Defaults to 0.
+   :type random_state: int, optional
+
+   :returns: A NumPy array containing the combined and shuffled synthetic data.
+             The shape of the array will be (total_samples, n_features).
+   :rtype: np.ndarray
+
+
+.. py:function:: compare_gmm_results(original_params: List[Dict[str, Any]], gmm_fit: sklearn.mixture.GaussianMixture, isotropic: bool) -> None
+
+   Prints a comparison of original and GMM-fitted parameters.
+
+   This utility function provides a clear, side-by-side view of the
+   parameters used to generate synthetic data and those extracted by the GMM.
+
+   :param original_params: A list of dictionaries, where each dictionary contains the original
+                           parameters for a synthetic data component. For isotropic cases,
+                           it must contain 'center' and 'temp' keys. For anisotropic cases, it
+                           must contain 'center', 'temp_parallel', and 'temp_perp'.
+   :type original_params: List[Dict[str, Any]]
+   :param gmm_fit: The fitted `sklearn.mixture.GaussianMixture` object.
+   :type gmm_fit: GaussianMixture
+   :param isotropic: A flag indicating whether the comparison should be for isotropic or
+                     anisotropic parameters.
+   :type isotropic: bool
+
+
+.. py:function:: get_gmm_parameters(gmm: sklearn.mixture.GaussianMixture, isotropic: bool = True) -> List[dict]
+
+   Extracts physical parameters from a fitted GMM.
+
+   This method returns the squared thermal velocities (variances) from the
+   covariance matrix of the GM
+   M components. It does not perform any unit
+   conversions.
+
+   :param gmm: The fitted GMM model.
+   :type gmm: "GaussianMixture"
+   :param isotropic: If True, assumes an isotropic Maxwellian
+                     distribution and returns a single scalar v_th_sq.
+                     If False, assumes a Bi-Maxwellian distribution and returns
+                     parallel and perpendicular components. Defaults to True.
+   :type isotropic: bool, optional
+
+   :returns:
+
+             A list of dictionaries, one for each Gaussian component.
+                           - Isotropic: {'center': [mx, my], 'v_th_sq': v_sq}
+                           - Bi-Maxwellian: {'center': [mx, my], 'v_parallel_sq': v_par_sq, 'v_perp_sq': v_perp_sq}
+   :rtype: list of dict
+
+

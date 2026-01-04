@@ -1,0 +1,22 @@
+flekspy.util.logger
+===================
+
+.. py:module:: flekspy.util.logger
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.logger.get_logger
+
+
+Module Contents
+---------------
+
+.. py:function:: get_logger(name: str = 'flekspy', level: str = 'INFO') -> logging.Logger
+
+   Helper function to set up a logger.
+
+

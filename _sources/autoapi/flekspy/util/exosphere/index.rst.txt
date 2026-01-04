@@ -1,0 +1,95 @@
+flekspy.util.exosphere
+======================
+
+.. py:module:: flekspy.util.exosphere
+
+.. autoapi-nested-parse::
+
+   Exosphere models.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.util.exosphere.Exosphere
+
+
+Module Contents
+---------------
+
+.. py:class:: Exosphere(neutral_profile: Literal['exponential', 'power_law', 'chamberlain'] = 'exponential', n0: float = 10000000000.0, H0: float = 100000.0, T0: float = 1000.0, k0: float = 2.0, exobase_radius: float = 6371000.0, M_planet: float = 5.972e+24, m_neutral: float = 1.008 * m_p)
+
+   A class to represent an exosphere model.
+
+
+   .. py:attribute:: neutral_profile
+      :value: 'exponential'
+
+
+
+   .. py:attribute:: n0
+      :value: 10000000000.0
+
+
+
+   .. py:attribute:: H0
+      :value: 100000.0
+
+
+
+   .. py:attribute:: T0
+      :value: 1000.0
+
+
+
+   .. py:attribute:: k0
+      :value: 2.0
+
+
+
+   .. py:attribute:: exobase_radius
+      :value: 6371000.0
+
+
+
+   .. py:attribute:: M_planet
+      :value: 5.972e+24
+
+
+
+   .. py:attribute:: m_neutral
+
+
+   .. py:method:: get_neutral_density(r: numpy.ndarray) -> numpy.ndarray
+
+      Calculate the neutral density as a function of radius.
+
+      :param r: Radius from the center of the body [m].
+      :type r: np.ndarray
+
+      :returns: Neutral density [m⁻³].
+      :rtype: np.ndarray
+
+
+
+   .. py:method:: plot_neutral_profile(max_altitude: float = 10000000.0, num_points: int = 1000, ax=None, **kwargs)
+
+      Plot the neutral density profile as a function of altitude.
+
+      :param max_altitude: Maximum altitude for the plot [m]. The default is 10000e3.
+      :type max_altitude: float, optional
+      :param num_points: Number of points to use in the plot. The default is 1000.
+      :type num_points: int, optional
+      :param ax: An existing Axes object to plot on. If None, a new figure and axes
+                 will be created. The default is None.
+      :type ax: matplotlib.axes.Axes, optional
+      :param \*\*kwargs: Additional keyword arguments to be passed to `ax.plot`.
+
+      :returns: * **fig** (*matplotlib.figure.Figure*) -- The Figure object for the plot.
+                * **ax** (*matplotlib.axes.Axes*) -- The Axes object for the plot.
+
+
+

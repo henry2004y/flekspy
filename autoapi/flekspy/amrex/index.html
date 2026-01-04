@@ -1,0 +1,1050 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>flekspy.amrex &#8212; flekspy  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/flekspy/amrex/index';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="flekspy.amrex.particle_data" href="particle_data/index.html" />
+    <link rel="prev" title="flekspy" href="../index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">flekspy  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">flekspy</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">flekspy.amrex</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="particle_data/index.html">flekspy.amrex.particle_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plotting/index.html">flekspy.amrex.plotting</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../flekspy/index.html">flekspy.flekspy</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../idl/index.html">flekspy.idl</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../idl/idl/index.html">flekspy.idl.idl</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../plot/index.html">flekspy.plot</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../plot/streamplot/index.html">flekspy.plot.streamplot</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../tp/index.html">flekspy.tp</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tp/test_particles/index.html">flekspy.tp.test_particles</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../util/index.html">flekspy.util</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../util/exosphere/index.html">flekspy.util.exosphere</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/gmm/index.html">flekspy.util.gmm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/logger/index.html">flekspy.util.logger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/safe_eval/index.html">flekspy.util.safe_eval</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/transformations/index.html">flekspy.util.transformations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/utilities/index.html">flekspy.util.utilities</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../xarray/index.html">flekspy.xarray</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../xarray/accessor/index.html">flekspy.xarray.accessor</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../yt/index.html">flekspy.yt</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../yt/yt/index.html">flekspy.yt.yt</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BATSRUSReader/index.html">BATSRUSReader</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">flekspy</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">flekspy.amrex</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-flekspy.amrex">
+<span id="flekspy-amrex"></span><h1>flekspy.amrex<a class="headerlink" href="#module-flekspy.amrex" title="Link to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="particle_data/index.html">flekspy.amrex.particle_data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">flekspy.amrex.plotting</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#flekspy.amrex.AMReXParticle" title="flekspy.amrex.AMReXParticle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AMReXParticle</span></code></a></p></td>
+<td><p>This class provides an interface to the particle data in a plotfile.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#flekspy.amrex.AMReXParticleHeader" title="flekspy.amrex.AMReXParticleHeader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AMReXParticleHeader</span></code></a></p></td>
+<td><p>This class is designed to parse and store the information</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flekspy.amrex.</span></span><span class="sig-name descname"><span class="pre">AMReXParticle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="plotting/index.html#flekspy.amrex.plotting.AMReXPlottingMixin" title="flekspy.amrex.plotting.AMReXPlottingMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flekspy.amrex.plotting.AMReXPlottingMixin</span></code></a></p>
+<p>This class provides an interface to the particle data in a plotfile.
+Data is loaded lazily upon first access to <cite>idata</cite> or <cite>rdata</cite>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.output_dir">
+<span class="sig-name descname"><span class="pre">output_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.output_dir" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.ptype">
+<span class="sig-name descname"><span class="pre">ptype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.ptype" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle._idata">
+<span class="sig-name descname"><span class="pre">_idata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle._idata" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle._rdata">
+<span class="sig-name descname"><span class="pre">_rdata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle._rdata" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.level_boxes">
+<span class="sig-name descname"><span class="pre">level_boxes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.level_boxes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#flekspy.amrex.AMReXParticleHeader" title="flekspy.amrex.AMReXParticleHeader"><span class="pre">AMReXParticleHeader</span></a></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.header" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.dim">
+<span class="sig-name descname"><span class="pre">dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.dim" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.time">
+<span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.time" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.left_edge">
+<span class="sig-name descname"><span class="pre">left_edge</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.left_edge" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.right_edge">
+<span class="sig-name descname"><span class="pre">right_edge</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.right_edge" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.domain_dimensions">
+<span class="sig-name descname"><span class="pre">domain_dimensions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.domain_dimensions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle._load_data">
+<span class="sig-name descname"><span class="pre">_load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle._load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle._load_data" title="Link to this definition">#</a></dt>
+<dd><p>Loads the particle data from disk if it has not been loaded yet.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.idata">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">idata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.idata" title="Link to this definition">#</a></dt>
+<dd><p>Lazily loads and returns the integer particle data.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.rdata">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rdata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticle.rdata" title="Link to this definition">#</a></dt>
+<dd><p>Lazily loads and returns the real particle data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle._parse_main_header">
+<span class="sig-name descname"><span class="pre">_parse_main_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle._parse_main_header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle._parse_main_header" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle._parse_particle_h_files">
+<span class="sig-name descname"><span class="pre">_parse_particle_h_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle._parse_particle_h_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle._parse_particle_h_files" title="Link to this definition">#</a></dt>
+<dd><p>Parses the Particle_H files to get the box arrays for each level.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle.__repr__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.select_particles_in_region">
+<span class="sig-name descname"><span class="pre">select_particles_in_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle.select_particles_in_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle.select_particles_in_region" title="Link to this definition">#</a></dt>
+<dd><p>Selectively loads real component data for particles that fall within a
+specified rectangular region.</p>
+<p>This method first converts the physical range into an index-based range,
+then identifies which grid files intersect with that range, and finally
+reads only the necessary data. This avoids loading the entire dataset
+into memory. Integer data is skipped for efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A tuple (min, max) for the x-axis boundary.</p></li>
+<li><p><strong>y_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A tuple (min, max) for the y-axis boundary.</p></li>
+<li><p><strong>z_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A tuple (min, max) for the z-axis boundary.
+For 2D data, this is ignored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A numpy array containing the real data for the</dt><dd><p>selected particles.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle._extract_variable_columns">
+<span class="sig-name descname"><span class="pre">_extract_variable_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle._extract_variable_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle._extract_variable_columns" title="Link to this definition">#</a></dt>
+<dd><p>Helper method to extract specific columns from the particle data array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rdata</strong> (<em>np.ndarray</em>) – The particle data array.</p></li>
+<li><p><strong>variables</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The names of the variables to extract.</p></li>
+<li><p><strong>component_names</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – The list of component names corresponding
+to the columns of rdata. If None, it defaults
+to self.header.real_component_names.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A stacked array containing the extracted columns (n_particles, n_vars).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.extract_core_population">
+<span class="sig-name descname"><span class="pre">extract_core_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">velocity_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_th</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle.extract_core_population"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle.extract_core_population" title="Link to this definition">#</a></dt>
+<dd><p>Extracts the core population from the suprathermal population.</p>
+<p>The core population is approximated by a Maxwellian distribution centered at
+the peak phase space density location. Particles within a certain distance
+(defined by <cite>cutoff * v_th</cite>) from the center are considered part of the core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>velocity_columns</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The names of the velocity components to use.</p></li>
+<li><p><strong>v_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension of the velocity space. Defaults to 3.</p></li>
+<li><p><strong>v_th</strong> (<em>float</em><em>, </em><em>optional</em>) – The thermal velocity of the core population.
+If not provided, it is estimated using a GMM fit.</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – The cutoff factor for defining the core boundary
+in units of thermal velocity. Defaults to 3.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing two boolean masks:</dt><dd><p>(core_mask, suprathermal_mask).</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.fit_gmm">
+<span class="sig-name descname"><span class="pre">fit_gmm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">sklearn.mixture.GaussianMixture</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle.fit_gmm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle.fit_gmm" title="Link to this definition">#</a></dt>
+<dd><p>Fits a Gaussian Mixture Model (GMM) to the phase space distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_components</strong> (<em>int</em>) – The number of mixture components (Gaussian distributions).</p></li>
+<li><p><strong>x_variable</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the variable for the x-axis.
+Retained for backward compatibility.</p></li>
+<li><p><strong>y_variable</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the variable for the y-axis.
+Retained for backward compatibility.</p></li>
+<li><p><strong>x_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A tuple (min, max) for the x-axis boundary.</p></li>
+<li><p><strong>y_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A tuple (min, max) for the y-axis boundary.</p></li>
+<li><p><strong>z_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A tuple (min, max) for the z-axis boundary.
+For 2D data, this is ignored.</p></li>
+<li><p><strong>transform</strong> (<em>callable</em><em>, </em><em>optional</em>) – A function that takes the particle data (<cite>rdata</cite>, a NumPy array)
+and returns a tuple: (<cite>transformed_rdata</cite>, <cite>new_component_names</cite>).
+This allows for fitting derived quantities or changing coordinate systems.
+If provided, <cite>x_variable</cite> and <cite>y_variable</cite> should refer to names
+in <cite>new_component_names</cite>. Defaults to None.</p></li>
+<li><p><strong>variables</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – The names of the variables to fit.
+If provided, this takes precedence over
+x_variable and y_variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted GMM model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sklearn.mixture.GaussianMixture</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticle.get_gmm_temperatures">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_gmm_temperatures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gmm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GaussianMixture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle_mass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotropic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticle.get_gmm_temperatures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticle.get_gmm_temperatures" title="Link to this definition">#</a></dt>
+<dd><p>Extracts physical temperatures from a fitted GMM.</p>
+<p>This method calls <cite>get_gmm_parameters</cite> to get the squared thermal
+velocities and then converts them to temperatures in Kelvin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gmm</strong> (<em>&quot;GaussianMixture&quot;</em>) – The fitted GMM model.</p></li>
+<li><p><strong>particle_mass</strong> (<em>float</em>) – The mass of the particle species in atomic mass units (amu).
+Defaults to 1.0.</p></li>
+<li><p><strong>isotropic</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, assumes an isotropic Maxwellian
+distribution and returns a single scalar temperature.
+If False, assumes a Bi-Maxwellian distribution and returns
+parallel and perpendicular temperatures. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of dictionaries, one for each Gaussian component.</dt><dd><ul class="simple">
+<li><p>Isotropic: {‘center’: [mx, my], ‘temperature’: T}</p></li>
+<li><p>Bi-Maxwellian: {‘center’: [mx, my], ‘T_parallel’: T_par, ‘T_perpendicular’: T_perp}</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flekspy.amrex.</span></span><span class="sig-name descname"><span class="pre">AMReXParticleHeader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticleHeader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader" title="Link to this definition">#</a></dt>
+<dd><p>This class is designed to parse and store the information
+contained in an AMReX particle header file.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.version_string">
+<span class="sig-name descname"><span class="pre">version_string</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.version_string" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.real_type">
+<span class="sig-name descname"><span class="pre">real_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.real_type" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.int_type">
+<span class="sig-name descname"><span class="pre">int_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.int_type" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.dim">
+<span class="sig-name descname"><span class="pre">dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.dim" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_int_base">
+<span class="sig-name descname"><span class="pre">num_int_base</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_int_base" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_real_base">
+<span class="sig-name descname"><span class="pre">num_real_base</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_real_base" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.real_component_names">
+<span class="sig-name descname"><span class="pre">real_component_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.real_component_names" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.int_component_names">
+<span class="sig-name descname"><span class="pre">int_component_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.int_component_names" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_real_extra">
+<span class="sig-name descname"><span class="pre">num_real_extra</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_real_extra" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_int_extra">
+<span class="sig-name descname"><span class="pre">num_int_extra</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_int_extra" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_int">
+<span class="sig-name descname"><span class="pre">num_int</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_int" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_real">
+<span class="sig-name descname"><span class="pre">num_real</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_real" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.is_checkpoint">
+<span class="sig-name descname"><span class="pre">is_checkpoint</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.is_checkpoint" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_particles">
+<span class="sig-name descname"><span class="pre">num_particles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_particles" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.max_next_id">
+<span class="sig-name descname"><span class="pre">max_next_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.max_next_id" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.finest_level">
+<span class="sig-name descname"><span class="pre">finest_level</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.finest_level" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.num_levels">
+<span class="sig-name descname"><span class="pre">num_levels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.num_levels" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.grids_per_level">
+<span class="sig-name descname"><span class="pre">grids_per_level</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.grids_per_level" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.grids">
+<span class="sig-name descname"><span class="pre">grids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.grids" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/flekspy/amrex/particle_data.html#AMReXParticleHeader.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.__repr__" title="Link to this definition">#</a></dt>
+<dd><p>Returns a string representation of the header contents.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.idtype_str">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">idtype_str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.idtype_str" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="flekspy.amrex.AMReXParticleHeader.rdtype_str">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rdtype_str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#flekspy.amrex.AMReXParticleHeader.rdtype_str" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">flekspy</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="particle_data/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">flekspy.amrex.particle_data</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle"><code class="docutils literal notranslate"><span class="pre">AMReXParticle</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.output_dir"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.output_dir</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.ptype"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.ptype</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle._idata"><code class="docutils literal notranslate"><span class="pre">AMReXParticle._idata</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle._rdata"><code class="docutils literal notranslate"><span class="pre">AMReXParticle._rdata</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.level_boxes"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.level_boxes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.header"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.header</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.dim"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.time"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.time</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.left_edge"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.left_edge</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.right_edge"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.right_edge</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.domain_dimensions"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.domain_dimensions</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle._load_data"><code class="docutils literal notranslate"><span class="pre">AMReXParticle._load_data()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.idata"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.idata</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.rdata"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.rdata</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle._parse_main_header"><code class="docutils literal notranslate"><span class="pre">AMReXParticle._parse_main_header()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle._parse_particle_h_files"><code class="docutils literal notranslate"><span class="pre">AMReXParticle._parse_particle_h_files()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.__repr__"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.select_particles_in_region"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.select_particles_in_region()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle._extract_variable_columns"><code class="docutils literal notranslate"><span class="pre">AMReXParticle._extract_variable_columns()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.extract_core_population"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.extract_core_population()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.fit_gmm"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.fit_gmm()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticle.get_gmm_temperatures"><code class="docutils literal notranslate"><span class="pre">AMReXParticle.get_gmm_temperatures()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.version_string"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.version_string</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.real_type"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.real_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.int_type"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.int_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.dim"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_int_base"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_int_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_real_base"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_real_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.real_component_names"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.real_component_names</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.int_component_names"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.int_component_names</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_real_extra"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_real_extra</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_int_extra"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_int_extra</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_int"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_int</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_real"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_real</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.is_checkpoint"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.is_checkpoint</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_particles"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_particles</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.max_next_id"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.max_next_id</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.finest_level"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.finest_level</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.num_levels"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.num_levels</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.grids_per_level"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.grids_per_level</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.grids"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.grids</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.__repr__"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.idtype_str"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.idtype_str</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#flekspy.amrex.AMReXParticleHeader.rdtype_str"><code class="docutils literal notranslate"><span class="pre">AMReXParticleHeader.rdtype_str</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/autoapi/flekspy/amrex/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Yuxi Chen, Hongyang Zhou.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

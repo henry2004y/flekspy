@@ -1,0 +1,1095 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Algorithm &#8212; flekspy  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'algorithm';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="Exosphere Module" href="exosphere.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">flekspy  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    Algorithm
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Algorithm
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Algorithm</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="algorithm">
+<h1>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">#</a></h1>
+<section id="key-features-of-fleks">
+<h2>Key Features of FLEKS<a class="headerlink" href="#key-features-of-fleks" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Multi-Scale Modeling: FLEKS is often used as part of the MHD-AEPIC (Magnetohydrodynamics with Adaptively Embedded Particle-in-Cell) framework. This hybrid method bridges the gap between fluid-based plasma models (MHD) and detailed kinetic plasma models (PIC), allowing for the best of both worlds: efficient simulations with localized kinetic accuracy.</p></li>
+<li><p>Adaptive Kinetic Regions: FLEKS features dynamically adaptive PIC regions. This means that the computationally demanding PIC simulations can be focused specifically on areas where kinetic effects are crucial, enabling efficient resource allocation. We now have Adaptive Mesh Refinement (AMR) support for FLEKS as well!</p></li>
+<li><p>Exascale-Ready: FLEKS is designed to take advantage of powerful exascale computing systems, allowing for large-scale, highly detailed plasma simulations.</p></li>
+<li><p>Accurate and Efficient Time-Stepping: FLEKS includes adaptive time-stepping, which adjusts the simulation time step based on the requirements for accuracy within different regions, enhancing simulation efficiency.</p></li>
+<li><p>Load Balancing and Noise Reduction: Particle splitting and merging algorithms maintain optimal computational load balancing across computing cores and help suppress statistical noise in simulations.</p></li>
+<li><p>Particle Trajectory Tracking: FLEKS includes a test-particle module, used for tracking individual particle trajectories in the dynamic electromagnetic fields.</p></li>
+</ul>
+<p>The semi-implicit solver as in FLEKS is useful for problems that cross both the ion and electron scales where a large domain is needed for studying the systematic impact. These features of the current energy-conserving semi-implicit method are particularly well-suited for multi-scale problems where resolving electron scales is computationally infeasible, but retaining some kinetic electron effects (like Landau damping, whistler waves) is physically necessary.</p>
+</section>
+<section id="limitations-for-classical-pic-models">
+<h2>Limitations for Classical PIC Models<a class="headerlink" href="#limitations-for-classical-pic-models" title="Link to this heading">#</a></h2>
+<p>Particle-In-Cell (PIC) models are incredibly useful for plasma simulation, but they do come with limitations imposed by numerical stability requirements. Let’s break down those requirements and their impact:</p>
+<ul class="simple">
+<li><p><strong>Time Step</strong>: The Courant-Friedrichs-Lewy (CFL) condition in numerical simulations dictates that a particle (or information) shouldn’t travel more than one grid cell within a single time step.  Mathematically, for a 1D simulation, it looks like: <span class="math notranslate nohighlight">\(\Delta t \le \Delta x / v_\mathrm{max}\)</span> where <span class="math notranslate nohighlight">\(\Delta t\)</span> is the time step, <span class="math notranslate nohighlight">\(\Delta x\)</span> is the grid cell size, and <span class="math notranslate nohighlight">\(v_\mathrm{max}\)</span> is the maximum velocity of particles in the system. If the CFL condition is violated, particles can artificially “jump” over cells, leading to inaccurate results and potential instabilities.</p></li>
+<li><p><strong>Resolving the Debye Length</strong>: The Debye length (<span class="math notranslate nohighlight">\(\lambda_D\)</span>) is a fundamental length scale in plasmas, representing the distance over which charged particles shield each other’s electric fields. To accurately model plasma behavior, your grid resolution needs to be smaller than the Debye length: <span class="math notranslate nohighlight">\(\Delta x &lt; \lambda_D\)</span>. Failure in resolving <span class="math notranslate nohighlight">\(\lambda_D\)</span> results in the finite-grid instability, as demonstrated in the famous PIC simulation book. This under-resolution introduces errors in the calculation of the electric field and charge density, leading to unphysical heating of the plasma over time. The instability manifests as an artificial growth rate in the plasma wave dispersion relation, causing the plasma to become hotter than it should be. This can significantly affect the accuracy and reliability of the simulation results. The energy-conserving PIC algorithms can help to suppress the instability.</p></li>
+<li><p><strong>Resolving the Plasma Frequency</strong>: The plasma frequency (<span class="math notranslate nohighlight">\(\omega_p\)</span>) represents the natural oscillation frequency of electrons in a plasma. Your simulation time step should be small enough to resolve this: <span class="math notranslate nohighlight">\(\Delta t &lt; 1 / \omega_p\)</span>. Failing to meet this leads to inaccurate representation of plasma oscillations and potential numerical heating.</p></li>
+<li><p><strong>Satisfying the Gauss’ Law</strong>: Since in classical PIC algorithms we only solve for Faraday’s law and Ampere’s law, the charge conservation is not guaranteed. Gauss’s law is critical in the conservation of both momentum and energy.</p></li>
+</ul>
+<p>Finer grid resolutions and smaller time steps directly increase the number of calculations needed in a simulation. This translates to significantly higher computational demands. For plasmas containing extremely fast particles, the CFL condition can force you to use impractically small time steps to maintain stability.</p>
+<p>Many modern PIC codes use relatively high order shape functions, and as a result, the worst-case numerical growth rates are undetectably small; in addition, some codes use energy-conserving methods which usually prevent this numerical instability from arising.</p>
+<section id="how-to-loose-the-numerical-constraints">
+<h3>How to Loose The Numerical Constraints?<a class="headerlink" href="#how-to-loose-the-numerical-constraints" title="Link to this heading">#</a></h3>
+<p>How to handle the limitations of classical PIC algorithms? Why is FLEKS called a semi-implicit PIC model? To answer that, let us first review the differences of explicit and implicit schemes.</p>
+<p>PIC methods can be explicit, semi-implicit or fully implicit. Plasmas are governed by two sets of equations: the equations for the motion of the particles and the equations for the evolution of the fields. The two sets of equations are coupled because the field equations need the sources (current and charge) from the particles, and the particles need the fields to compute the force. There is no specific ordering of the equations, which is also consistent with the essence of plasma physics: collective interaction of particles with the fields. Fully implicit methods are required to solve the discretized equations to solve the nonlinear field-particle interactions. In fully implicit methods, the particle equations of motion and the field equations are solved together within a nonlinear solver. In explicit methods, conversely, the coupling between particles and fields is suspended for a small time step. In that small time interval, one assumes that the known fields can be used unchanged for moving the particles, and the particle information can be used unchanged to evolve the fields. This assumption leads to the convenience of using explicit timestepping algorithms which has been proved to be the most efficient method in solving the equations.</p>
+<p>However, in explicit PIC methods, timesteps are severely limited by numerical stability considerations. Specifically, not only the time resolution needs to be high enough to resolve the electron plasma frequency <span class="math notranslate nohighlight">\(\omega_{pe}\)</span>, <span class="math notranslate nohighlight">\(\Delta t &lt; 2\omega_{pe}^{-1}\)</span>, but also the space resolution needs to cover the Debye length <span class="math notranslate nohighlight">\(\lambda_D\)</span> to avoid the finite-grid instability ([&#64;birdsall2018plasma]). The constraints are greatly loosened by the implicit approach.</p>
+<p>Another consequence in following the explicit PIC methods is that energy is not conserved. Using a good resolution, energy is acceptably maintained. There is always a secular trend of energy increase, but as the resolution is relaxed closer to the stability limit of the finite grid instability, the energy increase becomes more severe, until at the instability limit, it starts to grow exponentially. [&#64;birdsall2018plasma] This effect cannot be avoided, but it can be improved by using smoothing and higher-order interpolation techniques. Recent structure-preserving geometric particle-in-cell methods use symplectic integrators to ensure local energy conservation at small time steps. The implicit PIC method, instead, conserves energy exactly, whatever resolution is used. This feature is both physically important and practically useful, which serves as a requirement for running PIC models for sufficiently a long time. &#64;barnes2021finite demonstrates that while EC-PIC algorithms are not free from the finite-grid instability for drifting plasmas in principle, they feature a benign stability threshold for finite-temperature plasmas that make them usable in practice for a large class of problems without the need to consider the size of the Debye length.</p>
+<p>The semi-implicit PIC method tries to make a compromise and retain some of the advantages of both approaches. In semi-implicit methods, the particles and the fields are still advanced together, and an iteration is needed, but the coupling is linearized, and the iteration uses linear solvers. [&#64;lapenta2023advances] With the addition of Gauss’ law conservation correction ([&#64;chen2019gauss]), the semi-implicit energy conserving PIC method has shown improved numerical stability performance.</p>
+<ul class="simple">
+<li><p><strong>Explicit PIC</strong>: In traditional explicit PIC, field values at the <em>current</em> time step are used to calculate forces on particles. These forces then determine how particles move to the next time step. The fields are then updated based on this new particle distribution. This explicit approach leads to the strict stability constraints (CFL, resolving Debye length, etc.) we discussed earlier.</p></li>
+<li><p><strong>Fully Implicit PIC</strong>: To get around stability limitations, fully implicit PIC models solve a system of equations where fields at the <em>future</em> time step are considered unknowns along with <em>future</em> particle positions.  This means the movement of particles and the update of fields are implicitly linked. Solution involves large matrix inversions at each time step.</p></li>
+<li><p><strong>Semi-Implicit PIC</strong><a class="footnote-reference brackets" href="#common" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>: Semi-implicit methods aim for a hybrid approach. They partially <em>linearize</em> the coupling between particles and fields to improve stability somewhat. This involves using field values from the current and potentially from previous time steps, to calculate particle motion and field updates. Several techniques exist for this linearization (implicit moment, direct implicit etc.).</p>
+<ul>
+<li><p>Particle Push: Similar to explicit PIC, the method first uses the electric fields from the current time step (or potentially from a combination of current and previous time steps) to calculate the force acting on each particle.</p></li>
+<li><p>Linearized Update:  Here’s where the ‘implicitness’ comes in.  The semi-implicit method employs a specific technique to linearize the relationship between how particles move and how the fields update.  Some common linearization techniques include:</p>
+<ol class="arabic simple">
+<li><p>Implicit Moment Method: This method solves a set of moment equations for the particles’ distribution function, which is then used to update the fields in a linearized manner.</p></li>
+<li><p>Direct Implicit Method: This method performs a formal linear expansion of the coupling operator between particles and fields, allowing for a linearized update of the fields.</p></li>
+</ol>
+</li>
+<li><p>Field Update: Once the coupling between particles and fields is linearized, the method updates the electric fields on the grid using the information from the particle push step implicitly.
+However, the semi-implicit methods prosposed in the 1980s (Implicit Moment Method, Direct Implicit Method) lack energy conservation, which causes instability issues with grid resolution much larger than the Debye length.</p></li>
+</ul>
+</li>
+</ul>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Fully Implicit PIC</p></th>
+<th class="head"><p>Semi-Implicit PIC</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Stability</p></td>
+<td><p>Highly stable, larger time steps allowed</p></td>
+<td><p>More stable than explicit, but not as unconditionally stable as fully implicit</p></td>
+</tr>
+<tr class="row-odd"><td><p>Accuracy</p></td>
+<td><p>Can be very accurate</p></td>
+<td><p>Accuracy can depend on the specific linearization technique, some energy conservation issues may exist</p></td>
+</tr>
+<tr class="row-even"><td><p>Computational Cost</p></td>
+<td><p>Highest, due to matrix inversions at each step</p></td>
+<td><p>More expensive than explicit, but often less so than fully implicit</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="unit-conversion">
+<h2>Unit Conversion<a class="headerlink" href="#unit-conversion" title="Link to this heading">#</a></h2>
+<p>A physical quantity consists of two parts: a value and a unit. For example, the weight of a table can be expressed as <span class="math notranslate nohighlight">\(w = 50\,\text{kg} = 50,000\,\text{g}\)</span>, where 50 and 50,000 are the values, and kg and g are the units. If we define a new unit, wg, such that <span class="math notranslate nohighlight">\(1\,\text{wg} = 2.5\,\text{kg}\)</span>, the table’s weight becomes <span class="math notranslate nohighlight">\(w = 20\,\text{wg}\)</span>. In general, a physical quantity <span class="math notranslate nohighlight">\(u\)</span> can be expressed as <span class="math notranslate nohighlight">\(u = \bar{u} u^*\)</span>, where <span class="math notranslate nohighlight">\(\bar{u}\)</span> is its numerical value and <span class="math notranslate nohighlight">\(u^*\)</span> is its unit.</p>
+<section id="lorentz-equation">
+<h3>Lorentz Equation<a class="headerlink" href="#lorentz-equation" title="Link to this heading">#</a></h3>
+<p><strong>Base Normalization Scales</strong></p>
+<ul class="simple">
+<li><p>Mass: <span class="math notranslate nohighlight">\(m_0 = m_p\)</span> (the proton mass)</p></li>
+<li><p>Charge: <span class="math notranslate nohighlight">\(q_0 = e\)</span> (the elementary charge)</p></li>
+<li><p>Time: <span class="math notranslate nohighlight">\(t_0 = 1 / \omega_{pp}\)</span> (the inverse of the proton plasma frequency, <span class="math notranslate nohighlight">\(\omega_{pp} = \sqrt{n_0 e^2 / (m_p \epsilon_0)}\)</span> in SI)</p></li>
+<li><p>Length: <span class="math notranslate nohighlight">\(x_0 = c / \omega_{pp}\)</span> (the proton inertial length, <span class="math notranslate nohighlight">\(d_p\)</span>)</p></li>
+</ul>
+<p><strong>Normalized (Code) Variables</strong></p>
+<p>This new base changes our normalized variables.</p>
+<ul class="simple">
+<li><p>Time: <span class="math notranslate nohighlight">\(\tilde{t} = t / t_0\)</span></p></li>
+<li><p>Position: <span class="math notranslate nohighlight">\(\tilde{\vec{x}} = \vec{x} / x_0\)</span></p></li>
+<li><p>Mass: <span class="math notranslate nohighlight">\(\tilde{m} = m / m_0 = m / m_p\)</span></p></li>
+<li><p>Charge: <span class="math notranslate nohighlight">\(\tilde{q} = q / q_0 = q / e\)</span></p></li>
+</ul>
+<p>In FLEKS, we normalize to the ion scale.</p>
+<ul class="simple">
+<li><p>For a proton: <span class="math notranslate nohighlight">\(\tilde{m} = m_p / m_p = 1\)</span> and <span class="math notranslate nohighlight">\(\tilde{q} = e / e = 1\)</span>.</p></li>
+<li><p>For an electron: <span class="math notranslate nohighlight">\(\tilde{m} = m_e / m_p \approx 1/1836\)</span> (physical) and <span class="math notranslate nohighlight">\(\tilde{q} = -e / e = -1\)</span>.</p></li>
+</ul>
+<p>The derived normalization constants are:</p>
+<ul class="simple">
+<li><p>Velocity: <span class="math notranslate nohighlight">\(v_0 = x_0 / t_0 = (c / \omega_{pp}) / (1 / \omega_{pp}) = c\)</span>.</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(\tilde{\vec{v}} = \vec{v} / c\)</span></p></li>
+</ul>
+</li>
+<li><p>Momentum: <span class="math notranslate nohighlight">\(p_0 = m_0 v_0 = m_p c\)</span>.</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(\tilde{\vec{p}} = \vec{p} / (m_p c)\)</span></p></li>
+</ul>
+</li>
+</ul>
+<p>The relativistic relationship <span class="math notranslate nohighlight">\(\vec{p} = \gamma m \vec{v}\)</span> becomes <span class="math notranslate nohighlight">\(\tilde{\vec{p}} = \tilde{\gamma} \tilde{m} \tilde{\vec{v}}\)</span>, where <span class="math notranslate nohighlight">\(\tilde{\gamma} = (1 - \tilde{v}^2)^{-1/2}\)</span>.</p>
+<p><strong>Derivation from SI Units</strong></p>
+<ol class="arabic simple">
+<li><p>Physical Equation (SI):
+<span class="math notranslate nohighlight">\(\frac{d\vec{p}}{dt} = q(\vec{E} + \vec{v} \times \vec{B})\)</span></p></li>
+<li><p>Substitute Normalized Variables:
+<span class="math notranslate nohighlight">\(\frac{d(\tilde{\vec{p}} p_0)}{d(\tilde{t} t_0)} = (\tilde{q} q_0) \left( (\tilde{\vec{E}} E_0) + (\tilde{\vec{v}} v_0) \times (\tilde{\vec{B}} B_0) \right)\)</span></p></li>
+<li><p>Isolate Normalized Equation:
+<span class="math notranslate nohighlight">\(\left[ \frac{p_0}{t_0} \right] \frac{d\tilde{\vec{p}}}{d\tilde{t}} = (\tilde{q} q_0 E_0) \tilde{\vec{E}} + (\tilde{q} q_0 v_0 B_0) (\tilde{\vec{v}} \times \tilde{\vec{B}})\)</span></p></li>
+</ol>
+<p><span class="math notranslate nohighlight">\(\frac{d\tilde{\vec{p}}}{d\tilde{t}} = \tilde{q} \left[ \frac{q_0 E_0 t_0}{p_0} \right] \tilde{\vec{E}} + \tilde{q} \left[ \frac{q_0 v_0 B_0 t_0}{p_0} \right] (\tilde{\vec{v}} \times \tilde{\vec{B}})\)</span></p>
+<ol class="arabic simple" start="4">
+<li><p>Define <span class="math notranslate nohighlight">\(E_0\)</span> and <span class="math notranslate nohighlight">\(B_0\)</span> (Set brackets to 1):</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(E_0 = \frac{p_0}{q_0 t_0} = \frac{m_p c}{e (1 / \omega_{pp})} = \frac{m_p c \omega_{pp}}{e}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(B_0 = \frac{p_0}{q_0 v_0 t_0} = \frac{m_p c}{e c (1 / \omega_{pp})} = \frac{m_p \omega_{pp}}{e}\)</span></p></li>
+</ul>
+</li>
+</ol>
+<p><strong>Derivation from CGS Units</strong></p>
+<ol class="arabic simple">
+<li><p>Physical Equation (CGS):
+<span class="math notranslate nohighlight">\(\frac{d\vec{p}}{dt} = q \left( \vec{E} + \frac{\vec{v}}{c} \times \vec{B} \right)\)</span></p></li>
+<li><p>Substitute Normalized Variables:
+<span class="math notranslate nohighlight">\(\frac{d(\tilde{\vec{p}} p_0)}{d(\tilde{t} t_0)} = (\tilde{q} q_0) \left( (\tilde{\vec{E}} E_0) + \frac{(\tilde{\vec{v}} v_0)}{c} \times (\tilde{\vec{B}} B_0) \right)\)</span></p></li>
+<li><p>Substitute <span class="math notranslate nohighlight">\(v_0 = c\)</span>:
+<span class="math notranslate nohighlight">\(\left[ \frac{p_0}{t_0} \right] \frac{d\tilde{\vec{p}}}{d\tilde{t}} = (\tilde{q} q_0 E_0) \tilde{\vec{E}} + \tilde{q} \left[ \frac{q_0 c B_0}{c} \right] (\tilde{\vec{v}} \times \tilde{\vec{B}})\)</span></p></li>
+</ol>
+<p>The <span class="math notranslate nohighlight">\(c\)</span> in the magnetic term cancels out perfectly.</p>
+<ol class="arabic simple" start="4">
+<li><p>Isolate Normalized Equation:
+<span class="math notranslate nohighlight">\(\left[ \frac{p_0}{t_0} \right] \frac{d\tilde{\vec{p}}}{d\tilde{t}} = (\tilde{q} q_0 E_0) \tilde{\vec{E}} + (\tilde{q} q_0 B_0) (\tilde{\vec{v}} \times \tilde{\vec{B}})\)</span></p></li>
+</ol>
+<p><span class="math notranslate nohighlight">\(\frac{d\tilde{\vec{p}}}{d\tilde{t}} = \tilde{q} \left[ \frac{q_0 E_0 t_0}{p_0} \right] \tilde{\vec{E}} + \tilde{q} \left[ \frac{q_0 B_0 t_0}{p_0} \right] (\tilde{\vec{v}} \times \tilde{\vec{B}})\)</span></p>
+<ol class="arabic simple" start="5">
+<li><p>Define <span class="math notranslate nohighlight">\(E_0\)</span> and <span class="math notranslate nohighlight">\(B_0\)</span> (Set brackets to 1):</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(E_0 = \frac{p_0}{q_0 t_0} = \frac{m_p c}{e (1 / \omega_{pp})} = \frac{m_p c \omega_{pp}}{e}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(B_0 = \frac{p_0}{q_0 t_0} = \frac{m_p c}{e (1 / \omega_{pp})} = \frac{m_p c \omega_{pp}}{e}\)</span> (Note: In CGS, <span class="math notranslate nohighlight">\(\omega_{pp} = \sqrt{4\pi n_0 e^2 / m_p}\)</span>, and <span class="math notranslate nohighlight">\(E_0=B_0\)</span>).</p></li>
+</ul>
+</li>
+</ol>
+<p><strong>Summary: The Final Normalized Equations</strong></p>
+<p>In both SI and CGS, the final, unitless equations are identical:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-e02b5d2d-72ef-4cdc-a6a3-4ae52d1d668f">
+<span class="eqno">(1)<a class="headerlink" href="#equation-e02b5d2d-72ef-4cdc-a6a3-4ae52d1d668f" title="Permalink to this equation">#</a></span>\[\begin{gather}
+\frac{d\tilde{\vec{x}}}{d\tilde{t}} &amp;= \tilde{\vec{v}} \\
+\frac{d\tilde{\vec{p}}}{d\tilde{t}} &amp;= \tilde{q} (\tilde{\vec{E}} + \tilde{\vec{v}} \times \tilde{\vec{B}})
+\end{gather}\]</div>
+<p>The physics is captured by the normalized mass and charge parameters fed to the pusher:
+- Protons: <span class="math notranslate nohighlight">\(\tilde{m} = 1\)</span>, <span class="math notranslate nohighlight">\(\tilde{q} = 1\)</span>
+- Electrons: <span class="math notranslate nohighlight">\(\tilde{m} = m_e/m_p\)</span>, <span class="math notranslate nohighlight">\(\tilde{q} = -1\)</span></p>
+<p>In the non-relativistic limit, there is no speed of light. In the pusher, we use c as the velocity normalization, but we can choose it freely.</p>
+</section>
+<section id="mass-normalization">
+<h3>Mass Normalization<a class="headerlink" href="#mass-normalization" title="Link to this heading">#</a></h3>
+<p>In the CGS system, the equation of motion for a particle is:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-f6e3f95b-9c6c-44f8-9df0-0cf129dfea4e">
+<span class="eqno">(2)<a class="headerlink" href="#equation-f6e3f95b-9c6c-44f8-9df0-0cf129dfea4e" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\frac{d\mathbf{v}}{dt} = \frac{q}{m}\left(\mathbf{E} + \frac{\mathbf{v}}{c} \times \mathbf{B}\right)
+\end{equation}\]</div>
+<p>In FLEKS, all quantities are normalized in a way that avoids introducing new constants. From the equation of motion, we derive the following relation:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-a7929c7b-8b9b-4568-b134-9a14fad8e89a">
+<span class="eqno">(3)<a class="headerlink" href="#equation-a7929c7b-8b9b-4568-b134-9a14fad8e89a" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\frac{q_{cgs}^* E_{cgs}^* t_{cgs}^*}{m_{cgs}^* v_{cgs}^*} = 1
+\end{equation}\]</div>
+<p>From Gauss’s law, <span class="math notranslate nohighlight">\(\nabla \cdot \mathbf{E} = 4\pi\rho\)</span>, we get:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-2f0cdc68-41df-41c5-a84f-258450e7918b">
+<span class="eqno">(4)<a class="headerlink" href="#equation-2f0cdc68-41df-41c5-a84f-258450e7918b" title="Permalink to this equation">#</a></span>\[\begin{equation}
+E_{cgs}^* = \rho_{cgs}^* x_{cgs}^*
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_{cgs}^* = q_{cgs}^*/(x_{cgs}^*)^3\)</span> is the charge density, not the mass density. Combining these two equations, we obtain:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-7071f5ee-6380-4c4d-8c7c-08f8ed7d69da">
+<span class="eqno">(5)<a class="headerlink" href="#equation-7071f5ee-6380-4c4d-8c7c-08f8ed7d69da" title="Permalink to this equation">#</a></span>\[\begin{equation}
+q_{cgs}^* = v_{cgs}^* \sqrt{m_{cgs}^* x_{cgs}^*}
+\end{equation}\]</div>
+<p>In the code, the condition <span class="math notranslate nohighlight">\(\bar{q}/(\bar{m}\bar{c}) = 1\)</span> is required for a proton. This means the normalization units <span class="math notranslate nohighlight">\(q_{cgs}^*\)</span> and <span class="math notranslate nohighlight">\(m_{cgs}^*\)</span> must satisfy:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-ef112b8b-d32b-4d2f-a8f6-6aea7d1ce551">
+<span class="eqno">(6)<a class="headerlink" href="#equation-ef112b8b-d32b-4d2f-a8f6-6aea7d1ce551" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\frac{q_{cgs}^*}{m_{cgs}^* v_{cgs}^*} = \frac{q_{cgs,p}}{m_{cgs,p}c_{cgs}}
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(q_{cgs,p}\)</span> and <span class="math notranslate nohighlight">\(m_{cgs,p}\)</span> are the charge and mass of a proton in CGS units, respectively. Using this, we find the normalization mass in CGS units:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-58ac3d19-31de-43d9-a24e-02af010a7f56">
+<span class="eqno">(7)<a class="headerlink" href="#equation-58ac3d19-31de-43d9-a24e-02af010a7f56" title="Permalink to this equation">#</a></span>\[\begin{equation}
+m_{cgs}^* = x_{cgs}^* \left(\frac{c_{cgs}m_{cgs,p}}{q_{cgs,p}}\right)^2
+\end{equation}\]</div>
+<p>Note that <span class="math notranslate nohighlight">\(m_{cgs}^*\)</span> includes both a numerical value and the unit “g”. The expression above calculates this value. In the SI system, this value is calculated in <code class="docutils literal notranslate"><span class="pre">BATSRUS::ModPIC.f90</span></code>, where the proton’s charge and mass are known. To use this, we must convert the expression to SI units. Let <span class="math notranslate nohighlight">\(m_{cgs}^*\)</span> and <span class="math notranslate nohighlight">\(m_{SI}^*\)</span> be the numerical values of the normalization mass in CGS and SI units, respectively. For a mass of 1.5 kg, <span class="math notranslate nohighlight">\(m_{SI}^* = 1.5\)</span> and <span class="math notranslate nohighlight">\(m_{cgs}^* = 1500\)</span>, so the conversion is <span class="math notranslate nohighlight">\(m_{cgs}^* = 1000 m_{SI}^*\)</span>. For charge, assuming the speed of light is <span class="math notranslate nohighlight">\(3 \times 10^8 \text{ m/s}\)</span>, we have <span class="math notranslate nohighlight">\(1 \text{ C} = 3 \times 10^9 \text{ esu}\)</span>. This gives us:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-5cdd1eb8-16ab-4325-9c70-8c3374af9514">
+<span class="eqno">(8)<a class="headerlink" href="#equation-5cdd1eb8-16ab-4325-9c70-8c3374af9514" title="Permalink to this equation">#</a></span>\[\begin{equation}
+1000 m_{SI}^* = 100 x_{SI}^* \left(\frac{100 c_{SI} \cdot 1000 m_{SI,p}}{3 \times 10^9 q_{SI,p}}\right)^2
+\end{equation}\]</div>
+<div class="amsmath math notranslate nohighlight" id="equation-a6d1d789-3753-4f3c-b309-ef73175c549a">
+<span class="eqno">(9)<a class="headerlink" href="#equation-a6d1d789-3753-4f3c-b309-ef73175c549a" title="Permalink to this equation">#</a></span>\[\begin{equation}
+m_{SI}^* = 10^7 x_{SI}^* \left(\frac{m_{SI,p}}{q_{SI,p}}\right)^2
+\end{equation}\]</div>
+<p>Once <span class="math notranslate nohighlight">\(m_{SI}^*\)</span> is obtained, it is passed to FLEKS and converted to <span class="math notranslate nohighlight">\(m_{cgs}^*\)</span>.</p>
+</section>
+<section id="length-and-velocity-normalization">
+<h3>Length and Velocity Normalization<a class="headerlink" href="#length-and-velocity-normalization" title="Link to this heading">#</a></h3>
+<p>These two are free parameters.</p>
+</section>
+<section id="charge-and-current-normalization">
+<h3>Charge and Current Normalization<a class="headerlink" href="#charge-and-current-normalization" title="Link to this heading">#</a></h3>
+<p>The charge normalization is given by <span class="math notranslate nohighlight">\(q_{cgs}^* = v_{cgs}^* \sqrt{m_{cgs}^* x_{cgs}^*}\)</span>, as shown previously. The current density normalization is <span class="math notranslate nohighlight">\(j_{cgs}^* = q_{cgs}^* v_{cgs}^* / (x_{cgs}^*)^3\)</span>.</p>
+</section>
+<section id="b-and-e-normalization">
+<h3>B and E Normalization<a class="headerlink" href="#b-and-e-normalization" title="Link to this heading">#</a></h3>
+<p>In CGS units, B and E have the same dimension. Substituting the expression for <span class="math notranslate nohighlight">\(q_{cgs}^*\)</span> into the first equation, we get:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-62bca7cb-f0f9-4f8c-bb9a-619376d67a13">
+<span class="eqno">(10)<a class="headerlink" href="#equation-62bca7cb-f0f9-4f8c-bb9a-619376d67a13" title="Permalink to this equation">#</a></span>\[\begin{equation}
+E_{cgs}^* = B_{cgs}^* = v_{cgs}^* \sqrt{\frac{m_{cgs}^*}{(x_{cgs}^*)^3}}
+\end{equation}\]</div>
+</section>
+<section id="consequences-of-changing-the-speed-of-light">
+<h3>Consequences of Changing the Speed of Light<a class="headerlink" href="#consequences-of-changing-the-speed-of-light" title="Link to this heading">#</a></h3>
+<p>Reducing the speed of light changes the propagation speed of electromagnetic waves in the simulation, but it does not change the interaction between particles and the magnetic field. In PIC codes, this is often called the Darwin, magneto-inductive, or “electrostatic-less” approximation, depending on the exact formulation. In the mass normalization, we require <span class="math notranslate nohighlight">\(\bar{q}/(\bar{m}\bar{c}) = 1\)</span>, not <span class="math notranslate nohighlight">\(\bar{q}/\bar{m} = 1\)</span>, because we do not assume <span class="math notranslate nohighlight">\(\bar{c}=1\)</span>. The speed of light in the first equation is always the physical speed of light, regardless of the choice of <span class="math notranslate nohighlight">\(v_{cgs}^*\)</span>. For example, if we set <span class="math notranslate nohighlight">\(v_{cgs}^* = 0.1c\)</span>, then <span class="math notranslate nohighlight">\(\bar{c}\)</span> must be 10 to satisfy <span class="math notranslate nohighlight">\(\bar{q}/(\bar{m}\bar{c}) = 1\)</span>.</p>
+<p>The primary goal of a reduced-<span class="math notranslate nohighlight">\(c\)</span> model is to overcome the two most restrictive time-step constraints in an explicit EM-PIC code (although FLEKS is semi-implicit, the particle pusher is still explicit):</p>
+<ol class="arabic simple">
+<li><p>The Courant-Friedrichs-Lewy (CFL) Condition: <span class="math notranslate nohighlight">\(\Delta t &lt; \Delta x / c\)</span>. This is required to resolve light waves.</p></li>
+<li><p>The Plasma Frequency Constraint: <span class="math notranslate nohighlight">\(\Delta t \lesssim 0.1 / \omega_{pe}\)</span>. This is required to resolve electron plasma oscillations (Langmuir waves).</p></li>
+</ol>
+<p>By reducing <span class="math notranslate nohighlight">\(c\)</span> to <span class="math notranslate nohighlight">\(v_{cgs}^*\)</span>, the code’s field solver relaxes the CFL condition to <span class="math notranslate nohighlight">\(\Delta t &lt; \Delta x / v_{cgs}^*\)</span>. This is a huge win. However, this doesn’t solve the <span class="math notranslate nohighlight">\(\omega_{pe}\)</span> constraint. The electric force <span class="math notranslate nohighlight">\(q\mathbf{E}\)</span> (specifically the electrostatic part, <span class="math notranslate nohighlight">\(\mathbf{E}_{es}\)</span>) is the restoring force for Langmuir waves. By implementing <span class="math notranslate nohighlight">\(\frac{d\bar{v}}{d\bar{t}} = \bar{\mathbf{E}}\)</span> instead of <span class="math notranslate nohighlight">\(\frac{d\bar{v}}{d\bar{t}} = \bar{c}\bar{\mathbf{E}}\)</span>, we are artificially weakening the particle’s response to the electric field.
+This modification effectively disables high-frequency electrostatic physics. The restoring force for Langmuir waves is made <span class="math notranslate nohighlight">\(\bar{c}\)</span> times weaker, which dramatically lowers the plasma frequency <span class="math notranslate nohighlight">\(\omega_{pe}\)</span> (or, more accurately, damps the waves entirely).</p>
+<p>Most PIC simulations use a reduced speed of light. While their results may be interpreted differently than in FLEKS, they also alter the ratio between the electric force and the <span class="math notranslate nohighlight">\(\mathbf{v} \times \mathbf{B}\)</span> force. This reduced-c model is therefore designed to simulate phenomena where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(v \ll c\)</span> (non-relativistic).</p></li>
+<li><p>Frequencies are low: <span class="math notranslate nohighlight">\(\omega \ll \omega_{pe}\)</span>.</p></li>
+<li><p>Physics is dominated by magnetic and inductive effects (gyromotion, <span class="math notranslate nohighlight">\(\mathbf{v} \times \mathbf{B}\)</span> forces, <span class="math notranslate nohighlight">\(\nabla \times \mathbf{E} = -\partial \mathbf{B}/\partial t\)</span>).</p></li>
+<li><p>Physics is not dominated by electrostatic effects (Langmuir waves, Debye shielding, double layers).</p></li>
+</ul>
+</section>
+</section>
+<section id="semi-implicit-methodology">
+<h2>Semi-Implicit Methodology<a class="headerlink" href="#semi-implicit-methodology" title="Link to this heading">#</a></h2>
+<p>FLEKS uses the Gauss-Law satisfying energy conserving semi-implicit method (GL-ECSIM). Its semi-implicit nature allows the PIC model to run on a coarser grid with a larger time step than explicit PIC methods, which are limited by the stability conditions to <span class="math notranslate nohighlight">\(\Delta t &lt; \Delta x/c\)</span> and the grid resolution <span class="math notranslate nohighlight">\(\Delta x &lt; \zeta \lambda_D\)</span>, where c is the speed of light, <span class="math notranslate nohighlight">\(\lambda_D\)</span> is the Debye length, and <span class="math notranslate nohighlight">\(\zeta\)</span> is of order one and depends on the numerical details of the method. GL-ECSIM facilitates the coupling between the MHD and the PIC models, and its energy conserving property helps eliminating numerical instabilities and spurious waves that would violate the energy conservation.</p>
+<p>ECSIM uses a staggered grid, where the electric field is defined at cell nodes, and the magnetic field is defined at cell centers. The Maxwell’s equations are solved implicitly:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-46329ef6-bafb-47df-b80d-f9f31e6da9db">
+<span class="eqno">(11)<a class="headerlink" href="#equation-46329ef6-bafb-47df-b80d-f9f31e6da9db" title="Permalink to this equation">#</a></span>\[\begin{align}
+\frac{\mathbf{B}^{n+1} - \mathbf{B}^n}{\Delta t} &amp;= - c\nabla\times\mathbf{E}^{n+\theta} \\
+\frac{\mathbf{E}^{n+1} - \mathbf{E}^n}{\Delta t} &amp;= - c\nabla\times\mathbf{B}^{n+\theta} - 4\pi\bar{\mathbf{J}}
+\end{align}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\theta \in [0.5, 1]\)</span> is the time centering parameter. <span class="math notranslate nohighlight">\(\bar{\mathbf{J}}\)</span> is the predicted current density at <span class="math notranslate nohighlight">\(n + \frac{1}{2}\)</span> time stage, and it can be expressed as a linear function of the unknown electric field <span class="math notranslate nohighlight">\(\mathbf{E}^{n+\theta}\)</span>.
+The variables at time stage <span class="math notranslate nohighlight">\(n+\theta\)</span> can be written as linear combinations of values at the time steps n and n + 1:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-043eeef2-7bcf-49ac-b054-8ec73fe001b2">
+<span class="eqno">(12)<a class="headerlink" href="#equation-043eeef2-7bcf-49ac-b054-8ec73fe001b2" title="Permalink to this equation">#</a></span>\[\begin{align}
+\mathbf{E}^{n+\theta} &amp;= (1-\theta)\mathbf{E}^n + \theta \mathbf{E}^{n+1} \\
+\mathbf{B}^{n+\theta} &amp;= (1-\theta)\mathbf{B}^n + \theta \mathbf{B}^{n+1}
+\end{align}\]</div>
+<p>After rearranging the equations above and using the identity <span class="math notranslate nohighlight">\(\nabla\times\nabla\times\mathbf{E}= \nabla(\nabla\cdot\mathbf{E}) − \nabla^2\mathbf{E}\)</span>, we come up with an equation of <span class="math notranslate nohighlight">\(\mathbf{E}^{n+\theta}\)</span></p>
+<div class="amsmath math notranslate nohighlight" id="equation-4e7fe8b2-b555-463d-a46c-28b2493e4d66">
+<span class="eqno">(13)<a class="headerlink" href="#equation-4e7fe8b2-b555-463d-a46c-28b2493e4d66" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{E}^{n+\theta} + \delta^2\left[ \nabla(\nabla\cdot\mathbf{E}^{n+\theta}) − \nabla^2\mathbf{E}^{n+\theta} \right] = \mathbf{E}^n + \delta\left( \nabla\times\mathbf{B}^n - \frac{4\pi}{c}\bar{\mathbf{J}} \right)
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\delta = c\theta \Delta t\)</span>. After applying finite difference discretizations to the gradient and divergence operators, we obtain a linear system of equations for the discrete values of <span class="math notranslate nohighlight">\(\mathbf{E}^{n+\theta}\)</span> at the cell nodes. The iterative generalized minimal residual method (GMRES) is used to solve the equations to obtain <span class="math notranslate nohighlight">\(\mathbf{E}^{n+\theta}\)</span>. Using equations (1) and (3), the magnetic field <span class="math notranslate nohighlight">\(\mathbf{B}^{n+1}\)</span> and electric field <span class="math notranslate nohighlight">\(\mathbf{E}^{n+1}\)</span> at the next time step can be obtained, respectively.</p>
+<p>The position and velocity of the macro-particle are staggered in time, i.e., the particle velocity <span class="math notranslate nohighlight">\(\mathbf{v}_p\)</span> is at the integer time stage and the location <span class="math notranslate nohighlight">\(\mathbf{x}_p\)</span> is at the half time stage. First the velocity is pushed to time level n + 1 by</p>
+<div class="amsmath math notranslate nohighlight" id="equation-b8c0596a-c753-47e0-ba0b-4fb285e03704">
+<span class="eqno">(14)<a class="headerlink" href="#equation-b8c0596a-c753-47e0-ba0b-4fb285e03704" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{v}_p^{n+1} = \mathbf{v}_p^n + \frac{q_p \Delta t}{m_p}\left( \mathbf{E}^{n+\theta}(\mathbf{x}_p^{n+1/2}) + \frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2}\times\mathbf{B}^n(\mathbf{x}_p^{n+1/2}) \right)
+\end{equation}\]</div>
+<p>The fields <span class="math notranslate nohighlight">\(\mathbf{E}^{n+\theta}(\mathbf{x}_p^{n+1/2})\)</span> and <span class="math notranslate nohighlight">\(\mathbf{B}^{n}(\mathbf{x}_p^{n+1/2})\)</span> are interpolated to the particle locations <span class="math notranslate nohighlight">\(\mathbf{x}_p^{n+1/2}\)</span>. <span class="math notranslate nohighlight">\(q_p\)</span> and <span class="math notranslate nohighlight">\(m_p\)</span> are the charge and mass of particle species p. Finally, the particle position is updated to a preliminary new position</p>
+<div class="amsmath math notranslate nohighlight" id="equation-4fe16050-0280-4b64-bc3a-65320c4b9ec4">
+<span class="eqno">(15)<a class="headerlink" href="#equation-4fe16050-0280-4b64-bc3a-65320c4b9ec4" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\tilde{\mathbf{x}}_p^{n+3/2} = \mathbf{x}_p^{n+1/2} + \Delta t \mathbf{v}_p^{n+1}
+\end{equation}\]</div>
+<p>Because Gauss’s law is not automatically satisfied or controlled in the original ECSIM algorithm, artificial effects can develop in long simulations. &#64;chen2019gauss proposed several methods to reduce the error and eliminate the artifacts.</p>
+<p>The above equations require the new particle velocities to compute the current in the Maxwell’s equations and the particle pusher requires the new advanced electric field to move the particles. In the spirit of the semi-implicit method, we do not want to solve two coupled sets with a single nonlinear iteration and find instead a way to extract analytically from the equations of motion the information needed for computing the current without first moving the particles. In previous semi-implicit methods this is done via a linearization procedure. The new mover used here allows us to derive the current rigorously without any approximation.</p>
+<p>The current for each species s in each grid location g is</p>
+<div class="amsmath math notranslate nohighlight" id="equation-6f26e432-079a-416c-a4e7-b02ee683b96f">
+<span class="eqno">(16)<a class="headerlink" href="#equation-6f26e432-079a-416c-a4e7-b02ee683b96f" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{J}}_{sg} = \frac{1}{V_g} \sum_{p\in s}q_p \frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2} W(\mathbf{x}_p^{n+1/2} - \mathbf{x}_g) = \frac{1}{V_g} \sum_{p\in s}q_p \frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2} W_{pg}
+\end{equation}\]</div>
+<p>where the summation is over particles of the same species s.</p>
+<p>Manipulating the vectors<a class="footnote-reference brackets" href="#v-avg" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, the average velocity between time steps n and n+1 can be rewritten as</p>
+<div class="amsmath math notranslate nohighlight" id="equation-c7aa6df9-8e61-4d7f-b84f-5314d1bd4908">
+<span class="eqno">(17)<a class="headerlink" href="#equation-c7aa6df9-8e61-4d7f-b84f-5314d1bd4908" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\frac{\mathbf{v}_p^n + \mathbf{v}_p^{n+1}}{2} = \hat{\mathbf{v}}_p + \beta_s\hat{\mathbf{E}}_p
+\end{equation}\]</div>
+<p>where the hatted quantities have been rotated by the magnetic field</p>
+<div class="amsmath math notranslate nohighlight" id="equation-3815b8a8-bc63-4c9f-b8c5-f962e33bf3af">
+<span class="eqno">(18)<a class="headerlink" href="#equation-3815b8a8-bc63-4c9f-b8c5-f962e33bf3af" title="Permalink to this equation">#</a></span>\[\begin{align}
+\hat{\mathbf{v}}_p &amp;= \pmb{\alpha}_p^n \mathbf{v}_p^n \\
+\hat{\mathbf{E}}_p &amp;= \pmb{\alpha}_p^n \mathbf{E}_p^{n+\theta}
+\end{align}\]</div>
+<p>via a rotation matrix defined as</p>
+<div class="amsmath math notranslate nohighlight" id="equation-7b2c2638-a713-4ef1-a333-8fbd0e32b3bb">
+<span class="eqno">(19)<a class="headerlink" href="#equation-7b2c2638-a713-4ef1-a333-8fbd0e32b3bb" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\pmb{\alpha}_p^n = \frac{1}{1 + (\beta_s B_p^n)^2} \left( \overleftrightarrow{I} - \beta_s \overleftrightarrow{I}\times\mathbf{B}_p^n +\beta_s^2\mathbf{B}_p^n \mathbf{B}_p^n \right)
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\overleftrightarrow{I}\)</span> is the dyadic tensor and <span class="math notranslate nohighlight">\(\beta_s = q_p \Delta t / 2m_p\)</span>. The elements of the rotation matrix are indicated as <span class="math notranslate nohighlight">\(\alpha_p^{ij,n}\)</span> with label i and j referring to the 3 components of the vector space (x, y, z).</p>
+<p>Substituting then &#64;eq-vavg-form2 into &#64;eq-Jbar, we obtain without any approximation or linearization:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-19c54059-4324-4de1-886a-b87d304f40a4">
+<span class="eqno">(20)<a class="headerlink" href="#equation-19c54059-4324-4de1-886a-b87d304f40a4" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{J}}_{sg} = \frac{1}{V_g}\sum_p q_p \hat{\mathbf{v}}_p W_{pg} + \frac{\beta_s}{V_g}\sum_p q_p \hat{\mathbf{E}}_p^{n+\theta} W_{pg}
+\end{equation}\]</div>
+<p>where the summation is intended over all particles of species s.</p>
+<p>Let</p>
+<div class="amsmath math notranslate nohighlight" id="equation-73db5927-674a-4876-a9b9-64617868de38">
+<span class="eqno">(21)<a class="headerlink" href="#equation-73db5927-674a-4876-a9b9-64617868de38" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\hat{\mathbf{J}}_{sg} = \sum_p q_p \hat{\mathbf{v}}_p W_{pg}
+\end{equation}\]</div>
+<p>be the current based on hatted velocity, we have, together with &#64;eq-hat-v-E,</p>
+<div class="amsmath math notranslate nohighlight" id="equation-341ff47b-ddda-4847-a8a1-3e0b6a7bc819">
+<span class="eqno">(22)<a class="headerlink" href="#equation-341ff47b-ddda-4847-a8a1-3e0b6a7bc819" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_p q_p \pmb{\alpha}_p^n \mathbf{E}_p^{n+\theta} W_{pg}
+\end{equation}\]</div>
+<p>The fields at the particle positions are computed by interpolation:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-b2811708-5bd9-44c2-b596-c785f1a8a9cb">
+<span class="eqno">(23)<a class="headerlink" href="#equation-b2811708-5bd9-44c2-b596-c785f1a8a9cb" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{E}_p^{n+\theta} = \mathbf{E}^{n+\theta}(\mathbf{x}_p^{n+1/2}) = \sum_g \mathbf{E}_g^{n+\theta} W_{pg}
+\end{equation}\]</div>
+<p>It follows that</p>
+<div class="amsmath math notranslate nohighlight" id="equation-af9216f1-f912-4fa1-813d-e23d5bb43be9">
+<span class="eqno">(24)<a class="headerlink" href="#equation-af9216f1-f912-4fa1-813d-e23d5bb43be9" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_p\sum_{g^\prime} q_p \pmb{\alpha}_p^n \mathbf{E}_{g^\prime}^{n+\theta}W_{pg^\prime} W_{pg}
+\end{equation}\]</div>
+<p>Exchanging the order of summation and introducing the elements of the mass matrices as</p>
+<div class="amsmath math notranslate nohighlight" id="equation-c88ea6f9-7fc6-4a26-8345-684195f016a7">
+<span class="eqno">(25)<a class="headerlink" href="#equation-c88ea6f9-7fc6-4a26-8345-684195f016a7" title="Permalink to this equation">#</a></span>\[\begin{equation}
+M_{s,gg^\prime}^{ij} \equiv \sum_p q_p \alpha_p^{ij,n}W_{pg^\prime} W_{pg}
+\end{equation}\]</div>
+<p>we obtain, in matrix form</p>
+<div class="amsmath math notranslate nohighlight" id="equation-a8579217-2b8b-4bd3-8be9-c38e5a5ae0f7">
+<span class="eqno">(26)<a class="headerlink" href="#equation-a8579217-2b8b-4bd3-8be9-c38e5a5ae0f7" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_{g^\prime} M_{s,gg^\prime}\mathbf{E}_{g^\prime}^{n+\theta}
+\end{equation}\]</div>
+<p>&#64;eq-mass-matrix defines the elements of the mass matrices that are the most peculiar characteristic of the method proposed here. There are 3v such matrices, where v is the dimensionality of the magnetic field and velocity vector, not to be confused with the dimensionality of the geometry used for space d. The indices i and j in &#64;eq-mass-matrix vary in the 3v-space. For example for full 3-components vectors, and there are 9 mass matrices. Each matrix is symmetric and very sparse with just 2d diagonals.</p>
+</section>
+<section id="particle-mover">
+<h2>Particle Mover<a class="headerlink" href="#particle-mover" title="Link to this heading">#</a></h2>
+<section id="boris-algorithm">
+<h3>Boris Algorithm<a class="headerlink" href="#boris-algorithm" title="Link to this heading">#</a></h3>
+<p>FLEKS uses the Boris particle mover algorithm:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-d0dd66c4-f5de-43c3-8ddf-53c4fac90885">
+<span class="eqno">(27)<a class="headerlink" href="#equation-d0dd66c4-f5de-43c3-8ddf-53c4fac90885" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\frac{\mathbf{v}^{n+1} - \mathbf{v}^{n}}{\Delta t} = \frac{q}{m}\left(\mathbf{E}^{n+\theta} + \bar{\mathbf{v}} \times \mathbf{B}\right)
+\end{equation}\]</div>
+<div class="amsmath math notranslate nohighlight" id="equation-87d41499-2b5a-4105-b15b-6b4b25f50e4f">
+<span class="eqno">(28)<a class="headerlink" href="#equation-87d41499-2b5a-4105-b15b-6b4b25f50e4f" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\frac{\mathbf{x}^{n+1/2} - \mathbf{x}^{n-1/2}}{\Delta t} = \mathbf{v}^n
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\bar{\mathbf{v}} = (\mathbf{v}^{n+1} + \mathbf{v}^{n}) / 2\)</span>. The traditional method for updating the velocity involves the following steps:</p>
+<ol class="arabic">
+<li><p><strong>Acceleration:</strong></p>
+<div class="amsmath math notranslate nohighlight" id="equation-1438704b-c8cd-42cc-a74f-3485809efab1">
+<span class="eqno">(29)<a class="headerlink" href="#equation-1438704b-c8cd-42cc-a74f-3485809efab1" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{v}^- = \mathbf{v}^{n} + \frac{q\Delta t}{2m}\mathbf{E}^{n+\theta}
+\end{equation}\]</div>
+</li>
+<li><p><strong>Rotation:</strong></p>
+<div class="amsmath math notranslate nohighlight" id="equation-7f224cfd-bc38-4cd2-adfd-b2ed6c782354">
+<span class="eqno">(30)<a class="headerlink" href="#equation-7f224cfd-bc38-4cd2-adfd-b2ed6c782354" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{a} = \mathbf{v}^- + \mathbf{v}^- \times \mathbf{t}
+\end{equation}\]</div>
+<div class="amsmath math notranslate nohighlight" id="equation-889125fb-c864-4a6d-bda2-0b8c01ee5c5a">
+<span class="eqno">(31)<a class="headerlink" href="#equation-889125fb-c864-4a6d-bda2-0b8c01ee5c5a" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{v}^+ = \mathbf{v}^- + \mathbf{a} \times \mathbf{s}
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{t} = \frac{q\Delta t}{2m} \mathbf{B}\)</span> and <span class="math notranslate nohighlight">\(\mathbf{s} = \frac{2\mathbf{t}}{1+t^2}\)</span>.</p>
+</li>
+<li><p><strong>Acceleration:</strong></p>
+<div class="amsmath math notranslate nohighlight" id="equation-98a5b443-87a4-4576-917a-21f397c8af6d">
+<span class="eqno">(32)<a class="headerlink" href="#equation-98a5b443-87a4-4576-917a-21f397c8af6d" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{v}^{n+1} = \mathbf{v}^+ + \frac{q\Delta t}{2m}\mathbf{E}^{n+\theta}
+\end{equation}\]</div>
+</li>
+</ol>
+<p>FLEKS solves the same velocity equation, but with a slightly different implementation:</p>
+<ol class="arabic">
+<li><p><strong>Acceleration:</strong></p>
+<div class="amsmath math notranslate nohighlight" id="equation-c71f7e5e-4406-4fca-b224-ea1d8024889b">
+<span class="eqno">(33)<a class="headerlink" href="#equation-c71f7e5e-4406-4fca-b224-ea1d8024889b" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{v}^- = \mathbf{v}^{n} + \frac{q\Delta t}{2m}\mathbf{E}^{n+\theta}
+\end{equation}\]</div>
+</li>
+<li><p><strong>Calculate <span class="math notranslate nohighlight">\(\bar{\mathbf{v}}\)</span>:</strong></p>
+<p>From the expressions for <span class="math notranslate nohighlight">\(\mathbf{v}^+\)</span> and <span class="math notranslate nohighlight">\(\mathbf{v}^-\)</span>, it is straightforward to show that <span class="math notranslate nohighlight">\(\mathbf{v}^{n+1} - \mathbf{v}^{n} = \mathbf{v}^+ - \mathbf{v}^- + \frac{q\Delta t}{m} \mathbf{E}^{n+\theta}\)</span>. Substituting this into the velocity update equation allows us to eliminate the electric field from the expression <span class="math notranslate nohighlight">\(\frac{\mathbf{v}^{+} - \mathbf{v}^{-}}{\Delta t} = \frac{q}{m}\bar{\mathbf{v}}\times\mathbf{B}\)</span>. Since <span class="math notranslate nohighlight">\(\mathbf{v}^+ = 2\bar{\mathbf{v}} - \mathbf{v}^-\)</span>, we get an equation for <span class="math notranslate nohighlight">\(\bar{\mathbf{v}}\)</span>:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-8a02a874-cfc1-4f3c-9178-cef32a51def6">
+<span class="eqno">(34)<a class="headerlink" href="#equation-8a02a874-cfc1-4f3c-9178-cef32a51def6" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{v}} = \mathbf{v}^- + \frac{q\Delta t}{2m} \bar{\mathbf{v}} \times \mathbf{B} = \mathbf{v}^- + \bar{\mathbf{v}} \times \mathbf{t}
+\end{equation}\]</div>
+<p>To solve for <span class="math notranslate nohighlight">\(\bar{\mathbf{v}}\)</span>, we first take the dot product with <span class="math notranslate nohighlight">\(\mathbf{t}\)</span> to get <span class="math notranslate nohighlight">\(\bar{\mathbf{v}} \cdot \mathbf{t} = \mathbf{v}^- \cdot \mathbf{t}\)</span>. Then, we take the cross product with <span class="math notranslate nohighlight">\(\mathbf{t}\)</span> to get:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-1fc0910b-e78b-4e39-b671-0ecd59397e0b">
+<span class="eqno">(35)<a class="headerlink" href="#equation-1fc0910b-e78b-4e39-b671-0ecd59397e0b" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{v}} \times \mathbf{t} = \mathbf{v}^- \times \mathbf{t} + (\bar{\mathbf{v}} \times \mathbf{t}) \times \mathbf{t} = \mathbf{v}^- \times \mathbf{t} + (\bar{\mathbf{v}} \cdot \mathbf{t})\mathbf{t} - t^2\bar{\mathbf{v}} = \mathbf{v}^- \times \mathbf{t} + (\mathbf{v}^- \cdot \mathbf{t})\mathbf{t} - t^2\bar{\mathbf{v}}
+\end{equation}\]</div>
+<p>Substituting the expression for <span class="math notranslate nohighlight">\(\bar{\mathbf{v}} \times \mathbf{t}\)</span> back into the equation for <span class="math notranslate nohighlight">\(\bar{\mathbf{v}}\)</span>, we find:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-b764b7e8-90f3-4d17-a7da-4a50e88643fb">
+<span class="eqno">(36)<a class="headerlink" href="#equation-b764b7e8-90f3-4d17-a7da-4a50e88643fb" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{v}} = \frac{\mathbf{v}^- + \mathbf{v}^- \times \mathbf{t} + (\mathbf{v}^- \cdot \mathbf{t})\mathbf{t}}{1+t^2}
+\end{equation}\]</div>
+</li>
+<li><p><strong>Final Velocity:</strong>
+It is then easy to obtain <span class="math notranslate nohighlight">\(\mathbf{v}^{n+1} = 2\bar{\mathbf{v}} - \mathbf{v}^{n}\)</span>.</p></li>
+</ol>
+</section>
+<section id="relativistic-boris-algorithm">
+<h3>Relativistic Boris Algorithm<a class="headerlink" href="#relativistic-boris-algorithm" title="Link to this heading">#</a></h3>
+<p>Using <span class="math notranslate nohighlight">\(\mathbf{u} = \gamma \mathbf{v}\)</span>, the relativistic velocity update equation is:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-e881bda5-0b3e-46bf-857b-098c7bb87d8f">
+<span class="eqno">(37)<a class="headerlink" href="#equation-e881bda5-0b3e-46bf-857b-098c7bb87d8f" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\frac{\mathbf{u}^{n+1} - \mathbf{u}^{n}}{\Delta t} = \frac{q}{m}\left(\mathbf{E}^{n+\theta} + \bar{\mathbf{u}} \times \frac{\mathbf{B}}{\gamma^{n+1/2}}\right)
+\end{equation}\]</div>
+<ol class="arabic">
+<li><p>Convert <span class="math notranslate nohighlight">\(\mathbf{v}\)</span> to <span class="math notranslate nohighlight">\(\mathbf{u}\)</span>.</p></li>
+<li><p><strong>Acceleration:</strong></p>
+<div class="amsmath math notranslate nohighlight" id="equation-5da43e03-1d6c-4198-8a6e-ac0b59f576f1">
+<span class="eqno">(38)<a class="headerlink" href="#equation-5da43e03-1d6c-4198-8a6e-ac0b59f576f1" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\mathbf{u}^- = \mathbf{u}^{n} + \frac{q\Delta t}{2m}\mathbf{E}^{n+\theta}
+\end{equation}\]</div>
+</li>
+<li><p>Calculate <span class="math notranslate nohighlight">\(\bar{\mathbf{u}}\)</span> using:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-f105be9b-c164-439e-aef7-9f7b3337daf7">
+<span class="eqno">(39)<a class="headerlink" href="#equation-f105be9b-c164-439e-aef7-9f7b3337daf7" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{\mathbf{u}} = \frac{\mathbf{u}^- + \mathbf{u}^- \times \mathbf{t} + (\mathbf{u}^- \cdot \mathbf{t})\mathbf{t}}{1+t^2}
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{t} = \frac{q\Delta t}{2m} \frac{\mathbf{B}}{\gamma^{n+1/2}}\)</span>. From the definitions of <span class="math notranslate nohighlight">\(\gamma\)</span> and <span class="math notranslate nohighlight">\(\mathbf{u} = \gamma\mathbf{v}\)</span>, we can obtain <span class="math notranslate nohighlight">\(\gamma^{n+1/2} = \sqrt{1 + (u^-/c)^2}\)</span>.</p>
+</li>
+<li><p>The final velocity is then <span class="math notranslate nohighlight">\(\mathbf{u}^{n+1} = 2\bar{\mathbf{u}} - \mathbf{u}^{n}\)</span>.</p></li>
+<li><p>Convert <span class="math notranslate nohighlight">\(\mathbf{u}\)</span> back to <span class="math notranslate nohighlight">\(\mathbf{v}\)</span>.</p></li>
+</ol>
+</section>
+</section>
+<section id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Link to this heading">#</a></h2>
+<section id="calculating-the-total-pressure-tensor-from-subgroups">
+<h3>Calculating the Total Pressure Tensor from Subgroups<a class="headerlink" href="#calculating-the-total-pressure-tensor-from-subgroups" title="Link to this heading">#</a></h3>
+<p>The pressure tensor for each subgroup is:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-399bcd4d-ba41-405e-b499-76bc1c427c4f">
+<span class="eqno">(40)<a class="headerlink" href="#equation-399bcd4d-ba41-405e-b499-76bc1c427c4f" title="Permalink to this equation">#</a></span>\[\begin{equation}
+p^s_{m,n} = \frac{1}{V} \sum_{i=1} w_i^s (v_{i,m}^s - \bar{v}_m^s) (v_{i,n}^s - \bar{v}_n^s)
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(V\)</span> is the volume, and <span class="math notranslate nohighlight">\(\bar{v}_m^s\)</span> and <span class="math notranslate nohighlight">\(\bar{v}_n^s\)</span> are the average velocities of subgroup <span class="math notranslate nohighlight">\(s\)</span>.</p>
+<p>The total pressure tensor is:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-21ed6b0b-4520-4494-bf06-eed4f0b81560">
+<span class="eqno">(41)<a class="headerlink" href="#equation-21ed6b0b-4520-4494-bf06-eed4f0b81560" title="Permalink to this equation">#</a></span>\[\begin{equation}
+p_{m,n} = \frac{1}{V} \sum_{s}\sum_{i=1} w_i^s (v_{i,m}^s - \bar{v}_m) (v_{i,n}^s - \bar{v}_n)
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\bar{v}_m\)</span> and <span class="math notranslate nohighlight">\(\bar{v}_n\)</span> are the average velocities of all particles, and <span class="math notranslate nohighlight">\(\rho_s\)</span> is the density of subgroup <span class="math notranslate nohighlight">\(s\)</span>:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-77a31e92-aa50-44f3-8767-3f84073d9491">
+<span class="eqno">(42)<a class="headerlink" href="#equation-77a31e92-aa50-44f3-8767-3f84073d9491" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{v}_m = \frac{\sum_{s}\sum_{i=1} w_i^s v_{i,m}^s}{\sum_{s}\sum_{i=1} w_i^s} = \frac{\sum_s \rho_s \bar{v}_m^s}{\sum_{s}\rho_s}
+\end{equation}\]</div>
+<div class="amsmath math notranslate nohighlight" id="equation-3684713c-1ca1-4536-9ee3-3e5efd50c0ee">
+<span class="eqno">(43)<a class="headerlink" href="#equation-3684713c-1ca1-4536-9ee3-3e5efd50c0ee" title="Permalink to this equation">#</a></span>\[\begin{equation}
+\bar{v}_n = \frac{\sum_{s}\sum_{i=1} w_i^s v_{i,n}^s}{\sum_{s}\sum_{i=1} w_i^s} = \frac{\sum_s \rho_s \bar{v}_n^s}{\sum_{s}\rho_s}
+\end{equation}\]</div>
+<p>The total pressure tensor can be expanded as:</p>
+<div class="amsmath math notranslate nohighlight">
+\[\begin{align*}
+p_{m,n} &amp;= \frac{1}{V} \sum_{s}\sum_{i=1} w_i^s \left[(v_{i,m}^s - \bar{v}_m^s) + (\bar{v}_m^s - \bar{v}_m)\right] \left[(v_{i,n}^s - \bar{v}_n^s) + (\bar{v}_n^s - \bar{v}_n)\right] \\
+&amp;= \frac{1}{V} \sum_{s}\sum_{i=1} w_i^s (v_{i,m}^s - \bar{v}_m^s)(v_{i,n}^s - \bar{v}_n^s) \\
+&amp;\quad + \frac{1}{V} \sum_{s}\sum_{i=1} w_i^s (v_{i,m}^s - \bar{v}_m^s)(\bar{v}_n^s - \bar{v}_n) \\
+&amp;\quad + \frac{1}{V} \sum_{s}\sum_{i=1} w_i^s (\bar{v}_m^s - \bar{v}_m)(v_{i,n}^s - \bar{v}_n^s) \\
+&amp;\quad + \frac{1}{V} \sum_{s}\sum_{i=1} w_i^s (\bar{v}_m^s - \bar{v}_m)(\bar{v}_n^s - \bar{v}_n)
+\end{align*}\]</div>
+<p>The second and third terms are zero. The first term is the sum of the pressure tensors of the subgroups. The fourth term is <span class="math notranslate nohighlight">\(\sum_s \rho_s (\bar{v}_m^s - \bar{v}_m)(\bar{v}_n^s - \bar{v}_n)\)</span>. Thus, the final expression is:</p>
+<div class="amsmath math notranslate nohighlight" id="equation-07b301f0-dbc0-4e7d-8702-a50d3a402a62">
+<span class="eqno">(44)<a class="headerlink" href="#equation-07b301f0-dbc0-4e7d-8702-a50d3a402a62" title="Permalink to this equation">#</a></span>\[\begin{equation}
+p_{m,n} = \sum_s p^s_{m,n} + \sum_s \rho_s (\bar{v}_m^s - \bar{v}_m)(\bar{v}_n^s - \bar{v}_n)
+\end{equation}\]</div>
+</section>
+<section id="noise-reduction">
+<h3>Noise Reduction<a class="headerlink" href="#noise-reduction" title="Link to this heading">#</a></h3>
+<blockquote>
+<div><p>One man’s noise is another man’s signal [&#64;birdsall2018plasma]. Without noise, there would be no particle simulation; without proper treatment of noise, there would still be no particle simulation.</p>
+</div></blockquote>
+<p>In Particle-in-Cell simulations, a key challenge is managing statistical noise. Compared to deterministic continuum kinetic schemes, PIC intrinsically possesses numerical errors associated with particle noise, which decreases slowly as one increases the number of particles. Specifically, the noise in PIC schemes decreases as <span class="math notranslate nohighlight">\(1/\sqrt{P_c}\)</span> where <span class="math notranslate nohighlight">\(P_c = N_p/N_c\)</span> is the number of particles per cell [&#64;birdsall2018plasma].</p>
+<ul class="simple">
+<li><p>Representing the Plasma: A PIC simulation doesn’t track every single particle in the real plasma. Instead, it uses “super-particles” to represent a large group of real particles. This introduces statistical fluctuations since a finite number of super-particles can’t perfectly reflect the smooth, continuous behavior of a real plasma.</p></li>
+<li><p>Field Calculations: Particle positions and velocities are used to calculate the electric and magnetic fields in the simulation. Statistical fluctuations in the particle distribution can lead to noisy fields, which in turn, feed back into the particle motion, potentially amplifying the noise further.</p></li>
+</ul>
+<p>FLEKS employs several techniques to mitigate noise:</p>
+<ul class="simple">
+<li><p>Higher-Order Particle Weighting: Using smoother mathematical functions (splines) to distribute the charge and current of super-particles onto the simulation grid. This reduces the abrupt changes that lead to noise.</p></li>
+<li><p>Particle Splitting and Merging: This technique helps control the number of super-particles in different simulation regions, leading to a more consistent and accurate noise level. Let’s break down how this works:</p>
+<ul>
+<li><p>Particle Splitting</p>
+<ul>
+<li><p>When it happens: In simulation regions with high particle density, super-particles become very “heavy” (representing many real particles). This can make them computationally unwieldy and introduce local noise.</p></li>
+<li><p>How it works: FLEKS splits heavy super-particles into several smaller super-particles, each representing a smaller number of real particles. This reduces local noise and improves computational load balancing.</p></li>
+</ul>
+</li>
+<li><p>Particle Merging</p>
+<ul>
+<li><p>When it happens: In regions of low particle density, too few super-particles can also be a source of noise. This makes it hard to accurately calculate local fields.</p></li>
+<li><p>How it works: FLEKS merges multiple low-weight super-particles into a single heavier one. This smooths out the particle distribution and promotes more accurate field calculations.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Key Point: Particle splitting and merging in FLEKS are not just about noise reduction. They also play a crucial role in achieving proper load balancing across many computational cores, essential for simulations to run efficiently.</p>
+</section>
+</section>
+</section>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="common" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>One common misconception is that in a semi-implicit method, the particle pusher is explicit while the field solver is implicit. This is not exactly true, because we cannot simply separate the two components.</p>
+</aside>
+<aside class="footnote brackets" id="v-avg" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>This is important for having an explicit particle pusher.</p>
+</aside>
+</aside>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="exosphere.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Exosphere Module</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="changelog.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Changelog</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#key-features-of-fleks">Key Features of FLEKS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#limitations-for-classical-pic-models">Limitations for Classical PIC Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-loose-the-numerical-constraints">How to Loose The Numerical Constraints?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unit-conversion">Unit Conversion</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lorentz-equation">Lorentz Equation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mass-normalization">Mass Normalization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#length-and-velocity-normalization">Length and Velocity Normalization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#charge-and-current-normalization">Charge and Current Normalization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#b-and-e-normalization">B and E Normalization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#consequences-of-changing-the-speed-of-light">Consequences of Changing the Speed of Light</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#semi-implicit-methodology">Semi-Implicit Methodology</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#particle-mover">Particle Mover</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#boris-algorithm">Boris Algorithm</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relativistic-boris-algorithm">Relativistic Boris Algorithm</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#miscellaneous">Miscellaneous</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#calculating-the-total-pressure-tensor-from-subgroups">Calculating the Total Pressure Tensor from Subgroups</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#noise-reduction">Noise Reduction</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/algorithm.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Yuxi Chen, Hongyang Zhou.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

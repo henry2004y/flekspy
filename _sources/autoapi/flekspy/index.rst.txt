@@ -1,0 +1,62 @@
+flekspy
+=======
+
+.. py:module:: flekspy
+
+.. autoapi-nested-parse::
+
+   flekspy Public API.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/amrex/index
+   /autoapi/flekspy/flekspy/index
+   /autoapi/flekspy/idl/index
+   /autoapi/flekspy/plot/index
+   /autoapi/flekspy/tp/index
+   /autoapi/flekspy/util/index
+   /autoapi/flekspy/xarray/index
+   /autoapi/flekspy/yt/index
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.load
+
+
+Package Contents
+----------------
+
+.. py:function:: load(filename: str, iDomain: int = 0, iSpecies: int = 0, iFile: int = 0, npict: int = 1, readFieldData: bool = False, use_yt_loader: bool = False)
+
+   Load FLEKS data.
+
+   :param filename: Input file name pattern.
+   :type filename: str
+   :param iDomain: Test particle domain index. Defaults to 0.
+   :type iDomain: int, optional
+   :param iSpecies: Test particle species index. Defaults to 0.
+   :type iSpecies: int, optional
+   :param iFile: The index of the file to load if the pattern
+                 matches multiple files. Defaults to 0.
+   :type iFile: int, optional
+   :param npict: The index of snapshot in *.outs IDL file. Defaults to 1.
+   :type npict: int, optional
+   :param readFieldData: Whether or not to read field data for test particles. Defaults to False.
+   :type readFieldData: bool, optional
+   :param use_yt_loader: If True, forces the use of the yt loader for AMReX data. Defaults to False.
+   :type use_yt_loader: bool, optional
+
+   :returns: xarray.Dataset, YtFLEKSData, or FLEKSTP
+   :rtype: FLEKS data
+
+

@@ -1,0 +1,1173 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>flekspy.amrex.particle_data &#8212; flekspy  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/flekspy/amrex/particle_data';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">flekspy  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../flekspy.html" class="nav-link">flekspy</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">flekspy.amrex.particle_data</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for flekspy.amrex.particle_data</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">const</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">AMReXPlottingMixin</span>
+
+
+<div class="viewcode-block" id="AMReXParticleHeader">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticleHeader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AMReXParticleHeader</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is designed to parse and store the information</span>
+<span class="sd">    contained in an AMReX particle header file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version_string</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">real_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">Type</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]]</span>
+    <span class="n">int_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
+    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_int_base</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_real_base</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">real_component_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">int_component_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">num_real_extra</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_int_extra</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_int</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_real</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">is_checkpoint</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">num_particles</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">max_next_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">finest_level</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">num_levels</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">grids_per_level</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">grids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header_filename</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">real_component_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">int_component_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">header_filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_string</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+            <span class="n">particle_real_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">particle_real_type</span> <span class="o">==</span> <span class="s2">&quot;double&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">real_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+            <span class="k">elif</span> <span class="n">particle_real_type</span> <span class="o">==</span> <span class="s2">&quot;single&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">real_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Did not recognize particle real type.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">int_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_int_base</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_real_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">real_component_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">real_component_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">int_component_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;particle_id&quot;</span><span class="p">,</span> <span class="s2">&quot;particle_cpu&quot;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_real_extra</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_real_extra</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">real_component_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_int_extra</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_int_extra</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">int_component_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_int_base</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_int_extra</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_real_base</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_real_extra</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_checkpoint</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_next_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">finest_level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finest_level</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_checkpoint</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_int_base</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_int_extra</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_int</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">grids_per_level</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">level_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">grids_per_level</span><span class="p">[</span><span class="n">level_num</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">grids</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">level_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">grid_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grids_per_level</span><span class="p">[</span><span class="n">level_num</span><span class="p">]):</span>
+                    <span class="n">entry</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">[</span><span class="n">level_num</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AMReXParticleHeader.__repr__">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticleHeader.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the header contents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">level_info</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">&quot;  Level </span><span class="si">{</span><span class="n">level_num</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grids_per_level</span><span class="p">[</span><span class="n">level_num</span><span class="p">]</span><span class="si">}</span><span class="s2"> grids&quot;</span>
+                <span class="k">for</span> <span class="n">level_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Version string: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version_string</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Dimensions: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of integer components: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_int</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Integer component names: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">int_component_names</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of real components: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_real</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Real component names: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">real_component_names</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Is checkpoint: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">is_checkpoint</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of particles: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Max next ID: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_next_id</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Finest level: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">finest_level</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of levels: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">level_info</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">idtype_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_int</span><span class="si">}</span><span class="s2">,)i4&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rdtype_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_type</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_real</span><span class="si">}</span><span class="s2">,)f8&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_type</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_real</span><span class="si">}</span><span class="s2">,)f4&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Unrecognized real type.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="read_amrex_binary_particle_file">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.read_amrex_binary_particle_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_amrex_binary_particle_file</span><span class="p">(</span>
+    <span class="n">fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">header</span><span class="p">:</span> <span class="n">AMReXParticleHeader</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function returns the particle data stored in a particular</span>
+<span class="sd">    plot file. It returns two numpy arrays, the</span>
+<span class="sd">    first containing the particle integer data, and the second the</span>
+<span class="sd">    particle real data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ptype</span> <span class="o">=</span> <span class="s2">&quot;particles&quot;</span>
+    <span class="n">base_fn</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="o">/</span> <span class="n">ptype</span>
+
+    <span class="n">idtype</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">idtype_str</span>
+    <span class="n">fdtype</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">rdtype_str</span>
+
+    <span class="n">idata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">header</span><span class="o">.</span><span class="n">num_particles</span><span class="p">,</span> <span class="n">header</span><span class="o">.</span><span class="n">num_int</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">header</span><span class="o">.</span><span class="n">int_type</span><span class="p">)</span>
+    <span class="n">rdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">header</span><span class="o">.</span><span class="n">num_particles</span><span class="p">,</span> <span class="n">header</span><span class="o">.</span><span class="n">num_real</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">header</span><span class="o">.</span><span class="n">real_type</span><span class="p">)</span>
+
+    <span class="n">ip</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">lvl</span><span class="p">,</span> <span class="n">level_grids</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">grids</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">which</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">where</span> <span class="ow">in</span> <span class="n">level_grids</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="n">base_fn</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;Level_</span><span class="si">{</span><span class="n">lvl</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;DATA_</span><span class="si">{</span><span class="n">which</span><span class="si">:</span><span class="s2">05d</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">where</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">is_checkpoint</span><span class="p">:</span>
+                    <span class="n">ints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">idtype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
+                    <span class="n">idata</span><span class="p">[</span><span class="n">ip</span> <span class="p">:</span> <span class="n">ip</span> <span class="o">+</span> <span class="n">count</span><span class="p">]</span> <span class="o">=</span> <span class="n">ints</span>
+
+                <span class="n">floats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fdtype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
+                <span class="n">rdata</span><span class="p">[</span><span class="n">ip</span> <span class="p">:</span> <span class="n">ip</span> <span class="o">+</span> <span class="n">count</span><span class="p">]</span> <span class="o">=</span> <span class="n">floats</span>
+            <span class="n">ip</span> <span class="o">+=</span> <span class="n">count</span>
+
+    <span class="k">return</span> <span class="n">idata</span><span class="p">,</span> <span class="n">rdata</span></div>
+
+
+
+<div class="viewcode-block" id="AMReXParticle">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AMReXParticle</span><span class="p">(</span><span class="n">AMReXPlottingMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides an interface to the particle data in a plotfile.</span>
+<span class="sd">    Data is loaded lazily upon first access to `idata` or `rdata`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span>
+    <span class="n">ptype</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_idata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+    <span class="n">_rdata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+    <span class="n">level_boxes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]]]</span>
+    <span class="n">header</span><span class="p">:</span> <span class="n">AMReXParticleHeader</span>
+    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">left_edge</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">right_edge</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">domain_dimensions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptype</span> <span class="o">=</span> <span class="s2">&quot;particles&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rdata</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">level_boxes</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_main_header</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">AMReXParticleHeader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptype</span> <span class="o">/</span> <span class="s2">&quot;Header&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_particle_h_files</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AMReXParticle._load_data">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle._load_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads the particle data from disk if it has not been loaded yet.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rdata</span> <span class="o">=</span> <span class="n">read_amrex_binary_particle_file</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span>
+            <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">idata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily loads and returns the integer particle data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_data</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rdata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily loads and returns the real particle data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_data</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rdata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rdata</span>
+
+<div class="viewcode-block" id="AMReXParticle._parse_main_header">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle._parse_main_header">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_main_header</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">header_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;Header&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">header_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c1"># version string</span>
+            <span class="n">num_fields</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+            <span class="c1"># skip field names</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_fields</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c1"># prob_refine_ratio</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">left_edge</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">right_edge</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="c1"># TODO check a 3D particle file for correctness!</span>
+            <span class="n">dim_line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">,</span> <span class="n">dim_line</span><span class="p">)</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">]</span>
+            <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z1</span><span class="p">,</span> <span class="n">z2</span> <span class="o">=</span> <span class="n">coords</span>
+            <span class="n">dim_x</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">dim_y</span> <span class="o">=</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">dim_z</span> <span class="o">=</span> <span class="n">z2</span> <span class="o">-</span> <span class="n">z1</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">domain_dimensions</span> <span class="o">=</span> <span class="p">[</span><span class="n">dim_x</span><span class="p">,</span> <span class="n">dim_y</span><span class="p">,</span> <span class="n">dim_z</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="AMReXParticle._parse_particle_h_files">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle._parse_particle_h_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_particle_h_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parses the Particle_H files to get the box arrays for each level.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">level_boxes</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_levels</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">level_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_levels</span><span class="p">):</span>
+            <span class="n">particle_h_path</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptype</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;Level_</span><span class="si">{</span><span class="n">level_num</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">/</span> <span class="s2">&quot;Particle_H&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">particle_h_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">continue</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">particle_h_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+            <span class="n">boxes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># The first line is `(num_boxes level`, e.g. `(20 0`.</span>
+            <span class="c1"># The rest of the lines are box definitions, e.g. `((0,0) (15,7) (0,0))`</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;((&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;))&quot;</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;-?\d+&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)]</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                            <span class="n">lo_corner</span> <span class="o">=</span> <span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                            <span class="n">hi_corner</span> <span class="o">=</span> <span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                            <span class="n">boxes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lo_corner</span><span class="p">,</span> <span class="n">hi_corner</span><span class="p">))</span>
+                        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+                            <span class="n">lo_corner</span> <span class="o">=</span> <span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                            <span class="n">hi_corner</span> <span class="o">=</span> <span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+                            <span class="n">boxes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lo_corner</span><span class="p">,</span> <span class="n">hi_corner</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+                        <span class="k">continue</span>  <span class="c1"># Not a valid box line</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">level_boxes</span><span class="p">[</span><span class="n">level_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">boxes</span></div>
+
+
+<div class="viewcode-block" id="AMReXParticle.__repr__">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">repr_str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;AMReXParticle from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Time: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Dimensions: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Domain Dimensions: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_dimensions</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Domain Edges: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">left_edge</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">right_edge</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Integer component names: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">int_component_names</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Real component names: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">real_component_names</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">repr_str</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Particle data shape (int): </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_idata</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Particle data shape (real): </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rdata</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">repr_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Particle data: Not loaded (access .idata or .rdata to load)&quot;</span>
+        <span class="k">return</span> <span class="n">repr_str</span></div>
+
+
+<div class="viewcode-block" id="AMReXParticle.select_particles_in_region">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle.select_particles_in_region">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select_particles_in_region</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">z_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Selectively loads real component data for particles that fall within a</span>
+<span class="sd">        specified rectangular region.</span>
+
+<span class="sd">        This method first converts the physical range into an index-based range,</span>
+<span class="sd">        then identifies which grid files intersect with that range, and finally</span>
+<span class="sd">        reads only the necessary data. This avoids loading the entire dataset</span>
+<span class="sd">        into memory. Integer data is skipped for efficiency.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.</span>
+<span class="sd">            y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.</span>
+<span class="sd">            z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.</span>
+<span class="sd">                                       For 2D data, this is ignored.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: A numpy array containing the real data for the</span>
+<span class="sd">                        selected particles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Convert physical range to index range</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">right_edge</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_edge</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_dimensions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">target_idx_ranges</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ranges</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_range</span><span class="p">,</span> <span class="n">y_range</span><span class="p">,</span> <span class="n">z_range</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ranges</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">idx_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">ranges</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_edge</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">dx</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">idx_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">ranges</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_edge</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">dx</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">target_idx_ranges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">idx_min</span><span class="p">,</span> <span class="n">idx_max</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">target_idx_ranges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Find overlapping grids based on index ranges</span>
+        <span class="n">overlapping_grids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">level_num</span><span class="p">,</span> <span class="n">boxes</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">level_boxes</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">grid_index</span><span class="p">,</span> <span class="p">(</span><span class="n">lo_corner</span><span class="p">,</span> <span class="n">hi_corner</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">boxes</span><span class="p">):</span>
+                <span class="n">box_overlap</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">target_idx_ranges</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="n">box_min_idx</span><span class="p">,</span> <span class="n">box_max_idx</span> <span class="o">=</span> <span class="n">lo_corner</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">hi_corner</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">target_min_idx</span><span class="p">,</span> <span class="n">target_max_idx</span> <span class="o">=</span> <span class="n">target_idx_ranges</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">box_max_idx</span> <span class="o">&lt;</span> <span class="n">target_min_idx</span> <span class="ow">or</span> <span class="n">box_min_idx</span> <span class="o">&gt;</span> <span class="n">target_max_idx</span><span class="p">:</span>
+                            <span class="n">box_overlap</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="k">break</span>
+                <span class="k">if</span> <span class="n">box_overlap</span><span class="p">:</span>
+                    <span class="n">overlapping_grids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">level_num</span><span class="p">,</span> <span class="n">grid_index</span><span class="p">))</span>
+
+        <span class="n">selected_rdata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">idtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">idtype_str</span>
+        <span class="n">fdtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">rdtype_str</span>
+
+        <span class="k">for</span> <span class="n">level_num</span><span class="p">,</span> <span class="n">grid_index</span> <span class="ow">in</span> <span class="n">overlapping_grids</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">grid_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">grids</span><span class="p">[</span><span class="n">level_num</span><span class="p">][</span><span class="n">grid_index</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">which</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">where</span> <span class="o">=</span> <span class="n">grid_data</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">fn</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptype</span>
+                <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;Level_</span><span class="si">{</span><span class="n">level_num</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;DATA_</span><span class="si">{</span><span class="n">which</span><span class="si">:</span><span class="s2">05d</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">where</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">is_checkpoint</span><span class="p">:</span>
+                    <span class="n">bytes_to_skip</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">idtype</span><span class="p">)</span><span class="o">.</span><span class="n">itemsize</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">bytes_to_skip</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="n">floats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fdtype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
+
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">ranges</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="n">mask</span> <span class="o">&amp;=</span> <span class="p">(</span><span class="n">floats</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">ranges</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span>
+                            <span class="n">floats</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ranges</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+                    <span class="n">selected_rdata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">floats</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+
+        <span class="n">final_rdata</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">selected_rdata</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">selected_rdata</span>
+            <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">num_real</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">real_type</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">final_rdata</span></div>
+
+
+<div class="viewcode-block" id="AMReXParticle._extract_variable_columns">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle._extract_variable_columns">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_variable_columns</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rdata</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">component_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to extract specific columns from the particle data array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rdata (np.ndarray): The particle data array.</span>
+<span class="sd">            variables (List[str]): The names of the variables to extract.</span>
+<span class="sd">            component_names (List[str], optional): The list of component names corresponding</span>
+<span class="sd">                                                   to the columns of rdata. If None, it defaults</span>
+<span class="sd">                                                   to self.header.real_component_names.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: A stacked array containing the extracted columns (n_particles, n_vars).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">component_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">component_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">real_component_names</span>
+
+        <span class="n">component_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">component_names</span><span class="p">)}</span>
+        <span class="n">data_columns</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_alias</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">component_map</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid variable name &#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&#39;. Choose from </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">component_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">data_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rdata</span><span class="p">[:,</span> <span class="n">component_map</span><span class="p">[</span><span class="n">var</span><span class="p">]])</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">data_columns</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+
+<div class="viewcode-block" id="AMReXParticle.extract_core_population">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle.extract_core_population">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_core_population</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">velocity_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">v_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">v_th</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts the core population from the suprathermal population.</span>
+
+<span class="sd">        The core population is approximated by a Maxwellian distribution centered at</span>
+<span class="sd">        the peak phase space density location. Particles within a certain distance</span>
+<span class="sd">        (defined by `cutoff * v_th`) from the center are considered part of the core.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            velocity_columns (List[str]): The names of the velocity components to use.</span>
+<span class="sd">            v_dim (int, optional): The dimension of the velocity space. Defaults to 3.</span>
+<span class="sd">            v_th (float, optional): The thermal velocity of the core population.</span>
+<span class="sd">                                    If not provided, it is estimated using a GMM fit.</span>
+<span class="sd">            cutoff (float, optional): The cutoff factor for defining the core boundary</span>
+<span class="sd">                                      in units of thermal velocity. Defaults to 3.0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray]: A tuple containing two boolean masks:</span>
+<span class="sd">                                           (core_mask, suprathermal_mask).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">velocity_columns</span><span class="p">)</span> <span class="o">!=</span> <span class="n">v_dim</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Length of &#39;velocity_columns&#39; (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">velocity_columns</span><span class="p">)</span><span class="si">}</span><span class="s2">) &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;must match &#39;v_dim&#39; (</span><span class="si">{</span><span class="n">v_dim</span><span class="si">}</span><span class="s2">).&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># 1. Fit GMM to find center and potentially v_th</span>
+        <span class="c1"># We always run GMM to find the center (peak density location).</span>
+        <span class="c1"># We use n_components=2 to allow for a core + halo/beam structure,</span>
+        <span class="c1"># which helps in robustly identifying the core.</span>
+        <span class="n">gmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_gmm</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">velocity_columns</span><span class="p">)</span>
+
+        <span class="c1"># Identify the core component as the one with the highest weight (density)</span>
+        <span class="n">core_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">gmm</span><span class="o">.</span><span class="n">weights_</span><span class="p">)</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">means_</span><span class="p">[</span><span class="n">core_idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">v_th</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Estimate v_th from the core component&#39;s covariance</span>
+            <span class="c1"># Assuming isotropy for the core definition radius</span>
+            <span class="n">cov</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">covariances_</span><span class="p">[</span><span class="n">core_idx</span><span class="p">]</span>
+            <span class="n">v_th_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">center</span><span class="p">)</span>
+            <span class="n">v_th</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v_th_sq</span><span class="p">)</span>
+
+        <span class="c1"># 2. Calculate distance from center for all particles</span>
+        <span class="c1"># We need to extract the raw data again to compute distances</span>
+        <span class="c1"># Note: fit_gmm might have operated on a subset if ranges were passed,</span>
+        <span class="c1"># but here we operate on the currently loaded data (self.rdata).</span>
+        <span class="c1"># To ensure consistency, we should extract columns from self.rdata directly.</span>
+        <span class="c1"># If fit_gmm was called without ranges (which it is here), the GMM is valid for self.rdata.</span>
+
+        <span class="n">v_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_variable_columns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rdata</span><span class="p">,</span> <span class="n">velocity_columns</span><span class="p">)</span>
+
+        <span class="c1"># Calculate Euclidean distance from center</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">v_data</span> <span class="o">-</span> <span class="n">center</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># 3. Create masks</span>
+        <span class="n">core_mask</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">cutoff</span> <span class="o">*</span> <span class="n">v_th</span><span class="p">)</span>
+        <span class="n">suprathermal_mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">core_mask</span>
+
+        <span class="k">return</span> <span class="n">core_mask</span><span class="p">,</span> <span class="n">suprathermal_mask</span></div>
+
+
+<div class="viewcode-block" id="AMReXParticle.fit_gmm">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle.fit_gmm">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit_gmm</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">x_variable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_variable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">x_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">z_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">variables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;GaussianMixture&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fits a Gaussian Mixture Model (GMM) to the phase space distribution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_components (int): The number of mixture components (Gaussian distributions).</span>
+<span class="sd">            x_variable (str, optional): The name of the variable for the x-axis.</span>
+<span class="sd">                                        Retained for backward compatibility.</span>
+<span class="sd">            y_variable (str, optional): The name of the variable for the y-axis.</span>
+<span class="sd">                                        Retained for backward compatibility.</span>
+<span class="sd">            x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.</span>
+<span class="sd">            y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.</span>
+<span class="sd">            z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.</span>
+<span class="sd">                                       For 2D data, this is ignored.</span>
+<span class="sd">            transform (callable, optional):</span>
+<span class="sd">                A function that takes the particle data (`rdata`, a NumPy array)</span>
+<span class="sd">                and returns a tuple: (`transformed_rdata`, `new_component_names`).</span>
+<span class="sd">                This allows for fitting derived quantities or changing coordinate systems.</span>
+<span class="sd">                If provided, `x_variable` and `y_variable` should refer to names</span>
+<span class="sd">                in `new_component_names`. Defaults to None.</span>
+<span class="sd">            variables (List[str], optional): The names of the variables to fit.</span>
+<span class="sd">                                             If provided, this takes precedence over</span>
+<span class="sd">                                             x_variable and y_variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sklearn.mixture.GaussianMixture: The fitted GMM model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">variables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x_variable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">y_variable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_variable</span><span class="p">,</span> <span class="n">y_variable</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Either &#39;variables&#39; or both &#39;x_variable&#39; and &#39;y_variable&#39; must be provided.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># --- 1. Select data ---</span>
+        <span class="k">if</span> <span class="n">x_range</span> <span class="ow">or</span> <span class="n">y_range</span> <span class="ow">or</span> <span class="n">z_range</span><span class="p">:</span>
+            <span class="n">rdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_particles_in_region</span><span class="p">(</span><span class="n">x_range</span><span class="p">,</span> <span class="n">y_range</span><span class="p">,</span> <span class="n">z_range</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdata</span>
+
+        <span class="k">if</span> <span class="n">rdata</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No particles to fit GMM.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check for weights and resample if necessary</span>
+        <span class="n">resample_indices</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;weight&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">real_component_names</span><span class="p">:</span>
+            <span class="n">weight_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">real_component_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;weight&quot;</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">rdata</span><span class="p">[:,</span> <span class="n">weight_idx</span><span class="p">]</span>
+            <span class="c1"># Normalize weights to sum to 1</span>
+            <span class="n">total_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">total_weight</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">/</span> <span class="n">total_weight</span>
+                <span class="n">resample_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rdata</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">rdata</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="c1"># --- 2. Apply transformation if provided ---</span>
+        <span class="n">component_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">real_component_names</span>
+        <span class="k">if</span> <span class="n">transform</span><span class="p">:</span>
+            <span class="n">rdata</span><span class="p">,</span> <span class="n">component_names</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">rdata</span><span class="p">)</span>
+
+        <span class="c1"># --- 3 &amp; 4. Extract data columns ---</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_variable_columns</span><span class="p">(</span><span class="n">rdata</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">component_names</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">resample_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">resample_indices</span><span class="p">]</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.mixture</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianMixture</span>
+
+        <span class="c1"># --- 5. Fit GMM ---</span>
+        <span class="n">gmm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">gmm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">gmm</span></div>
+
+
+<div class="viewcode-block" id="AMReXParticle.get_gmm_temperatures">
+<a class="viewcode-back" href="../../../autoapi/flekspy/amrex/particle_data/index.html#flekspy.amrex.AMReXParticle.get_gmm_temperatures">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_gmm_temperatures</span><span class="p">(</span>
+        <span class="n">gmm</span><span class="p">:</span> <span class="s2">&quot;GaussianMixture&quot;</span><span class="p">,</span> <span class="n">particle_mass</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">isotropic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts physical temperatures from a fitted GMM.</span>
+
+<span class="sd">        This method calls `get_gmm_parameters` to get the squared thermal</span>
+<span class="sd">        velocities and then converts them to temperatures in Kelvin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gmm (&quot;GaussianMixture&quot;): The fitted GMM model.</span>
+<span class="sd">            particle_mass (float): The mass of the particle species in atomic mass units (amu).</span>
+<span class="sd">                                   Defaults to 1.0.</span>
+<span class="sd">            isotropic (bool, optional): If True, assumes an isotropic Maxwellian</span>
+<span class="sd">                                        distribution and returns a single scalar temperature.</span>
+<span class="sd">                                        If False, assumes a Bi-Maxwellian distribution and returns</span>
+<span class="sd">                                        parallel and perpendicular temperatures. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list of dict: A list of dictionaries, one for each Gaussian component.</span>
+<span class="sd">                          - Isotropic: {&#39;center&#39;: [mx, my], &#39;temperature&#39;: T}</span>
+<span class="sd">                          - Bi-Maxwellian: {&#39;center&#39;: [mx, my], &#39;T_parallel&#39;: T_par, &#39;T_perpendicular&#39;: T_perp}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..util.gmm</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_gmm_parameters</span>
+
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">get_gmm_parameters</span><span class="p">(</span><span class="n">gmm</span><span class="p">,</span> <span class="n">isotropic</span><span class="o">=</span><span class="n">isotropic</span><span class="p">)</span>
+        <span class="n">mass_in_kg</span> <span class="o">=</span> <span class="n">particle_mass</span> <span class="o">*</span> <span class="n">const</span><span class="o">.</span><span class="n">m_u</span>
+
+        <span class="k">if</span> <span class="n">isotropic</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">mass_in_kg</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;v_th_sq&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">const</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;T_parallel&quot;</span><span class="p">:</span> <span class="n">mass_in_kg</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;v_parallel_sq&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">const</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>
+                    <span class="s2">&quot;T_perpendicular&quot;</span><span class="p">:</span> <span class="n">mass_in_kg</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;v_perp_sq&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">const</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span>
+            <span class="p">]</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Yuxi Chen, Hongyang Zhou.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

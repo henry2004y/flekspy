@@ -1,0 +1,393 @@
+flekspy.amrex.plotting
+======================
+
+.. py:module:: flekspy.amrex.plotting
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.amrex.plotting.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.amrex.plotting.AMReXPlottingMixin
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: AMReXPlottingMixin
+
+   A mixin class for AMReXParticle plotting functionalities.
+
+
+   .. py:attribute:: _AXIS_LABEL_MAP
+
+
+   .. py:attribute:: _ALIAS_MAP
+
+
+   .. py:method:: _resolve_alias(variable_name: str) -> str
+
+      Resolves an alias to its full variable name.
+
+
+
+   .. py:method:: _get_axis_label(variable_name: str) -> str
+
+      Returns the appropriate axis label for a given variable.
+
+
+
+   .. py:method:: get_phase_space_density(x_variable: str, y_variable: str, bins: Union[int, Tuple[int, int]] = 100, hist_range: Optional[List[List[float]]] = None, x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None, normalize: bool = False, use_kde: bool = False, kde_bandwidth: Optional[Union[str, float]] = None, kde_grid_size: int = 100, transform: Optional[Callable[[numpy.ndarray], Tuple[numpy.ndarray, List[str]]]] = None) -> Optional[Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, str]]
+
+      Calculates the 2D phase space density for any two selected variables.
+
+      This function produces a 2D weighted histogram (or Kernel Density Estimate)
+      of the particle distribution. If a 'weight' component is present, it's used
+      for weighting.
+
+      :param x_variable: The name of the variable for the x-axis.
+      :type x_variable: str
+      :param y_variable: The name of the variable for the y-axis.
+      :type y_variable: str
+      :param bins: The number of bins. This can be a
+                   single integer for the same number of
+                   bins in each dimension, or a two-element
+                   tuple for different numbers of bins in the
+                   x and y dimension, respectively.
+                   Defaults to 100.
+      :type bins: int or tuple, optional
+      :param hist_range: The leftmost and rightmost edges of the
+                         bins along each dimension. It should be
+                         in the format [[xmin, xmax], [ymin, ymax]].
+                         Defaults to None.
+      :type hist_range: list of lists, optional
+      :param x_range: A tuple (min, max) for the x-axis boundary.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for the y-axis boundary.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for the z-axis boundary.
+                      For 2D data, this is ignored.
+      :type z_range: tuple, optional
+      :param normalize: If True, the histogram is normalized to
+                        form a probability density. Defaults to False.
+      :type normalize: bool, optional
+      :param use_kde: If True, use Kernel Density Estimation instead
+                      of a histogram. Defaults to False.
+      :type use_kde: bool, optional
+      :param kde_bandwidth: The bandwidth for the KDE.
+                            Can be 'scott', 'silverman', a scalar
+                            constant or a callable. If None,
+                            `gaussian_kde` will use its default.
+                            Defaults to None.
+      :type kde_bandwidth: str or float, optional
+      :param kde_grid_size: The number of grid points in each dimension for
+                            the KDE. Defaults to 100.
+      :type kde_grid_size: int, optional
+      :param transform: A function that takes the particle data (`rdata`, a NumPy array)
+                        and returns a tuple: (`transformed_rdata`, `new_component_names`).
+                        This allows for plotting derived quantities or changing coordinate systems.
+                        If provided, `x_variable` and `y_variable` should refer to names
+                        in `new_component_names`. Defaults to None.
+      :type transform: callable, optional
+
+      :returns:
+
+                A tuple containing (H, xedges, yedges, cbar_label), where H is the
+                       2D histogram, xedges and yedges are the bin edges, and cbar_label
+                       is a suggested label for a colorbar. Returns None if no data.
+      :rtype: tuple
+
+
+
+   .. py:method:: plot_phase(x_variable: str, y_variable: str, bins: Union[int, Tuple[int, int]] = 100, hist_range: Optional[List[List[float]]] = None, x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None, normalize: bool = False, log_scale: bool = True, vmin: Optional[float] = None, vmax: Optional[float] = None, use_kde: bool = False, kde_bandwidth: Optional[Union[str, float]] = None, kde_grid_size: int = 100, plot_zero_lines: bool = True, title: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None, ax: Optional[matplotlib.axes.Axes] = None, add_colorbar: bool = True, marginals: bool = False, transform: Optional[Callable[[numpy.ndarray], Tuple[numpy.ndarray, List[str]]]] = None, **imshow_kwargs: Any) -> Optional[Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]]
+
+      Plots the 2D phase space distribution for any two selected variables.
+      This function creates a 2D weighted histogram to visualize the particle
+      density. This function first calls `get_phase_space_density` to compute
+      the histogram and then plots the result.
+      See more about the args in `get_phase_space_density`
+
+      :param x_variable: The variable for the x-axis.
+      :type x_variable: str
+      :param y_variable: The variable for the y-axis.
+      :type y_variable: str
+      :param bins: Bins for the histogram.
+      :type bins: int or tuple, optional
+      :param hist_range: Edges for bins.
+      :type hist_range: list, optional
+      :param x_range: Boundary for the x-axis.
+      :type x_range: tuple, optional
+      :param y_range: Boundary for the y-axis.
+      :type y_range: tuple, optional
+      :param z_range: Boundary for the z-axis.
+      :type z_range: tuple, optional
+      :param normalize: Normalize the density.
+      :type normalize: bool, optional
+      :param log_scale: If True, the colorbar is plotted in log scale.
+                        Defaults to True.
+      :type log_scale: bool, optional
+      :param use_kde: Use KDE.
+      :type use_kde: bool, optional
+      :param kde_bandwidth: Bandwidth for KDE.
+      :type kde_bandwidth: str or float, optional
+      :param kde_grid_size: Grid points for KDE.
+      :type kde_grid_size: int, optional
+      :param plot_zero_lines: If True, plot dashed lines at x=0 and y=0.
+                              Defaults to True.
+      :type plot_zero_lines: bool, optional
+      :param title: The title for the plot. Defaults to "Phase Space Distribution".
+      :type title: str, optional
+      :param xlabel: The label for the x-axis. Defaults to `x_variable`.
+      :type xlabel: str, optional
+      :param ylabel: The label for the y-axis. Defaults to `y_variable`.
+      :type ylabel: str, optional
+      :param ax: An existing axes object to plot on.
+                 If None, a new figure and axes are created.
+                 Defaults to None.
+      :type ax: matplotlib.axes.Axes, optional
+      :param add_colorbar: If True, a colorbar is added to the plot.
+                           This parameter is ignored if `marginals` is True.
+                           Defaults to True.
+      :type add_colorbar: bool, optional
+      :param transform: A function to transform particle data.
+      :type transform: callable, optional
+      :param \*\*imshow_kwargs: Additional keyword arguments to be passed to `ax.imshow()`.
+                                This can be used to control colormaps (`cmap`), normalization (`norm`), etc.
+
+      :returns:
+
+                A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+                       This allows for a further customization of the plot after its creation.
+      :rtype: tuple
+
+
+
+   .. py:method:: plot_phase_subplots(x_variable: str, y_variable: str, x_ranges: List[Tuple[float, float]], y_ranges: List[Tuple[float, float]], bins: Union[int, Tuple[int, int]] = 100, normalize: bool = False, log_scale: bool = True, suptitle: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None, **imshow_kwargs: Any) -> Optional[Tuple[matplotlib.figure.Figure, numpy.ndarray]]
+
+      Plots the 2D phase space distribution for multiple regions as subplots.
+
+      This function creates a grid of subplots, each showing the phase space
+      distribution for a specified x and y range. All subplots share a common
+      colorbar.
+
+      :param x_variable: The name of the variable for the x-axis.
+      :type x_variable: str
+      :param y_variable: The name of the variable for the y-axis.
+      :type y_variable: str
+      :param x_ranges: A list of tuples, where each
+                       tuple defines the (min, max)
+                       for the x-axis of a subplot.
+      :type x_ranges: List[Tuple[float, float]]
+      :param y_ranges: A list of tuples, where each
+                       tuple defines the (min, max)
+                       for the y-axis of a subplot.
+      :type y_ranges: List[Tuple[float, float]]
+      :param bins: The number of bins for the histogram.
+                   Defaults to 100.
+      :type bins: int or tuple, optional
+      :param normalize: If True, the histogram is normalized.
+                        Defaults to False.
+      :type normalize: bool, optional
+      :param log_scale: If True, the colorbar is plotted in log scale.
+                        Defaults to True.
+      :type log_scale: bool, optional
+      :param suptitle: The main title for the entire figure.
+      :type suptitle: str, optional
+      :param xlabel: The label for the x-axis. Defaults to `x_variable`.
+      :type xlabel: str, optional
+      :param ylabel: The label for the y-axis. Defaults to `y_variable`.
+      :type ylabel: str, optional
+      :param \*\*imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
+
+      :returns:
+
+                A tuple containing the matplotlib figure and the array of axes
+                       objects (`fig`, `axes`).
+      :rtype: tuple
+
+
+
+   .. py:method:: _prepare_3d_histogram_data(x_variable: str, y_variable: str, z_variable: str, bins: Union[int, Tuple[int, int, int]], hist_range: Optional[List[List[float]]], x_range: Optional[Tuple[float, float]], y_range: Optional[Tuple[float, float]], z_range: Optional[Tuple[float, float]], normalize: bool) -> Optional[Tuple[numpy.ndarray, Tuple[numpy.ndarray, Ellipsis], str]]
+
+      Prepares 3D histogram data for plotting methods.
+
+
+
+   .. py:method:: plot_phase_3d(x_variable: str, y_variable: str, z_variable: str, bins: Union[int, Tuple[int, int, int]] = 50, hist_range: Optional[List[List[float]]] = None, x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None, normalize: bool = False, log_scale: bool = True, title: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None, zlabel: Optional[str] = None, **scatter_kwargs: Any) -> Optional[Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]]
+
+      Plots the 3D phase space distribution for any three selected variables.
+
+      This function creates a 3D histogram and visualizes it as a scatter plot,
+      where the color of each point corresponds to the particle density in that bin.
+
+      :param x_variable: The name of the variable for the x-axis.
+      :type x_variable: str
+      :param y_variable: The name of the variable for the y-axis.
+      :type y_variable: str
+      :param z_variable: The name of the variable for the z-axis.
+      :type z_variable: str
+      :param bins: The number of bins for each dimension.
+                   Defaults to 50.
+      :type bins: int or tuple, optional
+      :param hist_range: The range for the bins in the format
+                         [[xmin, xmax], [ymin, ymax], [zmin, zmax]].
+                         Defaults to None.
+      :type hist_range: list of lists, optional
+      :param x_range: A tuple (min, max) for filtering particles by x-position.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for filtering particles by y-position.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for filtering particles by z-position.
+      :type z_range: tuple, optional
+      :param normalize: If True, normalize the histogram to form a
+                        probability density. Defaults to False.
+      :type normalize: bool, optional
+      :param log_scale: If True, the colorbar is plotted in log scale.
+                        Defaults to True.
+      :type log_scale: bool, optional
+      :param title: The title for the plot. Defaults to "3D Phase Space Distribution".
+      :type title: str, optional
+      :param xlabel: The label for the x-axis. Defaults to `x_variable`.
+      :type xlabel: str, optional
+      :param ylabel: The label for the y-axis. Defaults to `y_variable`.
+      :type ylabel: str, optional
+      :param zlabel: The label for the z-axis. Defaults to `z_variable`.
+      :type zlabel: str, optional
+      :param \*\*scatter_kwargs: Additional keyword arguments to be passed to `ax.scatter()`.
+
+      :returns: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+      :rtype: tuple
+
+
+
+   .. py:method:: plot_gmm_fit(gmm: sklearn.mixture.GaussianMixture, x_variable: str = None, y_variable: str = None, ax: Optional[matplotlib.axes.Axes] = None, scale: float = 2.0 * np.sqrt(2.0), **plot_kwargs) -> Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]
+
+      Plots the results of a GMM fit.
+
+      :param gmm: The fitted GMM model.
+      :type gmm: "GaussianMixture"
+      :param x_variable: The name of the variable for the x-axis.
+      :type x_variable: str, optional
+      :param y_variable: The name of the variable for the y-axis.
+      :type y_variable: str, optional
+      :param ax: An existing axes object to plot on.
+                 If None, a new figure and axes are created.
+                 Defaults to None.
+      :type ax: matplotlib.axes.Axes, optional
+      :param \*\*plot_kwargs: Additional keyword arguments to be passed to `plot_phase()`.
+
+      :returns: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+      :rtype: tuple
+
+
+
+   .. py:method:: pairplot(variables: List[str] = ['velocity_x', 'velocity_y', 'velocity_z'], x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None, bins: int = 50, log_scale: bool = True, figsize=(10, 10), title: str = 'Velocity Space Pairplot', corner: bool = False, **imshow_kwargs: Any) -> Optional[Tuple[matplotlib.figure.Figure, numpy.ndarray]]
+
+      Plots a pairplot of the velocity space distributions (vx, vy, vz).
+
+      This function creates a 3x3 grid of subplots. The diagonal plots
+      show the 1D histogram for each velocity component. The off-diagonal
+      plots show the 2D histogram for each pair of velocity components.
+
+      :param variables: A list of velocity components to plot.
+                        Defaults to ["velocity_x", "velocity_y", "velocity_z"].
+      :type variables: list, optional
+      :param x_range: A tuple (min, max) for filtering particles
+                      by x-position.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for filtering particles
+                      by y-position.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for filtering particles
+                      by z-position.
+      :type z_range: tuple, optional
+      :param bins: The number of bins for histograms. Defaults to 50.
+      :type bins: int, optional
+      :param log_scale: If True, the colorbar is plotted in log scale.
+                        Defaults to True.
+      :type log_scale: bool, optional
+      :param figsize: The size of the figure. Defaults to (10, 10).
+      :type figsize: tuple, optional
+      :param title: The title for the plot. Defaults to "Velocity Space Pairplot".
+      :type title: str, optional
+      :param corner: If True, only the lower triangle of the pairplot is plotted.
+                     Defaults to False.
+      :type corner: bool, optional
+      :param \*\*imshow_kwargs: Additional keyword arguments for `ax.imshow()`.
+
+      :returns:
+
+                A tuple containing the matplotlib figure and the array of axes
+                       objects (`fig`, `axes`).
+      :rtype: tuple
+
+
+
+   .. py:method:: _plot_plane(ax, H, edges, fixed_coord, cmap, norm, opacity, **surface_kwargs)
+      :staticmethod:
+
+
+      Helper function to plot a single plane.
+
+
+
+   .. py:method:: plot_intersecting_planes(x_variable: str, y_variable: str, z_variable: str, bins: Union[int, Tuple[int, int, int]] = 50, hist_range: Optional[List[List[float]]] = None, x_range: Optional[Tuple[float, float]] = None, y_range: Optional[Tuple[float, float]] = None, z_range: Optional[Tuple[float, float]] = None, normalize: bool = False, log_scale: bool = True, title: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None, zlabel: Optional[str] = None, cmap: str = 'turbo', opacity: float = 0.8, **surface_kwargs: Any) -> Optional[Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]]
+
+      Plots the 3D phase space distribution using three intersecting planes.
+
+      This function creates a 3D histogram and visualizes the density on three
+      orthogonal planes that intersect at the center of the histogrammed data.
+
+      :param x_variable: The name of the variable for the x-axis.
+      :type x_variable: str
+      :param y_variable: The name of the variable for the y-axis.
+      :type y_variable: str
+      :param z_variable: The name of the variable for the z-axis.
+      :type z_variable: str
+      :param bins: The number of bins for each dimension.
+                   Defaults to 50.
+      :type bins: int or tuple, optional
+      :param hist_range: The range for the bins in the format
+                         [[xmin, xmax], [ymin, ymax], [zmin, zmax]].
+                         Defaults to None.
+      :type hist_range: list of lists, optional
+      :param x_range: A tuple (min, max) for filtering particles by x-position.
+      :type x_range: tuple, optional
+      :param y_range: A tuple (min, max) for filtering particles by y-position.
+      :type y_range: tuple, optional
+      :param z_range: A tuple (min, max) for filtering particles by z-position.
+      :type z_range: tuple, optional
+      :param normalize: If True, normalize the histogram to form a
+                        probability density. Defaults to False.
+      :type normalize: bool, optional
+      :param log_scale: If True, the colorbar is plotted in log scale.
+                        Defaults to True.
+      :type log_scale: bool, optional
+      :param title: The title for the plot. Defaults to "Intersecting Planes of Phase Space".
+      :type title: str, optional
+      :param xlabel: The label for the x-axis. Defaults to `x_variable`.
+      :type xlabel: str, optional
+      :param ylabel: The label for the y-axis. Defaults to `y_variable`.
+      :type ylabel: str, optional
+      :param zlabel: The label for the z-axis. Defaults to `z_variable`.
+      :type zlabel: str, optional
+      :param cmap: The colormap to use for the planes. Defaults to "viridis".
+      :type cmap: str, optional
+      :param \*\*surface_kwargs: Additional keyword arguments to be passed to `ax.plot_surface()`.
+
+      :returns: A tuple containing the matplotlib figure and axes objects (`fig`, `ax`).
+      :rtype: tuple
+
+
+
