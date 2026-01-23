@@ -237,10 +237,19 @@ class AMReXParticle(AMReXPlottingMixin):
             dim_line = f.readline().strip()
             matches = re.findall(r"\d+", dim_line)
             coords = [int(num) for num in matches]
-            x1, y1, x2, y2, z1, z2 = coords
-            dim_x = x2 - x1 + 1
-            dim_y = y2 - y1 + 1
-            dim_z = z2 - z1 + 1
+            
+            if self.dim == 2:
+                x1, y1, x2, y2, z1, z2 = coords
+                dim_x = x2 - x1 + 1
+                dim_y = y2 - y1 + 1
+                dim_z = z2 - z1 + 1
+            elif self.dim == 3:
+                 x1, y1, z1, x2, y2, z2, _, _, _ = coords
+                 dim_x = x2 - x1 + 1
+                 dim_y = y2 - y1 + 1
+                 dim_z = z2 - z1 + 1
+            else:
+                raise NotImplementedError(f"Dimension {self.dim} not explicitly supported in _parse_main_header")
 
             self.domain_dimensions = [dim_x, dim_y, dim_z]
 
