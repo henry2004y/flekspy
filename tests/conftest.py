@@ -55,7 +55,7 @@ def mock_3d_amrex_data(tmp_path):
     Generates a mock 3D AMReX particle dataset directory structure.
     Returns the path to the dataset directory.
     """
-    import struct
+    import numpy as np
     import numpy as np
 
     output_dir = tmp_path / "mock_3d_amrex"
