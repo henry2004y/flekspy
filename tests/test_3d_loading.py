@@ -1,7 +1,5 @@
 
 import pytest
-import os
-from pathlib import Path
 from flekspy.amrex import AMReXParticle
 
 def test_load_mock_3d_data(mock_3d_amrex_data):

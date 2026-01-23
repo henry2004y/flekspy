@@ -56,7 +56,6 @@ def mock_3d_amrex_data(tmp_path):
     Returns the path to the dataset directory.
     """
     import numpy as np
-    import numpy as np
 
     output_dir = tmp_path / "mock_3d_amrex"
     output_dir.mkdir()
@@ -124,8 +123,6 @@ def mock_3d_amrex_data(tmp_path):
         f.write(idata.tobytes())
         # Write Reals
         f.write(rdata.tobytes())
-        
-    file_size = data_path.stat().st_size
     
     # 4. Create Particle Header
     p_header_path = particles_dir / "Header"
