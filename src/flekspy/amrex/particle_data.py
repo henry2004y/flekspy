@@ -239,17 +239,21 @@ class AMReXParticle(AMReXPlottingMixin):
             coords = [int(num) for num in matches]
             
             if self.dim == 2:
-                x1, y1, x2, y2, z1, z2 = coords
-                dim_x = x2 - x1 + 1
-                dim_y = y2 - y1 + 1
-                dim_z = z2 - z1 + 1
+                # Format is (x_lo, y_lo, x_hi, y_hi, z_lo, z_hi)
+                x_lo, x_hi = coords[0], coords[2]
+                y_lo, y_hi = coords[1], coords[3]
+                z_lo, z_hi = coords[4], coords[5]
             elif self.dim == 3:
-                 x1, y1, z1, x2, y2, z2, _, _, _ = coords
-                 dim_x = x2 - x1 + 1
-                 dim_y = y2 - y1 + 1
-                 dim_z = z2 - z1 + 1
+                # Format is (x_lo, y_lo, z_lo, x_hi, y_hi, z_hi, ...)
+                x_lo, x_hi = coords[0], coords[3]
+                y_lo, y_hi = coords[1], coords[4]
+                z_lo, z_hi = coords[2], coords[5]
             else:
                 raise NotImplementedError(f"Dimension {self.dim} not explicitly supported in _parse_main_header")
+
+            dim_x = x_hi - x_lo + 1
+            dim_y = y_hi - y_lo + 1
+            dim_z = z_hi - z_lo + 1
 
             self.domain_dimensions = [dim_x, dim_y, dim_z]
 
