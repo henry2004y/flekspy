@@ -68,13 +68,30 @@ class FleksAccessor:
                 ytarr = yt.YTArray(ytarr, "Pa")
                 varUnit = get_unit("p", unit)
             elif var == "pbeta":
-                ytarr = (
-                    self.get_variable("ps0", unit) + self.get_variable("ps1", unit)
-                ) / self.get_variable("pb", unit)
+                if 'P' in self._obj.data_vars:
+                    ptotal = self.get_variable("P", "si")
+                elif 'ps0' in self._obj.data_vars:
+                    ptotal = self.get_variable("ps0", "si")
+                else:
+                    raise KeyError(f"Variable 'P' or 'ps0' not found in dataset.")
+
+                if 'Pe' in self._obj.data_vars:
+                    ptotal = ptotal + self.get_variable("Pe", "si")
+
+                if 'ps1' in self._obj.data_vars:
+                    ptotal = ptotal + self.get_variable("ps1", "si")
+
+                ytarr = ptotal / self.get_variable("pb", "si")
                 varUnit = "dimensionless"
             elif var == "calfven":
+                if 'Rho' in self._obj.data_vars:
+                    rho = self.get_variable("Rho", "si")
+                elif 'rhos1' in self._obj.data_vars:
+                    rho = self.get_variable("rhos1", "si")
+                else:
+                    raise KeyError(f"Variable 'Rho' or 'rhos1' not found in dataset.")
                 ytarr = self.get_variable("b", "si") / np.sqrt(
-                    yt.units.mu_0.value * self.get_variable("rhos1", "si")
+                    yt.units.mu_0.value * rho   
                 )
                 ytarr = yt.YTArray(ytarr, "m/s")
                 varUnit = get_unit("u", unit)
