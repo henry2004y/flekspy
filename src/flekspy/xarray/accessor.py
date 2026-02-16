@@ -36,6 +36,24 @@ class FleksAccessor:
         expression_for_eval = re.sub(r"\{(.*?)\}", repl, expression)
         return safe_eval(expression_for_eval, eval_context)
 
+    def get_rho(self, unit="planet"):
+        if 'Rho' in self._obj.data_vars:
+            return self.get_variable("Rho", unit)
+        elif 'rhos0' in self._obj.data_vars:
+            rho = self.get_variable("rhos0", unit)
+            if 'rhos1' in self._obj.data_vars:
+                rho = rho + self.get_variable("rhos1", unit)
+            return rho
+        else:
+            raise KeyError(f"Variable 'Rho' or 'rhos1' not found in dataset.")
+
+    def get_p(self, unit="planet"):
+        if 'P' in self._obj.data_vars:
+            return self.get_variable("P", unit)
+        else:
+            P = self.get_variable("ps0", unit) + self.get_variable("ps1", unit)
+            return P
+
     def get_variable(self, var, unit="planet"):
         r"""
         Return raw variables or calculate derived variables.
@@ -68,33 +86,18 @@ class FleksAccessor:
                 ytarr = yt.YTArray(ytarr, "Pa")
                 varUnit = get_unit("p", unit)
             elif var == "pbeta":
-                if 'P' in self._obj.data_vars:
-                    ptotal = self.get_variable("P", "si")
-                elif 'ps0' in self._obj.data_vars:
-                    ptotal = self.get_variable("ps0", "si")
-                else:
-                    raise KeyError(f"Variable 'P' or 'ps0' not found in dataset.")
-
-                if 'Pe' in self._obj.data_vars:
-                    ptotal = ptotal + self.get_variable("Pe", "si")
-
-                if 'ps1' in self._obj.data_vars:
-                    ptotal = ptotal + self.get_variable("ps1", "si")
-
-                ytarr = ptotal / self.get_variable("pb", "si")
+                ytarr = self.get_p(unit) / self.get_variable("pb", "si")
                 varUnit = "dimensionless"
             elif var == "calfven":
-                if 'Rho' in self._obj.data_vars:
-                    rho = self.get_variable("Rho", "si")
-                elif 'rhos1' in self._obj.data_vars:
-                    rho = self.get_variable("rhos1", "si")
-                else:
-                    raise KeyError(f"Variable 'Rho' or 'rhos1' not found in dataset.")
+                rho = self.get_rho(unit)
                 ytarr = self.get_variable("b", "si") / np.sqrt(
                     yt.units.mu_0.value * rho   
                 )
                 ytarr = yt.YTArray(ytarr, "m/s")
                 varUnit = get_unit("u", unit)
+            elif var == 'csound':
+                pass
+
 
             if expression is not None:
                 ytarr = self.evaluate_expression(expression, unit)
