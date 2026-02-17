@@ -8,6 +8,7 @@ from flekspy.util.safe_eval import safe_eval
 from flekspy.util.utilities import get_unit
 from flekspy.plot.streamplot import streamplot
 import yt
+from yt.units.yt_array import YTQuantity
 
 
 @xr.register_dataset_accessor("fleks")
@@ -108,6 +109,14 @@ class FleksAccessor:
                 calfven = self.get_variable('calfven', 'si')
                 ytarr = yt.YTArray(np.sqrt(cs**2 + calfven**2), "m/s")
                 varUnit = get_unit("u", unit)
+            elif var == 'ti':
+                rho = self.get_rho('si')
+                p = self.get_p('si')
+                k = YTQuantity(1.380649e-23, 'J/K')
+                mp = YTQuantity(1.67262192369e-27, 'kg')
+                n = rho / mp                
+                ytarr = yt.YTArray(p / (n * k), 'K')
+                varUnit = get_unit("ti", unit)
 
 
             if expression is not None:

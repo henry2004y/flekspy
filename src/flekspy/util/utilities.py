@@ -39,6 +39,10 @@ plot_unit_planet = {
     "p_uy": "km/s",
     "p_uz": "km/s",
     "p_w": "amu",
+    "ti": "K",
+    "te": "K",
+    "ne": "cm**-3",
+    "ni": "cm**-3"
 }
 
 plot_unit_si = {
@@ -75,6 +79,10 @@ plot_unit_si = {
     "p_uy": "m/s",
     "p_uz": "m/s",
     "p_w": "kg",
+    "ti": "K",
+    "te": "K",
+    "ne": "m**-3",
+    "ni": "m**-3"
 }
 
 
