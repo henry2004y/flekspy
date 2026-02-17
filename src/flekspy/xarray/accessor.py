@@ -66,6 +66,7 @@ class FleksAccessor:
         ytarr = None
         if var in self._obj.data_vars:
             varUnit = get_unit(var, unit)
+            # Warning: the following line assumes the unit of 'values' is 'varUnit', which is not always true!!!!
             ytarr = yt.YTArray(self._obj[var].values, varUnit)
         else:
             var = var.lower()
