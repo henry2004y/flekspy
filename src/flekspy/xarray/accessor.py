@@ -38,21 +38,21 @@ class FleksAccessor:
 
     def get_rho(self, unit="planet"):
         if 'Rho' in self._obj.data_vars:
-            return self.get_variable("Rho", unit)
+            rho = self.get_variable("Rho")
         elif 'rhos0' in self._obj.data_vars:
-            rho = self.get_variable("rhos0", unit)
+            rho = self.get_variable("rhos0")
             if 'rhos1' in self._obj.data_vars:
-                rho = rho + self.get_variable("rhos1", unit)
-            return rho
-        else:
-            raise KeyError(f"Variable 'Rho' or 'rhos1' not found in dataset.")
+                rho = rho + self.get_variable("rhos1")
+        varUnit = get_unit("rho", unit)
+        return rho.in_units(varUnit)
 
-    def get_p(self, unit="planet"):
+    def get_p(self, unit="planet"):        
         if 'P' in self._obj.data_vars:
-            return self.get_variable("P", unit)
+            P = self.get_variable("P")
         else:
-            P = self.get_variable("ps0", unit) + self.get_variable("ps1", unit)
-            return P
+            P = self.get_variable("ps0") + self.get_variable("ps1")
+        varUnit = get_unit("p", unit)
+        return P.in_units(varUnit)
 
     def get_variable(self, var, unit="planet"):
         r"""
@@ -86,17 +86,27 @@ class FleksAccessor:
                 ytarr = yt.YTArray(ytarr, "Pa")
                 varUnit = get_unit("p", unit)
             elif var == "pbeta":
-                ytarr = self.get_p(unit) / self.get_variable("pb", "si")
+                ytarr = self.get_p("si") / self.get_variable("pb", "si")
                 varUnit = "dimensionless"
+            elif var == 'u':
+                expression = "np.sqrt({Ux}**2+{Uy}**2+{Uz}**2)"
+                varUnit = get_unit("u", unit)
             elif var == "calfven":
-                rho = self.get_rho(unit)
-                ytarr = self.get_variable("b", "si") / np.sqrt(
-                    yt.units.mu_0.value * rho   
-                )
+                rho = self.get_rho("si")
+                b = self.get_variable("b")
+                b = b.in_units('T')
+                ytarr = b / np.sqrt(yt.units.mu_0.value * rho)
                 ytarr = yt.YTArray(ytarr, "m/s")
                 varUnit = get_unit("u", unit)
             elif var == 'csound':
-                pass
+                gamma = 5./3 
+                ytarr = yt.YTArray(np.sqrt(gamma * self.get_p("si") / self.get_rho("si")), "m/s")
+                varUnit = get_unit("u", unit)
+            elif var == 'cfast': 
+                cs = self.get_variable('csound', 'si')
+                calfven = self.get_variable('calfven', 'si')
+                ytarr = yt.YTArray(np.sqrt(cs**2 + calfven**2), "m/s")
+                varUnit = get_unit("u", unit)
 
 
             if expression is not None:
