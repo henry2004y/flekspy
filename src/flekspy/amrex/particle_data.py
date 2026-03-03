@@ -314,7 +314,8 @@ class AMReXParticle(AMReXPlottingMixin):
         x_range: Optional[Tuple[float, float]] = None,
         y_range: Optional[Tuple[float, float]] = None,
         z_range: Optional[Tuple[float, float]] = None,
-    ) -> np.ndarray:
+        get_id: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """
         Selectively loads real component data for particles that fall within a
         specified rectangular region.
@@ -322,17 +323,19 @@ class AMReXParticle(AMReXPlottingMixin):
         This method first converts the physical range into an index-based range,
         then identifies which grid files intersect with that range, and finally
         reads only the necessary data. This avoids loading the entire dataset
-        into memory. Integer data is skipped for efficiency.
+        into memory. Integer data is skipped for efficiency unless requested.
 
         Args:
             x_range (tuple, optional): A tuple (min, max) for the x-axis boundary.
             y_range (tuple, optional): A tuple (min, max) for the y-axis boundary.
             z_range (tuple, optional): A tuple (min, max) for the z-axis boundary.
                                        For 2D data, this is ignored.
+            get_id (bool, optional): If True, also return integer data.
 
         Returns:
-            np.ndarray: A numpy array containing the real data for the
-                        selected particles.
+            np.ndarray or Tuple[np.ndarray, np.ndarray]: A numpy array containing the real data for the
+                        selected particles. If get_id is True, returns a tuple
+                        (idata, rdata).
         """
 
         # Convert physical range to index range
@@ -367,6 +370,7 @@ class AMReXParticle(AMReXPlottingMixin):
                     overlapping_grids.append((level_num, grid_index))
 
         selected_rdata: List[np.ndarray] = []
+        selected_idata: List[np.ndarray] = []
         idtype = self.header.idtype_str
         fdtype = self.header.rdtype_str
 
@@ -390,8 +394,11 @@ class AMReXParticle(AMReXPlottingMixin):
                 f.seek(where)
 
                 if self.header.is_checkpoint:
-                    bytes_to_skip = count * np.dtype(idtype).itemsize
-                    f.seek(bytes_to_skip, 1)
+                    if get_id:
+                        ints = np.fromfile(f, dtype=idtype, count=count)
+                    else:
+                        bytes_to_skip = count * np.dtype(idtype).itemsize
+                        f.seek(bytes_to_skip, 1)
 
                 floats = np.fromfile(f, dtype=fdtype, count=count)
 
@@ -404,13 +411,27 @@ class AMReXParticle(AMReXPlottingMixin):
 
                 if np.any(mask):
                     selected_rdata.append(floats[mask])
+                    if get_id:
+                        if self.header.is_checkpoint:
+                            selected_idata.append(ints[mask])
+                        else:
+                            selected_idata.append(np.empty((np.sum(mask), 0), dtype=self.header.int_type))
 
         final_rdata = (
             np.concatenate(selected_rdata)
             if selected_rdata
             else np.empty((0, self.header.num_real), dtype=self.header.real_type)
         )
-        return final_rdata
+        
+        if get_id:
+            final_idata = (
+                np.concatenate(selected_idata)
+                if selected_idata
+                else np.empty((0, self.header.num_int), dtype=self.header.int_type)
+            )
+            return final_idata, final_rdata
+        else:
+            return final_rdata
 
     def _extract_variable_columns(
         self,
