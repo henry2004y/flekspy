@@ -59,6 +59,7 @@ class FLEKSTP(object):
         dirs (str): the path to the test particle dataset.
 
     Examples:
+    >>> from flekspy import FLEKSTP
     >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
     >>> len(tp)
     10240
@@ -105,6 +106,10 @@ class FLEKSTP(object):
         self.pfiles.extend(
             glob.glob(f"{dirs}/FLEKS{iDomain}_particle_species_{iSpecies}_n*")
         )
+        if not self.pfiles:
+            self.pfiles.extend(
+                glob.glob(f"{dirs}/FLEKS*_particle_species_{iSpecies}_n*")
+            )
 
         self.pfiles.sort()
 
@@ -226,7 +231,9 @@ class FLEKSTP(object):
             pData: a numpy real array with the particle weight, location and velocity.
 
         Examples:
-        >>> ids, pData = pt.read_particles_at_time(3700, doSave=True)
+        >>> from flekspy import FLEKSTP
+        >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
+        >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
         """
         nFile = len(self.pfiles)
         if time < self.filetime[0]:
@@ -276,8 +283,10 @@ class FLEKSTP(object):
                 header += ",bx,by,bz"
             elif self.nReal == 13:
                 header += ",bx,by,bz,ex,ey,ez"
+            elif self.nReal == 19:
+                header += ",bx,by,bz,ex,ey,ez,v_gradb_x,v_gradb_y,v_gradb_z,v_curv_x,v_curv_y,v_curv_z"
             elif self.nReal == 22:
-                header += ",dbxdx,dbxdy,dbxdz,dbydx,dbydy,dbydz,dbzdx,dbzdy,dbzdz"
+                header += ",bx,by,bz,ex,ey,ez,dbxdx,dbxdy,dbxdz,dbydx,dbydy,dbydz,dbzdx,dbzdy,dbzdz"
 
             with open(filename, "w") as f:
                 f.write(header + "\n")
@@ -306,6 +315,8 @@ class FLEKSTP(object):
             scaleTime (bool): If set to True, scale the time into [0,1] range.
             format (str): The output format, either "csv" or "parquet".
         Example:
+        >>> from flekspy import FLEKSTP
+        >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
         >>> tp.save_trajectory((3,15), format="parquet")
         """
         pData_lazy = self[pID]
@@ -326,6 +337,27 @@ class FLEKSTP(object):
                 header_cols += ["B_x [nT]", "B_y [nT]", "B_z [nT]"]
             if self.nReal >= 13:
                 header_cols += ["E_x [uV/m]", "E_y [uV/m]", "E_z [uV/m]"]
+            if self.nReal == 19:
+                header_cols += [
+                    "vGradB_x [km/s]",
+                    "vGradB_y [km/s]",
+                    "vGradB_z [km/s]",
+                    "vCurv_x [km/s]",
+                    "vCurv_y [km/s]",
+                    "vCurv_z [km/s]",
+                ]
+            elif self.nReal >= 22:
+                header_cols += [
+                    "dBx_dx",
+                    "dBx_dy",
+                    "dBx_dz",
+                    "dBy_dx",
+                    "dBy_dy",
+                    "dBy_dz",
+                    "dBz_dx",
+                    "dBz_dy",
+                    "dBz_dz",
+                ]
         elif self.unit == "SI":
             header_cols = [
                 "time [s]",
@@ -340,19 +372,27 @@ class FLEKSTP(object):
                 header_cols += ["B_x [T]", "B_y [T]", "B_z [T]"]
             if self.nReal >= 13:
                 header_cols += ["E_x [V/m]", "E_y [V/m]", "E_z [V/m]"]
-
-        if self.nReal >= 22:
-            header_cols += [
-                "dBx_dx",
-                "dBx_dy",
-                "dBx_dz",
-                "dBy_dx",
-                "dBy_dy",
-                "dBy_dz",
-                "dBz_dx",
-                "dBz_dy",
-                "dBz_dz",
-            ]
+            if self.nReal == 19:
+                header_cols += [
+                    "vGradB_x [m/s]",
+                    "vGradB_y [m/s]",
+                    "vGradB_z [m/s]",
+                    "vCurv_x [m/s]",
+                    "vCurv_y [m/s]",
+                    "vCurv_z [m/s]",
+                ]
+            elif self.nReal >= 22:
+                header_cols += [
+                    "dBx_dx",
+                    "dBx_dy",
+                    "dBx_dz",
+                    "dBy_dx",
+                    "dBy_dy",
+                    "dBy_dz",
+                    "dBz_dx",
+                    "dBz_dy",
+                    "dBz_dz",
+                ]
 
         if shiftTime:
             first_time = pData_lazy.select(pl.col("time").first()).collect().item()
@@ -368,10 +408,15 @@ class FLEKSTP(object):
                         )
 
         # Create a new LazyFrame with the desired header names
+        lazy_cols = (
+            pData_lazy.collect_schema().names()
+            if hasattr(pData_lazy, "collect_schema")
+            else pData_lazy.columns
+        )
         pData_to_save = pData_lazy.select(
             [
                 pl.col(original_name).alias(new_name)
-                for original_name, new_name in zip(pData_lazy.columns, header_cols)
+                for original_name, new_name in zip(lazy_cols, header_cols)
             ]
         )
 
@@ -515,10 +560,22 @@ class FLEKSTP(object):
         nRecord = data_array.size // self.nReal
         trajectory_data = data_array.reshape(nRecord, self.nReal)
 
-        # Use the Indices enum to create meaningful column names
-        column_names = [i.name.lower() for i in islice(Indices, self.nReal)]
+        # Use get_column_names to create meaningful column names
+        column_names = self.get_column_names()
         lf = pl.from_numpy(data=trajectory_data, schema=column_names).lazy()
         return lf
+
+    def get_column_names(self) -> List[str]:
+        base = ["time", "x", "y", "z", "vx", "vy", "vz"]
+        if self.nReal >= 10:
+            base += ["bx", "by", "bz"]
+        if self.nReal >= 13:
+            base += ["ex", "ey", "ez"]
+        if self.nReal == 19:
+            base += ["v_gradb_x", "v_gradb_y", "v_gradb_z", "v_curv_x", "v_curv_y", "v_curv_z"]
+        elif self.nReal >= 22:
+            base += ["dbxdx", "dbxdy", "dbxdz", "dbydx", "dbydy", "dbydz", "dbzdx", "dbzdy", "dbzdz"]
+        return base
 
     def read_initial_condition(self, pID: Tuple[int, int]) -> Union[list, None]:
         """
@@ -539,7 +596,9 @@ class FLEKSTP(object):
         particle ID, and the second argument is the ID of a particle.
 
         Examples:
+        >>> from flekspy import FLEKSTP
         >>> from flekspy.tp import Indices
+        >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
         >>> def f_select(tp, pid):
         >>>     pData = tp.read_initial_condition(pid)
         >>>     inTime = pData[Indices.TIME] < 3601
@@ -547,7 +606,7 @@ class FLEKSTP(object):
         >>>     return inTime and inRegion
         >>>
         >>> pselected = tp.select_particles(f_select)
-        >>> tp.plot_trajectory(list(pselected.keys())[1])
+        >>> tp.plot_trajectory(pselected[1])
         """
 
         if f_select == None:
@@ -2302,6 +2361,8 @@ class FLEKSTP(object):
         Plots the trajectory and velocities of the particle pID.
 
         Example:
+        >>> from flekspy import FLEKSTP
+        >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
         >>> tp.plot_trajectory((3,15))
         """
 
@@ -2784,6 +2845,8 @@ class FLEKSTP(object):
         Plot the location of particles pData.
 
         Examples:
+        >>> from flekspy import FLEKSTP
+        >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
         >>> ids, pData = tp.read_particles_at_time(3700, doSave=True)
         >>> f = tp.plot_location(pData)
         """
