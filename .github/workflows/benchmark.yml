@@ -28,7 +28,7 @@ jobs:
           uv run pytest --benchmark-only --benchmark-json=benchmark.json
 
       - name: Store benchmark result
-        uses: j3hempsey-actions/github-action-benchmark@v1
+        uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Pytest Benchmark
           tool: 'pytest'
