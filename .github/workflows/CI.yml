@@ -41,7 +41,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Build documentation
-        run: uv run make html --directory docs/
+        run: uv run sphinx-build -M html docs docs/_build -W --keep-going
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4

@@ -44,6 +44,9 @@ myst_enable_extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# Execute notebooks during documentation builds so rendered examples stay current.
+nb_execution_mode = "force"
+
 # If True, the build process is continued even if a runtime exception occurs:
 nbsphinx_allow_errors = False
 

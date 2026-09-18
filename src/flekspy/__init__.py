@@ -52,18 +52,9 @@ def load(
 ):
     """Load FLEKS data.
 
-    Args:
-        filename (str): Input file name pattern.
-        iDomain (int, optional): Test particle domain index. Defaults to 0.
-        iSpecies (int, optional): Test particle species index. Defaults to 0.
-        iFile (int, optional): The index of the file to load if the pattern
-            matches multiple files. Defaults to 0.
-        npict (int, optional): The index of snapshot in *.outs IDL file. Defaults to 1.
-        readFieldData (bool, optional): Whether or not to read field data for test particles. Defaults to False.
-        use_yt_loader (bool, optional): If True, forces the use of the yt loader for AMReX data. Defaults to False.
-
-    Returns:
-        FLEKS data: xarray.Dataset, YtFLEKSData, or FLEKSTP
+    This helper resolves a matching file pattern and returns the appropriate
+    loaded dataset object. The supported file types include IDL outputs, AMReX
+    data, and test particle data.
     """
     p = Path(filename)
     file_generator = p.parent.rglob(p.name)

@@ -46,28 +46,11 @@ class Indices(IntEnum):
 
 class FLEKSTP(object):
     """
-    A class that is used to read and plot test particles. Each particle ID consists of
-    a CPU index, a particle index on each CPU, and a location index.
-    By default, 7 real numbers saved for each step: time + position + velocity.
-    Additional field information are also stored if available.
+    Read and analyze particle trajectories stored in FLEKS test-particle files.
 
-    This class is a lazy, iterable container. It avoids loading all data into memory
-    at once, making it efficient for large datasets. You can access particle
-    trajectories using standard container operations.
-
-    Args:
-        dirs (str): the path to the test particle dataset.
-
-    Examples:
-    >>> tp = FLEKSTP("res/run1/PC/test_particles", iSpecies=1)
-    >>> len(tp)
-    10240
-    >>> trajectory = tp[0]
-    >>> tp.plot_trajectory(tp.IDs[3])
-    >>> tp.save_trajectory(tp.IDs[5], format="csv")
-    >>> tp.save_trajectory(tp.IDs[5], format="parquet")
-    >>> ids, pData = tp.read_particles_at_time(0.0, doSave=False)
-    >>> f = tp.plot_location(pData)
+    Each particle ID consists of a CPU index and a local particle index. The
+    class exposes a lazy iterable interface for loading trajectory data without
+    materializing the full dataset in memory.
     """
 
     def __init__(
@@ -220,13 +203,8 @@ class FLEKSTP(object):
         If doSave, save to a CSV file with the name "particles_t***.csv".
 
         Note that the time tags in filetime do not include the last saved time.
-
-        Returns:
-            ids: a numpy array of tuples contains the particle IDs.
-            pData: a numpy real array with the particle weight, location and velocity.
-
-        Examples:
-        >>> ids, pData = pt.read_particles_at_time(3700, doSave=True)
+        The function returns a tuple `(ids, pData)`, where `ids` stores particle
+        IDs and `pData` stores the particle weight, location, and velocity data.
         """
         nFile = len(self.pfiles)
         if time < self.filetime[0]:
@@ -298,15 +276,11 @@ class FLEKSTP(object):
     ) -> None:
         """
         Save the trajectory of a particle to a file.
-        Args:
-            pID: particle ID.
-            filename (str, optional): The name of the file to save the trajectory to.
-                                      If None, a default name will be generated.
-            shiftTime (bool): If set to True, set the initial time to be 0.
-            scaleTime (bool): If set to True, scale the time into [0,1] range.
-            format (str): The output format, either "csv" or "parquet".
-        Example:
-        >>> tp.save_trajectory((3,15), format="parquet")
+
+        The output name defaults to a generated trajectory file name unless a custom
+        filename is provided. Set ``shiftTime`` to reset the initial time to 0 and
+        ``scaleTime`` to normalize it into the range [0, 1]. Supported formats are
+        ``"csv"`` and ``"parquet"``.
         """
         pData_lazy = self[pID]
         if filename is None:
@@ -393,10 +367,9 @@ class FLEKSTP(object):
         """
         Save the trajectories of multiple particles to a single HDF5 file.
 
-        Args:
-            pIDs: A list of particle IDs to save. This can be a list of tuples
-                  (cpu, id) or a list of integer indices.
-            filename (str): The name of the HDF5 file to save the trajectories to.
+        This helper can accept either a list of particle IDs or a list of
+        integer indices. The output is written to an HDF5 archive with one
+        dataset per particle.
         """
         if not pIDs:
             return
@@ -455,11 +428,7 @@ class FLEKSTP(object):
     ) -> Union[list, None]:
         """Return a specific record of a test particle given its ID.
 
-        Args:
-            pID: particle ID
-            index: The index of the record to be returned.
-                   0: first record.
-                   -1: last record (default).
+        Use index=0 for the first record and index=-1 for the final record.
         """
         if pID not in self.particle_locations:
             return None
@@ -535,19 +504,8 @@ class FLEKSTP(object):
     def select_particles(self, f_select: Callable = None) -> List[Tuple[int, int]]:
         """
         Return the test particles whose initial conditions satisfy the requirement
-        set by the user defined function f_select. The first argument of f_select is the
-        particle ID, and the second argument is the ID of a particle.
-
-        Examples:
-        >>> from flekspy.tp import Indices
-        >>> def f_select(tp, pid):
-        >>>     pData = tp.read_initial_condition(pid)
-        >>>     inTime = pData[Indices.TIME] < 3601
-        >>>     inRegion = pData[Indices.X] > 20
-        >>>     return inTime and inRegion
-        >>>
-        >>> pselected = tp.select_particles(f_select)
-        >>> tp.plot_trajectory(list(pselected.keys())[1])
+        set by the user defined function ``f_select``. The function receives the
+        particle container and a particle ID, and should return a boolean value.
         """
 
         if f_select == None:
@@ -644,9 +602,11 @@ class FLEKSTP(object):
     def get_first_adiabatic_invariant(self, pt_lazy: pl.LazyFrame) -> pl.Series:
         """
         Calculates the 1st adiabatic invariant of a particle.
+
         The output units depend on the input data's units:
-        - "planetary" (e.g., velocity in km/s, B-field in nT): result is in [1e9 J/T].
-        - "SI" (e.g., velocity in m/s, B-field in T): result is in [J/T].
+
+        - planetary units (e.g., velocity in km/s, B-field in nT): result is in [1e9 J/T].
+        - SI units (e.g., velocity in m/s, B-field in T): result is in [J/T].
         """
         epsilon = 1e-15
 
@@ -689,10 +649,12 @@ class FLEKSTP(object):
     ) -> Union[pl.DataFrame, pl.LazyFrame]:
         """
         Calculates the magnetic field curvature vector and adds it to the DataFrame.
-        κ = (b ⋅ ∇)b
-        Depending on the selected units, output curvature may be
-        - "planetary": [1/RE]
-        - "SI": [1/m]
+        κ = (b ⋅ ∇)b.
+
+        Depending on the selected units, output curvature may be:
+
+        - planetary units: [1/RE]
+        - SI units: [1/m]
         """
         df = FLEKSTP._calculate_bmag(df)
 
@@ -736,7 +698,8 @@ class FLEKSTP(object):
     def get_ExB_drift(self, pt_lazy: pl.LazyFrame) -> pl.DataFrame:
         """
         Calculates the convection drift velocity for a particle.
-        v_exb = E x B / (B^2)
+        v_exb = E x B / (B^2).
+
         Assuming Earth's planetary units, output drift velocity in [km/s].
         """
         lf = self._calculate_bmag(pt_lazy)
@@ -761,10 +724,12 @@ class FLEKSTP(object):
     ) -> pl.DataFrame:
         """
         Calculates the curvature drift velocity for a particle.
-        v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ)
-        Depending on the selected units, output drift velocity may be
-        - "planetary": [km/s]
-        - "SI": [m/s]
+        v_c = (m * v_parallel^2 / (q*B^2)) * (B x κ).
+
+        Depending on the selected units, output drift velocity may be:
+
+        - planetary units: [km/s]
+        - SI units: [m/s]
         """
         lf = self._calculate_bmag(pt_lazy)
 
@@ -892,10 +857,12 @@ class FLEKSTP(object):
     ) -> pl.DataFrame:
         """
         Calculates the gradient drift velocity for a particle.
-        v_g = (μ / (q * B^2)) * (B x ∇|B|)
-        Depending on the selected units, output drift velocity may be
-        - "planetary": [km/s]
-        - "SI": [m/s]
+        v_g = (μ / (q * B^2)) * (B x ∇|B|).
+
+        Depending on the selected units, output drift velocity may be:
+
+        - planetary units: [km/s]
+        - SI units: [m/s]
         """
         epsilon = 1e-15
 
@@ -951,10 +918,12 @@ class FLEKSTP(object):
     ) -> pl.DataFrame:
         """
         Calculates the polarization drift velocity for a particle.
-        v_p = (m / (q * B^2)) * (dE_perp / dt)
-        Depending on the selected units, output drift velocity may be
-        - "planetary": [km/s]
-        - "SI": [m/s]
+        v_p = (m / (q * B^2)) * (dE_perp / dt).
+
+        Depending on the selected units, output drift velocity may be:
+
+        - planetary units: [km/s]
+        - SI units: [m/s]
         """
         pt = pt_lazy.collect()
         time = pt["time"].to_numpy()
@@ -1001,22 +970,11 @@ class FLEKSTP(object):
 
     def get_betatron_acceleration(self, pt, mu):
         """
-        Calculates the Betatron acceleration term from particle trajectory data.
+        Calculate the Betatron acceleration term from particle trajectory data.
 
-        The calculation follows the formula: dW/dt = μ * (∂B/∂t)
-        where the partial derivative is found using: ∂B/∂t = dB/dt - v ⋅ ∇B
-
-        Args:
-            pt: A Polars LazyFrame containing the particle trajectory.
-                     It must include columns for time, velocity (vx, vy, vz),
-                     magnetic field (bx, by, bz), and the magnetic field
-                     gradient tensor (e.g., 'dbxdx', 'dbydx', etc.).
-            mu: A Polars Series containing the magnetic moment (first adiabatic invariant)
-                of the particle.
-
-        Returns:
-            A new Polars LazyFrame with added intermediate columns and the
-            final 'dW_betatron' column representing the rate of energy change in [eV/s].
+        The calculation follows the formula dW/dt = μ * (∂B/∂t), where the partial
+        derivative is found using ∂B/∂t = dB/dt - v ⋅ ∇B. The input trajectory must
+        include time, velocity, magnetic field, and magnetic gradient tensor columns.
         """
 
         # --- Step 1: Calculate the total derivative dB/dt ---
@@ -1079,23 +1037,11 @@ class FLEKSTP(object):
         pID: Tuple[int, int],
     ) -> pl.DataFrame:
         """
-        Computes the change of energy of a single particle based on the guiding center theory.
+        Compute the change of energy of a single particle based on guiding-center theory.
 
-        The formula is given by:
-        dW/dt = q*E_parallel*v_parallel + mu*(∂B/∂t + u_E.∇B) + m*v_parallel^2*(u_E.κ)
-
-        where W is the particle energy, B is the magnetic field magnitude,
-        u_E is the E cross B drift, and κ is the magnetic field curvature.
-        The first term on the right hand side is the parallel acceleration,
-        the second term is the Betatron acceleration, and the third term
-        is one type of Fermi acceleration.
-
-        Args:
-            pID (Tuple[int, int]): The particle ID (cpu, id).
-
-        Returns:
-            A Polars DataFrame with the time, the three energy change components,
-            and the total, in [eV/s].
+        The formula is given by dW/dt = q*E_parallel*v_parallel + mu*(∂B/∂t + u_E.∇B) +
+        m*v_parallel^2*(u_E.κ), where W is the particle energy, B is the magnetic field
+        magnitude, u_E is the E cross B drift, and κ is the magnetic field curvature.
         """
         pt_lazy = self[pID]
 
@@ -1528,25 +1474,14 @@ class FLEKSTP(object):
         outname=None,
     ):
         """
-        Analyzes and plots the energy changes for each term in the guiding center
+        Analyze and plot the energy changes for each term in the guiding-center
         approximation.
 
-        This method computes the parallel, Betatron, and Fermi accelerations using
-        `get_energy_change_guiding_center`. It also calculates the total kinetic
-        energy change and treats the difference between the kinetic energy change
-        and the sum of the guiding center terms (dW_total) as the non-adiabatic term.
-
-        The method generates a plot with four subplots:
-        1. dW_parallel: Energy change due to parallel electric fields.
-        2. dW_betatron: Energy change due to the Betatron effect.
-        3. dW_fermi: Energy change due to Fermi acceleration.
-        4. dW_total and Non-adiabatic term: The sum of the above terms compared
-           with the non-adiabatic heating component.
-
-        Args:
-            pID (Tuple[int, int]): The particle ID (cpu, id).
-            outname (str, optional): If provided, the plot is saved to this
-                                     filename instead of being shown. Defaults to None.
+        This method computes the parallel, Betatron, and Fermi acceleration terms
+        using ``get_energy_change_guiding_center`` and compares them with the
+        kinetic energy change rate. The residual difference between the total
+        kinetic energy change and the guiding-center sum is interpreted as the
+        non-adiabatic term.
         """
         # --- 1. Get Guiding Center Energy Changes ---
         df_gc = self.get_energy_change_guiding_center(pID)
@@ -1646,15 +1581,12 @@ class FLEKSTP(object):
         outname=None,
     ):
         """
-        Analyzes a specific drift for a particle, plotting its velocity, the
-        electric field, the energy change rate, and the integrated energy change.
+        Analyze a specific drift for a particle.
 
-        Args:
-            pID (tuple[int, int]): The particle ID (cpu, id).
-            drift_type (str): The type of drift to analyze. Supported options are:
-                              'ExB', 'gradient', 'curvature', 'polarization'.
-            outname (str, optional): If provided, the plot is saved to this
-                                      filename instead of being shown. Defaults to None.
+        The method plots the time series of the drift velocity, the electric
+        field components, the associated energy-change rate, and the integrated
+        energy change. Supported drift types are ``'ExB'``, ``'gradient'``,
+        ``'curvature'``, and ``'polarization'``.
         """
         drift_getters = {
             "ExB": self.get_ExB_drift,
@@ -1751,15 +1683,10 @@ class FLEKSTP(object):
 
     def plot_work_energy_verification(self, pID: Tuple[int, int], outname=None):
         """
-        Verifies the work-energy theorem for a particle by plotting the rate of
-        change of kinetic energy against the work rate done by the electric field.
-        It also plots the integrated change in kinetic energy versus the total
-        work done.
+        Verify the work-energy theorem for a particle.
 
-        Args:
-            pID (Tuple[int, int]): The particle ID (cpu, id).
-            outname (str, optional): If provided, the plot is saved to this
-                                     filename. Defaults to None (displays plot).
+        The method compares the kinetic-energy change rate with the electric-field
+        work rate and then compares the integrated quantities over time.
         """
         pt_lazy = self[pID]
         # Collect necessary columns once to improve performance.
@@ -1850,23 +1777,11 @@ class FLEKSTP(object):
 
     def find_shock_crossing_time(self, pid, b_threshold_factor=2.5, verbose=False):
         """
-        Finds the shock crossing time for a single particle.
+        Find the shock crossing time for a single particle.
 
-        The shock is identified by finding the first rate of change in the
-        magnetic field magnitude that exceeds a threshold, which signifies a
-        rapid transition between the upstream and downstream regions.
-
-        Args:
-            pid: particle index.
-            b_threshold_factor (float): A multiplier for the standard deviation of
-                                        the B-field derivative. A larger value makes
-                                        the detection less sensitive to minor
-                                        fluctuations. Defaults to 2.5.
-            verbose (bool): If True, prints diagnostic information. Defaults to False.
-
-        Returns:
-            float or None: The time of the shock crossing in seconds. Returns None if
-                        no significant crossing is detected based on the criteria.
+        The method identifies the first significant change in the magnetic-field
+        magnitude derivative and returns the corresponding time in seconds. If no
+        candidate crossing is found, ``None`` is returned.
         """
         # --- 1. Data Preparation ---
         pt = self[pid]
@@ -1927,34 +1842,11 @@ class FLEKSTP(object):
         verbose=False,
     ):
         """
-        Analyzes particles to find their state upstream and downstream of a shock.
+        Analyze particles to find their upstream and downstream states around a shock.
 
-        This function iterates through a list of particle IDs. For each particle, it
-        first identifies the shock crossing time. It then calculates specific upstream
-        and downstream time points based on this crossing. Finally, it interpolates
-        the particle's full state (position, velocity, fields) at these two points
-        and collects the results.
-
-        Args:
-            pids (list): A list of particle IDs (e.g., [(0, 1), (0, 2), ...]) to process.
-            delta_t_up (float): The time in seconds *before* the shock crossing to define
-                                the upstream point. Defaults to 20.0.
-            delta_t_down (float): The time in seconds *after* the shock crossing to define
-                                  the downstream point. Defaults to 40.0.
-            b_threshold_factor (float): The sensitivity factor for shock detection, passed to
-                                        `find_shock_crossing_time`. Defaults to 2.5.
-            verbose (bool): If True, prints progress and individual shock detection times.
-                            Defaults to False.
-
-        Returns:
-            tuple[pl.DataFrame, pl.DataFrame]: A tuple containing two Polars DataFrames:
-                - The first DataFrame contains the states of all valid particles at their
-                  respective upstream times.
-                - The second DataFrame contains the states of all valid particles at their
-                  respective downstream times.
-            Each DataFrame includes the original particle ID (`pid_rank`, `pid_idx`), the
-            shock crossing time (`t_cross`), and the interpolated physical quantities.
-            Returns (None, None) if no particles with a valid shock crossing are found.
+        Each particle is checked for a valid shock-crossing time. The method then
+        interpolates the full particle state at points before and after the shock
+        and returns the resulting upstream and downstream DataFrames.
         """
         if verbose:
             logger.info(
@@ -2055,20 +1947,11 @@ class FLEKSTP(object):
         self, upstream_df: pl.DataFrame, downstream_df: pl.DataFrame
     ) -> tuple[np.ndarray | None, np.ndarray | None]:
         """
-        Finds the de Hoffmann-Teller frame velocity and the shock normal vector
-        using the method from Sonnerup et al. [2006], which minimizes the
-        residual electric field.
+        Find the de Hoffmann-Teller frame velocity and shock normal vector.
 
-        Args:
-            upstream_df (pl.DataFrame): DataFrame with upstream particle states.
-            downstream_df (pl.DataFrame): DataFrame with downstream particle states.
-
-        Returns:
-            tuple[np.ndarray | None, np.ndarray | None]: A tuple containing:
-                - V_HT (np.ndarray | None): The de Hoffmann-Teller velocity vector
-                  in [km/s] if successful, otherwise None.
-                - shock_normal (np.ndarray | None): The estimated shock normal
-                  vector if successful, otherwise None.
+        This implementation follows the magnetic-coplanarity approach described by
+        Sonnerup et al. and minimizes the residual electric field in the resulting
+        transformed frame.
         """
         all_states = pl.concat([upstream_df, downstream_df])
 
@@ -2126,23 +2009,11 @@ class FLEKSTP(object):
         self, pID: Tuple[int, int], outname: str = None, verbose: bool = False
     ):
         """
-        Analyzes a particle's trajectory in the de Hoffmann-Teller (HT) frame.
+        Analyze a particle trajectory in the de Hoffmann-Teller frame.
 
-        This method performs the following steps:
-        1. Finds the shock crossing and determines the upstream and downstream states.
-        2. Calculates the de Hoffmann-Teller velocity (V_HT) and the shock normal.
-        3. Transforms the particle's velocity and the electric/magnetic fields
-           into the HT frame.
-        4. In this frame, the energy gain is a direct measure of non-ideal
-           acceleration. It calculates and plots this energy gain.
-        5. Generates a summary plot of the analysis.
-
-        Args:
-            pID (Tuple[int, int]): The particle ID (cpu, id) to analyze.
-            outname (str, optional): If provided, the plot is saved to this
-                                     filename. Defaults to None (displays plot).
-            verbose (bool, optional): If True, prints diagnostic information.
-                                      Defaults to False.
+        The method identifies the shock crossing, computes the de Hoffmann-Teller
+        velocity and shock normal, transforms the particle data into that frame,
+        and plots the associated non-ideal energy gain.
         """
         # 1. Get upstream and downstream states for the particle
         upstream_df, downstream_df = self.get_shock_up_down_states(
@@ -2981,27 +2852,11 @@ class FLEKSTP(object):
         smoothing_gyro_periods=1.0,
     ):
         """
-        Verifies the guiding center model by comparing it against the full
-        particle trajectory.
+        Verify the guiding-center model against the full particle trajectory.
 
-        This method performs the following steps:
-        1. Calculates a "true" guiding center trajectory by applying a low-pass
-           filter (moving average) to the full particle trajectory, smoothing
-           out the gyromotion.
-        2. Calculates a "predicted" guiding center trajectory by numerically
-           integrating the guiding center velocity, which is the sum of the
-           parallel velocity and all perpendicular drift velocities (E x B,
-           gradient, curvature, and polarization).
-        3. Generates a plot comparing the full trajectory, the "true" GC
-           trajectory, and the "predicted" GC trajectory for each coordinate (X, Y, Z).
-
-        A close overlap between the "true" and "predicted" trajectories
-        validates the guiding center approximation and the drift calculations.
-
-        Args:
-            pID (Tuple[int, int]): The ID of the particle to analyze.
-            smoothing_gyro_periods (float): The size of the moving average window
-                                            in units of gyro-periods. Defaults to 1.0.
+        The method estimates a smoothed guiding-center path, predicts the path
+        from the drift velocity terms, and plots the comparison for each spatial
+        coordinate.
         """
         try:
             pt = self[pID].collect()
@@ -3025,14 +2880,10 @@ def interpolate_at_times(
     df: Union[pl.DataFrame, pl.LazyFrame], times_to_interpolate: list[float]
 ) -> pl.DataFrame:
     """
-    Interpolates multiple numeric columns of a DataFrame at specified time points.
+    Interpolate multiple numeric columns at specified time points.
 
-    Args:
-        df: The input Polars DataFrame or LazyFrame.
-        times_to_interpolate: A list of time points (floats or ints) at which to interpolate.
-
-    Returns:
-        A new DataFrame containing the interpolated rows for each specified time.
+    The input DataFrame or LazyFrame is first converted to a regular time-ordered
+    frame, then rows matching the requested interpolation times are returned.
     """
     if isinstance(df, pl.LazyFrame):
         df = df.collect()
@@ -3065,12 +2916,10 @@ def interpolate_at_times(
 
 def plot_integrated_energy(df: pl.DataFrame, outname=None, **kwargs):
     """
-    Plots integrated energy quantities as a function of time.
+    Plot integrated energy quantities as a function of time.
 
-    Args:
-        df (pl.DataFrame): A Polars DataFrame containing a time column and
-                           one or more integrated energy columns.
-        outname (str): If not None, save the plot to file.
+    The DataFrame should contain a ``time`` column and one or more integrated
+    energy columns that will be overlaid on a single figure.
     """
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(12, 5), constrained_layout=True)
