@@ -7,6 +7,7 @@
 
 format.md
 idl_data.ipynb
+reconnection.ipynb
 amrex_data.ipynb
 test_particle_data.ipynb
 exosphere.ipynb
