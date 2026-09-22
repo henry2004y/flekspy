@@ -1,0 +1,884 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Magnetic Reconnection Analysis with flekspy &#8212; flekspy  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reconnection';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AMReX Data" href="amrex_data.html" />
+    <link rel="prev" title="IDL Data" href="idl_data.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">flekspy  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Magnetic Reconnection Analysis with flekspy
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="select_and_plot_particles.html">
+    Select and plot particles with flekspy
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="format.html">
+    FLEKS Data Format
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="idl_data.html">
+    IDL Data
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Magnetic Reconnection Analysis with flekspy
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="amrex_data.html">
+    AMReX Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="test_particle_data.html">
+    Test Particle Data
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="exosphere.html">
+    Exosphere Module
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="select_and_plot_particles.html">
+    Select and plot particles with flekspy
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="algorithm.html">
+    Algorithm
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="conduct.html">
+    Code of Conduct
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Magnetic Reconnection Analysis with <code class="docutils literal notranslate"><span class="pre">flekspy</span></code></span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="magnetic-reconnection-analysis-with-flekspy">
+<h1>Magnetic Reconnection Analysis with <code class="docutils literal notranslate"><span class="pre">flekspy</span></code><a class="headerlink" href="#magnetic-reconnection-analysis-with-flekspy" title="Link to this heading">#</a></h1>
+<p>This notebook demonstrates how to analyze magnetic reconnection simulations using <code class="docutils literal notranslate"><span class="pre">flekspy</span></code>.</p>
+<section id="capabilities-covered">
+<h2>Capabilities covered:<a class="headerlink" href="#capabilities-covered" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Vector Potential <span class="math notranslate nohighlight">\(A_z(x, y)\)</span></strong>: Conservative 2D path integration from the central column outward such that <span class="math notranslate nohighlight">\(\mathbf{B} = \nabla \times (A_z \hat{\mathbf{z}})\)</span>.</p></li>
+<li><p><strong>Reconnected Flux <span class="math notranslate nohighlight">\(\Delta\Psi(t)\)</span> &amp; Reconnection Rate <span class="math notranslate nohighlight">\(R(t)\)</span></strong>: Evaluated from midplane magnetic flux or vector potential.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">ReconnectionSeries</span></code> Container</strong>: Fast header scanning, lazy loading with LRU cache, and single-pass metrics extraction for time series.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">xarray</span></code> Dataset Accessor</strong>: Seamless integration via <code class="docutils literal notranslate"><span class="pre">ds.reconnection</span></code>.</p></li>
+<li><p><strong>Publication-Grade Visualizations</strong>: Continuous magnetic field streamlines with directional arrows via <code class="docutils literal notranslate"><span class="pre">flekspy.plot.streamplot</span></code>.</p></li>
+</ol>
+<blockquote>
+<div><p>Full-scale kinetic or Hall-MHD reconnection runs typically produce gigabytes of output. In this notebook, we generate a compact sequence of synthetic snapshots to showcase the complete analysis workflow without requiring external downloads.</p>
+</div></blockquote>
+</section>
+<section id="imports-and-setup">
+<h2>1. Imports and Setup<a class="headerlink" href="#imports-and-setup" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">flekspy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">flekspy.reconnection</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">reconn</span>
+
+<span class="c1"># Configure display options</span>
+<span class="n">xr</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span><span class="n">display_expand_coords</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">display_expand_data</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"figure.dpi"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">120</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="generating-synthetic-reconnection-snapshots">
+<h2>2. Generating Synthetic Reconnection Snapshots<a class="headerlink" href="#generating-synthetic-reconnection-snapshots" title="Link to this heading">#</a></h2>
+<p>We construct a sequence of snapshots simulating the physical stages of magnetic reconnection:</p>
+<ul class="simple">
+<li><p>An initial Harris current sheet: <span class="math notranslate nohighlight">\(B_x(y) = B_0 \tanh(y/L)\)</span></p></li>
+<li><p>An island perturbation that grows over time: <span class="math notranslate nohighlight">\(b_1(t)\)</span></p></li>
+<li><p>The characteristic out-of-plane quadrupolar Hall magnetic field <span class="math notranslate nohighlight">\(B_z(x, y)\)</span></p></li>
+<li><p>Bipolar reconnection outflow jets <span class="math notranslate nohighlight">\(u_x(x, y)\)</span></p></li>
+</ul>
+<p>Each snapshot is saved as a standard IDL ASCII output file (<code class="docutils literal notranslate"><span class="pre">.out</span></code>).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">temp_dir</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="mi">48</span><span class="p">,</span> <span class="mi">24</span>
+<span class="n">Lx</span><span class="p">,</span> <span class="n">Ly</span> <span class="o">=</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">10.0</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">Lx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">Lx</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">Ly</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">Ly</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+
+<span class="c1"># Generate 6 time snapshots showing island growth</span>
+<span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="mf">12.0</span><span class="p">,</span> <span class="mf">16.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">]</span>
+<span class="n">file_paths</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">times</span><span class="p">):</span>
+    <span class="c1"># Reconnection perturbation amplitude grows and then saturates</span>
+    <span class="n">amp</span> <span class="o">=</span> <span class="mf">0.12</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">t</span> <span class="o">/</span> <span class="mf">6.0</span><span class="p">))</span>
+    <span class="n">fpath</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"z=0_var_t</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">05.1f</span><span class="si">}</span><span class="s2">_n</span><span class="si">{</span><span class="n">i</span><span class="o">*</span><span class="mi">200</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.out"</span>
+    
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"PIC unit"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">200</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> 2 0 6"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">nx</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ny</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"x y Bx By Bz ux"</span>
+    <span class="p">]</span>
+    
+    <span class="k">for</span> <span class="n">j_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ny</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">):</span>
+            <span class="n">xi</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i_idx</span><span class="p">]</span>
+            <span class="n">yj</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">j_idx</span><span class="p">]</span>
+            <span class="n">bx_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">yj</span><span class="p">)</span> <span class="o">-</span> <span class="n">amp</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">Ly</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">xi</span> <span class="o">/</span> <span class="n">Lx</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">yj</span> <span class="o">/</span> <span class="n">Ly</span><span class="p">)</span>
+            <span class="n">by_val</span> <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">Lx</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">xi</span> <span class="o">/</span> <span class="n">Lx</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">yj</span> <span class="o">/</span> <span class="n">Ly</span><span class="p">)</span>
+            <span class="n">bz_val</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">amp</span> <span class="o">*</span> <span class="mf">8.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">xi</span> <span class="o">/</span> <span class="n">Lx</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">yj</span> <span class="o">/</span> <span class="n">Ly</span><span class="p">)</span>
+            <span class="n">ux_val</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">amp</span> <span class="o">/</span> <span class="mf">0.12</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">xi</span> <span class="o">/</span> <span class="n">Lx</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">yj</span> <span class="o">/</span> <span class="mf">1.5</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">xi</span><span class="si">:</span><span class="s2">.5e</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">yj</span><span class="si">:</span><span class="s2">.5e</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">bx_val</span><span class="si">:</span><span class="s2">.5e</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">by_val</span><span class="si">:</span><span class="s2">.5e</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">bz_val</span><span class="si">:</span><span class="s2">.5e</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ux_val</span><span class="si">:</span><span class="s2">.5e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            
+    <span class="n">fpath</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">file_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">file_paths</span><span class="p">)</span><span class="si">}</span><span class="s2"> synthetic snapshots in </span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Generated 6 synthetic snapshots in /tmp/tmpa8uxcp9e
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="single-snapshot-analysis-and-xarray-accessor">
+<h2>3. Single-Snapshot Analysis and Xarray Accessor<a class="headerlink" href="#single-snapshot-analysis-and-xarray-accessor" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">flekspy</span></code> registers an xarray accessor <code class="docutils literal notranslate"><span class="pre">ds.reconnection</span></code> on every 2D dataset loaded with <code class="docutils literal notranslate"><span class="pre">read_idl</span></code> or <code class="docutils literal notranslate"><span class="pre">load</span></code>.</p>
+<p>Let’s load the snapshot near peak reconnection (<span class="math notranslate nohighlight">\(t = 16.0\)</span>) and inspect the accessor capabilities:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds_peak</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">read_idl</span><span class="p">(</span><span class="n">file_paths</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded frame at t = </span><span class="si">{</span><span class="n">ds_peak</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'time'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> with dimensions: </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">ds_peak</span><span class="o">.</span><span class="n">sizes</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># 1. Calculate 2D magnetic vector potential Az(x, y)</span>
+<span class="n">az</span> <span class="o">=</span> <span class="n">ds_peak</span><span class="o">.</span><span class="n">reconnection</span><span class="o">.</span><span class="n">calc_vector_potential</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Vector potential Az computed: shape = </span><span class="si">{</span><span class="n">az</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, range = [</span><span class="si">{</span><span class="n">az</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">az</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
+
+<span class="c1"># 2. Calculate reconnected magnetic flux Delta Psi</span>
+<span class="n">flux_mid</span> <span class="o">=</span> <span class="n">ds_peak</span><span class="o">.</span><span class="n">reconnection</span><span class="o">.</span><span class="n">reconnected_flux</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"midplane"</span><span class="p">)</span>
+<span class="n">flux_az</span> <span class="o">=</span> <span class="n">ds_peak</span><span class="o">.</span><span class="n">reconnection</span><span class="o">.</span><span class="n">reconnected_flux</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"az"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Reconnected flux (midplane integral): </span><span class="si">{</span><span class="n">flux_mid</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Reconnected flux (vector potential):  </span><span class="si">{</span><span class="n">flux_az</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loaded frame at t = 16.0 with dimensions: {'x': 48, 'y': 24}
+Vector potential Az computed: shape = (48, 24), range = [-4.380, 0.000]
+Reconnected flux (midplane integral): 0.2232
+Reconnected flux (vector potential):  0.2222
+</pre></div>
+</div>
+</div>
+</div>
+<section id="d-slice-with-continuous-field-lines-and-directional-arrows">
+<h3>2D Slice with Continuous Field Lines and Directional Arrows<a class="headerlink" href="#d-slice-with-continuous-field-lines-and-directional-arrows" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">plot_2d_slice</span></code> combines the scalar background field (such as the Hall field <span class="math notranslate nohighlight">\(B_z\)</span> or outflow <span class="math notranslate nohighlight">\(u_x\)</span>) with continuous magnetic streamlines that include directional arrowheads:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ds_peak</span><span class="o">.</span><span class="n">reconnection</span><span class="o">.</span><span class="n">plot_slice</span><span class="p">(</span>
+    <span class="n">var</span><span class="o">=</span><span class="s2">"Bz"</span><span class="p">,</span>
+    <span class="n">stream_field</span><span class="o">=</span><span class="s2">"B"</span><span class="p">,</span>
+    <span class="n">stream_density</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="sa">r</span><span class="s2">"Quadrupolar Hall $B_z$ &amp; Field Lines at $t = 16.0 \, \Omega_</span><span class="si">{ci}</span><span class="s2">^{-1}$"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/4e22ea59f3ae024e2533850094a11ea6479a71bf44a350362553161d4ba9dffa.png" src="_images/4e22ea59f3ae024e2533850094a11ea6479a71bf44a350362553161d4ba9dffa.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="multi-frame-analysis-with-reconnectionseries">
+<h2>4. Multi-Frame Analysis with <code class="docutils literal notranslate"><span class="pre">ReconnectionSeries</span></code><a class="headerlink" href="#multi-frame-analysis-with-reconnectionseries" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ReconnectionSeries</span></code> inherits from <code class="docutils literal notranslate"><span class="pre">IDLSeries</span></code>, which provides fast header pre-scanning and lazy on-demand loading with an LRU cache (<code class="docutils literal notranslate"><span class="pre">max_cache=32</span></code> by default).</p>
+<p>It automatically extracts the time series of:</p>
+<ul class="simple">
+<li><p>Reconnected flux <span class="math notranslate nohighlight">\(\Delta\Psi(t)\)</span></p></li>
+<li><p>Reconnection rate <span class="math notranslate nohighlight">\(R(t) = d\Delta\Psi/dt\)</span></p></li>
+<li><p>Peak quadrupolar Hall field <span class="math notranslate nohighlight">\(\max(|B_z|)\)</span></p></li>
+<li><p>Peak outflow velocity <span class="math notranslate nohighlight">\(\max(|u_x|)\)</span></p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">series</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">ReconnectionSeries</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s2">/*.out"</span><span class="p">,</span> <span class="n">max_cache</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+<span class="c1"># Summary dictionary</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Reconnection Summary:"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">summary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;ReconnectionSeries: 6 frames, t=[0.00, 20.00], grid=[48 24], mode=lazy(lru=4), vars=[np.str_('x'), np.str_('y'), np.str_('Bx'), np.str_('By'), np.str_('Bz'), np.str_('ux')]&gt;
+
+Reconnection Summary:
+  peak_rate: 0.02918110265957447
+  peak_time: 0.0
+  peak_frame: 0
+  max_flux: 0.23132818936170213
+  peak_hall_bz: 0.23077
+  peak_outflow_ux: 0.471878
+  total_frames: 6
+  time_range: (0.0, 20.0)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="reconnection-rate-vs-time">
+<h2>5. Reconnection Rate vs Time<a class="headerlink" href="#reconnection-rate-vs-time" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">plot_reconnection_rate</span></code> displays the reconnected flux <span class="math notranslate nohighlight">\(\Delta\Psi(t)\)</span> on the left axis and the reconnection rate <span class="math notranslate nohighlight">\(R(t) = d\Delta\Psi/dt\)</span> on the right axis, highlighting the peak reconnection rate:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">reconn</span><span class="o">.</span><span class="n">plot_reconnection_rate</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/bbb85f70c1c22bf2e46494386b5c023044e6237c11fd73f363a4334158d75dbd.png" src="_images/bbb85f70c1c22bf2e46494386b5c023044e6237c11fd73f363a4334158d75dbd.png" />
+</div>
+</div>
+</section>
+<section id="multi-panel-peak-state-diagnostics">
+<h2>6. Multi-Panel Peak State Diagnostics<a class="headerlink" href="#multi-panel-peak-state-diagnostics" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">plot_peak_state</span></code> automatically identifies the time of maximum reconnection rate and generates a 6-panel overview layout:</p>
+<ul class="simple">
+<li><p>(a) Outflow velocity or density with continuous streamlines + arrows</p></li>
+<li><p>(b) Hall magnetic field <span class="math notranslate nohighlight">\(B_z\)</span> with continuous streamlines + arrows</p></li>
+<li><p>© Reconnection outflow jets</p></li>
+<li><p>(d) 1D midplane cut <span class="math notranslate nohighlight">\(B_y(x, y=0)\)</span></p></li>
+<li><p>(e) 1D inflow profile <span class="math notranslate nohighlight">\(B_x(x=0, y)\)</span> across the current sheet</p></li>
+<li><p>(f) Reconnection rate curve with a vertical indicator line for the current frame</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">reconn</span><span class="o">.</span><span class="n">plot_peak_state</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/8867f474a2e9994df9634200c82474883768eadd13da104e3371a3a74a8460de.png" src="_images/8867f474a2e9994df9634200c82474883768eadd13da104e3371a3a74a8460de.png" />
+</div>
+</div>
+</section>
+<section id="d-time-evolution">
+<h2>7. 2D Time Evolution<a class="headerlink" href="#d-time-evolution" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">plot_2d_evolution</span></code> visualizes the spatial evolution across key simulation times, illustrating current sheet thinning, island expansion, and magnetic topology changes:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">reconn</span><span class="o">.</span><span class="n">plot_2d_evolution</span><span class="p">(</span>
+    <span class="n">series</span><span class="p">,</span>
+    <span class="n">var</span><span class="o">=</span><span class="s2">"Bz"</span><span class="p">,</span>
+    <span class="n">times</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="mf">16.0</span><span class="p">],</span>
+    <span class="n">stream_field</span><span class="o">=</span><span class="s2">"B"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/d6fe487a6f4adcfbd740cb56198966f62bf56e97255f538a63e95470406b6fe1.png" src="_images/d6fe487a6f4adcfbd740cb56198966f62bf56e97255f538a63e95470406b6fe1.png" />
+</div>
+</div>
+</section>
+<section id="cleanup">
+<h2>8. Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">temp_dir</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Cleaned up temporary synthetic data files."</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Cleaned up temporary synthetic data files.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="idl_data.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">IDL Data</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="amrex_data.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">AMReX Data</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#capabilities-covered">Capabilities covered:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#imports-and-setup">1. Imports and Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-synthetic-reconnection-snapshots">2. Generating Synthetic Reconnection Snapshots</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-snapshot-analysis-and-xarray-accessor">3. Single-Snapshot Analysis and Xarray Accessor</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-slice-with-continuous-field-lines-and-directional-arrows">2D Slice with Continuous Field Lines and Directional Arrows</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-frame-analysis-with-reconnectionseries">4. Multi-Frame Analysis with <code class="docutils literal notranslate"><span class="pre">ReconnectionSeries</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reconnection-rate-vs-time">5. Reconnection Rate vs Time</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-panel-peak-state-diagnostics">6. Multi-Panel Peak State Diagnostics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-time-evolution">7. 2D Time Evolution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cleanup">8. Cleanup</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/reconnection.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Yuxi Chen, Hongyang Zhou.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

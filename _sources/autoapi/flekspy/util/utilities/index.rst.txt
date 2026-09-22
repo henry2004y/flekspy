@@ -1,0 +1,67 @@
+flekspy.util.utilities
+======================
+
+.. py:module:: flekspy.util.utilities
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.util.utilities.logger
+   flekspy.util.utilities.plot_unit_planet
+   flekspy.util.utilities.plot_unit_si
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.utilities.get_unit
+   flekspy.util.utilities.get_ticks
+   flekspy.util.utilities.unit_one
+   flekspy.util.utilities.download_testfile
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: plot_unit_planet
+
+.. py:data:: plot_unit_si
+
+.. py:function:: get_unit(var: str, unit_type='planet') -> str
+
+   Return the unit of variable.
+
+   :param var: variable name.
+   :type var: str
+   :param unit_type: unit system. Defaults to "planet".
+   :type unit_type: str, optional
+
+   :returns: unit in the specified unit system.
+   :rtype: str
+
+
+.. py:function:: get_ticks(vmin, vmax)
+
+.. py:function:: unit_one(field, data)
+
+   Utility function for setting equal weights for macroparticles.
+   TBD: add units.
+
+
+.. py:function:: download_testfile(url: str, target_path='.')
+
+   Downloads a tar.gz file from a URL and extracts its contents.
+
+   :param url: the URL of the tar.gz file.
+   :type url: str
+   :param target_path: the directory to extract the files to. Defaults to the current directory.
+   :type target_path: str
+
+
