@@ -16,6 +16,11 @@ __all__ = [
     "FLEKSTP",
     "AMReXParticle",
     "xr",
+    "IDLSeries",
+    "ReconnectionSeries",
+    "read_idl_header",
+    "calc_vector_potential",
+    "calc_reconnected_flux",
 ]
 
 
@@ -30,6 +35,12 @@ def __getattr__(name):
         "AMReXParticle": "flekspy.amrex",
         "read_idl": "flekspy.idl",
         "DerivedAccessor": "flekspy.idl",
+        "IDLSeries": "flekspy.idl",
+        "read_idl_header": "flekspy.idl",
+        "ReconnectionSeries": "flekspy.reconnection",
+        "calc_vector_potential": "flekspy.reconnection",
+        "calc_reconnected_flux": "flekspy.reconnection",
+        "reconnection": "flekspy",
         "xr": "xarray",
     }
     if name in _LAZY_MAPPING:
