@@ -17,7 +17,7 @@ from flekspy.reconnection.analysis import ReconnectionSeries, _find_var, calc_ve
 
 def plot_reconnection_rate(
     series: ReconnectionSeries,
-    smooth_window: int = 3,
+    smooth_window: int = 1,
     ax: Optional[plt.Axes] = None,
     color_flux: str = "#1f77b4",
     color_rate: str = "#d62728",
@@ -55,7 +55,8 @@ def plot_reconnection_rate(
     labels = [l.get_label() for l in lines]
     ax1.legend(lines, labels, loc="upper left", framealpha=0.9)
 
-    plt.tight_layout()
+    if ax is None:
+        plt.tight_layout()
     if save_path:
         fig.savefig(save_path, dpi=dpi, bbox_inches="tight")
     return fig, (ax1, ax2)

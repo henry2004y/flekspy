@@ -259,7 +259,7 @@ class ReconnectionSeries(IDLSeries):
             self._compute_metrics()
         return self._flux
 
-    def rate(self, smooth_window: int = 3) -> np.ndarray:
+    def rate(self, smooth_window: int = 1) -> np.ndarray:
         """Calculate reconnection rate R(t) = d(Delta Psi)/dt."""
         if len(self) < 2:
             return np.zeros(len(self))
@@ -298,7 +298,7 @@ class ReconnectionSeries(IDLSeries):
     @property
     def peak_frame_index(self) -> int:
         """Frame index where reconnection rate reaches its maximum."""
-        r = self.rate(smooth_window=3)
+        r = self.rate(smooth_window=1)
         return int(np.argmax(r))
 
     @property
@@ -309,7 +309,7 @@ class ReconnectionSeries(IDLSeries):
     def summary(self) -> Dict[str, Any]:
         """Compute key summary metrics of the reconnection process."""
         self._compute_metrics()
-        r = self.rate(smooth_window=3)
+        r = self.rate(smooth_window=1)
         p_idx = int(np.argmax(r))
         return {
             "peak_rate": float(r[p_idx]),
