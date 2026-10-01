@@ -10,6 +10,7 @@ import importlib
 __all__ = [
     "load",
     "read_idl",
+    "read_pyvista",
     "DerivedAccessor",
     "YtFLEKSData",
     "extract_phase",
@@ -34,6 +35,7 @@ def __getattr__(name):
         "FLEKSTP": "flekspy.tp",
         "AMReXParticle": "flekspy.amrex",
         "read_idl": "flekspy.idl",
+        "read_pyvista": "flekspy.pyvista",
         "DerivedAccessor": "flekspy.idl",
         "IDLSeries": "flekspy.idl",
         "read_idl_header": "flekspy.idl",
@@ -74,7 +76,9 @@ def load(
         use_yt_loader (bool, optional): If True, forces the use of the yt loader for AMReX data. Defaults to False.
 
     Returns:
-        FLEKS data: xarray.Dataset, YtFLEKSData, or FLEKSTP
+        FLEKS data: xarray.Dataset, YtFLEKSData, FLEKSTP, AMReXParticle,
+        or native pyvista.DataSet / pyvista.MultiBlock for Tecplot DAT and
+        VTK files (requires the optional ``pyvista`` extra).
     """
     p = Path(filename)
     file_generator = p.parent.rglob(p.name)
@@ -101,6 +105,18 @@ def load(
     elif filepath.suffix in [".out", ".outs"]:
         read_idl = __getattr__("read_idl")
         return read_idl(filename, npict=npict)
+    elif filepath.suffix.lower() in {
+        ".dat",
+        ".vtk",
+        ".vtu",
+        ".vts",
+        ".vtr",
+        ".vti",
+        ".vtp",
+        ".vtm",
+    }:
+        read_pyvista = __getattr__("read_pyvista")
+        return read_pyvista(filename)
     elif basename.endswith("_amrex"):
         if use_yt_loader or "particle" not in basename:
             YtFLEKSData = __getattr__("YtFLEKSData")

@@ -14,6 +14,7 @@ tests/data/
 3d_particle*
 cut_particle*
 FLEKS*
+!/src/flekspy/
 Header
 .venv/
 

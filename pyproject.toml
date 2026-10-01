@@ -18,6 +18,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+pyvista = [
+    "pyvista>=0.44,<1",
+]
 plot = [
     "matplotlib>=3.8.2,<4",
     "scipy>=1.14.1,<2",
@@ -42,7 +45,7 @@ docs = [
     "yt>=4.3.0,<5",
 ]
 dev = [
-    "flekspy[plot,hdf5,ml,yt,docs]",
+    "flekspy[plot,hdf5,ml,yt,docs,pyvista]",
     "pytest>=8.0.0,<9",
     "pytest-benchmark>=4.0.0,<5",
     "pytest-cov>=4.1.0,<5",

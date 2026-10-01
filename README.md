@@ -42,6 +42,30 @@ ds = flekspy.load("sample_data/3*amrex")
 
 Plotting is supported via Matplotlib and YT. For more detailed usage and contribution guide, please refer to the [documentation](https://henry2004y.github.io/flekspy/).
 
+### PyVista meshes
+
+Install the optional reader with `python -m pip install 'flekspy[pyvista]'`.
+ASCII Tecplot `.dat` and VTK `.vtk`, `.vtu`, `.vts`, `.vtr`, `.vti`, `.vtp`,
+and `.vtm` files return native PyVista objects:
+
+```python
+import flekspy as fs
+
+mesh = fs.load("simulation/snapshot.vtu")
+print(mesh.array_names, mesh.bounds)
+slice_mesh = mesh.slice(normal="z", origin=(0, 0, 0))
+
+zones = fs.load("simulation/snapshot.dat")
+print(zones.n_blocks, zones[0].array_names)
+```
+
+DAT files always return a `pyvista.MultiBlock`, preserving every zone. Their
+variable names have bracketed units removed, and coordinate names such as
+`X AU` become `X` for the Tecplot reader. The source file is unchanged. VTK
+datasets retain their arrays, metadata, and multiblock hierarchy. No physical
+unit conversion or required magnetic/velocity fields are imposed. The direct
+reader `fs.read_pyvista(path)` is also available.
+
 ### ParaView Plugin
 
 `flekspy` provides a ParaView plugin for visualizing FLEKS data. To use the plugin, follow these steps:
