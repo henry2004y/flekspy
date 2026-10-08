@@ -1,0 +1,199 @@
+flekspy.reconnection.analysis
+=============================
+
+.. py:module:: flekspy.reconnection.analysis
+
+.. autoapi-nested-parse::
+
+   Magnetic reconnection analysis routines:
+   - Vector potential Az calculation
+   - Reconnected flux Delta Psi(t) calculation
+   - Reconnection rate dDeltaPsi/dt calculation
+   - ReconnectionSeries container subclassing IDLSeries
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.reconnection.analysis.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.reconnection.analysis.ReconnectionSeries
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.reconnection.analysis._find_var
+   flekspy.reconnection.analysis.calc_vector_potential
+   flekspy.reconnection.analysis.calc_reconnected_flux
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: _find_var(ds: xarray.Dataset, candidates: Sequence[str]) -> Optional[str]
+
+   Find the first matching variable name in dataset among candidate strings (case-insensitive).
+
+
+.. py:function:: calc_vector_potential(ds: xarray.Dataset, x_coord: str = 'x', y_coord: str = 'y', bx_var: Optional[str] = None, by_var: Optional[str] = None) -> xarray.DataArray
+
+   Calculate the 2D out-of-plane magnetic vector potential Az(x, y).
+
+   In 2D (z-invariant geometry):
+       Bx = dAz/dy  =>  Az(x0, y) = int_{y0}^y Bx(x0, y') dy'
+       By = -dAz/dx =>  Az(x, y) = Az(x0, y) - int_{x0}^x By(x', y) dx'
+
+   :param ds: 2D dataset containing magnetic field components.
+   :type ds: xr.Dataset
+   :param x_coord: Coordinate name along reconnection outflow/current sheet.
+   :type x_coord: str, default 'x'
+   :param y_coord: Coordinate name normal to the current sheet.
+   :type y_coord: str, default 'y'
+   :param bx_var: Variable name for Bx. If None, auto-detected from ('Bx', 'bx').
+   :type bx_var: str, optional
+   :param by_var: Variable name for By. If None, auto-detected from ('By', 'by').
+   :type by_var: str, optional
+
+   :returns: Computed 2D magnetic vector potential Az(x, y).
+   :rtype: xr.DataArray
+
+
+.. py:function:: calc_reconnected_flux(ds: xarray.Dataset, method: str = 'midplane', x_coord: str = 'x', y_coord: str = 'y', by_var: Optional[str] = None) -> float
+
+   Calculate the reconnected magnetic flux Delta Psi.
+
+   :param ds: 2D dataset with magnetic field.
+   :type ds: xr.Dataset
+   :param method: Calculation method:
+                  - 'midplane': Integrates |By(x, y_mid)| dx from central X-line (x=0) to domain edge (x=Lx/2).
+                  - 'az': Calculates max(|Az(x, y_mid) - Az(x0, y_mid)|) along the midplane (O-point minus X-point).
+   :type method: {'midplane', 'az'}, default 'midplane'
+   :param x_coord: Coordinate name along outflow direction.
+   :type x_coord: str, default 'x'
+   :param y_coord: Coordinate name across current sheet.
+   :type y_coord: str, default 'y'
+   :param by_var: Variable name for By.
+   :type by_var: str, optional
+
+   :returns: The reconnected magnetic flux Delta Psi.
+   :rtype: float
+
+
+.. py:class:: ReconnectionSeries(files: Union[str, Sequence[Union[str, Any]]], eager: bool = False, max_cache: int = 32, flux_method: str = 'midplane', **kwargs)
+
+   Bases: :py:obj:`flekspy.idl.series.IDLSeries`
+
+
+   Specialized series container for magnetic reconnection simulation results.
+
+   Subclasses IDLSeries with lazy-loading and provides automated computation of:
+   - Reconnected magnetic flux Delta Psi(t)
+   - Reconnection rate R(t) = d(Delta Psi)/dt
+   - Peak quadrupolar Hall magnetic field Bz(t)
+   - Peak reconnection outflow velocity ux(t)
+   - Electric field Ez at the X-line
+
+
+   .. py:attribute:: flux_method
+      :value: 'midplane'
+
+
+
+   .. py:attribute:: _flux
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:attribute:: _peak_bz
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:attribute:: _peak_ux
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:attribute:: _xpoint_ez
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:method:: _compute_metrics() -> None
+
+      Compute all time series metrics in a single efficient pass over frames.
+
+
+
+   .. py:property:: flux
+      :type: numpy.ndarray
+
+
+      Array of reconnected magnetic flux Delta Psi for each time frame.
+
+
+   .. py:method:: rate(smooth_window: int = 1) -> numpy.ndarray
+
+      Calculate reconnection rate R(t) = d(Delta Psi)/dt.
+
+
+
+   .. py:property:: peak_hall_bz
+      :type: numpy.ndarray
+
+
+      Peak out-of-plane Hall magnetic field max(|Bz|) for each time frame.
+
+
+   .. py:property:: peak_outflow_ux
+      :type: numpy.ndarray
+
+
+      Peak reconnection outflow velocity max(|ux|) for each time frame.
+
+
+   .. py:property:: xpoint_ez
+      :type: numpy.ndarray
+
+
+      Electric field Ez at the central reconnection X-point (x=0, y=0) for each time frame.
+
+
+   .. py:property:: peak_frame_index
+      :type: int
+
+
+      Frame index where reconnection rate reaches its maximum.
+
+
+   .. py:property:: peak_time
+      :type: float
+
+
+      Time where reconnection rate reaches its maximum.
+
+
+   .. py:method:: summary() -> Dict[str, Any]
+
+      Compute key summary metrics of the reconnection process.
+
+
+

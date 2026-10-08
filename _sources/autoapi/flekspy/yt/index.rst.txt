@@ -1,0 +1,184 @@
+flekspy.yt
+==========
+
+.. py:module:: flekspy.yt
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/yt/yt/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.yt.YtFLEKSData
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.yt.extract_phase
+
+
+Package Contents
+----------------
+
+.. py:class:: YtFLEKSData(output_dir, read_field_data=False, cparam_filename=None, fparam_filename=None, dataset_type='boxlib_native', storage_filename=None, units_override=None, unit_system='mks')
+
+   Bases: :py:obj:`yt.frontends.boxlib.api.BoxlibDataset`
+
+
+   Read and plot the AMReX format output from FLEKS.
+
+   :param output_dir: the path to the data.
+   :type output_dir: str
+
+   .. rubric:: Examples
+
+   >>> import flekspy
+   >>> ds = flekspy.YtFLEKSData("3d_particle*n00004750_amrex")
+
+
+   .. py:attribute:: _index_class
+
+
+   .. py:attribute:: _field_info_class
+
+
+   .. py:attribute:: default_fluid_type
+      :value: 'mesh'
+
+
+
+   .. py:attribute:: default_field
+      :value: ('mesh', 'density')
+
+
+
+   .. py:attribute:: fluid_types
+      :value: ('mesh', 'index', 'raw')
+
+
+
+   .. py:attribute:: read_field_data
+      :value: False
+
+
+
+   .. py:method:: _parse_parameter_file()
+
+      Parses the parameter file and establishes the various
+      dictionaries.
+
+
+
+   .. py:method:: _set_code_unit_attributes()
+
+
+   .. py:method:: pvar(var)
+
+
+   .. py:method:: get_slice(norm: str, cut_loc: float) -> xarray.Dataset
+
+      Returns a xarray.Dataset object that contains a slice along the normal direction.
+
+      :param norm: slice normal direction in "x", "y" or "z"
+      :type norm: str
+      :param cut_loc: cut location along the normal direction
+      :type cut_loc: float
+
+
+
+   .. py:method:: get_domain() -> xarray.Dataset
+
+      Read all the simulation data into a 3D box.
+      This method only reads grid data, not particle data.
+
+
+
+   .. py:method:: _get_profile(x_field, y_field, z_field, region: yt.data_objects.selection_objects.data_selection_objects.YTSelectionContainer | None = None, x_bins: int = 128, y_bins: int = 128, domain_size: tuple | None = None)
+
+
+   .. py:method:: get_phase(x_field, y_field, z_field, region: yt.data_objects.selection_objects.data_selection_objects.YTSelectionContainer | None = None, x_bins: int = 128, y_bins: int = 128, domain_size: tuple | None = None)
+
+      Get particle phase space distribution.
+
+      :param region: YTSelectionContainer
+                     Spatial region to be selected, such as all_data, box, region, or sphere.
+      :param x_field & y_field: string
+                                The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
+      :param z_field: string
+                      It is usually the particle weight: "p_w".
+      :param domain_size: tuple
+                          Axis range of 4 elements: x_min, x_max, y_min, y_max
+
+      .. rubric:: Examples
+
+      >>> x, y, w = ds.get_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
+
+
+
+   .. py:method:: plot_phase(x_field, y_field, z_field, region: yt.data_objects.selection_objects.data_selection_objects.YTSelectionContainer | None = None, unit_type: str = 'planet', x_bins: int = 128, y_bins: int = 128, domain_size: tuple | None = None, font_size: float = 18, figure_size: float = 8, customized: bool = False) -> yt.visualization.profile_plotter.PhasePlot
+
+      Plot particle phase space distribution.
+
+      :param region: YTSelectionContainer
+                     Spatial region to be selected, such as all_data, box, region, or sphere.
+      :param x_field & y_field: string
+                                The x-/y- axes, from "p_ux", "p_uy", "p_uz", "p_x", "p_y" or "p_z".
+      :param z_field: string
+                      It is usually the particle weight: "p_w".
+      :param unit_type: string
+                        The unit system of the plots. "planet" or "si".
+      :param domain_size: tuple
+                          Axis range of 4 elements: x_min, x_max, y_min, y_max
+
+      .. rubric:: Examples
+
+      >>> pp = ds.plot_phase("p_ux", "p_uy", "p_w", domain_size=(-1, 1, -1, 1))
+      >>> pp.show()
+
+
+
+   .. py:method:: plot_particles(x_field, y_field, z_field, region: yt.data_objects.selection_objects.data_selection_objects.YTSelectionContainer | None = None, unit_type: str = 'planet', x_bins: int = 128, y_bins: int = 128, **kwargs)
+
+      Plot the particle position of particles inside a box.
+
+      :param x_field & y_field: str
+                                The x- y- axes, from "p_x", "p_y", "p_z".
+      :param z_field: str
+                      color variable, usually the particle weight "p_w".
+      :param region: YTSelectionContainer
+                     Spatial region to be selected, such as all_data, box, region, or sphere.
+      :param unit_type: str
+                        The unit system of the plots. "planet" or "si".
+
+      See more at https://yt-project.org/doc/reference/api/yt.visualization.particle_plots.html#yt.visualization.particle_plots.ParticlePlot
+
+      .. rubric:: Examples
+
+      >>> pp = ds.plot_particles([8, -1, -1], [10, 0, 0], "p_x", "p_y", "p_w", unit_type="planet")
+      >>> pp.show()
+
+
+
+.. py:function:: extract_phase(pp: yt.visualization.profile_plotter.PhasePlot)
+
+   Extract phase space distribution from PhasePlot object.
+
+   :param pp: YT PhasePlot object.
+   :type pp: PhasePlot
+
+   :returns: Horizontal, vertical coordinates of the plot, and phase space density.
+   :rtype: x, y, f
+
+

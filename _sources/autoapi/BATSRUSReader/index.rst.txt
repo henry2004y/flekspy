@@ -1,0 +1,66 @@
+BATSRUSReader
+=============
+
+.. py:module:: BATSRUSReader
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   BATSRUSReader.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   BATSRUSReader.BATSReader
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: BATSReader
+
+   Bases: :py:obj:`paraview.util.vtkAlgorithm.VTKPythonAlgorithmBase`
+
+
+   .. py:attribute:: _filename
+      :value: None
+
+
+
+   .. py:attribute:: _data_extents
+      :value: [0, 0, 0, 0, 0, 0]
+
+
+
+   .. py:attribute:: dim
+      :value: 3
+
+
+
+   .. py:method:: SetFileName(name)
+
+      Specify the filename for the BATSRUS simulation data.
+
+
+
+   .. py:method:: _get_file_series()
+
+      Helper function if your reader needs to handle file series for time-dependent data.
+      For a single file, this might not be strictly necessary, but good for extensibility.
+
+
+
+   .. py:method:: RequestInformation(request, inInfoVec, outInfoVec)
+
+
+   .. py:method:: RequestData(request, inInfoVec, outInfoVec)
+
+
