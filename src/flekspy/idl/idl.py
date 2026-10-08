@@ -6,6 +6,7 @@ from scipy.constants import mu_0, e
 import xugrid as xu
 from scipy.spatial import Delaunay
 from flekspy.util.logger import get_logger
+from flekspy.util.utilities import get_unit
 
 logger = get_logger(name=__name__)
 
@@ -145,7 +146,14 @@ def _read_and_process_data(filename, npict=1):
         dataset = xr.Dataset(data_vars, coords=coords)
     attrs.pop("pformat", None)
     dataset.attrs = attrs
-    # TODO: Implement a more robust unit handling system.
+
+    # Attach units attribute to data variables and coordinates based on dataset unit system
+    unit_system = dataset.attrs.get("unit", "dimensionless")
+    for var_name in dataset.data_vars:
+        dataset[var_name].attrs["units"] = get_unit(var_name, unit_system)
+    for coord_name in dataset.coords:
+        dataset[coord_name].attrs["units"] = get_unit(coord_name, unit_system)
+
     return dataset
 
 
@@ -447,6 +455,7 @@ class DerivedAccessor:
         # Calculate pressure anisotropy
         anisotropy = p_perp / p_parallel
         anisotropy.name = f"pressure_anisotropy_S{species}"
+        anisotropy.attrs["units"] = "dimensionless"
 
         return anisotropy
 
@@ -492,7 +501,8 @@ class DerivedAccessor:
         bx, by, bz = (self._obj[c] for c in ["Bx", "By", "Bz"])
 
         params = self._obj.attrs["parameters"]
-        is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
+        unit_system = self._obj.attrs.get("unit", "dimensionless")
+        is_planetary = str(unit_system).lower() in ("planetary", "planet")
 
         # Get length conversion from attrs
         if is_planetary:
@@ -521,7 +531,7 @@ class DerivedAccessor:
         jz = grad_by.get("x", 0.0) - grad_bx.get("y", 0.0)
 
         # Handle units and convert to µA/m^2
-        if self._obj.attrs.get("unit") == "PLANETARY":
+        if is_planetary:
             # B is in nT, curl(B) is in nT/m. Convert to T/m by 1e-9.
             b_field_factor = 1e-9
         else:
@@ -535,11 +545,12 @@ class DerivedAccessor:
         jy *= conversion_factor
         jz *= conversion_factor
 
+        target_unit = get_unit("jx", "planet")
         current_density = xr.Dataset(
             {
-                "jx": (bx.dims, jx, {"units": "µA/m^2"}),
-                "jy": (by.dims, jy, {"units": "µA/m^2"}),
-                "jz": (bz.dims, jz, {"units": "µA/m^2"}),
+                "jx": (bx.dims, jx, {"units": target_unit}),
+                "jy": (by.dims, jy, {"units": target_unit}),
+                "jz": (bz.dims, jz, {"units": target_unit}),
             },
             coords=self._obj.coords,
         )
@@ -575,7 +586,8 @@ class DerivedAccessor:
         total_jx, total_jy, total_jz = 0.0, 0.0, 0.0
 
         params = self._obj.attrs["parameters"]
-        is_planetary = self._obj.attrs.get("unit") == "PLANETARY"
+        unit_system = self._obj.attrs.get("unit", "dimensionless")
+        is_planetary = str(unit_system).lower() in ("planetary", "planet")
 
         for s in species:
             mass_density = self._obj[f"rhoS{s}"]
@@ -610,11 +622,12 @@ class DerivedAccessor:
         total_jy *= conversion_factor
         total_jz *= conversion_factor
 
+        target_unit = get_unit("jx", "planet")
         current_density = xr.Dataset(
             {
-                "jx": (total_jx.dims, total_jx.values, {"units": "µA/m^2"}),
-                "jy": (total_jy.dims, total_jy.values, {"units": "µA/m^2"}),
-                "jz": (total_jz.dims, total_jz.values, {"units": "µA/m^2"}),
+                "jx": (total_jx.dims, total_jx.values, {"units": target_unit}),
+                "jy": (total_jy.dims, total_jy.values, {"units": target_unit}),
+                "jz": (total_jz.dims, total_jz.values, {"units": target_unit}),
             },
             coords=self._obj.coords,
         )
