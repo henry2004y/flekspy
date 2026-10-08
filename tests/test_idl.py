@@ -208,3 +208,46 @@ def test_get_current_density_from_definition_planetary():
     # The method should return values in µA/m^2
     assert np.allclose(current_density["jx"].values, expected_jx_total)
     assert current_density["jx"].attrs["units"] == "µA/m^2"
+
+
+def test_idl_dataset_variable_units(idl_data_files):
+    """Test that units attributes are properly attached to data variables and coordinates upon reading."""
+    # Test file with PLANETARY units
+    ds_planetary = fs.load(idl_data_files[1])
+    assert ds_planetary.attrs["unit"] == "PLANETARY"
+    assert ds_planetary["rhoS0"].attrs["units"] == "amu/cm**3"
+    assert ds_planetary["Bx"].attrs["units"] == "nT"
+    assert ds_planetary["uxS0"].attrs["units"] == "km/s"
+    assert ds_planetary["x"].attrs["units"] == "Planet_Radius"
+    assert ds_planetary["y"].attrs["units"] == "Planet_Radius"
+
+    # Test file with normalized/other units
+    ds_norm = fs.load(idl_data_files[0])
+    assert ds_norm["Rho"].attrs["units"] == "dimensionless"
+    assert ds_norm["x"].attrs["units"] == "dimensionless"
+
+
+def test_get_unit_helper():
+    """Test get_unit function directly for various variable names and unit systems."""
+    from flekspy.util.utilities import get_unit
+
+    # Planetary
+    assert get_unit("rhoS0", "PLANETARY") == "amu/cm**3"
+    assert get_unit("rhoS12", "planet") == "amu/cm**3"
+    assert get_unit("uxS0", "PLANETARY") == "km/s"
+    assert get_unit("Bx", "PLANETARY") == "nT"
+    assert get_unit("pxxS0", "PLANETARY") == "nPa"
+    assert get_unit("x", "PLANETARY") == "Planet_Radius"
+    assert get_unit("r", "PLANETARY") == "Planet_Radius"
+
+    # SI
+    assert get_unit("rhoS0", "SI") == "kg/m**3"
+    assert get_unit("uxS0", "si") == "m/s"
+    assert get_unit("Bx", "SI") == "T"
+    assert get_unit("pxxS0", "SI") == "Pa"
+    assert get_unit("x", "SI") == "m"
+
+    # Dimensionless / Unknown
+    assert get_unit("rhoS0", "normalized") == "dimensionless"
+    assert get_unit("unknown_var", "PLANETARY") == "dimensionless"
+    assert get_unit("x", "dimensionless") == "dimensionless"

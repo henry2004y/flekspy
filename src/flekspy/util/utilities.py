@@ -5,6 +5,8 @@ from flekspy.util.logger import get_logger
 
 logger = get_logger(name=__name__)
 
+import re
+
 plot_unit_planet = {
     "time": "s",
     "t": "s",
@@ -29,9 +31,15 @@ plot_unit_planet = {
     "ex": "nT*km/s",
     "ey": "nT*km/s",
     "ez": "nT*km/s",
+    "j": "µA/m^2",
+    "jx": "µA/m^2",
+    "jy": "µA/m^2",
+    "jz": "µA/m^2",
     "x": "Planet_Radius",
     "y": "Planet_Radius",
     "z": "Planet_Radius",
+    "r": "Planet_Radius",
+    "rplanet": "Planet_Radius",
     "p_x": "Planet_Radius",
     "p_y": "Planet_Radius",
     "p_z": "Planet_Radius",
@@ -42,7 +50,7 @@ plot_unit_planet = {
     "ti": "K",
     "te": "K",
     "ne": "cm**-3",
-    "ni": "cm**-3"
+    "ni": "cm**-3",
 }
 
 plot_unit_si = {
@@ -69,9 +77,15 @@ plot_unit_si = {
     "ex": "T*m/s",
     "ey": "T*m/s",
     "ez": "T*m/s",
+    "j": "A/m^2",
+    "jx": "A/m^2",
+    "jy": "A/m^2",
+    "jz": "A/m^2",
     "x": "m",
     "y": "m",
     "z": "m",
+    "r": "m",
+    "rplanet": "m",
     "p_x": "m",
     "p_y": "m",
     "p_z": "m",
@@ -82,7 +96,7 @@ plot_unit_si = {
     "ti": "K",
     "te": "K",
     "ne": "m**-3",
-    "ni": "m**-3"
+    "ni": "m**-3",
 }
 
 
@@ -96,19 +110,18 @@ def get_unit(var: str, unit_type="planet") -> str:
     Returns:
         str: unit in the specified unit system.
     """
-    if var[-1].isdigit():
-        # Example: pxxs0 -> pxx
-        var = var[0:-2]
-    var = var.lower()
+    var_str = str(var)
+    # Remove species suffix if present (e.g. rhoS0 -> rho, uxs1 -> ux, pxxs0 -> pxx)
+    cleaned_var = re.sub(r"[sS]\d+$", "", var_str).lower()
 
-    if not (var in plot_unit_planet.keys()):
-        return "dimensionless"
+    if not unit_type:
+        unit_type = "dimensionless"
+    unit_type_lower = str(unit_type).lower()
 
-    unit_type = unit_type.lower()
-    if unit_type == "planet" or unit_type == "planetary":
-        return plot_unit_planet[var]
-    elif unit_type == "si":
-        return plot_unit_si[var]
+    if unit_type_lower in ("planet", "planetary"):
+        return plot_unit_planet.get(cleaned_var, "dimensionless")
+    elif unit_type_lower == "si":
+        return plot_unit_si.get(cleaned_var, "dimensionless")
     else:
         return "dimensionless"
 
