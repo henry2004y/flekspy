@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.6 (2026/10/09)
+
+- Improve IDL unit handling and derived-variable calculations.
+- Add lazy `IDLSeries` loading and magnetic reconnection analysis.
+- Enhance test-particle support and AMReX particle selection.
+- Add optional PyVista support for Tecplot and VTK data.
+
 ## v0.1.0 (2024/11/29)
 
 - First release of `flekspy`, based on the original scripts under the FLEKS repo!
