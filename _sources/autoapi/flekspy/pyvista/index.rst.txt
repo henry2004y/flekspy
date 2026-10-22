@@ -1,0 +1,35 @@
+flekspy.pyvista
+===============
+
+.. py:module:: flekspy.pyvista
+
+.. autoapi-nested-parse::
+
+   Lightweight, optional PyVista readers for Tecplot and VTK meshes.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.pyvista.read_pyvista
+
+
+Package Contents
+----------------
+
+.. py:function:: read_pyvista(filename: str | pathlib.Path) -> pyvista.DataSet | pv.MultiBlock
+
+   Read an ASCII Tecplot DAT or VTK file as a native PyVista object.
+
+   Supports .dat, .vtk, .vtu, .vts, .vtr, .vti, .vtp, and .vtm. DAT files
+   retain all zones as a MultiBlock, including single-zone files. Bracketed
+   units are removed from DAT variable names and coordinate names such as
+   ``X AU`` become ``X`` so VTK recognizes them. Cleanup uses a temporary
+   copy and never modifies the source. VTK arrays and metadata are unchanged.
+
+   Requires the optional extra: ``pip install 'flekspy[pyvista]'``.
+
+
