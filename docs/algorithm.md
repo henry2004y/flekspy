@@ -151,7 +151,7 @@ The physics is captured by the normalized mass and charge parameters fed to the 
     - Protons: $\tilde{m} = 1$, $\tilde{q} = 1$
     - Electrons: $\tilde{m} = m_e/m_p$, $\tilde{q} = -1$
 
-In the non-relativistic limit, there is no speed of light. In the pusher, we use c as the velocity normalization, but we can choose it freely.
+In the non-relativistic limit, the speed of light does not appear in these equations, so the velocity unit $v_0$ can be chosen freely. FLEKS does not fix $x_0 = d_p$ and $v_0 = c$: the length and velocity units (`lNorm` and `uNorm`) are free parameters, and Maxwell's equations are solved with $c = 1$ in code units. The velocity unit is therefore also the simulated speed of light $c'$. See Consequences of Changing the Speed of Light below.
 
 ### Mass Normalization
 
@@ -172,7 +172,7 @@ where $\rho_{cgs}^* = q_{cgs}^*/(x_{cgs}^*)^3$ is the charge density, not the ma
 q_{cgs}^* = v_{cgs}^* \sqrt{m_{cgs}^* x_{cgs}^*}
 \end{equation}
 
-In the code, the condition $\bar{q}/(\bar{m}\bar{c}) = 1$ is required for a proton. This means the normalization units $q_{cgs}^*$ and $m_{cgs}^*$ must satisfy:
+In the code, a proton has $\bar{q} = \bar{m} = 1$, and the code speed of light is 1. To keep the physical gyrofrequency $qB/(mc)$ with the physical $c$, the condition $\bar{q}/(\bar{m}\bar{c}) = 1$ is required for a proton, where $\bar{c} = c/v_{cgs}^*$ is the true speed of light in code units. This means the normalization units $q_{cgs}^*$ and $m_{cgs}^*$ must satisfy:
 \begin{equation}
 \frac{q_{cgs}^*}{m_{cgs}^* v_{cgs}^*} = \frac{q_{cgs,p}}{m_{cgs,p}c_{cgs}}
 \end{equation}
@@ -207,22 +207,85 @@ E_{cgs}^* = B_{cgs}^* = v_{cgs}^* \sqrt{\frac{m_{cgs}^*}{(x_{cgs}^*)^3}}
 
 ### Consequences of Changing the Speed of Light
 
-Reducing the speed of light changes the propagation speed of electromagnetic waves in the simulation, but it does not change the interaction between particles and the magnetic field. In PIC codes, this is often called the Darwin, magneto-inductive, or "electrostatic-less" approximation, depending on the exact formulation. In the mass normalization, we require $\bar{q}/(\bar{m}\bar{c}) = 1$, not $\bar{q}/\bar{m} = 1$, because we do not assume $\bar{c}=1$. The speed of light in the first equation is always the physical speed of light, regardless of the choice of $v_{cgs}^*$. For example, if we set $v_{cgs}^* = 0.1c$, then $\bar{c}$ must be 10 to satisfy $\bar{q}/(\bar{m}\bar{c}) = 1$.
+**Summary.** In FLEKS, the speed of light of the simulation is the velocity unit, $c' = v_{cgs}^*$ (`uNorm`). Choosing $c' < c$ is equivalent to keeping all charges, masses and the vacuum permeability $\mu_0$ physical, and increasing the vacuum permittivity:
+\begin{equation}
+\epsilon_0' = \frac{1}{\mu_0 c'^2} = \epsilon_0 \left(\frac{c}{c'}\right)^2 .
+\end{equation}
+This is the only change. A quantity is modified if and only if it depends on $\epsilon_0$. The Lorentz force, gyromotion, inertial lengths, Alfvén speed and the MHD electric fields are kept. The plasma frequency, Debye length, charge separation, electric field energy and light waves are modified.
 
-The primary goal of a reduced-$c$ model is to overcome the two most restrictive time-step constraints in an explicit EM-PIC code (although FLEKS is semi-implicit, the particle pusher is still explicit):
+#### How $c'$ enters the code
 
-1. The Courant-Friedrichs-Lewy (CFL) Condition: $\Delta t < \Delta x / c$. This is required to resolve light waves.
-2. The Plasma Frequency Constraint: $\Delta t \lesssim 0.1 / \omega_{pe}$. This is required to resolve electron plasma oscillations (Langmuir waves).
+- Maxwell's equations and the equation of motion are solved with $c = 1$ in code units (see the Maxwell equations in the Semi-Implicit Methodology section below). The velocity unit is therefore the simulated speed of light. A reduced speed of light is not a separate parameter: choosing a small velocity unit *is* choosing a small $c'$. In a stand-alone run, $c'$ is `uNorm` of `#NORMALIZATION`. In a coupled run, it is the velocity unit passed from the MHD code.
+- The mass unit is computed with the **physical** $c$ (see Mass Normalization above). A proton with $\bar{q} = \bar{m} = 1$ in code units therefore has the physical $q/(mc)$, i.e. the physical gyrofrequency. With $\bar{c} \equiv c/c'$, the true speed of light in code units, this is the condition $\bar{q}/(\bar{m}\bar{c}) = 1$.
+- As a consequence, the code charge of a particle is $c'/c$ times its true charge, while its code mass is the true mass. For the magnetic force this is exactly compensated by $1/c'$ in place of $1/c$. For Gauss's law it is not: the same number of particles carries $c'/c$ times less charge in code units.
+- The MHD quantities $\rho$, $\mathbf{u}$, $p$ and $\mathbf{B}$ are converted to code units without any reference to $c$. The conversions of $\mathbf{J}$ and $\mathbf{E}$ use $c'$ (`Si2NoJ` and `Si2NoE` in `FluidInterface.cpp`). In SI language this is the $\mu_0$-fixed, $\epsilon_0'$-increased system above.
 
-By reducing $c$ to $v_{cgs}^*$, the code's field solver relaxes the CFL condition to $\Delta t < \Delta x / v_{cgs}^*$. This is a huge win. However, this doesn't solve the $\omega_{pe}$ constraint. The electric force $q\mathbf{E}$ (specifically the electrostatic part, $\mathbf{E}_{es}$) is the restoring force for Langmuir waves. By implementing $\frac{d\bar{v}}{d\bar{t}} = \bar{\mathbf{E}}$ instead of $\frac{d\bar{v}}{d\bar{t}} = \bar{c}\bar{\mathbf{E}}$, we are artificially weakening the particle's response to the electric field.
-This modification effectively disables high-frequency electrostatic physics. The restoring force for Langmuir waves is made $\bar{c}$ times weaker, which dramatically lowers the plasma frequency $\omega_{pe}$ (or, more accurately, damps the waves entirely).
+#### What is changed
 
-Most PIC simulations use a reduced speed of light. While their results may be interpreted differently than in FLEKS, they also alter the ratio between the electric force and the $\mathbf{v} \times \mathbf{B}$ force. This reduced-c model is therefore designed to simulate phenomena where:
+| Quantity | Change for $c \to c'$ | Reason |
+|---|---|---|
+| Electric field produced by a given charge separation | $\times\,(c'/c)^2$ | Gauss's law, $\nabla\cdot\mathbf{E} = \rho_q/\epsilon_0'$ |
+| $\delta n/n$ needed to sustain a given $\mathbf{E}$ | $\times\,(c/c')^2$ | same |
+| Plasma frequency $\omega_{ps}$ | $\times\, c'/c$ | $\omega_{ps}^2 = n_s q_s^2/(\epsilon_0' m_s)$, or $\omega_{ps} = c'/d_s$ |
+| $\omega_{pe}/\Omega_{ce}$ | $= c'/v_{Ae}$ | $v_{Ae} = B/\sqrt{\mu_0 n m_e}$ is the electron Alfvén speed |
+| Debye length $\lambda_D$ | $\times\, c/c'$ | $\lambda_D = v_{th,e}/\omega_{pe}$; $\lambda_D/d_e = v_{th,e}/c'$ |
+| Displacement current $\epsilon_0'\,\partial\mathbf{E}/\partial t$ | $\times\,(c/c')^2$ | Ampère's law |
+| Vacuum EM waves | propagate at $c'$ | |
+| Electric field energy density $\epsilon_0' E^2/2$ | $\times\,(c/c')^2$ for the same $\mathbf{E}$ | |
+| Relativistic effects | $\gamma$ computed with $c'$ | only for relativistic test particles; see below |
 
-- $v \ll c$ (non-relativistic).
-- Frequencies are low: $\omega \ll \omega_{pe}$.
-- Physics is dominated by magnetic and inductive effects (gyromotion, $\mathbf{v} \times \mathbf{B}$ forces, $\nabla \times \mathbf{E} = -\partial \mathbf{B}/\partial t$).
-- Physics is not dominated by electrostatic effects (Langmuir waves, Debye shielding, double layers).
+Langmuir waves, Debye shielding, electron holes, double layers and other electrostatic or charge-separation phenomena therefore have modified frequencies, scales or amplitudes.
+
+#### What is kept
+
+| Quantity | Reason |
+|---|---|
+| Lorentz force $q(\mathbf{E} + \mathbf{v}\times\mathbf{B})$ for given SI fields; $\mathbf{E}\times\mathbf{B}$ drift | no $\epsilon_0$; the $\mathbf{E}$ conversion and the force law are both exact |
+| Gyrofrequency $\Omega_{cs}$, gyroradius $r_{Ls}$ | $qB/m$ is physical |
+| Alfvén, sound and thermal speeds | depend only on $B$, $\rho$, $p$ and $\mu_0$ |
+| Inertial lengths $d_s = c/\omega_{ps} = \sqrt{m_s/(\mu_0 n_s q_s^2)}$ | $\epsilon_0$ cancels; equivalently $d_i = v_A/\Omega_{ci}$ |
+| Faraday's law, $\mu_0\mathbf{J} = \nabla\times\mathbf{B}$ when the displacement current is small | no $\epsilon_0$ |
+| Motional, Hall and $\nabla\cdot\mathbf{P}_e$ electric fields | set by the electron force balance (generalized Ohm's law); requires quasi-neutrality |
+| Poynting flux $\mathbf{E}\times\mathbf{B}/\mu_0$ | no $\epsilon_0$ |
+
+A common misreading is that the electric force is $\bar{c}$ times weaker because the pusher uses $d\bar{\mathbf{v}}/d\bar{t} = \bar{\mathbf{E}}$ instead of $\bar{c}\,\bar{\mathbf{E}}$. That compares Gaussian-unit fields defined with two different speeds of light. In Gaussian units $E$ itself scales as $1/c$, and this compensates the smaller code charge exactly. For a given electric field in SI units, the particle acceleration is physical. The ratio between the electric force and the $\mathbf{v}\times\mathbf{B}$ force is not altered. What is weakened is the electric field that a given charge separation produces, which is why $\omega_{pe}$ is lowered.
+
+#### Why quasi-neutral physics survives
+
+In a quasi-neutral plasma the electric field is whatever the electrons need for force balance. The plasma supplies it through a tiny charge separation, not through the vacuum response. From Gauss's law, a field $E \sim uB$ that varies on a scale $L$ needs
+\begin{equation}
+\frac{\delta n}{n} \sim \frac{u}{v_A}\,\frac{d_i}{L}\left(\frac{v_A}{c'}\right)^2 .
+\end{equation}
+Reducing $c'$ raises $\delta n/n$, but the electric field is unchanged as long as $\delta n/n \ll 1$. The constraint is tightest at electron scales ($L \sim d_e$, electron flows $\sim v_{Ae}$), where $\delta n/n \sim (v_{Ae}/c')^2$.
+
+#### Why reduce $c$ in FLEKS
+
+The reason is *not* the light-wave CFL or the $\omega_{pe}\Delta t$ limit of explicit PIC:
+
+- The semi-implicit ($\theta \ge 0.5$) energy-conserving field solve is stable for $c'\Delta t/\Delta x > 1$ and $\omega_{pe}\Delta t \gg 1$. The particle push is not separable from the field solve (see the footnote on semi-implicit methods above).
+- The full-PIC time step is set only by the particle CFL, $\Delta t = \mathrm{cfl}\cdot\Delta x/u_{max}$, where $u_{max}$ is the maximum thermal speed (`Pic.cpp`). The speed of light does not enter.
+- The light CFL $c'\Delta t_{sub}\sqrt{\sum_d \Delta x_d^{-2}} < 1$ applies only to the explicit field solver option and its field subcycling.
+
+The cost of a large $c'$ shows up in the implicit linear system. Both the $\delta^2\nabla\times\nabla\times$ term ($\delta = c'\theta\Delta t$) and the mass-matrix term (of order $(\omega_{pe}\theta\Delta t)^2$) grow as $c'^2$. The system becomes ill-conditioned, GMRES needs many more iterations, and the converged field is more sensitive to particle noise. A smaller $c'$ keeps this system well conditioned.
+
+#### Choosing $c'$
+
+$c'$ should exceed every physical speed by a comfortable margin, typically a factor of 10 or more:
+
+1. $c' \gg u$, $v_A$, $v_{th,i}$. Stand-alone runs warn when the inflow or uniform-state speed exceeds $0.3\,c'$ (`Pic::check_light_speed`).
+2. $c' \gg v_{Ae}$ (equivalently $\omega_{pe} \gg \Omega_{ce}$). This keeps quasi-neutrality at electron scales, which matters for Hall fields and the electron diffusion region.
+3. $c' \gg v_{th,e}$. This keeps $\lambda_D \ll d_e$.
+4. $c'$ well above the fastest whistler phase speed you want to model, $\approx v_{Ae}/2$ at $k d_e \approx 1$. Otherwise the full-PIC R-mode deviates from the Hall-MHD whistler. In `tests/whistler` of FLEKS, $c'/v_A \approx 1$, so the full-PIC run measures the full cold-plasma R-mode rather than the Hall whistler.
+
+$v_{Ae} = v_A\sqrt{m_i/m_e}$ uses the *simulated* mass ratio. A reduced mass ratio and a reduced $c'$ therefore have to be chosen together. For example, with $v_A = 100$ km/s and $m_i/m_e = 100$, $v_{Ae} = 1000$ km/s, and $c' = 3000$ km/s gives only $\omega_{pe}/\Omega_{ce} = 3$.
+
+#### Interpreting the output
+
+- $\mathbf{E}$, $\mathbf{B}$, $\mathbf{J}$, the moments and the Poynting flux converted to SI are physical, provided the plasma stays quasi-neutral.
+- The net charge density (or $\nabla\cdot\mathbf{E}$), the electric field energy, and electrostatic oscillations and structures follow the "changed" table above. They should not be compared with observations without rescaling.
+- The full-PIC mover is non-relativistic, so $c'$ is not a speed limit for the plasma particles. Particles faster than $c'$ indicate that $c'$ is too small.
+- Relativistic test particles (`#TPRELATIVISTIC`) compute $\gamma$ with the code speed of light, i.e. $c'$, and stop with an error when a particle exceeds $c'$. Their relativistic corrections are physical only if $c'$ is the true speed of light.
+- The model is appropriate for non-relativistic, low-frequency ($\omega \ll \omega_{pe}'$), quasi-neutral physics dominated by magnetic and inductive effects. It shares this regime with Darwin and magneto-inductive models, but unlike them it retains the (slowed) displacement current and light waves.
 
 ## Semi-Implicit Methodology
 
