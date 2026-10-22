@@ -272,7 +272,7 @@ The cost of a large $c'$ shows up in the implicit linear system. Both the $\delt
 
 $c'$ should exceed every physical speed by a comfortable margin, typically a factor of 10 or more:
 
-1. $c' \gg u$, $v_A$, $v_{th,i}$. Stand-alone runs warn when the inflow or uniform-state speed exceeds $0.3\,c'$ (`Pic::check_light_speed`).
+1. $c' \gg u$, $v_A$, $v_{th,i}$.
 2. $c' \gg v_{Ae}$ (equivalently $\omega_{pe} \gg \Omega_{ce}$). This keeps quasi-neutrality at electron scales, which matters for Hall fields and the electron diffusion region.
 3. $c' \gg v_{th,e}$. This keeps $\lambda_D \ll d_e$.
 4. $c'$ well above the fastest whistler phase speed you want to model, $\approx v_{Ae}/2$ at $k d_e \approx 1$. Otherwise the full-PIC R-mode deviates from the Hall-MHD whistler. In `tests/whistler` of FLEKS, $c'/v_A \approx 1$, so the full-PIC run measures the full cold-plasma R-mode rather than the Hall whistler.
