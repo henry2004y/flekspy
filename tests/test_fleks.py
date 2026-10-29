@@ -1,6 +1,7 @@
 import pytest
 import os
 import itertools
+from pathlib import Path
 import numpy as np
 import xarray as xr
 import polars as pl
@@ -175,6 +176,22 @@ class TestParticles:
             particle_tracker.read_particles_at_time(-10.0, doSave=False)
         with pytest.raises(Exception):
             particle_tracker.read_particles_at_time(10.0, doSave=False)
+
+    def test_read_particles_at_time_dosave(self, particle_tracker, tmp_path):
+        ids, pData = particle_tracker.read_particles_at_time(0.0, doSave=True)
+        csv_file = Path("particles_t0.0.csv")
+        try:
+            assert csv_file.exists()
+            lines = csv_file.read_text().strip().split("\n")
+            expected_header = ",".join(["cpu", "iid"] + particle_tracker.get_column_names())
+            assert lines[0] == expected_header
+            assert len(lines) - 1 == len(ids)
+            row0_parts = lines[1].split(",")
+            assert int(row0_parts[0]) == ids[0][0]
+            assert int(row0_parts[1]) == ids[0][1]
+        finally:
+            if csv_file.exists():
+                csv_file.unlink()
 
     def test_particle_select(self, particle_tracker):
         from flekspy.tp import Indices

@@ -253,22 +253,17 @@ class FLEKSTP(object):
 
         if doSave:
             filename = f"particles_t{time}.csv"
-            header = "cpu,iid,time,x,y,z,vx,vy,vz"
-            if self.nReal == 10:
-                header += ",bx,by,bz"
-            elif self.nReal == 13:
-                header += ",bx,by,bz,ex,ey,ez"
-            elif self.nReal == 19:
-                header += ",bx,by,bz,ex,ey,ez,v_gradb_x,v_gradb_y,v_gradb_z,v_curv_x,v_curv_y,v_curv_z"
-            elif self.nReal == 22:
-                header += ",bx,by,bz,ex,ey,ez,dbxdx,dbxdy,dbxdz,dbydx,dbydy,dbydz,dbzdx,dbzdy,dbzdz"
+            header = ",".join(["cpu", "iid"] + self.get_column_names())
 
+            comma = ","
+            lines = [
+                f"{id_row[0]},{id_row[1]},{comma.join(map(str, data_row))}"
+                for id_row, data_row in zip(idData, npData)
+            ]
             with open(filename, "w") as f:
                 f.write(header + "\n")
-                for id_row, data_row in zip(idData, npData):
-                    f.write(
-                        f"{id_row[0]},{id_row[1]},{','.join(str(x) for x in data_row)}\n"
-                    )
+                if lines:
+                    f.write("\n".join(lines) + "\n")
 
         return idData, npData
 
