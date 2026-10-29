@@ -8,8 +8,6 @@ import numpy as np
 import matplotlib
 import matplotlib.cbook as cbook
 import matplotlib.cm as cm
-
-# import matplotlib._api as _api
 import matplotlib.colors as mcolors
 import matplotlib.collections as mcollections
 import matplotlib.lines as mlines
@@ -120,9 +118,6 @@ def streamplot(
 
     line_kw = {}
     arrow_kw = dict(arrowstyle=arrowstyle, mutation_scale=10 * arrowsize)
-
-    # _api.check_in_list(['both', 'forward', 'backward'],
-    #                     integration_direction=integration_direction)
 
     if integration_direction == "both":
         maxlength /= 2.0
@@ -549,11 +544,7 @@ def _integrate_rk12(x0, y0, dmap, f, maxlength):
     maxerror = 0.003
 
     # This limit is important (for all integrators) to avoid the
-    # trajectory skipping some mask cells. We could relax this
-    # condition if we use the code which is commented out below to
-    # increment the location gradually. However, due to the efficient
-    # nature of the interpolation, this doesn't boost speed by much
-    # for quite a bit of complexity.
+    # trajectory skipping some mask cells.
     maxds = min(1.0 / dmap.mask.nx, 1.0 / dmap.mask.ny, 0.1)
 
     ds = maxds
