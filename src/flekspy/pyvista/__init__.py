@@ -15,6 +15,11 @@ SUPPORTED_SUFFIXES = frozenset(
     {".dat", ".vtk", ".vtu", ".vts", ".vtr", ".vti", ".vtp", ".vtm"}
 )
 
+_ZONE_RE = re.compile(r"\s*ZONE\b", re.IGNORECASE)
+_VARIABLES_RE = re.compile(r"\s*VARIABLES\s*=", re.IGNORECASE)
+_BRACKET_RE = re.compile(r"\s*\[[^\]]*\]")
+_COORD_RE = re.compile(r'"([xyzXYZ])\s+[^"\n]*"')
+
 
 def read_pyvista(filename: str | Path) -> "pv.DataSet | pv.MultiBlock":
     """Read an ASCII Tecplot DAT or VTK file as a native PyVista object.
@@ -54,14 +59,14 @@ def read_pyvista(filename: str | Path) -> "pv.DataSet | pv.MultiBlock":
         ):
             variables = False
             for line in original:
-                if re.match(r"\s*ZONE\b", line, re.IGNORECASE):
+                if _ZONE_RE.match(line):
                     output.write(line)
                     shutil.copyfileobj(original, output)
                     break
-                if re.match(r"\s*VARIABLES\s*=", line, re.IGNORECASE):
+                if _VARIABLES_RE.match(line):
                     variables = True
                 if variables:
-                    line = re.sub(r"\s*\[[^\]]*\]", "", line)
-                    line = re.sub(r'"([xyzXYZ])\s+[^"\n]*"', r'"\1"', line)
+                    line = _BRACKET_RE.sub("", line)
+                    line = _COORD_RE.sub(r'"\1"', line)
                 output.write(line)
         return pv.read(cleaned)
