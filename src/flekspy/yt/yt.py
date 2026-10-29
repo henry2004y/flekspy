@@ -89,6 +89,8 @@ class FLEKSFieldInfo(FieldInfoContainer):
         # Use field_list instead of index.raw_fields to avoid forcing index construction
         species_regex = re.compile(r"^(?P<base>.*)s(?P<idx>\d+)$")
 
+        species_template_dict = dict(self._species_fields_template)
+
         # field_list typically contains tuples like ('boxlib', 'varname') or ('raw', 'varname')
         # We need to scan for on-disk fields.
         # Use self.field_list instead of self.ds.field_list to be robust against incomplete ds mocks in tests
@@ -100,29 +102,28 @@ class FLEKSFieldInfo(FieldInfoContainer):
             match = species_regex.match(fname)
             if match:
                 base = match.group("base")
-                for template_field, props in self._species_fields_template:
-                    if base == template_field:
-                        # Construct proper LaTeX display name merging subscripts
-                        base_display = props[2]
-                        suffix = f"s{match.group('idx')}"
-                        if "_" in base_display:
-                            name_part, sub_part = base_display.split("_", 1)
-                            if sub_part.startswith("{") and sub_part.endswith("}"):
-                                sub_content = sub_part[1:-1]
-                                display_name = f"{name_part}_{{{sub_content},{suffix}}}"
-                            else:
-                                display_name = f"{name_part}_{{{sub_part},{suffix}}}"
+                props = species_template_dict.get(base)
+                if props is not None:
+                    # Construct proper LaTeX display name merging subscripts
+                    base_display = props[2]
+                    suffix = f"s{match.group('idx')}"
+                    if "_" in base_display:
+                        name_part, sub_part = base_display.split("_", 1)
+                        if sub_part.startswith("{") and sub_part.endswith("}"):
+                            sub_content = sub_part[1:-1]
+                            display_name = f"{name_part}_{{{sub_content},{suffix}}}"
                         else:
-                            display_name = f"{base_display}_{{{suffix}}}"
+                            display_name = f"{name_part}_{{{sub_part},{suffix}}}"
+                    else:
+                        display_name = f"{base_display}_{{{suffix}}}"
 
-                        # Alias ("mesh", fname) to the found field
-                        self.alias(
-                            ("mesh", fname), (ftype, fname), units=props[0]
-                        )
+                    # Alias ("mesh", fname) to the found field
+                    self.alias(
+                        ("mesh", fname), (ftype, fname), units=props[0]
+                    )
 
-                        if ("mesh", fname) in self:
-                            self[("mesh", fname)].display_name = display_name
-                        break
+                    if ("mesh", fname) in self:
+                        self[("mesh", fname)].display_name = display_name
 
         # This function is required by yt to correctly handle magnetic field
         # units and set up aliases. See:

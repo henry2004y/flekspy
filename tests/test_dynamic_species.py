@@ -1,4 +1,3 @@
-
 import unittest
 from unittest.mock import MagicMock
 from flekspy.yt.yt import FLEKSFieldInfo
