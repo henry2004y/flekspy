@@ -495,18 +495,16 @@ def get_integrator(u, v, dmap, minlength, maxlength, integration_direction):
         if integration_direction in ["both", "backward"]:
             s, xt, yt = _integrate_rk12(x0, y0, dmap, backward_time, maxlength)
             stotal += s
-            x_traj += xt[::-1]
-            y_traj += yt[::-1]
+            x_traj.extend(reversed(xt))
+            y_traj.extend(reversed(yt))
 
         if integration_direction in ["both", "forward"]:
             dmap.reset_start_point(x0, y0)
             s, xt, yt = _integrate_rk12(x0, y0, dmap, forward_time, maxlength)
-            if len(x_traj) > 0:
-                xt = xt[1:]
-                yt = yt[1:]
+            start_idx = 1 if len(x_traj) > 0 else 0
+            x_traj.extend(xt[start_idx:])
+            y_traj.extend(yt[start_idx:])
             stotal += s
-            x_traj += xt
-            y_traj += yt
 
         if stotal > minlength:
             return x_traj, y_traj
