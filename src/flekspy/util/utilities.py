@@ -151,13 +151,14 @@ def unit_one(field, data):
     return np.ones_like(data[("particles", "p_w")])
 
 
-def download_testfile(url: str, target_path="."):
+def download_testfile(url: str, target_path=".", timeout: float = 30):
     """
     Downloads a tar.gz file from a URL and extracts its contents.
 
     Args:
       url (str): the URL of the tar.gz file.
       target_path (str): the directory to extract the files to. Defaults to the current directory.
+      timeout (float): request timeout in seconds. Defaults to 30.
     """
     import requests
     from pathlib import Path
@@ -166,7 +167,7 @@ def download_testfile(url: str, target_path="."):
     temp_file = Path("temp.tar.gz")
 
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=timeout)
         response.raise_for_status()  # Raise an exception for bad status codes
 
         with open(temp_file, "wb") as f:
