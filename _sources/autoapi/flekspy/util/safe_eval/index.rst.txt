@@ -1,0 +1,70 @@
+flekspy.util.safe_eval
+======================
+
+.. py:module:: flekspy.util.safe_eval
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.util.safe_eval.SafeExpressionEvaluator
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.util.safe_eval.safe_eval
+
+
+Module Contents
+---------------
+
+.. py:class:: SafeExpressionEvaluator(context)
+
+   A safe evaluator for Python expressions using an Abstract Syntax Tree (AST).
+
+   This class parses a string expression, validates it against a whitelist of
+   allowed AST nodes, operators, and functions, and then evaluates it.
+   This provides a secure alternative to `eval()` for handling simple
+   mathematical expressions from untrusted sources.
+
+
+   .. py:attribute:: _allowed_nodes
+
+
+   .. py:attribute:: _allowed_ops
+
+
+   .. py:attribute:: _allowed_functions
+
+
+   .. py:attribute:: context
+
+
+   .. py:method:: _eval_node(node)
+
+
+   .. py:method:: eval(expression)
+
+
+.. py:function:: safe_eval(expression, context)
+
+   Safely evaluates a string expression in a given context.
+
+   :param expression: The expression to evaluate.
+   :type expression: str
+   :param context: A dictionary of allowed variable names and their values.
+   :type context: dict
+
+   :returns: The result of the evaluated expression.
+
+   :raises ValueError: If the expression contains unsupported nodes, operators, or functions.
+   :raises NameError: If the expression contains undefined variables or unsupported function calls.
+   :raises SyntaxError: If the expression is not valid Python syntax.
+   :raises TypeError: If an operation is applied to an object of an inappropriate type.
+
+

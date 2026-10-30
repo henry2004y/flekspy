@@ -1,0 +1,895 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# AMReX Data\n",
+    "\n",
+    "This notebook focuses on handling data in the AMReX format, which is used for both field and particle data. We will cover two main ways to load and analyze this data:\n",
+    "\n",
+    "1.  **Using the native AMReX particle loader**: A faster, more direct way to load and plot particle data without the `yt` overhead. (TODO: Requires testing in 3D geometries.)\n",
+    "2.  **Using the `yt`-based loader**: This is the backup method, leveraging the power of the `yt` library for slicing, plotting, and analyzing both field and particle data."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Setup: Imports and Data Downloads"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Imports"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import flekspy\n",
+    "from flekspy.util import download_testfile, unit_one\n",
+    "from flekspy.util.transformations import create_field_transform\n",
+    "from flekspy.util.gmm import generate_synthetic_gmm_data, compare_gmm_results\n",
+    "from flekspy.amrex import AMReXParticle\n",
+    "\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "# Set display for XArrays\n",
+    "import xarray as xr\n",
+    "\n",
+    "xr.set_options(\n",
+    "    display_expand_coords=False,\n",
+    "    display_expand_data=False,\n",
+    "    display_expand_data_vars=False,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Downloading Demo Data\n",
+    "\n",
+    "We'll download two different AMReX datasets to demonstrate various features."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Dataset 1: General purpose field and particle data\n",
+    "url_1 = \"https://raw.githubusercontent.com/henry2004y/batsrus_data/master/3d_particle.tar.gz\"\n",
+    "download_testfile(url_1, \"data\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Using the Native AMReX Particle Loader\n",
+    "\n",
+    "For scenarios where you only need to load particle data and the overhead of `yt` is not desired, `flekspy` provides a direct, experimental loader called `AMReXParticle`. This is much faster than the yt loader with a simple interface."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "data_file = \"data/3d_particle_region0_1_t00000002_n00000007_amrex\"\n",
+    "pd = AMReXParticle(data_file)\n",
+    "pd"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Particles within a given region can be extracted by providing the `x_range`, `y_range`, and `z_range`. If any of those is neglected, there is no constraint in that dimension."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "x_range = (-0.008, 0.008)\n",
+    "y_range = (-0.005, 0.005)\n",
+    "\n",
+    "rdata = pd.select_particles_in_region(x_range=x_range, y_range=y_range)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Phase Plot\n",
+    "\n",
+    "Phase space plotting is achieved via `plot_phase`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, ax = pd.plot_phase(\"vy\", \"vz\", bins=(50, 32))\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Adding 1D distributions via `marginals=True`:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pd.plot_phase(\"velocity_x\", \"velocity_y\", bins=(32, 32), marginals=True)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Customization:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Define the magnetic field vector for the transformation\n",
+    "B = np.array([1.0, 1.0, 0.0])\n",
+    "# Define an electric field vector\\n\n",
+    "E = np.array([0.0, 1.0, 0.0])\n",
+    "\n",
+    "# Create the transformation function using the utility\n",
+    "# We pass the original component names from the data header\n",
+    "b_field_transform = create_field_transform(B, pd.header.real_component_names)\n",
+    "eb_field_transform = create_field_transform(\n",
+    "    B, pd.header.real_component_names, e_field=E\n",
+    ")\n",
+    "\n",
+    "fig, ax = plt.subplots(2, 2, figsize=(8, 6), constrained_layout=True)\n",
+    "\n",
+    "pd.plot_phase(\n",
+    "    \"vx\",\n",
+    "    \"vy\",\n",
+    "    ax=ax[0, 0],\n",
+    "    add_colorbar=False,\n",
+    "    use_kde=True,\n",
+    "    kde_grid_size=30,\n",
+    "    kde_bandwidth=0.0002,\n",
+    "    title=\"KDE with GMM Estimate\",\n",
+    ")\n",
+    "\n",
+    "pd.plot_phase(\n",
+    "    \"x\",\n",
+    "    \"vz\",\n",
+    "    ax=ax[0, 1],\n",
+    "    add_colorbar=False,\n",
+    "    x_range=(-0.004, 0.004),\n",
+    "    y_range=(-0.005, 0.005),\n",
+    "    plot_zero_lines=False,\n",
+    "    ylabel=r\"$v_z [m/s]$\",\n",
+    "    title=\"x-vz\",\n",
+    ")\n",
+    "\n",
+    "pd.plot_phase(\n",
+    "    \"v_parallel\",\n",
+    "    \"v_perp\",\n",
+    "    ax=ax[1, 0],\n",
+    "    transform=b_field_transform,\n",
+    "    add_colorbar=False,\n",
+    "    plot_zero_lines=False,\n",
+    "    x_range=(-0.004, 0.004),\n",
+    "    y_range=(-0.005, 0.005),\n",
+    "    xlabel=r\"$v_{\\parallel}$\",\n",
+    "    ylabel=r\"$v_{\\perp}$\",\n",
+    "    title=\"B-field Aligned Velocities\",\n",
+    ")\n",
+    "\n",
+    "pd.plot_phase(\n",
+    "    \"v_B\",\n",
+    "    \"v_E\",\n",
+    "    ax=ax[1, 1],\n",
+    "    transform=eb_field_transform,\n",
+    "    add_colorbar=False,\n",
+    "    plot_zero_lines=False,\n",
+    "    x_range=(-0.004, 0.004),\n",
+    "    y_range=(-0.005, 0.005),\n",
+    "    xlabel=r\"$v_B$\",\n",
+    "    ylabel=r\"$v_{E, \\perp}$\",\n",
+    "    title=\"E-B Aligned Velocities\",\n",
+    ")\n",
+    "# GMM fit\n",
+    "gmm = pd.fit_gmm(1, \"velocity_x\", \"velocity_y\")\n",
+    "pd.plot_gmm_fit(gmm, ax=ax[0, 0], scale=1.0)\n",
+    "\n",
+    "gmm2 = pd.fit_gmm(1, \"v_B\", \"v_E\", transform=eb_field_transform)\n",
+    "pd.plot_gmm_fit(gmm2, ax=ax[1, 1], scale=1.0)\n",
+    "\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Pairplot:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pd.pairplot()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pd.pairplot(corner=True)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Orthogonal intersecting planes:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pd.plot_intersecting_planes(\"x\", \"vx\", \"vy\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "3D scattering:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "xmin, xmax, ymin, ymax, zmin, zmax = -0.001, 0.001, -0.001, 0.001, 0.0, 0.01\n",
+    "hist_range = [[xmin, xmax], [ymin, ymax], [zmin, zmax]]\n",
+    "pd.plot_phase_3d(\"vx\", \"vy\", \"vz\", normalize=True, hist_range=hist_range)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Matplotlib does not have real 3D rendering, which makes it hard for visualizing 3D phase plots."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## GMM Fitting\n",
+    "\n",
+    "To demonstrate the capability of the GMM fitting and parameter extraction, we can create a synthetic dataset of particles with known properties, fit a GMM to it, and verify that the extracted parameters match the input parameters."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from scipy.stats import multivariate_normal\n",
+    "from matplotlib.colors import LogNorm\n",
+    "from sklearn.mixture import GaussianMixture"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Define original parameters for comparison\n",
+    "params_isotropic = [\n",
+    "    {\"center\": np.array([0.0, 0.0]), \"temp\": 0.5},\n",
+    "    {\"center\": np.array([1.0, 2.0]), \"temp\": 0.2},\n",
+    "]\n",
+    "\n",
+    "# Define the parameters for two synthetic Maxwellian distributions\n",
+    "components_isotropic = [\n",
+    "    {\n",
+    "        \"n_samples\": 1500,\n",
+    "        \"mean\": params_isotropic[0][\"center\"],\n",
+    "        \"cov\": np.array(\n",
+    "            [[params_isotropic[0][\"temp\"], 0], [0, params_isotropic[0][\"temp\"]]]\n",
+    "        ),\n",
+    "    },\n",
+    "    {\n",
+    "        \"n_samples\": 1000,\n",
+    "        \"mean\": params_isotropic[1][\"center\"],\n",
+    "        \"cov\": np.array(\n",
+    "            [[params_isotropic[1][\"temp\"], 0], [0, params_isotropic[1][\"temp\"]]]\n",
+    "        ),\n",
+    "    },\n",
+    "]\n",
+    "\n",
+    "# Generate the synthetic data using the utility function\n",
+    "synthetic_data = generate_synthetic_gmm_data(components_isotropic, random_state=0)\n",
+    "\n",
+    "print(f\"Shape of the synthetic dataset: {synthetic_data.shape}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Fit a GMM to the synthetic data with 2 components:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "gmm_synthetic = GaussianMixture(n_components=2, random_state=0)\n",
+    "gmm_synthetic.fit(synthetic_data)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Compare the results. Since the synthetic data was generated with $m=1$ and $k_B=1$, the temperature is numerically equal to the variance, so we can compare directly."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "compare_gmm_results(params_isotropic, gmm_synthetic, isotropic=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Finally, we visualize the result. The plot below shows a 2D histogram of the synthetic particle data, with the fitted GMM components overlaid as red dashed ellipses. The ellipses represent the 1, 2, and 3-sigma contours of the Gaussian distributions, clearly showing how the GMM has identified the two distinct populations in the data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)\n",
+    "\n",
+    "# Plot the 2D histogram of the synthetic data\n",
+    "ax.hist2d(\n",
+    "    synthetic_data[:, 0],\n",
+    "    synthetic_data[:, 1],\n",
+    "    bins=50,\n",
+    "    norm=LogNorm(),\n",
+    "    cmap=\"turbo\",\n",
+    "    density=True,\n",
+    ")\n",
+    "ax.set_title(\"Synthetic Data with GMM Fit Overlay\")\n",
+    "ax.set_xlabel(\"vx\")\n",
+    "ax.set_ylabel(\"vy\")\n",
+    "\n",
+    "# Create a meshgrid for contour plotting\n",
+    "x = np.linspace(synthetic_data[:, 0].min(), synthetic_data[:, 0].max(), 100)\n",
+    "y = np.linspace(synthetic_data[:, 1].min(), synthetic_data[:, 1].max(), 100)\n",
+    "X, Y = np.meshgrid(x, y)\n",
+    "pos = np.dstack((X, Y))\n",
+    "\n",
+    "# Overlay the GMM contours\n",
+    "for i in range(gmm_synthetic.n_components):\n",
+    "    mean = gmm_synthetic.means_[i]\n",
+    "    cov = gmm_synthetic.covariances_[i]\n",
+    "    rv = multivariate_normal(mean, cov)\n",
+    "    levels = rv.pdf(mean) * np.exp(-0.5 * np.array([1.0, 2.0, 3.0]) ** 2)\n",
+    "    ax.contour(X, Y, rv.pdf(pos), levels=np.sort(levels), colors=\"red\", linestyles=\"--\")\n",
+    "\n",
+    "ax.set_aspect(\"equal\", \"box\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Anisotropic Example\n",
+    "\n",
+    "Now, let's do the same for an anisotropic distribution, where the temperature is different in different directions. This is common in magnetized plasmas, where temperature is often described in terms of $T_\\parallel$ and $T_\\perp$ with respect to the magnetic field."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Define original parameters for comparison\n",
+    "params_anisotropic = [\n",
+    "    {\n",
+    "        \"center\": np.array([0.5, 0.5]),\n",
+    "        \"temp_parallel\": 0.8,\n",
+    "        \"temp_perp\": 0.2,\n",
+    "    }\n",
+    "]\n",
+    "\n",
+    "# Define parameters for a synthetic anisotropic distribution\n",
+    "components_anisotropic = [\n",
+    "    {\n",
+    "        \"n_samples\": 2500,\n",
+    "        \"mean\": params_anisotropic[0][\"center\"],\n",
+    "        \"cov\": np.array(\n",
+    "            [\n",
+    "                [params_anisotropic[0][\"temp_parallel\"], 0],\n",
+    "                [0, params_anisotropic[0][\"temp_perp\"]],\n",
+    "            ]\n",
+    "        ),\n",
+    "    }\n",
+    "]\n",
+    "\n",
+    "# Generate the synthetic data\n",
+    "anisotropic_data = generate_synthetic_gmm_data(\n",
+    "    components_anisotropic, shuffle=False, random_state=42\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Fit the GMM:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.mixture import GaussianMixture\n",
+    "\n",
+    "gmm_anisotropic = GaussianMixture(n_components=1, random_state=0)\n",
+    "gmm_anisotropic.fit(anisotropic_data)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "compare_gmm_results(params_anisotropic, gmm_anisotropic, isotropic=False)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Plot the 2D histogram of the synthetic anisotropic data:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)\n",
+    "\n",
+    "ax.hist2d(\n",
+    "    anisotropic_data[:, 0],\n",
+    "    anisotropic_data[:, 1],\n",
+    "    bins=50,\n",
+    "    norm=LogNorm(),\n",
+    "    cmap=\"turbo\",\n",
+    "    density=True,\n",
+    ")\n",
+    "ax.set_title(\"Anisotropic Synthetic Data with GMM Fit Overlay\")\n",
+    "ax.set_xlabel(r\"$v_{\\parallel}$\")\n",
+    "ax.set_ylabel(r\"$v_{\\perp}$\")\n",
+    "\n",
+    "# Create a meshgrid for contour plotting\n",
+    "x = np.linspace(anisotropic_data[:, 0].min(), anisotropic_data[:, 0].max(), 100)\n",
+    "y = np.linspace(anisotropic_data[:, 1].min(), anisotropic_data[:, 1].max(), 100)\n",
+    "X, Y = np.meshgrid(x, y)\n",
+    "pos = np.dstack((X, Y))\n",
+    "\n",
+    "# Overlay the GMM contours\n",
+    "for i in range(gmm_anisotropic.n_components):\n",
+    "    mean = gmm_anisotropic.means_[i]\n",
+    "    cov = gmm_anisotropic.covariances_[i]\n",
+    "    rv = multivariate_normal(mean, cov)\n",
+    "    levels = rv.pdf(mean) * np.exp(-0.5 * np.array([1.0, 2.0, 3.0]) ** 2)\n",
+    "    ax.contour(X, Y, rv.pdf(pos), levels=np.sort(levels), colors=\"red\", linestyles=\"--\")\n",
+    "\n",
+    "ax.set_aspect(\"equal\", \"box\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Core Population Extraction\n",
+    "\n",
+    "We can also automatically extract the core population from the suprathermal population. This assumes the core is a Maxwellian distribution centered at the peak phase space density. The method `extract_core_population` fits a GMM to find the core center and thermal velocity, then applies a cutoff (default 3 * v_th) to separate the populations."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Extract core population using 2D velocity\n",
+    "core_mask, supra_mask = pd.extract_core_population(\n",
+    "    [\"velocity_x\", \"velocity_y\"], v_dim=2, v_th=0.0001, cutoff=3.0\n",
+    ")\n",
+    "\n",
+    "print(f\"Core particles: {np.sum(core_mask)}\")\n",
+    "print(f\"Suprathermal particles: {np.sum(supra_mask)}\")\n",
+    "\n",
+    "# Visualize the separation in 2D (vx vs vy)\n",
+    "fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)\n",
+    "\n",
+    "# Get raw data for plotting\n",
+    "vx = pd.rdata[:, pd.header.real_component_names.index(\"velocity_x\")]\n",
+    "vy = pd.rdata[:, pd.header.real_component_names.index(\"velocity_y\")]\n",
+    "\n",
+    "ax.scatter(vx[core_mask], vy[core_mask], s=1, c=\"tab:blue\", label=\"Core\", alpha=0.5)\n",
+    "ax.scatter(vx[supra_mask], vy[supra_mask], s=1, c=\"tab:red\", label=\"Suprathermal\", alpha=0.5)\n",
+    "\n",
+    "ax.set_xlabel(r\"$v_x$\")\n",
+    "ax.set_ylabel(r\"$v_y$\")\n",
+    "ax.set_title(\"Core vs Suprathermal Extraction\")\n",
+    "ax.legend()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Analyzing Field and PIC Particle Data with the `yt` Loader"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The primary way to load AMReX data is with `flekspy.load`, which uses `yt` on the backend. This returns a `yt` dataset object, giving you access to the full power of the `yt` analysis framework."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds = flekspy.load(\"data/3d*amrex\", use_yt_loader=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Slicing and Plotting Field Data\n",
+    "\n",
+    "We can easily take a 2D slice of the 3D data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dc = ds.get_slice(\"z\", 0.5)\n",
+    "dc"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "`flekspy` provides convenient wrappers for creating plots from these slices. You can use query syntax to plot with value range limits:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "f, axes = dc.fleks.plot(\"Bx>(2.2e5)<(3e5) Ex\", pcolor=True, figsize=(12, 6))\n",
+    "dc.fleks.add_stream(axes[0], \"Bx\", \"By\", color=\"w\")\n",
+    "dc.fleks.add_contour(axes[1], \"Bx\")\n",
+    "\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "For more control, you can also extract the data and plot it directly with Matplotlib."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "f, axes = plt.subplots(\n",
+    "    1, 2, figsize=(12, 4), constrained_layout=True, sharex=True, sharey=True\n",
+    ")\n",
+    "\n",
+    "fields = [\"By\", \"Bz\"]\n",
+    "for ivar in range(2):\n",
+    "    v = dc.fleks.evaluate_expression(fields[ivar])\n",
+    "    vmin = v.min().v\n",
+    "    vmax = v.max().v\n",
+    "    ax = axes[ivar]\n",
+    "    ax.set_title(fields[ivar], fontsize=16)\n",
+    "    ax.set_ylabel(\"Y\", fontsize=16)\n",
+    "    ax.set_xlabel(\"X\", fontsize=16)\n",
+    "    c = ax.pcolormesh(dc.X.values, dc.Y.values, np.array(v.T), cmap=\"turbo\")\n",
+    "    cb = f.colorbar(c, ax=ax, pad=0.01)\n",
+    "\n",
+    "    ax.set_xlim(np.min(dc.X.values), np.max(dc.X.values))\n",
+    "    ax.set_xlim(np.min(dc.Y.values), np.max(dc.Y.values))\n",
+    "    dc.fleks.add_stream(ax, \"Bx\", \"By\", density=0.5, color=\"w\")\n",
+    "\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Visualizing Phase Space Distributions\n",
+    "\n",
+    "We can also analyze the particle data. `yt` allows us to create derived fields, which are useful for weighting particles. Here, we create a `unit_one` field that simply assigns a value of 1 to each particle."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds.add_field(\n",
+    "    ds.pvar(\"unit_one\"),\n",
+    "    function=unit_one,\n",
+    "    sampling_type=\"particle\",\n",
+    "    units=\"dimensionless\",\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now we can create a phase space plot. We'll select a spatial region and plot the distribution of y- and z-velocities (`p_uy`, `p_uz`), weighted by the particle weight (`p_w`)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "x_field = \"p_uy\"\n",
+    "y_field = \"p_uz\"\n",
+    "z_field = \"p_w\"\n",
+    "xleft = [-0.016, -0.01, 0.0]\n",
+    "xright = [0.016, 0.01, 1.0]\n",
+    "\n",
+    "zmin, zmax = 1e-5, 2e-3\n",
+    "\n",
+    "region = ds.box(xleft, xright)\n",
+    "pp = ds.plot_phase(\n",
+    "    x_field,\n",
+    "    y_field,\n",
+    "    z_field,\n",
+    "    region=region,\n",
+    "    unit_type=\"si\",\n",
+    "    x_bins=100,\n",
+    "    y_bins=32,\n",
+    "    domain_size=(xleft[0], xright[0], xleft[1], xright[1]),\n",
+    ")\n",
+    "\n",
+    "pp.set_cmap(pp.fields[0], \"turbo\")\n",
+    "pp.set_zlim(pp.fields[0], zmin=zmin, zmax=zmax)\n",
+    "pp.set_xlabel(r\"$V_y$\")\n",
+    "pp.set_ylabel(r\"$V_z$\")\n",
+    "pp.set_colorbar_label(pp.fields[0], \"weight\")\n",
+    "pp.set_log(pp.fields[0], True)\n",
+    "pp.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Selecting and Plotting Particles in Geometric Regions\n",
+    "\n",
+    "`yt` makes it easy to select particles within various geometric shapes."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Sphere\n",
+    "Plot the spatial location and velocity space of particles within a sphere."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "sp = ds.sphere(center=[0, 0, 0], radius=1)\n",
+    "\n",
+    "# Plot particle locations\n",
+    "pp_loc = ds.plot_particles(\n",
+    "    \"p_x\", \"p_y\", \"p_w\", region=sp, unit_type=\"si\", x_bins=64, y_bins=64\n",
+    ")\n",
+    "pp_loc.show()\n",
+    "\n",
+    "# Plot phase space\n",
+    "pp_phase = ds.plot_phase(\n",
+    "    \"p_uy\", \"p_uz\", \"p_w\", region=sp, unit_type=\"si\", x_bins=64, y_bins=64\n",
+    ")\n",
+    "pp_phase.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Disk\n",
+    "Plot the spatial location and velocity space of particles within a disk."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "disk = ds.disk(center=[0, 0, 0], normal=[0, 0, 1], radius=0.5, height=1.0)\n",
+    "\n",
+    "# Plot particle locations\n",
+    "pp_loc = ds.plot_particles(\n",
+    "    \"p_x\", \"p_y\", \"p_w\", region=disk, unit_type=\"si\", x_bins=64, y_bins=64\n",
+    ")\n",
+    "pp_loc.show()\n",
+    "\n",
+    "# Plot phase space\n",
+    "pp_phase = ds.plot_phase(\n",
+    "    \"p_uy\", \"p_uz\", \"p_w\", region=disk, unit_type=\"si\", x_bins=64, y_bins=64\n",
+    ")\n",
+    "pp_phase.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Advanced Example: Transforming Velocity Coordinates (WIP)\n",
+    "\n",
+    "This section demonstrates transforming particle velocities into a new coordinate system (e.g., field-aligned coordinates) in `yt`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# l = [1, 0, 0]\n",
+    "# m = [0, 1, 0]\n",
+    "# n = [0, 0, 1]\n",
+    "\n",
+    "# def _vel_l(field, data):\n",
+    "#     return (l[0] * data[(\"particles\", \"p_ux\")] + l[1] * data[(\"particles\", \"p_uy\")] + l[2] * data[(\"particles\", \"p_uz\")])\n",
+    "\n",
+    "# def _vel_m(field, data):\n",
+    "#     return (m[0] * data[(\"particles\", \"p_ux\")] + m[1] * data[(\"particles\", \"p_uy\")] + m[2] * data[(\"particles\", \"p_uz\")])\n",
+    "\n",
+    "# ds2.add_field(ds2.pvar(\"vel_l\"), units=\"code_velocity\", function=_vel_l, sampling_type=\"particle\")\n",
+    "# ds2.add_field(ds2.pvar(\"vel_m\"), units=\"code_velocity\", function=_vel_m, sampling_type=\"particle\")\n",
+    "\n",
+    "# sp2 = ds2.sphere(center=[0, 0, 0], radius=0.001)\n",
+    "\n",
+    "# x_field = ds2.pvar(\"vel_l\")\n",
+    "# y_field = ds2.pvar(\"vel_m\")\n",
+    "# z_field = ds2.pvar(\"p_w\")\n",
+    "\n",
+    "# pp = yt.create_profile(data_source=sp2, bin_fields=[x_field, y_field], fields=z_field, n_bins=[64, 64]).plot()\n",
+    "# pp.set_unit(x_field, \"km/s\")\n",
+    "# pp.set_unit(y_field, \"km/s\")\n",
+    "# pp.show()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3.9.7 64-bit",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.6"
+  },
+  "vscode": {
+   "interpreter": {
+    "hash": "f22a20af907fde35ff19e1e892fdb271353fb19b11c7ebd774491472e685293c"
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
