@@ -1,0 +1,50 @@
+flekspy.reconnection.accessor
+=============================
+
+.. py:module:: flekspy.reconnection.accessor
+
+.. autoapi-nested-parse::
+
+   Xarray Dataset accessor for magnetic reconnection.
+   Enables ds.reconnection.calc_vector_potential(), ds.reconnection.reconnected_flux(),
+   and ds.reconnection.plot_slice().
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.reconnection.accessor.ReconnectionAccessor
+
+
+Module Contents
+---------------
+
+.. py:class:: ReconnectionAccessor(xarray_obj: xarray.Dataset)
+
+   Xarray Dataset accessor for magnetic reconnection analysis and plotting.
+
+
+   .. py:attribute:: _obj
+
+
+   .. py:method:: calc_vector_potential(**kwargs) -> xarray.DataArray
+
+      Calculate out-of-plane vector potential Az(x, y).
+
+
+
+   .. py:method:: reconnected_flux(method: str = 'midplane', **kwargs) -> float
+
+      Calculate reconnected magnetic flux Delta Psi.
+
+
+
+   .. py:method:: plot_slice(var: str = 'Bz', stream_field: Optional[str] = 'B', ax: Optional[matplotlib.pyplot.Axes] = None, **kwargs)
+
+      Plot 2D color contour with continuous magnetic field lines with arrows.
+
+
+

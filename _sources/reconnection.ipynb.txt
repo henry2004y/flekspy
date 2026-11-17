@@ -1,0 +1,308 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "intro",
+   "metadata": {},
+   "source": [
+    "# Magnetic Reconnection Analysis with `flekspy`\n",
+    "\n",
+    "This notebook demonstrates how to analyze magnetic reconnection simulations using `flekspy`.\n",
+    "\n",
+    "### Capabilities covered:\n",
+    "1. **Vector Potential $A_z(x, y)$**: Conservative 2D path integration from the central column outward such that $\\mathbf{B} = \\nabla \\times (A_z \\hat{\\mathbf{z}})$.\n",
+    "2. **Reconnected Flux $\\Delta\\Psi(t)$ & Reconnection Rate $R(t)$**: Evaluated from midplane magnetic flux or vector potential.\n",
+    "3. **`ReconnectionSeries` Container**: Fast header scanning, lazy loading with LRU cache, and single-pass metrics extraction for time series.\n",
+    "4. **`xarray` Dataset Accessor**: Seamless integration via `ds.reconnection`.\n",
+    "5. **Publication-Grade Visualizations**: Continuous magnetic field streamlines with directional arrows via `flekspy.plot.streamplot`.\n",
+    "\n",
+    "> Full-scale kinetic or Hall-MHD reconnection runs typically produce gigabytes of output. In this notebook, we generate a compact sequence of synthetic snapshots to showcase the complete analysis workflow without requiring external downloads."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "imports-md",
+   "metadata": {},
+   "source": [
+    "## 1. Imports and Setup"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "imports-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tempfile\n",
+    "from pathlib import Path\n",
+    "import matplotlib.pyplot as plt\n",
+    "import numpy as np\n",
+    "import xarray as xr\n",
+    "\n",
+    "import flekspy as fs\n",
+    "import flekspy.reconnection as reconn\n",
+    "\n",
+    "# Configure display options\n",
+    "xr.set_options(display_expand_coords=False, display_expand_data=False)\n",
+    "plt.rcParams[\"figure.dpi\"] = 120"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "synthetic-data-md",
+   "metadata": {},
+   "source": [
+    "## 2. Generating Synthetic Reconnection Snapshots\n",
+    "\n",
+    "We construct a sequence of snapshots simulating the physical stages of magnetic reconnection:\n",
+    "- An initial Harris current sheet: $B_x(y) = B_0 \\tanh(y/L)$\n",
+    "- An island perturbation that grows over time: $b_1(t)$\n",
+    "- The characteristic out-of-plane quadrupolar Hall magnetic field $B_z(x, y)$\n",
+    "- Bipolar reconnection outflow jets $u_x(x, y)$\n",
+    "\n",
+    "Each snapshot is saved as a standard IDL ASCII output file (`.out`)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "synthetic-data-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "temp_dir = tempfile.TemporaryDirectory()\n",
+    "data_dir = Path(temp_dir.name)\n",
+    "\n",
+    "nx, ny = 48, 24\n",
+    "Lx, Ly = 20.0, 10.0\n",
+    "x = np.linspace(-Lx / 2, Lx / 2, nx)\n",
+    "y = np.linspace(-Ly / 2, Ly / 2, ny)\n",
+    "\n",
+    "# Generate 6 time snapshots showing island growth\n",
+    "times = [0.0, 4.0, 8.0, 12.0, 16.0, 20.0]\n",
+    "file_paths = []\n",
+    "\n",
+    "for i, t in enumerate(times):\n",
+    "    # Reconnection perturbation amplitude grows and then saturates\n",
+    "    amp = 0.12 * (1.0 - np.exp(-t / 6.0))\n",
+    "    fpath = data_dir / f\"z=0_var_t{t:05.1f}_n{i*200:04d}.out\"\n",
+    "    \n",
+    "    lines = [\n",
+    "        \"PIC unit\",\n",
+    "        f\"{i * 200} {t:.4f} 2 0 6\",\n",
+    "        f\"{nx} {ny}\",\n",
+    "        \"x y Bx By Bz ux\"\n",
+    "    ]\n",
+    "    \n",
+    "    for j_idx in range(ny):\n",
+    "        for i_idx in range(nx):\n",
+    "            xi = x[i_idx]\n",
+    "            yj = y[j_idx]\n",
+    "            bx_val = np.tanh(yj) - amp * (np.pi / Ly) * np.cos(2 * np.pi * xi / Lx) * np.sin(np.pi * yj / Ly)\n",
+    "            by_val = amp * (2 * np.pi / Lx) * np.sin(2 * np.pi * xi / Lx) * np.cos(np.pi * yj / Ly)\n",
+    "            bz_val = 0.25 * amp * 8.0 * np.sin(2 * np.pi * xi / Lx) * np.sin(2 * np.pi * yj / Ly)\n",
+    "            ux_val = 0.5 * (amp / 0.12) * np.sin(2 * np.pi * xi / Lx) * np.exp(-(yj / 1.5)**2)\n",
+    "            lines.append(f\"{xi:.5e} {yj:.5e} {bx_val:.5e} {by_val:.5e} {bz_val:.5e} {ux_val:.5e}\")\n",
+    "            \n",
+    "    fpath.write_text(\"\\n\".join(lines) + \"\\n\")\n",
+    "    file_paths.append(str(fpath))\n",
+    "\n",
+    "print(f\"Generated {len(file_paths)} synthetic snapshots in {data_dir}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "single-frame-md",
+   "metadata": {},
+   "source": [
+    "## 3. Single-Snapshot Analysis and Xarray Accessor\n",
+    "\n",
+    "`flekspy` registers an xarray accessor `ds.reconnection` on every 2D dataset loaded with `read_idl` or `load`.\n",
+    "\n",
+    "Let's load the snapshot near peak reconnection ($t = 16.0$) and inspect the accessor capabilities:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "single-frame-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ds_peak = fs.read_idl(file_paths[4])\n",
+    "print(f\"Loaded frame at t = {ds_peak.attrs['time']:.1f} with dimensions: {dict(ds_peak.sizes)}\")\n",
+    "\n",
+    "# 1. Calculate 2D magnetic vector potential Az(x, y)\n",
+    "az = ds_peak.reconnection.calc_vector_potential()\n",
+    "print(f\"Vector potential Az computed: shape = {az.shape}, range = [{az.min().item():.3f}, {az.max().item():.3f}]\")\n",
+    "\n",
+    "# 2. Calculate reconnected magnetic flux Delta Psi\n",
+    "flux_mid = ds_peak.reconnection.reconnected_flux(method=\"midplane\")\n",
+    "flux_az = ds_peak.reconnection.reconnected_flux(method=\"az\")\n",
+    "print(f\"Reconnected flux (midplane integral): {flux_mid:.4f}\")\n",
+    "print(f\"Reconnected flux (vector potential):  {flux_az:.4f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "streamlines-md",
+   "metadata": {},
+   "source": [
+    "### 2D Slice with Continuous Field Lines and Directional Arrows\n",
+    "\n",
+    "`plot_2d_slice` combines the scalar background field (such as the Hall field $B_z$ or outflow $u_x$) with continuous magnetic streamlines that include directional arrowheads:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "streamlines-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, ax = ds_peak.reconnection.plot_slice(\n",
+    "    var=\"Bz\",\n",
+    "    stream_field=\"B\",\n",
+    "    stream_density=1.1,\n",
+    "    title=r\"Quadrupolar Hall $B_z$ & Field Lines at $t = 16.0 \\, \\Omega_{ci}^{-1}$\",\n",
+    ")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "series-md",
+   "metadata": {},
+   "source": [
+    "## 4. Multi-Frame Analysis with `ReconnectionSeries`\n",
+    "\n",
+    "`ReconnectionSeries` inherits from `IDLSeries`, which provides fast header pre-scanning and lazy on-demand loading with an LRU cache (`max_cache=32` by default).\n",
+    "\n",
+    "It automatically extracts the time series of:\n",
+    "- Reconnected flux $\\Delta\\Psi(t)$\n",
+    "- Reconnection rate $R(t) = d\\Delta\\Psi/dt$\n",
+    "- Peak quadrupolar Hall field $\\max(|B_z|)$\n",
+    "- Peak outflow velocity $\\max(|u_x|)$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "series-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "series = fs.ReconnectionSeries(f\"{data_dir}/*.out\", max_cache=4)\n",
+    "print(series)\n",
+    "\n",
+    "# Summary dictionary\n",
+    "summary = series.summary()\n",
+    "print(\"\\nReconnection Summary:\")\n",
+    "for key, val in summary.items():\n",
+    "    print(f\"  {key}: {val}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "rate-plot-md",
+   "metadata": {},
+   "source": [
+    "## 5. Reconnection Rate vs Time\n",
+    "\n",
+    "`plot_reconnection_rate` displays the reconnected flux $\\Delta\\Psi(t)$ on the left axis and the reconnection rate $R(t) = d\\Delta\\Psi/dt$ on the right axis, highlighting the peak reconnection rate:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "rate-plot-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, (ax1, ax2) = reconn.plot_reconnection_rate(series)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "peak-state-md",
+   "metadata": {},
+   "source": [
+    "## 6. Multi-Panel Peak State Diagnostics\n",
+    "\n",
+    "`plot_peak_state` automatically identifies the time of maximum reconnection rate and generates a 6-panel overview layout:\n",
+    "- (a) Outflow velocity or density with continuous streamlines + arrows\n",
+    "- (b) Hall magnetic field $B_z$ with continuous streamlines + arrows\n",
+    "- (c) Reconnection outflow jets\n",
+    "- (d) 1D midplane cut $B_y(x, y=0)$\n",
+    "- (e) 1D inflow profile $B_x(x=0, y)$ across the current sheet\n",
+    "- (f) Reconnection rate curve with a vertical indicator line for the current frame"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "peak-state-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, axes = reconn.plot_peak_state(series)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "evolution-md",
+   "metadata": {},
+   "source": [
+    "## 7. 2D Time Evolution\n",
+    "\n",
+    "`plot_2d_evolution` visualizes the spatial evolution across key simulation times, illustrating current sheet thinning, island expansion, and magnetic topology changes:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "evolution-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, axes = reconn.plot_2d_evolution(\n",
+    "    series,\n",
+    "    var=\"Bz\",\n",
+    "    times=[0.0, 8.0, 16.0],\n",
+    "    stream_field=\"B\",\n",
+    ")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cleanup-md",
+   "metadata": {},
+   "source": [
+    "## 8. Cleanup"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "cleanup-code",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "temp_dir.cleanup()\n",
+    "print(\"Cleaned up temporary synthetic data files.\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python",
+   "version": "3.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

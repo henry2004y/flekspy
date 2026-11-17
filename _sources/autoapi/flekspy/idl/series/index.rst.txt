@@ -1,0 +1,126 @@
+flekspy.idl.series
+==================
+
+.. py:module:: flekspy.idl.series
+
+.. autoapi-nested-parse::
+
+   IDLSeries: Sequence container for temporal series of IDL .out / .outs files.
+   Provides lazy-loaded LRU caching, header pre-scanning, temporal slicing,
+   nearest-time frame lookup, and optional dataset concatenation.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.idl.series.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.idl.series.IDLSeries
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.idl.series.read_idl_header
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: read_idl_header(filename: Union[str, pathlib.Path]) -> Dict[str, Any]
+
+   Read metadata header of an IDL (.out/.outs) file without loading grid arrays.
+
+   :param filename: Path to IDL file.
+   :type filename: str or Path
+
+   :returns: Extracted header attributes (time, iter, grid, ndim, variables, parameters, etc.).
+   :rtype: dict
+
+
+.. py:class:: IDLSeries(files: Union[str, pathlib.Path, Sequence[Union[str, pathlib.Path]]], eager: bool = False, max_cache: int = 32, _headers: Optional[List[Dict[str, Any]]] = None)
+
+   Bases: :py:obj:`Sequence`\ [\ :py:obj:`xarray.Dataset`\ ]
+
+
+   Sequence container for a series of IDL (.out/.outs) output files.
+
+   Provides fast metadata scanning, lazy loading with LRU cache, temporal slicing,
+   and nearest-frame lookup by time or iteration.
+
+   :param files: File path pattern (e.g. 'run/PC/*.out') or list of file paths.
+   :type files: str or Sequence of (str or Path)
+   :param eager: If True, loads all datasets into memory at initialization.
+                 If False, loads datasets on-demand when indexed.
+   :type eager: bool, default False
+   :param max_cache: Maximum number of datasets to hold in memory when lazy loading.
+   :type max_cache: int, default 32
+
+
+   .. py:attribute:: eager
+      :value: False
+
+
+
+   .. py:attribute:: max_cache
+
+
+   .. py:attribute:: _cache
+      :type:  collections.OrderedDict[int, xarray.Dataset]
+
+
+   .. py:attribute:: _datasets
+      :type:  Optional[List[xarray.Dataset]]
+      :value: None
+
+
+
+   .. py:attribute:: times
+
+
+   .. py:attribute:: iters
+
+
+   .. py:method:: __len__() -> int
+
+
+   .. py:method:: __getitem__(index: Union[int, slice]) -> Union[xarray.Dataset, IDLSeries]
+
+
+   .. py:method:: __iter__() -> Iterator[xarray.Dataset]
+
+
+   .. py:method:: get_frame(time: Optional[float] = None, iter: Optional[int] = None) -> Tuple[int, xarray.Dataset]
+
+      Find the frame nearest to the requested time or iteration.
+
+
+
+   .. py:method:: clear_cache() -> None
+
+      Clear memory cache of loaded datasets.
+
+
+
+   .. py:method:: to_dataset(vars: Optional[Sequence[str]] = None) -> xarray.Dataset
+
+      Concatenate all frames into a single xarray.Dataset with a 'time' dimension.
+
+
+
+   .. py:method:: __repr__() -> str
+
+

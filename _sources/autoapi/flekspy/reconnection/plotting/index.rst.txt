@@ -1,0 +1,46 @@
+flekspy.reconnection.plotting
+=============================
+
+.. py:module:: flekspy.reconnection.plotting
+
+.. autoapi-nested-parse::
+
+   Publication-quality plotting functions for magnetic reconnection.
+   Includes continuous magnetic field lines with directional arrows using flekspy.plot.streamplot.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.reconnection.plotting.plot_reconnection_rate
+   flekspy.reconnection.plotting.plot_2d_slice
+   flekspy.reconnection.plotting.plot_peak_state
+   flekspy.reconnection.plotting.plot_2d_evolution
+
+
+Module Contents
+---------------
+
+.. py:function:: plot_reconnection_rate(series: flekspy.reconnection.analysis.ReconnectionSeries, smooth_window: int = 1, ax: Optional[matplotlib.pyplot.Axes] = None, color_flux: str = '#1f77b4', color_rate: str = '#d62728', save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, Tuple[matplotlib.pyplot.Axes, matplotlib.pyplot.Axes]]
+
+   Plot reconnected magnetic flux and reconnection rate vs time.
+
+
+.. py:function:: plot_2d_slice(ds: xarray.Dataset, var: str = 'Bz', stream_field: Optional[str] = 'B', ax: Optional[matplotlib.pyplot.Axes] = None, stream_density: float = 1.0, stream_color: str = 'black', stream_alpha: float = 0.8, stream_arrowsize: float = 1.1, cmap: Optional[str] = None, vmin: Optional[float] = None, vmax: Optional[float] = None, title: Optional[str] = None, colorbar: bool = True, save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, matplotlib.pyplot.Axes]
+
+   Plot 2D color contour of scalar variable with continuous field lines with arrows.
+
+
+.. py:function:: plot_peak_state(series: flekspy.reconnection.analysis.ReconnectionSeries, frame_idx: Optional[int] = None, time: Optional[float] = None, save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, numpy.ndarray]
+
+   Create a multi-panel overview plot of the reconnection structure at peak reconnection rate.
+
+
+.. py:function:: plot_2d_evolution(series: flekspy.reconnection.analysis.ReconnectionSeries, var: str = 'Bz', times: Optional[Sequence[float]] = None, n_frames: int = 4, stream_field: str = 'B', save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, numpy.ndarray]
+
+   Plot multi-panel time evolution showing current sheet thinning and reconnection development.
+
+

@@ -1,0 +1,236 @@
+flekspy.reconnection
+====================
+
+.. py:module:: flekspy.reconnection
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/flekspy/reconnection/accessor/index
+   /autoapi/flekspy/reconnection/analysis/index
+   /autoapi/flekspy/reconnection/plotting/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.reconnection.ReconnectionSeries
+   flekspy.reconnection.ReconnectionAccessor
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.reconnection.calc_reconnected_flux
+   flekspy.reconnection.calc_vector_potential
+   flekspy.reconnection.plot_2d_evolution
+   flekspy.reconnection.plot_2d_slice
+   flekspy.reconnection.plot_peak_state
+   flekspy.reconnection.plot_reconnection_rate
+
+
+Package Contents
+----------------
+
+.. py:class:: ReconnectionSeries(files: Union[str, Sequence[Union[str, Any]]], eager: bool = False, max_cache: int = 32, flux_method: str = 'midplane', **kwargs)
+
+   Bases: :py:obj:`flekspy.idl.series.IDLSeries`
+
+
+   Specialized series container for magnetic reconnection simulation results.
+
+   Subclasses IDLSeries with lazy-loading and provides automated computation of:
+   - Reconnected magnetic flux Delta Psi(t)
+   - Reconnection rate R(t) = d(Delta Psi)/dt
+   - Peak quadrupolar Hall magnetic field Bz(t)
+   - Peak reconnection outflow velocity ux(t)
+   - Electric field Ez at the X-line
+
+
+   .. py:attribute:: flux_method
+      :value: 'midplane'
+
+
+
+   .. py:attribute:: _flux
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:attribute:: _peak_bz
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:attribute:: _peak_ux
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:attribute:: _xpoint_ez
+      :type:  Optional[numpy.ndarray]
+      :value: None
+
+
+
+   .. py:method:: _compute_metrics() -> None
+
+      Compute all time series metrics in a single efficient pass over frames.
+
+
+
+   .. py:property:: flux
+      :type: numpy.ndarray
+
+
+      Array of reconnected magnetic flux Delta Psi for each time frame.
+
+
+   .. py:method:: rate(smooth_window: int = 1) -> numpy.ndarray
+
+      Calculate reconnection rate R(t) = d(Delta Psi)/dt.
+
+
+
+   .. py:property:: peak_hall_bz
+      :type: numpy.ndarray
+
+
+      Peak out-of-plane Hall magnetic field max(|Bz|) for each time frame.
+
+
+   .. py:property:: peak_outflow_ux
+      :type: numpy.ndarray
+
+
+      Peak reconnection outflow velocity max(|ux|) for each time frame.
+
+
+   .. py:property:: xpoint_ez
+      :type: numpy.ndarray
+
+
+      Electric field Ez at the central reconnection X-point (x=0, y=0) for each time frame.
+
+
+   .. py:property:: peak_frame_index
+      :type: int
+
+
+      Frame index where reconnection rate reaches its maximum.
+
+
+   .. py:property:: peak_time
+      :type: float
+
+
+      Time where reconnection rate reaches its maximum.
+
+
+   .. py:method:: summary() -> Dict[str, Any]
+
+      Compute key summary metrics of the reconnection process.
+
+
+
+.. py:function:: calc_reconnected_flux(ds: xarray.Dataset, method: str = 'midplane', x_coord: str = 'x', y_coord: str = 'y', by_var: Optional[str] = None) -> float
+
+   Calculate the reconnected magnetic flux Delta Psi.
+
+   :param ds: 2D dataset with magnetic field.
+   :type ds: xr.Dataset
+   :param method: Calculation method:
+                  - 'midplane': Integrates |By(x, y_mid)| dx from central X-line (x=0) to domain edge (x=Lx/2).
+                  - 'az': Calculates max(|Az(x, y_mid) - Az(x0, y_mid)|) along the midplane (O-point minus X-point).
+   :type method: {'midplane', 'az'}, default 'midplane'
+   :param x_coord: Coordinate name along outflow direction.
+   :type x_coord: str, default 'x'
+   :param y_coord: Coordinate name across current sheet.
+   :type y_coord: str, default 'y'
+   :param by_var: Variable name for By.
+   :type by_var: str, optional
+
+   :returns: The reconnected magnetic flux Delta Psi.
+   :rtype: float
+
+
+.. py:function:: calc_vector_potential(ds: xarray.Dataset, x_coord: str = 'x', y_coord: str = 'y', bx_var: Optional[str] = None, by_var: Optional[str] = None) -> xarray.DataArray
+
+   Calculate the 2D out-of-plane magnetic vector potential Az(x, y).
+
+   In 2D (z-invariant geometry):
+       Bx = dAz/dy  =>  Az(x0, y) = int_{y0}^y Bx(x0, y') dy'
+       By = -dAz/dx =>  Az(x, y) = Az(x0, y) - int_{x0}^x By(x', y) dx'
+
+   :param ds: 2D dataset containing magnetic field components.
+   :type ds: xr.Dataset
+   :param x_coord: Coordinate name along reconnection outflow/current sheet.
+   :type x_coord: str, default 'x'
+   :param y_coord: Coordinate name normal to the current sheet.
+   :type y_coord: str, default 'y'
+   :param bx_var: Variable name for Bx. If None, auto-detected from ('Bx', 'bx').
+   :type bx_var: str, optional
+   :param by_var: Variable name for By. If None, auto-detected from ('By', 'by').
+   :type by_var: str, optional
+
+   :returns: Computed 2D magnetic vector potential Az(x, y).
+   :rtype: xr.DataArray
+
+
+.. py:function:: plot_2d_evolution(series: flekspy.reconnection.analysis.ReconnectionSeries, var: str = 'Bz', times: Optional[Sequence[float]] = None, n_frames: int = 4, stream_field: str = 'B', save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, numpy.ndarray]
+
+   Plot multi-panel time evolution showing current sheet thinning and reconnection development.
+
+
+.. py:function:: plot_2d_slice(ds: xarray.Dataset, var: str = 'Bz', stream_field: Optional[str] = 'B', ax: Optional[matplotlib.pyplot.Axes] = None, stream_density: float = 1.0, stream_color: str = 'black', stream_alpha: float = 0.8, stream_arrowsize: float = 1.1, cmap: Optional[str] = None, vmin: Optional[float] = None, vmax: Optional[float] = None, title: Optional[str] = None, colorbar: bool = True, save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, matplotlib.pyplot.Axes]
+
+   Plot 2D color contour of scalar variable with continuous field lines with arrows.
+
+
+.. py:function:: plot_peak_state(series: flekspy.reconnection.analysis.ReconnectionSeries, frame_idx: Optional[int] = None, time: Optional[float] = None, save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, numpy.ndarray]
+
+   Create a multi-panel overview plot of the reconnection structure at peak reconnection rate.
+
+
+.. py:function:: plot_reconnection_rate(series: flekspy.reconnection.analysis.ReconnectionSeries, smooth_window: int = 1, ax: Optional[matplotlib.pyplot.Axes] = None, color_flux: str = '#1f77b4', color_rate: str = '#d62728', save_path: Optional[str] = None, dpi: int = 200) -> Tuple[matplotlib.pyplot.Figure, Tuple[matplotlib.pyplot.Axes, matplotlib.pyplot.Axes]]
+
+   Plot reconnected magnetic flux and reconnection rate vs time.
+
+
+.. py:class:: ReconnectionAccessor(xarray_obj: xarray.Dataset)
+
+   Xarray Dataset accessor for magnetic reconnection analysis and plotting.
+
+
+   .. py:attribute:: _obj
+
+
+   .. py:method:: calc_vector_potential(**kwargs) -> xarray.DataArray
+
+      Calculate out-of-plane vector potential Az(x, y).
+
+
+
+   .. py:method:: reconnected_flux(method: str = 'midplane', **kwargs) -> float
+
+      Calculate reconnected magnetic flux Delta Psi.
+
+
+
+   .. py:method:: plot_slice(var: str = 'Bz', stream_field: Optional[str] = 'B', ax: Optional[matplotlib.pyplot.Axes] = None, **kwargs)
+
+      Plot 2D color contour with continuous magnetic field lines with arrows.
+
+
+

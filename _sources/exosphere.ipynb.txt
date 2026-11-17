@@ -1,0 +1,141 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Exosphere Module"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This notebook demonstrates the usage of the `flekspy.util.exosphere` module. We will use Mars as an example and plot three types of neutral density profiles: exponential, power-law, and Chamberlain."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "from flekspy.util.exosphere import Exosphere"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Mars Example"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Mars parameters\n",
+    "R_planet = 3390e3  # Mars radius [m]\n",
+    "M_planet = 6.42e23  # Mars mass [kg]\n",
+    "T_exo = 200  # Exospheric temperature [K]\n",
+    "H0 = 100e3 # Scale height [m]\n",
+    "n0 = 1e13  # Density at the exobase [m^-3]\n",
+    "m_neutral = 16 * 1.67e-27  # Mass of neutral oxygen [kg]\n",
+    "r0 = R_planet + 200e3 # Exobase radius [m]\n",
+    "k0 = 8.0 # Power-law exponents"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mars_exo_exp = Exosphere(\n",
+    "    neutral_profile=\"exponential\",\n",
+    "    n0=n0,\n",
+    "    H0=H0,\n",
+    "    T0=T_exo,\n",
+    "    exobase_radius=r0,\n",
+    "    M_planet=M_planet,\n",
+    "    m_neutral=m_neutral,\n",
+    ")\n",
+    "mars_exo_power = Exosphere(\n",
+    "    neutral_profile=\"power_law\",\n",
+    "    n0=n0,\n",
+    "    H0=H0,\n",
+    "    T0=T_exo,\n",
+    "    k0=k0,\n",
+    "    exobase_radius=r0,\n",
+    "    M_planet=M_planet,\n",
+    "    m_neutral=m_neutral,\n",
+    ")\n",
+    "mars_exo_chamb = Exosphere(\n",
+    "    neutral_profile=\"chamberlain\",\n",
+    "    n0=n0,\n",
+    "    H0=H0,\n",
+    "    T0=T_exo,\n",
+    "    exobase_radius=r0,\n",
+    "    M_planet=M_planet,\n",
+    "    m_neutral=m_neutral,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "r = np.linspace(r0, 4 * R_planet, 100)\n",
+    "n_exp = mars_exo_exp.get_neutral_density(r)\n",
+    "n_power = mars_exo_power.get_neutral_density(r)\n",
+    "n_chamb = mars_exo_chamb.get_neutral_density(r)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(10, 6), constrained_layout=True)\n",
+    "plt.plot(r / R_planet, n_exp, label=\"Exponential\")\n",
+    "plt.plot(r / R_planet, n_power, label=f\"Power-law, k={k0}\")\n",
+    "plt.plot(r / R_planet, n_chamb, label=\"Chamberlain\")\n",
+    "plt.yscale(\"log\")\n",
+    "plt.xlabel(\"Radial Distance ($R_M$)\", fontsize=\"x-large\")\n",
+    "plt.ylabel(\"Density ($m^{-3}$)\", fontsize=\"x-large\")\n",
+    "plt.title(\"Analytical Neutral Density Profiles at Mars\", fontsize=\"xx-large\")\n",
+    "plt.legend()\n",
+    "plt.grid(True)\n",
+    "plt.show()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

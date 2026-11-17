@@ -1,0 +1,160 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Select and plot particles with `flekspy`\n",
+    "\n",
+    "This example loads the small AMReX particle fixture used by the documentation, projects particle velocities into a field-aligned frame, selects particles inside a velocity-space region, and plots the resulting distributions."
+   ],
+   "id": "cell-0"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The fixture is downloaded from the same source as `amrex_data.ipynb`. The notebook downloads it at runtime, so generated data and plot outputs do not need to be stored in the repository."
+   ],
+   "id": "cell-1"
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from pathlib import Path\n",
+    "\n",
+    "import flekspy\n",
+    "import matplotlib.pyplot as plt\n",
+    "import numpy as np\n",
+    "\n",
+    "from flekspy.util import download_testfile\n",
+    "\n",
+    "download_testfile(\n",
+    "    \"https://raw.githubusercontent.com/henry2004y/batsrus_data/master/3d_particle.tar.gz\",\n",
+    "    \"data\",\n",
+    ")\n",
+    "data_file = Path(\"data/3d_particle_region0_1_t00000002_n00000007_amrex\")\n",
+    "ds = flekspy.load(str(data_file), use_yt_loader=True)\n",
+    "print(f\"Loaded {data_file}\")\n"
+   ],
+   "id": "cell-2"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The documented fixture is two-dimensional in position. We use the magnetic field components from the mesh to define a simple field-aligned frame and subtract the mean particle velocity before projecting."
+   ],
+   "id": "cell-3"
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "data = ds.all_data()\n",
+    "\n",
+    "x = np.asarray(data[\"particles\", \"p_x\"])\n",
+    "y = np.asarray(data[\"particles\", \"p_y\"])\n",
+    "ux = np.asarray(data[\"particles\", \"p_ux\"])\n",
+    "uy = np.asarray(data[\"particles\", \"p_uy\"])\n",
+    "uz = np.asarray(data[\"particles\", \"p_uz\"])\n",
+    "\n",
+    "bx = np.asarray(data[\"boxlib\", \"Bx\"]).mean()\n",
+    "by = np.asarray(data[\"boxlib\", \"By\"]).mean()\n",
+    "bz = np.asarray(data[\"boxlib\", \"Bz\"]).mean()\n",
+    "b_vec = np.array([bx, by, bz])\n",
+    "if np.linalg.norm(b_vec) == 0:\n",
+    "    b_vec = np.array([0.0, 0.0, 1.0])\n",
+    "unit_b = b_vec / np.linalg.norm(b_vec)\n",
+    "reference = np.array([1.0, 0.0, 0.0])\n",
+    "unit_vb = np.cross(unit_b, reference)\n",
+    "if np.linalg.norm(unit_vb) == 0:\n",
+    "    reference = np.array([0.0, 1.0, 0.0])\n",
+    "    unit_vb = np.cross(unit_b, reference)\n",
+    "unit_vb /= np.linalg.norm(unit_vb)\n",
+    "\n",
+    "velocity = np.column_stack((ux, uy, uz))\n",
+    "velocity -= velocity.mean(axis=0)\n",
+    "vel_b = velocity @ unit_b\n",
+    "vel_vb = velocity @ unit_vb\n",
+    "print(f\"Selected fixture contains {len(x):,} particles\")\n"
+   ],
+   "id": "cell-4"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Velocity distribution and particle selection\n",
+    "\n",
+    "The first plot is a velocity distribution function in the two projected directions. The ellipse selects a lower-energy subset for subsequent analysis."
+   ],
+   "id": "cell-5"
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, axes = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)\n",
+    "axes[0].hist2d(vel_vb, vel_b, bins=80, cmap=\"magma\")\n",
+    "axes[0].set_xlabel(\"Velocity perpendicular to B\")\n",
+    "axes[0].set_ylabel(\"Velocity parallel to B\")\n",
+    "axes[0].set_title(\"Particle velocity distribution\")\n",
+    "\n",
+    "scale_vb = np.percentile(np.abs(vel_vb), 75)\n",
+    "scale_b = np.percentile(np.abs(vel_b), 75)\n",
+    "inside = (vel_vb / scale_vb) ** 2 + (vel_b / scale_b) ** 2 <= 1\n",
+    "axes[1].scatter(vel_vb[inside], vel_b[inside], s=0.5, alpha=0.5)\n",
+    "axes[1].set_xlabel(\"Velocity perpendicular to B\")\n",
+    "axes[1].set_ylabel(\"Velocity parallel to B\")\n",
+    "axes[1].set_title(f\"Selected particles ({inside.sum():,})\")\n",
+    "plt.show()\n"
+   ],
+   "id": "cell-6"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Spatial distribution of the selected particles\n"
+   ],
+   "id": "cell-7"
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(6, 5))\n",
+    "plt.scatter(x[inside], y[inside], s=0.5, alpha=0.5)\n",
+    "plt.xlabel(\"x [code length]\")\n",
+    "plt.ylabel(\"y [code length]\")\n",
+    "plt.title(\"Spatial distribution of selected particles\")\n",
+    "plt.axis(\"equal\")\n",
+    "plt.show()\n"
+   ],
+   "id": "cell-8"
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "pygments_lexer": "ipython3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

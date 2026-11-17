@@ -1,0 +1,166 @@
+flekspy.idl.idl
+===============
+
+.. py:module:: flekspy.idl.idl
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   flekspy.idl.idl.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   flekspy.idl.idl.DerivedAccessor
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   flekspy.idl.idl._read_and_process_data
+   flekspy.idl.idl._read_ascii
+   flekspy.idl.idl._read_ascii_instance
+   flekspy.idl.idl._read_binary
+   flekspy.idl.idl._read_binary_slow
+   flekspy.idl.idl._get_file_head
+   flekspy.idl.idl._read_binary_instance
+   flekspy.idl.idl._read_parameters
+   flekspy.idl.idl._read_variable_names
+   flekspy.idl.idl.read_idl
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: _read_and_process_data(filename, npict=1)
+
+.. py:function:: _read_ascii(filename, attrs)
+
+.. py:function:: _read_ascii_instance(infile, attrs)
+
+.. py:function:: _read_binary(filename, attrs)
+
+.. py:function:: _read_binary_slow(filename, attrs)
+
+.. py:function:: _get_file_head(infile, attrs)
+
+.. py:function:: _read_binary_instance(infile, attrs)
+
+.. py:function:: _read_parameters(infile, attrs, end_char)
+
+.. py:function:: _read_variable_names(infile, attrs, end_char)
+
+.. py:class:: DerivedAccessor(xarray_obj)
+
+   .. py:attribute:: _obj
+
+
+   .. py:method:: get_slice(norm, cut_loc) -> xarray.Dataset
+
+      Get a 2D slice from the 3D IDL data.
+      :param norm: The normal direction of the slice from "x", "y" or "z"
+      :type norm: str
+      :param cur_loc: The position of slicing.
+      :type cur_loc: float
+
+      Return: xarray.Dataset
+
+
+
+   .. py:method:: get_pressure_anisotropy(species: int) -> xarray.DataArray
+
+      Calculates the pressure anisotropy for a given species.
+
+      The pressure anisotropy is defined as the ratio of perpendicular
+      to parallel pressure, calculated with respect to the local magnetic
+      field direction.
+
+      This method requires the dataset to contain the magnetic field
+      components ('Bx', 'By', 'Bz') and the full pressure tensor for the
+      specified species (e.g., 'pXXS0', 'pYYS0', etc. for species 0).
+
+      :param species: The species index for which to calculate the
+                      pressure anisotropy.
+      :type species: int
+
+      :returns:
+
+                A DataArray containing the pressure anisotropy,
+                                  with the same dimensions as the input data.
+      :rtype: xarray.DataArray
+
+
+
+   .. py:method:: get_current_density() -> xarray.Dataset
+
+      Calculates the current density vector from the curl of the magnetic field.
+
+      This method computes the current density J = (1/mu0) * curl(B).
+      It requires the dataset to contain 2D or 3D magnetic field components
+      ('Bx', 'By', 'Bz') on a structured grid.
+
+      For 2D data, it is assumed that the simulation is in a plane (e.g., XY)
+      and the gradients in the missing dimension (e.g., z) are zero.
+
+      If the dataset attribute "unit" is "PLANETARY", it is assumed that the
+      magnetic field is in nT, and the length unit is "rPlanet". The resulting
+      current density is returned in µA/m^2.
+      Otherwise, the magnetic field is assumed to be in Tesla.
+
+      :returns:
+
+                A Dataset containing the three components of the
+                                current density ('jx', 'jy', 'jz').
+      :rtype: xarray.Dataset
+
+      :raises KeyError: If the magnetic field components are not in the dataset.
+      :raises ValueError: If the data is not 2D or 3D.
+      :raises NotImplementedError: If the grid is unstructured.
+
+
+
+   .. py:method:: get_current_density_from_definition(species: list[int]) -> xarray.Dataset
+
+      Calculates the current density from its definition J = n * q * v.
+
+      This method computes the current density by summing the contributions
+      from the specified particle species. It requires the dataset to contain
+      the mass density (e.g., 'rhoS0') and velocity components (e.g., 'uxS0',
+      'uyS0', 'uzS0') for each species. The particle mass and charge for each
+      species are retrieved dynamically from the dataset's 'param_name' and
+      'parameters' attributes.
+
+      If the dataset attribute "unit" is "PLANETARY", it is assumed that the
+      mass densities are in [amu/cc], velocities are in [km/s], mass is in
+      [amu] and charge is normalized to the elementary charge. The resulting
+      current density is returned in µA/m^2. Otherwise, SI units are
+      assumed and the result is also returned in µA/m^2.
+
+      :param species: A list of species indices for which to
+                      calculate the current density.
+      :type species: list[int]
+
+      :returns:
+
+                A Dataset containing the three components of the
+                                total current density ('jx', 'jy', 'jz'), with
+                                units attribute set to 'µA/m^2'.
+      :rtype: xarray.Dataset
+
+
+
+.. py:function:: read_idl(filename, npict=1)
+
+   Read IDL format file.
+
+
