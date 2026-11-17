@@ -48,21 +48,21 @@ The semi-implicit PIC method tries to make a compromise and retain some of the a
 
 - **Fully Implicit PIC**: To get around stability limitations, fully implicit PIC models solve a system of equations where fields at the _future_ time step are considered unknowns along with _future_ particle positions.  This means the movement of particles and the update of fields are implicitly linked. Solution involves large matrix inversions at each time step.
 
-- **Semi-Implicit PIC**[^common]: Semi-implicit methods aim for a hybrid approach. They partially _linearize_ the coupling between particles and fields to improve stability somewhat. This involves using field values from the current and potentially from previous time steps, to calculate particle motion and field updates. Several techniques exist for this linearization (implicit moment, direct implicit etc.).
-  - Particle Push: Similar to explicit PIC, the method first uses the electric fields from the current time step (or potentially from a combination of current and previous time steps) to calculate the force acting on each particle.
-  - Linearized Update:  Here's where the 'implicitness' comes in.  The semi-implicit method employs a specific technique to linearize the relationship between how particles move and how the fields update.  Some common linearization techniques include:
-    1. Implicit Moment Method: This method solves a set of moment equations for the particles' distribution function, which is then used to update the fields in a linearized manner.
-    2. Direct Implicit Method: This method performs a formal linear expansion of the coupling operator between particles and fields, allowing for a linearized update of the fields.
-  - Field Update: Once the coupling between particles and fields is linearized, the method updates the electric fields on the grid using the information from the particle push step implicitly.
-However, the semi-implicit methods prosposed in the 1980s (Implicit Moment Method, Direct Implicit Method) lack energy conservation, which causes instability issues with grid resolution much larger than the Debye length.
+- **Semi-Implicit PIC**[^common]: Semi-implicit methods aim for a middle ground that retains much of the stability of fully implicit PIC while keeping each step linear. Earlier 1980s formulations linearize the particle--field coupling via fluid closures or Taylor expansions of the particle push, whereas FLEKS uses the energy-conserving semi-implicit method (ECSIM / GL-ECSIM):
+  - **Classical linearized semi-implicit methods (1980s)**:
+    1. *Implicit Moment Method*: Approximates the future current using a set of fluid moment equations derived from the particle distribution function.
+    2. *Direct Implicit Method*: Performs a formal linear Taylor expansion of the particle orbit and interpolation operator with respect to the future electric field.
 
-| Feature | Fully Implicit PIC | Semi-Implicit PIC |
+    Because both approximations break exact work symmetry between particles and fields, they lack exact discrete energy conservation and can still suffer numerical heating when $\Delta x \gg \lambda_D$.
+  - **Energy-Conserving Semi-Implicit PIC (ECSIM / GL-ECSIM, used in FLEKS)**: Keeps Maxwell's equations and the particle velocity response to $\mathbf{E}^{n+\theta}$ **implicit**, while keeping particle positions frozen at the staggered half-step $\mathbf{x}_p^{n+1/2}$ (and the magnetic field in the Lorentz rotation lagged at $\mathbf{B}^n$) during the field solve. Because $\mathbf{x}_p^{n+1/2}$ is fixed during the solve, the average particle velocity $\bar{\mathbf{v}}_p$ is an **exact linear** function of $\mathbf{E}^{n+\theta}$ with no Taylor expansion, eliminating all particle velocities analytically into a nodal mass matrix for a linear GMRES grid solve, followed by a single back-substitution particle push. At $\theta = 0.5$ (with no artificial longitudinal damping), total energy is conserved to solver tolerance regardless of $\Delta x / \lambda_D$.
+
+| Feature | Fully Implicit PIC | Semi-Implicit PIC (GL-ECSIM) |
 |---|---|---|
-| Stability | Highly stable, larger time steps allowed | More stable than explicit, but not as unconditionally stable as fully implicit |
-| Accuracy | Can be very accurate | Accuracy can depend on the specific linearization technique, some energy conservation issues may exist |
-| Computational Cost | Highest, due to matrix inversions at each step | More expensive than explicit, but often less so than fully implicit |
+| Stability | Unconditionally stable on fields and orbits, but requires nonlinear particle--field iteration | Removes light-wave CFL ($c'\Delta t/\Delta x$), $\omega_{pe}\Delta t$, and $\Delta x/\lambda_D$ limits for $\theta \ge 0.5$; still limited by particle thermal CFL ($u_{\max}\Delta t/\Delta x < 1$) |
+| Accuracy | Fully time-centered in both $\mathbf{x}_p$ and $\mathbf{v}_p$; exact energy/charge conservation possible | Exact discrete energy conservation at $\theta = 0.5$; $\mathcal{O}(\Delta t\,\partial_t\mathbf{B})$ error from lagged $\mathbf{B}^n$ in rotation; `#DIVE` maintains Gauss's law |
+| Computational Cost | Highest, due to nonlinear JFNK/Picard iterations re-pushing particles every solve | One mass-matrix deposit, one linear GMRES grid solve, and one back-substitution particle push per step |
 
-[^common]: One common misconception is that in a semi-implicit method, the particle pusher is explicit while the field solver is implicit. This is not exactly true, because we cannot simply separate the two components.
+[^common]: One common misconception is that in FLEKS's semi-implicit method, the field solver is implicit while the particle pusher is explicit. Treating fields implicitly with an explicit current $\mathbf{J}^n$ would leave plasma oscillations explicit ($\omega_{pe}\Delta t < 2$, $\Delta x \lesssim \lambda_D$). Instead, both fields and particle velocities are coupled implicitly during the field solve, while particle positions $\mathbf{x}_p^{n+1/2}$ and the rotation field $\mathbf{B}^n$ remain explicit; see [What "Semi-Implicit" Means in FLEKS](#what-semi-implicit-means-in-fleks).
 
 ## Unit Conversion
 
@@ -294,7 +294,7 @@ FLEKS uses the Gauss-Law satisfying energy conserving semi-implicit method (GL-E
 ECSIM uses a staggered grid, where the electric field is defined at cell nodes, and the magnetic field is defined at cell centers. The Maxwell's equations are solved implicitly:
 \begin{align}
 \frac{\mathbf{B}^{n+1} - \mathbf{B}^n}{\Delta t} &= - c\nabla\times\mathbf{E}^{n+\theta} \\
-\frac{\mathbf{E}^{n+1} - \mathbf{E}^n}{\Delta t} &= - c\nabla\times\mathbf{B}^{n+\theta} - 4\pi\bar{\mathbf{J}}
+\frac{\mathbf{E}^{n+1} - \mathbf{E}^n}{\Delta t} &= + c\nabla\times\mathbf{B}^{n+\theta} - 4\pi\bar{\mathbf{J}}
 \end{align}
 where $\theta \in [0.5, 1]$ is the time centering parameter. $\bar{\mathbf{J}}$ is the predicted current density at $n + \frac{1}{2}$ time stage, and it can be expressed as a linear function of the unknown electric field $\mathbf{E}^{n+\theta}$.
 The variables at time stage $n+\theta$ can be written as linear combinations of values at the time steps n and n + 1:
@@ -303,11 +303,11 @@ The variables at time stage $n+\theta$ can be written as linear combinations of 
 \mathbf{B}^{n+\theta} &= (1-\theta)\mathbf{B}^n + \theta \mathbf{B}^{n+1}
 \end{align}
 
-After rearranging the equations above and using the identity $\nabla\times\nabla\times\mathbf{E}= \nabla(\nabla\cdot\mathbf{E}) − \nabla^2\mathbf{E}$, we come up with an equation of $\mathbf{E}^{n+\theta}$
+After rearranging the equations above and using the identity $\nabla\times\nabla\times\mathbf{E}= \nabla(\nabla\cdot\mathbf{E}) - \nabla^2\mathbf{E}$, we come up with an equation of $\mathbf{E}^{n+\theta}$
 \begin{equation}
-\mathbf{E}^{n+\theta} + \delta^2\left[ \nabla(\nabla\cdot\mathbf{E}^{n+\theta}) − \nabla^2\mathbf{E}^{n+\theta} \right] = \mathbf{E}^n + \delta\left( \nabla\times\mathbf{B}^n - \frac{4\pi}{c}\bar{\mathbf{J}} \right)
+\mathbf{E}^{n+\theta} + \delta^2\left[ \nabla(\nabla\cdot\mathbf{E}^{n+\theta}) - \nabla^2\mathbf{E}^{n+\theta} \right] = \mathbf{E}^n + \delta\left( \nabla\times\mathbf{B}^n - \frac{4\pi}{c}\bar{\mathbf{J}} \right)
 \end{equation}
-where $\delta = c\theta \Delta t$. After applying finite difference discretizations to the gradient and divergence operators, we obtain a linear system of equations for the discrete values of $\mathbf{E}^{n+\theta}$ at the cell nodes. The iterative generalized minimal residual method (GMRES) is used to solve the equations to obtain $\mathbf{E}^{n+\theta}$. Using equations (1) and (3), the magnetic field $\mathbf{B}^{n+1}$ and electric field $\mathbf{E}^{n+1}$ at the next time step can be obtained, respectively.
+where $\delta = c\theta \Delta t$. After applying finite difference discretizations to the gradient and divergence operators, we obtain a linear system of equations for the discrete values of $\mathbf{E}^{n+\theta}$ at the cell nodes. The iterative generalized minimal residual method (GMRES) is used to solve the equations to obtain $\mathbf{E}^{n+\theta}$. Once $\mathbf{E}^{n+\theta}$ is obtained, the electric and magnetic fields are advanced to $t^{n+1}$ via $\mathbf{E}^{n+1} = \frac{1}{\theta}\mathbf{E}^{n+\theta} - \frac{1-\theta}{\theta}\mathbf{E}^n$ and $\mathbf{B}^{n+1} = \mathbf{B}^n - c\Delta t\,\nabla\times\mathbf{E}^{n+\theta}$.
 
 The position and velocity of the macro-particle are staggered in time, i.e., the particle velocity $\mathbf{v}_p$ is at the integer time stage and the location $\mathbf{x}_p$ is at the half time stage. First the velocity is pushed to time level n + 1 by
 \begin{equation}
@@ -344,9 +344,9 @@ via a rotation matrix defined as
 \end{equation}
 where $\overleftrightarrow{I}$ is the dyadic tensor and $\beta_s = q_p \Delta t / 2m_p$. The elements of the rotation matrix are indicated as $\alpha_p^{ij,n}$ with label i and j referring to the 3 components of the vector space (x, y, z).
 
-[^v-avg]: This is important for having an explicit particle pusher.
+[^v-avg]: Because $\bar{\mathbf{v}}_p$ is strictly linear in $\mathbf{E}_p^{n+\theta}$ with no nonlinear trajectory dependence, all particle velocities are eliminated analytically into the mass matrix before GMRES runs, and $\mathbf{v}_p^{n+1}$ is evaluated afterward in a single non-iterative back-substitution pass.
 
-Substituting then @eq-vavg-form2 into @eq-Jbar, we obtain without any approximation or linearization:
+Substituting this linear expression for the average velocity into the species current definition gives, without any approximation or linearization:
 \begin{equation}
 \bar{\mathbf{J}}_{sg} = \frac{1}{V_g}\sum_p q_p \hat{\mathbf{v}}_p W_{pg} + \frac{\beta_s}{V_g}\sum_p q_p \hat{\mathbf{E}}_p^{n+\theta} W_{pg}
 \end{equation}
@@ -356,7 +356,7 @@ Let
 \begin{equation}
 \hat{\mathbf{J}}_{sg} = \sum_p q_p \hat{\mathbf{v}}_p W_{pg}
 \end{equation}
-be the current based on hatted velocity, we have, together with @eq-hat-v-E,
+be the tentative current based on the hatted velocity; together with $\hat{\mathbf{E}}_p = \pmb{\alpha}_p^n \mathbf{E}_p^{n+\theta}$, we have
 \begin{equation}
 \bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_p q_p \pmb{\alpha}_p^n \mathbf{E}_p^{n+\theta} W_{pg}
 \end{equation}
@@ -380,7 +380,80 @@ we obtain, in matrix form
 \bar{\mathbf{J}}_{sg} = \hat{\mathbf{J}}_{sg} + \frac{\beta_s}{V_g}\sum_{g^\prime} M_{s,gg^\prime}\mathbf{E}_{g^\prime}^{n+\theta}
 \end{equation}
 
-@eq-mass-matrix defines the elements of the mass matrices that are the most peculiar characteristic of the method proposed here. There are 3v such matrices, where v is the dimensionality of the magnetic field and velocity vector, not to be confused with the dimensionality of the geometry used for space d. The indices i and j in @eq-mass-matrix vary in the 3v-space. For example for full 3-components vectors, and there are 9 mass matrices. Each matrix is symmetric and very sparse with just 2d diagonals.
+The mass-matrix definition above gives the elements of the coupling matrices that are the most distinctive feature of the method. There are $3v$ such matrices, where $v$ is the dimensionality of the magnetic field and velocity vector, not to be confused with the spatial dimensionality $d$. The indices $i$ and $j$ vary in the $3v$-space—for example, for full 3-component vectors there are 9 component matrices—and each matrix is symmetric and sparse with only $2d$ diagonals (compact nearest-neighbor stencil support).
+
+(what-semi-implicit-means-in-fleks)=
+### What "Semi-Implicit" Means in FLEKS
+
+A natural misreading of the step order is that the field solver is implicit while the particle pusher is explicit. If Maxwell's equations were solved implicitly with an explicit current $\mathbf{J}^n$, the plasma oscillation loop $\partial_t\mathbf{E} = -4\pi\mathbf{J}$ and $\partial_t\mathbf{v} = (q/m)\mathbf{E}$ would remain explicit, so the scheme would still blow up whenever $\omega_{pe}\Delta t > 2$ or $\Delta x \gg \lambda_D$ (the finite-grid instability).
+
+Instead, in FLEKS's ECSIM formulation, **semi-implicit** refers to how the particle phase space $(\mathbf{x}_p, \mathbf{v}_p)$ and the Lorentz force are split between implicit and explicit treatment within each time step:
+
+| Part of the Vlasov--Maxwell step | Treatment in FLEKS | Consequence |
+|---|---|---|
+| Maxwell curl equations ($\mathbf{E}^{n+\theta}, \mathbf{B}^{n+\theta}$) | **Implicit** | Eliminates the light-wave CFL ($c'\Delta t/\Delta x$) for $\theta \ge 0.5$ |
+| Particle velocity response to $\mathbf{E}$ ($\bar{\mathbf{v}}_p \leftrightarrow \mathbf{E}^{n+\theta}$) | **Implicit** | Eliminates the $\omega_{pe}\Delta t$ and $\Delta x/\lambda_D$ plasma constraints |
+| Particle position $\mathbf{x}_p$ in shape weights $W(\mathbf{x}_p - \mathbf{x}_g)$ and drift | **Explicit** (frozen at staggered $\mathbf{x}_p^{n+1/2}$) | Keeps the grid system linear; retains the particle thermal CFL ($u_{\max}\Delta t/\Delta x < 1$) |
+| Magnetic field in Lorentz rotation ($\bar{\mathbf{v}}_p \times \mathbf{B}$) | **Explicit / lagged** at $\mathbf{B}^n(\mathbf{x}_p^{n+1/2})$ | Avoids quadratic nonlinearity in $\mathbf{E}^{n+\theta}$ while doing zero spurious work |
+
+#### Why the Boris push is single-pass: exact Schur-complement back-substitution
+
+Freezing particle positions at $\mathbf{x}_p^{n+1/2}$ and lagging the rotation field at $\mathbf{B}^n$ makes every particle's $3\times 3$ Boris velocity equation strictly linear in $\mathbf{E}^{n+\theta}$. Consequently, the coupled system over all particle velocities $\{\bar{\mathbf{v}}_p\}$, $\mathbf{B}^{n+1}$, and $\mathbf{E}^{n+\theta}$ is solved in three exact algebraic stages:
+
+1. **Analytical elimination (`calc_mass_matrix`)**: Accumulating $\hat{\mathbf{J}}$ and the 27-point (9-point in 2D) nodal mass matrix $\mathbf{M}$ eliminates all $N_p$ particle velocities (and $\mathbf{B}^{n+1}$) analytically *before* GMRES runs, forming the Schur complement on the $3N_{\text{nodes}}$ grid unknowns.
+2. **Grid solve (`update_E`)**: GMRES solves the linear system for $\mathbf{E}^{n+\theta}$ on the grid, with the linearized plasma response already embedded in $\mathbf{M}$.
+3. **Back-substitution (`particle_mover`)**: Plugging the converged $\mathbf{E}^{n+\theta}$ into the Boris mover yields $\mathbf{v}_p^{n+1}$ in a single pass, followed by the explicit drift $\mathbf{x}_p^{n+3/2} = \mathbf{x}_p^{n+1/2} + \Delta t\,\mathbf{v}_p^{n+1}$. This single-pass velocity push is exact algebraic back-substitution of the implicit velocity solve, not an explicit velocity step.
+
+#### Solver properties that follow from this split
+
+1. **Eliminated electromagnetic and plasma-scale stability constraints**: Because both Maxwell wave propagation and the $\mathbf{v}_p \leftrightarrow \mathbf{E}^{n+\theta}$ response are implicit, the scheme is stable for $c'\Delta t/\Delta x > 1$, $\omega_{pe}\Delta t \gg 1$, and $\Delta x \gg \lambda_D$ whenever $\theta \ge 0.5$.
+2. **Remaining particle thermal CFL**: Because $\mathbf{x}_p$ is frozen during the solve and drifted explicitly afterward, $\Delta t$ remains bounded by particle streaming across a cell ($u_{\max}\Delta t/\Delta x < 1$, typically $\mathrm{cfl} \approx 0.1\text{--}0.4$).
+3. **Exact work cancellation and freedom from finite-grid heating**: Evaluating both the mass matrix and the Boris mover at the same frozen $\mathbf{x}_p^{n+1/2}$ and $\mathbf{B}^n$ makes $\bar{\mathbf{J}}$ in Ampère's law match the mover's current to solver tolerance, while $\bar{\mathbf{v}}_p \cdot (\bar{\mathbf{v}}_p \times \mathbf{B}^n) \equiv 0$ ensures the magnetic rotation does zero spurious work.
+4. **Why Gauss's-law cleaning (`#DIVE`) is needed**: Depositing $\bar{\mathbf{J}}$ at the frozen position $\mathbf{x}_p^{n+1/2}$ before drifting to $\mathbf{x}_p^{n+3/2}$ does not satisfy discrete charge continuity $\nabla\cdot\bar{\mathbf{J}} + (\rho^{n+1} - \rho^n)/\Delta t = 0$ identically (unlike trajectory-integrated Esirkepov currents in explicit PIC). `#DIVE` therefore corrects particle positions to enforce $\nabla\cdot\mathbf{E} = 4\pi\rho$.
+5. **Lagged-$\mathbf{B}^n$ trade-off**: Keeping $\mathbf{B}^n$ explicit inside $\pmb{\alpha}_p^n$ avoids nonlinear coupling between $\bar{\mathbf{v}}_p$ and $\mathbf{B}^{n+\theta}$ and preserves exact energy conservation, at the cost of an $\mathcal{O}(\Delta t\,\partial_t\mathbf{B})$ truncation error in the magnetic rotation when $\mathbf{B}$ varies in time.
+
+### Role of the Time-Centering Parameter $\theta$
+
+In `#DISCRETIZATION`, the `theta` parameter ($\theta \in [0.5, 1.0]$, default `0.51`) directly sets the time-level weight $t^{n+\theta}$ in $\mathbf{E}^{n+\theta} = \theta\mathbf{E}^{n+1} + (1-\theta)\mathbf{E}^n$ and $\mathbf{B}^{n+\theta} = \theta\mathbf{B}^{n+1} + (1-\theta)\mathbf{B}^n$. Two common points of confusion arise around this parameter:
+
+1. **$\theta = 0.5$ (not $\theta = 0$) is time-centered Crank--Nicolson**: Some implicit PIC literature parameterizes decentering relative to the half-step as $t^{n+1/2+\delta}$ with $\delta = \theta - 0.5$, where $\delta = 0$ is centered. In FLEKS, $\theta$ is the direct weight in $[0.5, 1.0]$: values $\theta < 0.5$ are unstable for oscillatory modes, and `theta = 0` divides by zero when reconstructing $\mathbf{E}^{n+1} = \frac{1}{\theta}\mathbf{E}^{n+\theta} - \frac{1-\theta}{\theta}\mathbf{E}^n$.
+2. **Unrelated upwind-limiter parameters**: `#UPWINDE` (`limiterThetaE`) and `#UPWINDB` (`theta`) are separate Sweby flux-limiter parameters in $[0, 2]$, where `0` gives first-order Lax--Friedrichs upwinding and `1`--`2` give second-order TVD limiters.
+
+#### Discrete energy identity
+
+Regardless of $\theta$, FLEKS's Boris push and mass matrix always use the half-step factor $\beta_s = q_p\Delta t/(2m_p)$ and midpoint velocity $\bar{\mathbf{v}}_p = \frac{1}{2}(\mathbf{v}_p^n + \mathbf{v}_p^{n+1})$. Consequently, `theta` shifts the time centering of the **electromagnetic fields**, not the midpoint centering of the particle velocity update, so the discrete kinetic energy change is always $\Delta K = \Delta t\sum_{s,g} V_g \bar{\mathbf{J}}_{sg}\cdot\mathbf{E}_g^{n+\theta}$. Combining this with the $\theta$-weighted Maxwell equations (when `ratioDivC2C = 0`, removing the optional extended-stencil longitudinal operator in `#DISCRETIZATION`) yields the exact discrete energy identity for all $\theta$:
+\begin{equation}
+\Delta (K + W_E + W_B) = -\left(\theta - \frac{1}{2}\right)\frac{1}{4\pi}\int \left(|\mathbf{E}^{n+1} - \mathbf{E}^n|^2 + |\mathbf{B}^{n+1} - \mathbf{B}^n|^2\right) dV .
+\end{equation}
+
+#### Temporal order of accuracy: dispersion vs. damping
+
+Expanding $\mathbf{E}^{n+\theta}$ around the midpoint $t^{n+1/2}$,
+\begin{equation}
+\mathbf{E}^{n+\theta} = \frac{\mathbf{E}^{n+1} + \mathbf{E}^n}{2} + \left(\theta - \frac{1}{2}\right)\Delta t\,\partial_t\mathbf{E}(t^{n+1/2}) + \mathcal{O}(\Delta t^2) ,
+\end{equation}
+shows how $\theta$ controls formal convergence:
+
+- **At $\theta = 0.5$** (with `ratioDivC2C = 0` and `#DIVE` off), the $(\theta - 0.5)\Delta t$ term vanishes, giving **second-order temporal accuracy** ($\mathcal{O}(\Delta t^2)$) for vacuum electromagnetic waves, electrostatic modes, or static $\mathbf{B}$ (whereas time-varying $\mathbf{B}$ still carries the $\mathcal{O}(\Delta t\,\partial_t\mathbf{B})$ lagged-rotation error, and default `#DIVE` uses a fixed `0.51` charge-interpolation weight).
+- **For any fixed $\theta > 0.5$**, the $(\theta - 0.5)\Delta t$ term makes the formal asymptotic global error **first-order**, $\mathcal{O}((\theta - 0.5)\Delta t)$.
+- **Wave phase vs. amplitude**: For a linear oscillatory mode $e^{-i\omega t}$, the $\theta$-scheme amplification factor $g = \frac{1 - i(1-\theta)\omega\Delta t}{1 + i\theta\omega\Delta t}$ yields the numerical frequency
+  \begin{equation}
+  \omega_{\mathrm{num}} = \omega\left[1 - \left(\frac{1}{12} + \left(\theta - \frac{1}{2}\right)^2\right)(\omega\Delta t)^2 + \mathcal{O}(\Delta t^4)\right] - i\left(\theta - \frac{1}{2}\right)\omega^2\Delta t .
+  \end{equation}
+  Thus **wave phase and dispersion remain second-order accurate ($\mathcal{O}(\Delta t^2)$) for all $\theta$**; the first-order truncation term enters purely as amplitude damping with prefactor $\theta - 0.5$.
+
+#### Meaning of $\theta = 0.5$, $\theta = 0.51$, and $\theta = 1.0$
+
+- **$\theta = 0.5$ (Time-symmetric Crank--Nicolson)**: Fields, frozen particle positions $\mathbf{x}_p^{n+1/2}$, and midpoint current $\bar{\mathbf{J}}$ all align at $t^{n+1/2}$, giving exact energy conservation ($\Delta E_{\mathrm{tot}} = 0$). However, the scheme is A-stable rather than L-stable ($|g(\omega\Delta t)| \equiv 1$ at all frequencies). Because $\mathbf{E}^{n+1} = 2\mathbf{E}^{n+1/2} - \mathbf{E}^n$, unresolved stiff modes ($\omega_{pe}\Delta t \gg 1$ or $c'k\Delta t \gg 1$) pinned near equilibrium at the half-step satisfy $\delta\mathbf{E}^{n+1} \approx -\delta\mathbf{E}^n$ ($g \to -1$), so PIC shot-noise, boundary, and AMR transients ring indefinitely as $(-1)^n$ oscillations.
+- **$\theta = 1.0$ (Backward-Euler fields + midpoint Boris push)**: Fields are evaluated directly at the end of the step ($\mathbf{E}^{n+\theta} = \mathbf{E}^{n+1}$, $\mathbf{B}^{n+\theta} = \mathbf{B}^{n+1}$) with no extrapolation. Unresolved electromagnetic modes ($|g| = (1 + c'^2k^2\Delta t^2)^{-1/2} \to 0$ as $c'k\Delta t \to \infty$) and the stiff plasma electric-field root ($g_1 \approx -2/(\omega_{pe}\Delta t)^2 \to 0$ as $\omega_{pe}\Delta t \to \infty$) are damped in a single step, while the midpoint Boris velocity update retains a zero-current particle-velocity root $g_2 \to -1$. The drawback is heavy dissipation: every step removes $\frac{1}{8\pi}\int(|\Delta\mathbf{E}|^2 + |\Delta\mathbf{B}|^2)\,dV$ of total energy, draining electron thermal energy through PIC shot-noise field fluctuations, damping resolved waves at rate $\gamma = \frac{1}{2}\omega^2\Delta t$ ($50\times$ stronger than at $\theta = 0.51$), and stiffening the GMRES operator (a $4\times$ larger curl--curl term and $2\times$ larger mass-matrix term than at $\theta = 0.5$).
+- **$\theta \approx 0.51\text{--}0.6$ (Practical default `0.51`)**: Shifts the stiff amplification factor to $|g(\infty)| = (1 - \theta)/\theta < 1$ ($\approx 0.96$ at $\theta = 0.51$), damping unresolved $(-1)^n$ oscillations over a few dozen steps while reducing the per-step energy sink by $50\times$ relative to $\theta = 1.0$.
+
+| Property | $\theta = 0.5$ | $\theta = 0.51$ (default) | $\theta = 1.0$ |
+|---|---|---|---|
+| Field evaluation | Midpoint $\frac{1}{2}(\mathbf{E}^n + \mathbf{E}^{n+1})$ | Slightly future-biased $t^{n+0.51}$ | End-of-step $\mathbf{E}^{n+1}$ (no extrapolation) |
+| Energy change per step | $0$ (exact conservation) | $-0.01\times\frac{1}{4\pi}(\|\Delta\mathbf{E}\|^2 + \|\Delta\mathbf{B}\|^2)$ | $-0.50\times\frac{1}{4\pi}(\|\Delta\mathbf{E}\|^2 + \|\Delta\mathbf{B}\|^2)$ |
+| Stiff limit ($\omega\Delta t \to \infty$) | $g \to -1$ (undamped $(-1)^n$ ringing) | $g \to -0.49/0.51 \approx -0.96$ (decays in ~25 steps) | Field root $g \to 0$ (damped in 1 step) |
+| Resolved waves ($\omega\Delta t \ll 1$) | 2nd-order phase & amplitude; zero damping | 2nd-order phase; weak damping ($\gamma = 0.01\,\omega^2\Delta t$) | 2nd-order phase; strong 1st-order damping ($\gamma = 0.5\,\omega^2\Delta t$) and electron cooling |
 
 ## Particle Mover
 
